@@ -4,11 +4,11 @@
 
 ## 1. Mission
 
-You are an implementation agent working on **Glassline**, a first-person parkour game inspired by the original Mirror's Edge.
+You are an implementation agent working on **Glassline**, an experimental first-person parkour game inspired by the original *Mirror's Edge* (2008).
 
-Your primary responsibility is to implement the project according to its specifications, existing architecture, and current implementation state.
+Your responsibility is to implement the project according to its specifications, existing architecture, and actual implementation state.
 
-You must prioritize:
+Prioritize:
 
 1. Correctness.
 2. Architectural consistency.
@@ -30,115 +30,119 @@ Before making changes, read the following documents.
 ### Always Required
 
 1. `README.md`
-2. `docs/01_AGENT_RULES.md`
-3. `docs/02_TECHNICAL_ARCHITECTURE.md`
-4. `docs/IMPLEMENTATION_STATUS.md`
+2. `docs/00_PROJECT_BRIEF.md`
+3. `docs/01_AGENT_RULES.md`
+4. `docs/02_TECHNICAL_ARCHITECTURE.md`
+5. `docs/IMPLEMENTATION_STATUS.md`
 
-These documents establish the project identity, implementation rules, technical architecture, and current development state.
+These documents establish:
+
+- Project identity and scope.
+- Agent behavior and implementation rules.
+- Technical architecture.
+- Current implementation state.
 
 ### Task-Specific Documentation
 
-Read the specification for every system directly affected by your task.
+Read the specifications for:
 
-Also read specifications for systems that:
+- The system being implemented.
+- Every system whose public interface is affected.
+- Systems that provide dependencies.
+- Systems that consume your events or outputs.
+- Systems that own related lifecycle or state.
+- Shared data models and integration contracts.
 
-- Provide dependencies.
-- Consume your system's interfaces or events.
-- Own related gameplay state.
-- Participate in the same lifecycle.
-- Define shared data models or contracts.
+Do not rely on filenames, summaries, or previous agent reports when implementation details matter. Read the actual documents.
 
-Do not rely on document filenames or summaries alone when implementation details matter.
+### Documentation Authority
 
-Read the actual specifications.
+Each document has a specific responsibility:
 
-### Documentation Priority
+| Document | Authority |
+|---|---|
+| `README.md` | Project overview and navigation |
+| `00_PROJECT_BRIEF.md` | Project identity, design principles, and high-level scope |
+| `01_AGENT_RULES.md` | General implementation-agent rules |
+| `02_TECHNICAL_ARCHITECTURE.md` | Technology stack and technical architecture |
+| `XX_*_SPEC.md` | Domain behavior, ownership, and system contracts |
+| `IMPLEMENTATION_STATUS.md` | Factual implementation and verification state |
 
-Use the following precedence when resolving conflicts:
+A task-specific instruction may change the requested scope. It does not silently override architecture or system ownership.
 
-1. Explicit instructions in the current task.
-2. `docs/01_AGENT_RULES.md` for general agent behavior.
-3. `docs/02_TECHNICAL_ARCHITECTURE.md` for technical architecture.
-4. The relevant system specifications for domain behavior and ownership.
-5. Existing implementation and tests as evidence of current behavior.
-6. `README.md` for project overview.
+If an instruction conflicts with an authoritative specification, identify the conflict before making an incompatible change.
 
-This precedence does not authorize silently ignoring contradictions.
-
-If two authoritative specifications conflict, identify the conflict and resolve it before making an incompatible implementation decision.
-
-If the current task explicitly changes an architectural decision, update the affected documentation as part of the task.
+Do not silently resolve architectural contradictions by choosing whichever document is most convenient.
 
 ---
 
 ## 3. First Action: Inspect the Repository
 
-Never assume the repository is empty or that a feature is missing.
+Never assume that the repository is empty or that a feature is missing.
 
 Before implementation:
 
 1. Inspect the repository structure.
-2. Inspect the package manager and project configuration.
-3. Identify the runtime, rendering technology, and build tools.
-4. Inspect existing modules and public interfaces.
-5. Check available scripts and test commands.
-6. Inspect the relevant implementation.
-7. Compare the implementation with the relevant specification.
-8. Check `docs/IMPLEMENTATION_STATUS.md`.
+2. Inspect `package.json` and lockfiles.
+3. Identify the package manager and available scripts.
+4. Inspect TypeScript and Vite configuration.
+5. Identify the existing rendering and physics integration.
+6. Inspect relevant source modules.
+7. Inspect relevant tests.
+8. Check the current implementation status.
+9. Compare existing behavior with the applicable specifications.
 
-Determine whether the requested feature is:
+Classify the requested work:
 
-- Completely missing.
+- Missing.
 - Partially implemented.
 - Implemented but not integrated.
 - Integrated but insufficiently tested.
-- Implemented with architectural deviations.
-- Already complete.
+- Implemented with specification deviations.
+- Complete and verified.
 
 Do not recreate functionality that already exists.
 
 Prefer extending or correcting existing implementations over creating parallel systems.
 
+If the repository configuration is incomplete, report the exact blocker and implement only the safe, agreed foundation.
+
 ---
 
 ## 4. Architecture Rules
 
-### 4.1 Single Responsibility and Ownership
+### 4.1. Single Ownership
 
 Every system has one authoritative owner for its domain.
-
-Do not duplicate business logic, state, or lifecycle orchestration.
-
-Examples:
 
 | Responsibility | Authoritative System |
 |---|---|
 | Locomotion physics | Movement |
 | First-person presentation | Camera |
-| Player lifecycle aggregation | Player State |
+| Aggregated player lifecycle | Player State |
 | Interaction detection and execution | Interaction |
 | Checkpoint progress | Checkpoint |
 | Recovery lifecycle | Respawn |
-| Spawn point and level runtime | Level Runtime |
+| Loaded level lifecycle and spawn resolution | Level Runtime |
 | Gameplay session lifecycle | Gameplay Session |
 | Application navigation | Gameplay Flow |
 | Training exercises and evaluation | Training |
-| Run timing and validation | Speedrun |
+| Run timing and route validation | Speedrun |
 | Content unlocks and milestones | Progression |
-| Achievement definitions and unlocking | Achievement |
-| Gameplay statistics | Statistics |
+| Achievement definitions and unlock state | Achievement |
+| Aggregated gameplay facts | Statistics |
 | Persistence infrastructure | Save |
-| Configuration and preferences | Settings |
+| Configuration and preference semantics | Settings |
 | Translation resources and resolution | Localization |
 | Accessibility policy coordination | Accessibility |
 | Menu presentation | Menu |
 | Gameplay HUD presentation | HUD |
 
-When another system needs information, use its public interface, snapshot, command, or event contract.
+Use public interfaces, commands, immutable snapshots, or events to communicate across system boundaries.
 
-Do not access its internal mutable state directly.
+Do not access another system's internal mutable state directly.
 
-### 4.2 No Duplicate State
+### 4.2. No Duplicate State
 
 Do not introduce multiple authoritative representations of the same state.
 
@@ -148,27 +152,27 @@ Prefer:
 - Immutable snapshots.
 - Explicit state transitions.
 - Domain-owned models.
-- Event-driven updates.
+- Session-scoped events.
 
 Avoid unnecessary boolean flags that duplicate existing state machines.
 
-### 4.3 Explicit Contracts
+### 4.3. Explicit Contracts
 
-Public interfaces must have clear:
+Public interfaces must define:
 
 - Ownership.
-- Input and output types.
+- Inputs and outputs.
 - Error behavior.
 - Lifecycle behavior.
 - Cancellation behavior.
 - Event semantics.
 - Session or attempt identity where applicable.
 
-Avoid implicit coupling through global variables, arbitrary object references, or undocumented shared state.
+Do not introduce hidden coupling through global mutable state, undocumented shared objects, or arbitrary cross-system references.
 
-### 4.4 Dependency Direction
+### 4.4. Dependency Direction
 
-Follow the dependency boundaries defined in `docs/02_TECHNICAL_ARCHITECTURE.md`.
+Follow `docs/02_TECHNICAL_ARCHITECTURE.md`.
 
 In general:
 
@@ -179,43 +183,61 @@ In general:
 
 Do not introduce circular dependencies.
 
-### 4.5 Engine and Framework Decisions
+### 4.5. Technology Constraints
 
-Do not introduce a new game engine, rendering framework, state-management library, physics library, or major dependency without checking the existing project architecture.
+The initial technical stack is:
 
-Do not assume that a conceptual interface in a specification already exists in the codebase.
+- TypeScript.
+- Three.js.
+- Three.js `WebGLRenderer`.
+- Vite.
+- Rapier through `@dimforge/rapier3d-compat`.
+- Web Audio API.
+- IndexedDB.
+- HTML and CSS.
+- GLSL where required.
 
-Inspect the actual repository before selecting implementation details.
+WebGPU is a possible future extension, not part of the initial implementation.
+
+Do not introduce a new engine, rendering framework, physics library, UI framework, or major dependency without checking the architecture and documenting the reason.
 
 ---
 
 ## 5. Gameplay Invariants
 
-These rules are central to Glassline and must remain consistent across implementations.
-
-### 5.1 First-Person Parkour
+### 5.1. Movement First
 
 Movement is the primary gameplay experience.
 
-All mechanics should support fluid traversal and momentum management.
+Mechanics must support fluid traversal, momentum management, and readable player control.
 
-Do not introduce mechanics that undermine the established movement model without explicit approval.
+Do not add mandatory mechanics outside the initial scope without an explicit project decision.
 
-### 5.2 Frame-Rate Independence
+### 5.2. Frame-Rate Independence
 
 Gameplay simulation must not depend on rendering FPS.
 
-Use the timing and update model defined in the Movement and Technical Architecture specifications.
+Physics must use the fixed-timestep model defined by the Technical Architecture and Movement specifications.
 
 Do not use frame counts as substitutes for elapsed time.
 
-### 5.3 Player State Separation
+### 5.3. Physics and Rendering Separation
+
+Three.js owns visual representation.
+
+Rapier owns physical simulation and collision detection.
+
+Do not use visual mesh transforms as an alternative authoritative physics state.
+
+Do not pass variable render delta directly to Rapier as its simulation timestep.
+
+### 5.4. Player State Separation
 
 Do not combine unrelated state domains into one monolithic state machine.
 
-Movement, player lifecycle, respawn, session lifecycle, and application navigation remain separate authoritative domains.
+Movement, player lifecycle, respawn, gameplay session, and application navigation remain separate authoritative domains.
 
-### 5.4 Checkpoint and Respawn Separation
+### 5.5. Checkpoint and Respawn Separation
 
 Checkpoint owns checkpoint progress and recovery destination information.
 
@@ -223,33 +245,33 @@ Respawn owns the recovery lifecycle.
 
 `RespawnManager` is the canonical recovery orchestrator.
 
-Do not implement a second respawn lifecycle manager inside Checkpoint or Level Runtime.
+Do not implement a competing respawn lifecycle manager in Checkpoint or Level Runtime.
 
-### 5.5 Speedrun Integrity
+### 5.6. Speedrun Integrity
 
-Speedrun timing must use a monotonic time source.
+Speedrun timing uses a monotonic time source.
 
-Rendering frame rate must not affect recorded times.
+Rendering FPS must not affect recorded times.
 
-Checkpoint order and route validity must be checked by the Speedrun system.
+Checkpoint order and route validity are owned by Speedrun.
 
-Do not independently calculate or modify speedrun results in HUD, Statistics, or Progression.
+HUD, Statistics, and Progression must not independently calculate or modify authoritative run results.
 
-### 5.6 Session Isolation
+### 5.7. Session Isolation
 
-Session-scoped operations must be associated with the correct session identity.
+Session-scoped operations must carry the correct session identity.
 
 Attempt-scoped operations must reject stale events from previous attempts.
 
 Cancelled, unloaded, or replaced sessions must not receive stale asynchronous results.
 
-### 5.7 Persistence
+### 5.8. Persistence
 
-IndexedDB is the intended local persistence foundation.
+IndexedDB is the initial local persistence foundation.
 
-Use Save System interfaces rather than allowing arbitrary gameplay systems to create their own persistence layers.
+Use Save System interfaces instead of allowing arbitrary gameplay systems to create independent persistence layers.
 
-Never persist high-frequency gameplay data every frame.
+Do not persist high-frequency gameplay data every frame.
 
 ---
 
@@ -257,12 +279,12 @@ Never persist high-frequency gameplay data every frame.
 
 Prioritize the initial playable experience.
 
-Required systems and features include:
+Required features include:
 
 - First-person movement.
 - Mouse and keyboard input.
 - Core traversal mechanics.
-- Collision and player recovery.
+- Collision and recovery.
 - Training mode.
 - Prologue mode.
 - Five Prologue sections.
@@ -271,8 +293,7 @@ Required systems and features include:
 - Personal best records.
 - Local leaderboard.
 - IndexedDB persistence.
-- Main Menu and Pause Menu.
-- Settings.
+- Main Menu, Pause Menu, Settings, and Results.
 - Gameplay HUD.
 - Basic audio feedback.
 - Initial accessibility support.
@@ -283,14 +304,17 @@ Required systems and features include:
 
 Do not implement these as part of the initial scope unless explicitly requested:
 
-- Ghost Replay.
+- Ghost Replay recording and playback.
 - Online leaderboards.
 - Cloud saves.
 - Multiplayer.
 - Online accounts.
 - Advanced procedural campaigns.
-- Advanced traversal mechanics outside the initial movement scope.
+- Ledge grabbing.
+- Swinging and ziplines.
+- Advanced traversal variants outside the initial movement scope.
 - Remote analytics.
+- Full RTL layout.
 
 Architectural extension points may be introduced when required by specifications, but deferred functionality must not become an unnecessary implementation dependency.
 
@@ -302,11 +326,11 @@ Every task must follow this workflow.
 
 ### Step 1 — Understand
 
-- Read the relevant specifications.
+- Read relevant specifications.
 - Inspect the existing implementation.
 - Identify ownership boundaries.
-- Identify dependencies.
-- Understand the expected behavior.
+- Identify dependencies and consumers.
+- Understand expected behavior.
 - Determine what is already complete.
 
 ### Step 2 — Plan
@@ -328,11 +352,11 @@ Do not redesign unrelated architecture.
 ### Step 3 — Implement
 
 - Follow existing code conventions.
-- Reuse existing abstractions.
+- Reuse established abstractions.
 - Keep changes focused.
-- Preserve public contracts unless the task requires changing them.
+- Preserve public contracts unless a change is required.
 - Handle errors explicitly.
-- Handle asynchronous cancellation and stale results.
+- Handle cancellation and stale asynchronous results.
 - Implement cleanup and lifecycle behavior.
 - Avoid unnecessary dependencies.
 
@@ -340,36 +364,36 @@ Do not leave critical behavior as a placeholder.
 
 ### Step 4 — Verify
 
-Run the relevant available commands:
+Run available and relevant commands:
 
 - Type checking.
 - Linting.
 - Unit tests.
 - Integration tests.
-- Build.
-- Relevant runtime or browser checks.
+- Production build.
+- Relevant browser/runtime checks.
 
 Do not claim a command passed if it was not executed.
 
-If verification cannot be performed, explain why.
+If verification cannot be performed, state why.
 
 ### Step 5 — Review
 
 Before finishing:
 
 - Check for duplicate functionality.
-- Check system ownership boundaries.
-- Check for stale state and lifecycle bugs.
+- Check system ownership.
+- Check stale state and lifecycle bugs.
 - Check resource cleanup.
 - Check error handling.
 - Check specification compliance.
-- Check whether unrelated code was modified.
+- Check unrelated modifications.
 
 ### Step 6 — Update Documentation
 
 Update `docs/IMPLEMENTATION_STATUS.md` when implementation status changes.
 
-Update system specifications when architectural contracts or intended behavior change.
+Update system specifications when intended behavior, ownership, or public contracts change.
 
 Do not modify documentation merely to make incomplete implementation appear complete.
 
@@ -407,9 +431,7 @@ Do not modify documentation merely to make incomplete implementation appear comp
 
 ### Testing
 
-Tests should focus on behavior and contracts, not private implementation details.
-
-Prioritize:
+Prioritize tests for:
 
 - State transitions.
 - Invalid operations.
@@ -419,6 +441,8 @@ Prioritize:
 - Session and attempt isolation.
 - Integration contracts.
 - Persistence failures and recovery.
+
+Test observable behavior and contracts rather than private implementation details.
 
 ---
 
@@ -435,11 +459,11 @@ If required information is missing:
 5. Record assumptions explicitly.
 6. Identify unresolved decisions.
 
-If an unresolved decision affects public interfaces, system ownership, persistence format, or gameplay behavior, stop before committing to an incompatible design.
+If a missing decision affects public interfaces, system ownership, persistence format, or gameplay behavior, stop before committing to an incompatible design.
 
-For minor implementation details, use the simplest solution consistent with the architecture.
+For minor and reversible implementation details, use the simplest solution consistent with the architecture.
 
-Do not block progress for cosmetic or easily reversible decisions.
+Do not block progress for cosmetic decisions.
 
 ---
 
@@ -455,15 +479,15 @@ If a related defect must be fixed, explain why it is necessary.
 
 ### Existing Code
 
-Never replace a working implementation with a new abstraction without a clear reason.
+Before removing or replacing existing code, identify:
 
-Before removing code, identify:
-
-- Its current responsibilities.
+- Its responsibilities.
 - Its consumers.
 - Its tests.
 - Its lifecycle behavior.
-- Any external contracts.
+- Its external contracts.
+
+Do not replace a working implementation with a new abstraction without a clear reason.
 
 ### Breaking Changes
 
@@ -475,14 +499,14 @@ When changing public interfaces:
 - Update related specifications.
 - Update integration status.
 
-Never leave a project with partially migrated interfaces.
+Never leave the project with partially migrated interfaces.
 
 ### Dependencies
 
 Before adding a dependency:
 
 - Check whether existing tools already solve the problem.
-- Check compatibility with the project runtime.
+- Check runtime compatibility.
 - Consider bundle size and maintenance.
 - Explain why the dependency is necessary.
 
@@ -492,7 +516,7 @@ Before adding a dependency:
 
 A task is complete only when all applicable conditions are satisfied.
 
-- [ ] The requested functionality is implemented.
+- [ ] Requested functionality is implemented.
 - [ ] Existing architecture is respected.
 - [ ] No duplicate authoritative system was introduced.
 - [ ] Public contracts are consistent.
@@ -504,49 +528,45 @@ A task is complete only when all applicable conditions are satisfied.
 - [ ] Documentation is updated where necessary.
 - [ ] `docs/IMPLEMENTATION_STATUS.md` reflects the actual state.
 
-A task may be reported as partially complete when some conditions cannot be met, but the remaining work must be explicit.
+A task may be reported as partially complete when some conditions cannot be met. Remaining work must be explicit.
 
 ---
 
 ## 12. Required Completion Report
 
-At the end of every implementation task, provide a concise report.
-
-Use this structure:
+At the end of every implementation task, provide:
 
 ### Summary
 
-Describe what was implemented.
+What was implemented.
 
 ### Files Changed
 
-List created, modified, and deleted files.
+Created, modified, and deleted files.
 
 ### Implementation Details
 
-Explain the important architectural and behavioral decisions.
+Important architectural and behavioral decisions.
 
 ### Verification
 
-List commands executed and their actual results.
+Commands executed and their actual results.
 
 ### Tests
 
-List added or updated tests.
+Added or updated tests.
 
 ### Specification Compliance
 
-Describe whether the implementation follows the relevant specifications.
-
-Record deviations and assumptions.
+Whether the implementation follows the relevant specifications. Record deviations and assumptions.
 
 ### Remaining Work
 
-List incomplete requirements, known issues, and blockers.
+Incomplete requirements, known issues, and blockers.
 
 ### Implementation Status
 
-State whether the system or feature is:
+Use one of:
 
 - Not Started
 - In Progress
@@ -560,7 +580,7 @@ Do not report `Verified` without successful verification evidence.
 
 ### Recommended Next Task
 
-Suggest one logical next implementation step.
+One logical next implementation step.
 
 ---
 

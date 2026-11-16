@@ -1,48 +1,47 @@
-# IMPLEMENTATION_STATUS.md
+# GLASSLINE — IMPLEMENTATION STATUS
 
-# Glassline — Implementation Status
-
-**Document Type:** Project Implementation Tracker  
+**Document:** `IMPLEMENTATION_STATUS.md`  
 **Project:** Glassline  
-**Status:** Pre-Implementation  
-**Last Updated:** 2026-11-16
+**Last Updated:** 2026-11-16  
+**Project Stage:** Pre-Implementation  
+**Status:** Specification Baseline Established
 
 ---
 
 ## 1. Purpose
 
-This document is the central implementation tracking reference for the Glassline project.
+This document is the central implementation tracking reference for Glassline.
 
 It tracks:
 
 - Specification readiness.
 - Implementation progress.
-- Integration progress.
-- Testing and validation status.
-- Known architectural gaps.
+- System integration.
+- Testing and verification.
+- Known architectural issues.
 - Deferred features.
 - Remaining implementation work.
 
-The document must reflect the actual state of the codebase.
+This document must represent the actual state of the repository.
 
-A system must never be marked as implemented merely because its specification exists.
+The existence of a specification does not mean that its system has been implemented.
 
-This file is maintained throughout development and must be updated whenever a system meaningfully changes implementation status.
+The existence of source files does not prove that a system is complete.
 
 ---
 
 ## 2. Status Definitions
 
-### 2.1 Specification Status
+### 2.1. Specification Status
 
 | Status | Meaning |
 |---|---|
 | Not Started | No specification exists. |
-| Draft | Specification is incomplete or under review. |
+| Draft | Specification exists but is incomplete. |
 | Defined | Specification is sufficiently complete for implementation. |
 | Needs Revision | Specification requires clarification or architectural correction. |
 
-### 2.2 Implementation Status
+### 2.2. Implementation Status
 
 | Status | Meaning |
 |---|---|
@@ -50,58 +49,73 @@ This file is maintained throughout development and must be updated whenever a sy
 | In Progress | Implementation has started but is incomplete. |
 | Implemented | Initial implementation is present in the codebase. |
 | Integrated | System is connected to its required dependencies. |
-| Verified | Implementation passes its required tests and acceptance criteria. |
+| Verified | Implementation passes its required acceptance criteria and tests. |
 | Blocked | Implementation cannot proceed because of an unresolved dependency or decision. |
 | Deferred | Intentionally postponed to a later development phase. |
 
-### 2.3 Important Distinction
+### 2.3. Integration Status
 
-`Implemented` does not mean `Verified`.
+| Status | Meaning |
+|---|---|
+| Not Started | Integration has not started. |
+| In Progress | Integration work is underway. |
+| Integrated | Required interfaces are connected. |
+| Verified | Integration behavior has been tested. |
+| Blocked | Integration is waiting for a dependency or decision. |
+| Deferred | Integration is intentionally postponed. |
 
-A system can be implemented while still containing:
+### 2.4. Important Distinction
+
+`Implemented` does not mean `Integrated`.
+
+`Integrated` does not mean `Verified`.
+
+A system may contain working code while still having:
 
 - Missing edge-case handling.
 - Incomplete integrations.
 - Temporary placeholders.
-- Unverified browser compatibility.
+- Unverified browser behavior.
 - Missing automated tests.
 - Known specification deviations.
 
-Only `Verified` means the system has passed its defined acceptance criteria.
+Only `Verified` means that the applicable acceptance criteria have been checked successfully.
 
 ---
 
 ## 3. Overall Project Status
 
-| Area | Specification | Implementation | Verification |
-|---|---|---|---|
-| Project Architecture | Defined | Not Started | Not Verified |
-| Core Gameplay | Defined | Not Started | Not Verified |
-| Player Systems | Defined | Not Started | Not Verified |
-| Level Systems | Defined | Not Started | Not Verified |
-| Game Modes | Defined | Not Started | Not Verified |
-| UI / UX | Defined | Not Started | Not Verified |
-| Audio | Defined | Not Started | Not Verified |
-| Persistence | Defined | Not Started | Not Verified |
-| Progression | Defined | Not Started | Not Verified |
-| Accessibility | Defined | Not Started | Not Verified |
-| Localization | Defined | Not Started | Not Verified |
-| Statistics | Defined | Not Started | Not Verified |
+| Area | Specification | Implementation | Integration | Verification |
+|---|---|---|---|---|
+| Project Foundation | Defined | Not Started | Not Started | Not Verified |
+| Technical Architecture | Defined | Not Started | Not Started | Not Verified |
+| Core Gameplay | Defined | Not Started | Not Started | Not Verified |
+| Player Systems | Defined | Not Started | Not Started | Not Verified |
+| Level Systems | Defined | Not Started | Not Started | Not Verified |
+| Gameplay Modes | Defined | Not Started | Not Started | Not Verified |
+| UI / UX | Defined | Not Started | Not Started | Not Verified |
+| Audio | Defined | Not Started | Not Started | Not Verified |
+| Persistence | Defined | Not Started | Not Started | Not Verified |
+| Progression | Defined | Not Started | Not Started | Not Verified |
+| Accessibility | Defined | Not Started | Not Started | Not Verified |
+| Localization | Defined | Not Started | Not Started | Not Verified |
+| Statistics | Defined | Not Started | Not Started | Not Verified |
 
-**Current project phase:** Specification and implementation preparation.
+**Current phase:** Documentation baseline and implementation preparation.
 
-**Implementation readiness:** Initial system specifications are available. A cross-document consistency audit and repository baseline assessment are still required before implementation begins.
+**Implementation readiness:** The project has a broad system specification. Repository configuration, cross-document validation, and initial runtime implementation must be checked before gameplay implementation begins.
 
 ---
 
 ## 4. Specification Registry
 
-The following documents have been prepared.
+The following documents form the current specification baseline.
 
-Their existence confirms specification coverage, not implementation completion.
+`Defined` indicates that a specification exists. It does not imply that every implementation detail has already been verified against the codebase.
 
 | # | Document | Specification Status | Implementation Status |
 |---:|---|---|---|
+| 00 | `00_PROJECT_BRIEF.md` | Defined | Not Started |
 | 01 | `01_AGENT_RULES.md` | Defined | Not Started |
 | 02 | `02_TECHNICAL_ARCHITECTURE.md` | Defined | Not Started |
 | 03 | `03_GAMEPLAY_SPEC.md` | Defined | Not Started |
@@ -137,20 +151,23 @@ Their existence confirms specification coverage, not implementation completion.
 
 ## 5. Implementation Workstreams
 
-Implementation should be organized into coherent workstreams rather than treating all specifications as independent projects.
+Implementation should be organized into coherent workstreams.
 
-### 5.1 Foundation
+Systems are not completely independent. Integration should happen continuously as their contracts become available.
+
+### 5.1. Project Foundation
 
 | System | Specification | Initial Goal | Status |
 |---|---|---|---|
-| Technical Architecture | 02 | Establish application structure and runtime foundations | Not Started |
-| Asset Bible | 04 | Establish asset conventions and resource organization | Not Started |
+| Technical Architecture | 02 | Establish runtime, modules, and application foundation | Not Started |
+| Asset Bible | 04 | Establish asset and resource conventions | Not Started |
+| Procedural Generation | 05 | Establish reusable procedural generation foundations | Not Started |
 | Input | 11 | Provide abstract input actions and device handling | Not Started |
 | Save | 10 | Establish IndexedDB persistence infrastructure | Not Started |
-| Settings | 25 | Establish configuration registry and runtime settings | Not Started |
+| Settings | 25 | Establish configuration registry and runtime application | Not Started |
 | Localization | 27 | Establish translation resources and resolution | Not Started |
 
-### 5.2 Core Player
+### 5.2. Core Player
 
 | System | Specification | Initial Goal | Status |
 |---|---|---|---|
@@ -160,29 +177,29 @@ Implementation should be organized into coherent workstreams rather than treatin
 | Interaction | 14 | Implement interaction detection and execution | Not Started |
 | Respawn | 17 | Implement player recovery lifecycle | Not Started |
 
-### 5.3 Level Infrastructure
+### 5.3. Level Infrastructure
 
 | System | Specification | Initial Goal | Status |
 |---|---|---|---|
 | Level Design | 06 | Establish level definitions and route structure | Not Started |
-| Procedural Generation | 05 | Generate valid level geometry from definitions | Not Started |
 | Level Runtime | 15 | Load and manage runtime level sessions | Not Started |
 | Checkpoint | 16 | Register and activate checkpoints | Not Started |
+| Procedural Generation | 05 | Generate validated environment geometry and assets | Not Started |
 
-### 5.4 Gameplay Orchestration
+### 5.4. Gameplay Orchestration
 
 | System | Specification | Initial Goal | Status |
 |---|---|---|---|
-| Gameplay Session | 19 | Manage Training and Prologue session lifecycle | Not Started |
+| Gameplay Session | 19 | Manage Training and Prologue lifecycle | Not Started |
 | Gameplay Flow | 20 | Coordinate application navigation and transitions | Not Started |
 | Training | 21 | Implement exercises and objective evaluation | Not Started |
-| Speedrun | 09 | Implement timer, splits, route validation and results | Not Started |
-| Progression | 22 | Implement long-term unlocks and milestones | Not Started |
-| Tutorial | 28 | Implement contextual guidance and tutorial progression | Not Started |
-| Achievement | 29 | Implement achievement definitions and unlock tracking | Not Started |
+| Speedrun | 09 | Implement timing, splits, validation, and records | Not Started |
+| Progression | 22 | Implement content unlocks and milestones | Not Started |
+| Tutorial | 28 | Implement contextual guidance and learning progression | Not Started |
+| Achievement | 29 | Implement achievement definitions and unlocking | Not Started |
 | Statistics | 30 | Aggregate authoritative gameplay statistics | Not Started |
 
-### 5.5 Presentation
+### 5.5. Presentation
 
 | System | Specification | Initial Goal | Status |
 |---|---|---|---|
@@ -194,32 +211,31 @@ Implementation should be organized into coherent workstreams rather than treatin
 
 ---
 
-## 6. Recommended Implementation Order
+## 6. Recommended Implementation Phases
 
-The following order is the recommended dependency-aware implementation sequence.
+### Phase 0 — Repository and Architecture Validation
 
-It is not a requirement to complete every system in one workstream before touching another. Integration should happen continuously.
-
-### Phase 0 — Architecture Validation
-
-**Goal:** Ensure that the specifications form a consistent implementation contract.
+**Goal:** Ensure that the specifications form a consistent implementation contract and that the repository can support the initial application.
 
 Tasks:
 
-- Review all specifications for conflicting ownership.
+- Normalize documentation filenames and links.
+- Review specifications for conflicting ownership.
 - Validate public interfaces and event contracts.
 - Identify duplicated responsibilities.
-- Confirm the application runtime and rendering technology.
-- Confirm the persistence schema and migration strategy.
-- Define project folder structure and module boundaries.
-- Define coding conventions and automated validation commands.
+- Confirm the actual repository structure.
+- Validate package configuration and dependency versions.
+- Confirm TypeScript and Vite configuration.
+- Confirm Three.js and Rapier integration strategy.
+- Define coding conventions and validation commands.
 - Establish the initial build and test pipeline.
 
 Exit criteria:
 
 - No unresolved architectural conflicts affecting the first playable build.
-- Core interfaces are defined.
-- The project can be built and tested.
+- Repository configuration is valid.
+- Core module boundaries are clear.
+- The application can be built and tested.
 - Implementation agents have clear ownership boundaries.
 
 ### Phase 1 — Runtime Foundation
@@ -235,13 +251,25 @@ Systems:
 - Localization.
 - Asset loading foundations.
 
+Initial features:
+
+- Application startup.
+- Three.js renderer initialization.
+- Rapier initialization.
+- Main update loop.
+- Input abstraction.
+- IndexedDB access layer.
+- Settings loading and saving.
+- Resource loading and error reporting.
+
 Exit criteria:
 
 - Application starts successfully.
+- Renderer and physics initialize correctly.
 - Input actions can be read through the abstraction layer.
 - Settings can be loaded and saved.
 - IndexedDB persistence works.
-- Resource loading reports errors without crashing the application.
+- Resource loading reports failures safely.
 
 ### Phase 2 — First-Person Player
 
@@ -305,7 +333,7 @@ Exit criteria:
 
 ### Phase 4 — Level Runtime
 
-**Goal:** Establish the complete runtime level lifecycle.
+**Goal:** Establish the runtime level lifecycle.
 
 Systems:
 
@@ -327,7 +355,7 @@ Exit criteria:
 
 - A test level can be loaded and unloaded.
 - Spawn points resolve correctly.
-- Traversal surfaces expose the expected metadata.
+- Traversal surfaces expose expected metadata.
 - Runtime objects do not leak between sessions.
 
 ### Phase 5 — Gameplay Sessions and Modes
@@ -345,7 +373,7 @@ Initial features:
 
 - Main Menu to gameplay transition.
 - Training session.
-- Training exercise selection.
+- Ten Training exercises.
 - Objective evaluation.
 - Prologue session.
 - Five Prologue sections.
@@ -390,10 +418,10 @@ Initial features:
 
 Exit criteria:
 
-- All primary gameplay states have appropriate presentation.
+- Primary gameplay states have appropriate presentation.
 - UI reflects authoritative gameplay state.
 - Accessibility preferences are respected.
-- Localization resources contain all required initial strings.
+- Initial localization resources contain required strings.
 
 ### Phase 7 — Progression and Long-Term Systems
 
@@ -421,7 +449,7 @@ Exit criteria:
 - Progress is consistent after reload.
 - Repeated events do not duplicate progress.
 - Achievements unlock from authoritative conditions.
-- Statistics match the underlying gameplay event history.
+- Statistics match authoritative gameplay events.
 
 ### Phase 8 — Stabilization
 
@@ -443,7 +471,7 @@ Tasks:
 Exit criteria:
 
 - All critical acceptance criteria pass.
-- No known critical gameplay blockers remain.
+- No unresolved critical gameplay blockers remain.
 - Persistence survives reload and supported migration scenarios.
 - Core gameplay is stable across supported browsers and devices.
 
@@ -451,59 +479,54 @@ Exit criteria:
 
 ## 7. Initial Release Scope
 
-The initial release must prioritize a complete, playable experience over architectural breadth.
-
 ### Required
 
 - First-person movement.
 - Mouse and keyboard input.
-- Basic gamepad support where feasible.
-- Jumping, crouching, sliding, vaulting, wall running and wall jumping.
+- Initial gamepad support.
+- Walking, running, sprinting, jumping, crouching, sliding, vaulting, wall running, and wall jumping.
 - Basic player collision and recovery.
-- Training mode.
-- Prologue mode.
-- Five Prologue sections.
+- Training mode with ten exercises.
+- Prologue mode with five sections.
 - Five required checkpoints.
-- Speedrun timer and split tracking.
+- Speedrun timer and checkpoint splits.
+- Route validation.
+- Bronze, Silver, and Gold performance evaluation.
 - Personal best records.
 - Local leaderboard.
 - IndexedDB persistence.
-- Main Menu, Pause Menu, Settings and Results.
+- Main Menu, Pause Menu, Settings, and Results.
 - Basic HUD.
-- Basic audio feedback.
-- Initial accessibility settings.
+- Basic procedural audio feedback.
+- Initial accessibility support.
 - English localization.
 - Core tutorial guidance.
 
 ### Deferred
 
-These features must not block the initial playable release.
-
 | Feature | Related System | Status |
 |---|---|---|
-| Ghost Replay playback | Speedrun | Deferred |
 | Ghost Replay recording | Speedrun | Deferred |
+| Ghost Replay playback | Speedrun | Deferred |
 | Online Leaderboards | Speedrun | Deferred |
 | Cloud Save | Save | Deferred |
 | Multiplayer | Gameplay Session | Deferred |
 | Online Accounts | Progression | Deferred |
 | Advanced Procedural Campaign | Procedural Generation | Deferred |
-| Advanced Vault Variants | Movement | Deferred |
 | Ledge Grabbing | Movement | Deferred |
 | Swinging and Ziplines | Movement | Deferred |
+| Advanced Traversal Variants | Movement | Deferred |
 | Advanced Audio Occlusion | Audio | Deferred |
 | Full RTL Layout | Localization | Deferred |
 | Remote Analytics | Statistics | Deferred |
 
-Deferred features must not introduce unnecessary complexity into the initial implementation.
-
-Architecture may provide extension points where explicitly required by the relevant specification.
+Deferred features must not block the initial release.
 
 ---
 
 ## 8. Cross-System Integration Checklist
 
-Integration must be tracked independently from individual system implementation.
+Integration is tracked separately from individual system implementation.
 
 | Integration | Expected Contract | Status |
 |---|---|---|
@@ -540,7 +563,7 @@ An integration is complete only when both sides use the agreed contract and the 
 
 ## 9. Quality Gates
 
-Every system must pass the following applicable quality gates before being marked `Verified`.
+Every system must pass all applicable quality gates before being marked `Verified`.
 
 ### Architecture
 
@@ -586,28 +609,28 @@ Every system must pass the following applicable quality gates before being marke
 
 ## 10. Known Architectural Review Items
 
-These items should be resolved during Phase 0 or before the relevant systems are implemented.
+These items must be resolved before implementing the affected contracts.
 
-### 10.1 Respawn Ownership
+### 10.1. Respawn Ownership
 
-Checkpoint System owns checkpoint progress and destination information.
+Checkpoint owns checkpoint progress and destination information.
 
-Respawn System owns the recovery lifecycle.
+Respawn owns the recovery lifecycle.
 
 `RespawnManager` is the canonical recovery orchestrator.
 
-Checkpoint System must not introduce a competing respawn lifecycle manager.
+Checkpoint must not introduce a competing respawn lifecycle manager.
 
-### 10.2 Progression and Achievements
+### 10.2. Progression and Achievements
 
-Achievement System owns:
+Achievement owns:
 
 - Achievement definitions.
 - Unlock conditions.
 - Unlock state.
 - Achievement notifications.
 
-Progression System owns:
+Progression owns:
 
 - Content unlocks.
 - Campaign milestones.
@@ -615,15 +638,15 @@ Progression System owns:
 
 Progression may consume achievement events but must not duplicate achievement state.
 
-### 10.3 Settings and Localization
+### 10.3. Settings and Localization
 
 The selected language is a Settings-owned preference.
 
-Localization owns language resources and translation resolution.
+Localization owns language definitions, resources, loading, and translation resolution.
 
 The language preference must not be persisted independently by Localization.
 
-### 10.4 Statistics and Domain Ownership
+### 10.4. Statistics and Domain Ownership
 
 Statistics collects facts from authoritative gameplay systems.
 
@@ -634,15 +657,15 @@ It must not independently determine:
 - Whether an Achievement is unlocked.
 - Whether content should be unlocked.
 
-### 10.5 Session and Event Lifecycles
+### 10.5. Session and Event Lifecycles
 
 Session-scoped events must carry sufficient identity to reject stale events.
 
 Systems must not process events from unloaded or replaced sessions.
 
-Attempt-scoped systems, such as Training, must also protect against stale events from previous attempts.
+Attempt-scoped systems must also reject events from previous attempts.
 
-### 10.6 Runtime and Procedural Generation
+### 10.6. Runtime and Procedural Generation
 
 Procedural Generation creates and validates generated content.
 
@@ -650,11 +673,11 @@ Level Runtime manages the lifecycle of loaded content.
 
 Level Runtime must not become a second procedural generation system.
 
-### 10.7 Specification Consistency
+### 10.7. Specification Consistency
 
-Before implementation, review public interfaces and shared data models across documents.
+Before implementation, validate public interfaces and shared data models across documents.
 
-In particular, confirm:
+In particular:
 
 - Checkpoint destination resolution.
 - Respawn request ownership.
@@ -703,7 +726,7 @@ Use this template whenever a system is started or updated.
 **Last Updated:** YYYY-MM-DD
 ```
 
-Each implementation agent must update this record after completing a meaningful milestone.
+Every implementation agent must update this record after completing a meaningful milestone.
 
 ---
 
@@ -711,16 +734,16 @@ Each implementation agent must update this record after completing a meaningful 
 
 1. Never mark a feature complete without inspecting its implementation.
 2. Never infer implementation status from the existence of source files alone.
-3. Update status only when supported by actual code or test evidence.
-4. Keep implementation and verification statuses separate.
-5. Record known deviations from the specification.
+3. Update status only when supported by code or test evidence.
+4. Keep implementation, integration, and verification statuses separate.
+5. Record known deviations from specifications.
 6. Record intentionally deferred features explicitly.
 7. Do not silently remove unfinished tasks.
 8. Update integration status when system boundaries change.
 9. Revisit affected entries after architectural refactoring.
-10. Keep this document concise enough to remain useful as a project dashboard.
+10. Keep this document accurate and useful as a project dashboard.
 
-When an implementation agent finishes a task, it should report:
+When an implementation agent finishes a task, it must report:
 
 - Files created or modified.
 - Systems affected.
@@ -733,7 +756,7 @@ When an implementation agent finishes a task, it should report:
 
 ---
 
-## 13. Definition of Project Completion
+## 13. Definition of Initial Release Completion
 
 The initial Glassline release can be considered complete when:
 
@@ -742,10 +765,10 @@ The initial Glassline release can be considered complete when:
 - Training is playable from start to finish.
 - Prologue is playable from Rooftop to Finish.
 - All five required checkpoints work correctly.
-- Speedrun timing and result validation work correctly.
+- Speedrun timing and route validation work correctly.
 - Local records persist across reloads.
-- Menus, HUD and gameplay feedback are functional.
-- Critical accessibility requirements are implemented.
+- Menus, HUD, and gameplay feedback are functional.
+- Required accessibility features are implemented.
 - No unresolved critical or high-severity defects remain.
 - Required automated and manual acceptance tests pass.
 
@@ -757,4 +780,4 @@ Deferred features are not part of this completion requirement.
 
 **The specification describes what must exist. The implementation status describes what actually exists. Tests demonstrate whether it works.**
 
-This document must always represent the real state of the Glassline codebase, not the intended state of the project.
+This document must always represent the real state of the Glassline repository, not the intended state of the project.

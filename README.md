@@ -1,48 +1,48 @@
 # GLASSLINE
 
-**A first-person parkour experience inspired by the original Mirror's Edge.**
+**A first-person parkour game focused on movement, momentum, and mastery.**
 
-Glassline is an experimental first-person parkour game focused on movement, momentum, route discovery, precision traversal, and speedrunning.
+Glassline is an experimental browser-based 3D parkour game inspired by the original *Mirror's Edge* (2008).
 
-The project explores the feeling of moving freely through a clean, architectural urban environment: running across rooftops, jumping between structures, sliding under obstacles, vaulting over barriers, and maintaining momentum through carefully designed routes.
+The project explores responsive first-person movement, architectural traversal, procedural environments, and repeatable speedrun challenges.
 
-The goal is to build a compact but complete gameplay experience with a strong movement foundation, readable level design, and rewarding replayability.
+Glassline is an independent project. It is not a remake of Mirror's Edge and does not use its proprietary assets.
 
 ---
 
 ## Project Vision
 
-Glassline is built around one central idea:
-
 **Movement is the primary gameplay experience.**
 
-The environment is designed to encourage continuous traversal rather than stop-and-go interaction.
+Glassline is built around the feeling of moving continuously through an urban environment.
 
-The player should gradually learn to:
+The player should learn to:
 
-- Read the environment and recognize traversal opportunities.
-- Maintain speed and momentum.
+- Read architecture and recognize traversal opportunities.
+- Build and preserve momentum.
 - Combine movement mechanics into fluid sequences.
-- Discover efficient routes through the level.
+- Discover efficient routes.
 - Improve execution through repeated attempts.
-- Master the same route and achieve better completion times.
+- Master routes and achieve better completion times.
 
-The experience should feel responsive, precise, readable, and rewarding.
+The environment should feel like a route to master, not simply a space to explore.
 
 ## Visual Direction
 
-The visual identity takes inspiration from the minimalist architectural presentation of the original Mirror's Edge.
+The visual identity is inspired by the minimalist architectural presentation of the original Mirror's Edge.
 
-Core visual principles:
+Core principles:
 
-- Predominantly white and light architectural environments.
-- Red as the primary navigation and accent color.
-- Clean geometry and strong silhouettes.
-- Minimal visual noise.
-- High contrast between traversable surfaces and environmental hazards.
-- Carefully placed color accents that communicate useful gameplay information.
+- Predominantly white and light-grey architecture.
+- Light concrete and clean geometric surfaces.
+- Dark-grey industrial structures.
+- Red navigation and gameplay accents.
+- Large architectural forms.
+- Strong silhouettes and readable traversal geometry.
+- High contrast between important surfaces.
+- Minimal visual clutter.
 
-The interface should follow the same principles: minimal, functional, readable, and unobtrusive.
+The interface follows the same principles: minimal, functional, readable, and unobtrusive.
 
 ---
 
@@ -50,215 +50,226 @@ The interface should follow the same principles: minimal, functional, readable, 
 
 ### Core Movement
 
-The player controls a first-person character capable of:
+The initial gameplay movement set includes:
 
 - Walking and running.
 - Sprinting.
+- Acceleration and deceleration.
 - Jumping.
+- Landing.
 - Crouching.
 - Sliding.
 - Vaulting.
 - Wall running.
 - Wall jumping.
-- Landing and momentum management.
+- Momentum management.
 
-Movement mechanics are designed to work together as a coherent traversal system.
+Movement must be responsive, consistent, and independent of rendering frame rate.
 
-Momentum, collision, surface properties, and player state must be treated consistently across the game.
+Advanced traversal features outside the initial scope must not be introduced as mandatory dependencies.
 
 ### Game Modes
 
 #### Training
 
-A structured environment for learning and practicing individual movement mechanics.
+A structured environment for learning and practicing movement mechanics.
 
-Training introduces mechanics progressively through exercises, objectives, feedback, and repeatable challenges.
+Training introduces mechanics progressively through exercises, objectives, instructions, hints, and feedback.
 
-Planned exercises include:
+The planned exercise sequence is:
 
-1. Movement Basics
-2. Running and Sprinting
-3. Jumping
-4. Crouching and Sliding
-5. Vaulting
-6. Wall Running
-7. Wall Jumping
-8. Landing and Momentum
-9. Interaction
-10. Combined Traversal
+1. Movement Basics.
+2. Running and Sprinting.
+3. Jumping.
+4. Crouching and Sliding.
+5. Vaulting.
+6. Wall Running.
+7. Wall Jumping.
+8. Landing and Momentum.
+9. Interaction.
+10. Combined Traversal.
+
+Training is separate from the Prologue speedrun leaderboard.
 
 #### Prologue
 
-The primary gameplay experience.
+The primary repeatable gameplay experience.
 
 Prologue is a continuous parkour route divided into five sections:
 
-1. Rooftop
-2. Industrial
-3. Construction
-4. Skybridge
-5. Finish
+1. Rooftop.
+2. Industrial.
+3. Construction.
+4. Skybridge.
+5. Finish.
 
-The route contains five required checkpoints and is designed around continuous traversal and speedrun replayability.
+The route contains five required checkpoints.
+
+The level is designed around continuous traversal, route readability, movement combinations, and speedrun replayability.
+
+Initial completion-time targets are approximately 2–3 minutes for a normal completion and 1–2 minutes for an experienced run. These are design targets, not gameplay restrictions.
 
 ### Speedrunning
 
 Speedrunning is a central part of the gameplay loop.
 
-The system is designed around:
+The system supports:
 
-- Accurate run timing.
+- Monotonic run timing.
 - Checkpoint splits.
-- Route validation.
+- Ordered route validation.
+- Bronze, Silver, and Gold performance medals.
 - Personal best records.
-- Medal-based performance evaluation.
 - Local leaderboard records.
 - Repeatable attempts.
 
-Ghost Replay is planned as a future feature and is not part of the initial implementation scope.
+Ghost Replay is a future feature and is not required for the initial release.
 
 ---
 
-## Project Status
+## Technology Stack
 
-The project currently has a structured system specification covering its intended architecture and gameplay features.
+Glassline is designed as a desktop browser game.
 
-Implementation progress is tracked separately.
-
-**See [`docs/IMPLEMENTATION_STATUS.md`](docs/IMPLEMENTATION_STATUS.md) for the current implementation state.**
-
-Do not assume that a documented feature is already implemented.
-
----
-
-## Documentation
-
-The `docs/` directory contains the project specifications.
-
-These documents are the primary reference for implementation decisions and system responsibilities.
-
-### Project Foundation
-
-| Document | Description |
+| Technology | Responsibility |
 |---|---|
-| `01_AGENT_RULES.md` | Rules and expectations for implementation agents |
-| `02_TECHNICAL_ARCHITECTURE.md` | Application architecture and technical foundations |
-| `03_GAMEPLAY_SPEC.md` | Core gameplay vision and mechanics |
-| `04_ASSET_BIBLE.md` | Visual assets and resource conventions |
-| `05_PROCEDURAL_GENERATION_SPEC.md` | Procedural environment generation |
-| `06_LEVEL_DESIGN_SPEC.md` | Level structure and traversal design |
-| `07_UI_UX_SPEC.md` | Interface and user experience |
-| `08_AUDIO_DESIGN_SPEC.md` | Audio direction and implementation |
+| TypeScript | Application and gameplay logic |
+| Three.js | 3D rendering |
+| WebGLRenderer | Initial rendering backend |
+| Vite | Development server and production build |
+| Rapier Physics | Physics simulation and collision detection |
+| Web Audio API | Procedural gameplay and environmental audio |
+| IndexedDB | Persistent local data |
+| HTML / CSS | Application interface |
+| GLSL | Custom shaders where required |
 
-### Core Gameplay Systems
+The initial implementation uses Three.js `WebGLRenderer`.
 
-| Document | Description |
-|---|---|
-| `09_SPEEDRUN_SYSTEM_SPEC.md` | Speedrun timing, splits, validation and records |
-| `10_SAVE_SYSTEM_SPEC.md` | Persistence infrastructure and data management |
-| `11_INPUT_SYSTEM_SPEC.md` | Input abstraction and device handling |
-| `12_MOVEMENT_SYSTEM_SPEC.md` | Player movement and traversal physics |
-| `13_CAMERA_SYSTEM_SPEC.md` | First-person camera behavior |
-| `14_INTERACTION_SYSTEM_SPEC.md` | Interaction detection and execution |
-| `15_LEVEL_RUNTIME_SYSTEM_SPEC.md` | Runtime level lifecycle |
-| `16_CHECKPOINT_SYSTEM_SPEC.md` | Checkpoint registration and progress |
-| `17_RESPAWN_SYSTEM_SPEC.md` | Player recovery and respawn lifecycle |
-| `18_PLAYER_STATE_SYSTEM_SPEC.md` | Aggregated player lifecycle and state |
+WebGPU is a possible future extension, not part of the initial implementation.
 
-### Gameplay Orchestration
+Use Rapier through `@dimforge/rapier3d-compat`, as specified in the technical architecture.
 
-| Document | Description |
-|---|---|
-| `19_GAMEPLAY_SESSION_SYSTEM_SPEC.md` | Gameplay session lifecycle |
-| `20_GAMEPLAY_FLOW_SYSTEM_SPEC.md` | Application navigation and gameplay transitions |
-| `21_TRAINING_SYSTEM_SPEC.md` | Training exercises and objective evaluation |
-| `22_PROGRESSION_SYSTEM_SPEC.md` | Long-term progression and content unlocks |
-| `28_TUTORIAL_SYSTEM_SPEC.md` | Tutorial guidance and learning progression |
-| `29_ACHIEVEMENT_SYSTEM_SPEC.md` | Achievement definitions and unlocking |
-| `30_STATISTICS_SYSTEM_SPEC.md` | Gameplay statistics and aggregation |
-
-### Presentation and Player Experience
-
-| Document | Description |
-|---|---|
-| `23_HUD_SYSTEM_SPEC.md` | In-game HUD and gameplay feedback |
-| `24_MENU_SYSTEM_SPEC.md` | Menu screens and menu behavior |
-| `25_SETTINGS_SYSTEM_SPEC.md` | Application settings and configuration |
-| `26_ACCESSIBILITY_SYSTEM_SPEC.md` | Accessibility policies and adaptations |
-| `27_LOCALIZATION_SYSTEM_SPEC.md` | Translation and localization infrastructure |
-
-### Project Tracking
-
-| Document | Description |
-|---|---|
-| `IMPLEMENTATION_STATUS.md` | Implementation progress, integration status and quality gates |
-
----
-
-## Technical Direction
-
-The project is intended to run as a browser-based desktop game.
-
-The technical architecture is designed around:
-
-- TypeScript-based application code.
-- Browser runtime capabilities.
-- IndexedDB for local persistence.
-- Modular gameplay systems.
-- Explicit system ownership and interfaces.
-- Event-driven communication where appropriate.
-- Separation of gameplay logic from presentation.
-- Frame-rate-independent gameplay simulation.
-
-The exact rendering engine, runtime dependencies, and build configuration must follow the technical architecture specification and the actual repository configuration.
-
-Do not introduce a new framework, engine, or major dependency without first checking the existing architecture and documenting the reason.
+Do not introduce additional frameworks or major dependencies without checking the existing architecture and documenting the reason.
 
 ---
 
 ## Architecture Principles
 
-The project follows several important architectural principles.
-
 ### Single Ownership
 
 Every gameplay domain has one authoritative owner.
 
-For example:
+Examples:
 
 - Movement owns locomotion physics.
 - Camera owns first-person presentation.
 - Checkpoint owns checkpoint progress.
-- Respawn owns recovery orchestration.
+- Respawn owns the recovery lifecycle.
+- Level Runtime owns loaded level lifecycle.
 - Gameplay Session owns session lifecycle.
 - Gameplay Flow owns application navigation.
 - Speedrun owns run timing and validation.
 - Save owns persistence infrastructure.
+- Settings owns configuration values and semantics.
 - Statistics owns aggregated gameplay facts.
+- Achievement owns achievement definitions and unlock state.
 
-Systems must not independently recreate another system's responsibilities.
-
-### Explicit Interfaces
-
-Systems communicate through defined interfaces, commands, and events.
-
-Avoid direct access to internal implementation details of other systems.
+Systems communicate through defined interfaces, commands, snapshots, and events.
 
 ### Separation of Concerns
 
-Gameplay rules, runtime orchestration, persistence, and presentation must remain separate.
+Gameplay rules, runtime orchestration, persistence, and presentation remain separate.
 
-UI components display authoritative state; they do not independently calculate gameplay outcomes.
+UI displays authoritative state. It must not independently calculate gameplay outcomes.
 
 ### Deterministic Gameplay
 
-Movement, checkpoint progression, run timing, and objective evaluation must behave consistently regardless of rendering frame rate.
+Physics uses a fixed timestep.
+
+Speedrun timing uses a monotonic clock and must not depend on rendering FPS.
+
+Procedural generation must support reproducible results through explicit seeds.
 
 ### Incremental Development
 
-Implement and validate systems in small, integrated stages.
+Implement systems in small, integrated stages.
 
-Prefer a working gameplay foundation over broad but incomplete implementations.
+Prefer a working and verified gameplay foundation over broad but incomplete implementations.
+
+---
+
+## Project Status
+
+Glassline currently has a structured specification covering its intended architecture, gameplay systems, and initial release scope.
+
+The presence of a specification does not mean that its system has been implemented.
+
+For actual implementation, integration, and verification status, see:
+
+**[`docs/IMPLEMENTATION_STATUS.md`](docs/IMPLEMENTATION_STATUS.md)**
+
+---
+
+## Documentation
+
+The `docs/` directory is the primary source of implementation specifications.
+
+### Project Foundation
+
+| Document | Description |
+|---|---|
+| [`00_PROJECT_BRIEF.md`](docs/00_PROJECT_BRIEF.md) | Project concept, scope, and design principles |
+| [`01_AGENT_RULES.md`](docs/01_AGENT_RULES.md) | Detailed rules for implementation agents |
+| [`02_TECHNICAL_ARCHITECTURE.md`](docs/02_TECHNICAL_ARCHITECTURE.md) | Technical architecture and runtime foundations |
+| [`03_GAMEPLAY_SPEC.md`](docs/03_GAMEPLAY_SPEC.md) | Core gameplay design |
+| [`04_ASSET_BIBLE.md`](docs/04_ASSET_BIBLE.md) | Asset, material, and visual conventions |
+| [`05_PROCEDURAL_GENERATION_SPEC.md`](docs/05_PROCEDURAL_GENERATION_SPEC.md) | Procedural environment generation |
+| [`06_LEVEL_DESIGN_SPEC.md`](docs/06_LEVEL_DESIGN_SPEC.md) | Level structure and traversal design |
+| [`07_UI_UX_SPEC.md`](docs/07_UI_UX_SPEC.md) | User interface and experience |
+| [`08_AUDIO_DESIGN_SPEC.md`](docs/08_AUDIO_DESIGN_SPEC.md) | Audio direction and implementation |
+
+### Core Gameplay Systems
+
+| Document | Description |
+|---|---|
+| [`09_SPEEDRUN_SYSTEM_SPEC.md`](docs/09_SPEEDRUN_SYSTEM_SPEC.md) | Timing, splits, route validation, and records |
+| [`10_SAVE_SYSTEM_SPEC.md`](docs/10_SAVE_SYSTEM_SPEC.md) | Persistence infrastructure |
+| [`11_INPUT_SYSTEM_SPEC.md`](docs/11_INPUT_SYSTEM_SPEC.md) | Input abstraction and device handling |
+| [`12_MOVEMENT_SYSTEM_SPEC.md`](docs/12_MOVEMENT_SYSTEM_SPEC.md) | Movement and traversal physics |
+| [`13_CAMERA_SYSTEM_SPEC.md`](docs/13_CAMERA_SYSTEM_SPEC.md) | First-person camera behavior |
+| [`14_INTERACTION_SYSTEM_SPEC.md`](docs/14_INTERACTION_SYSTEM_SPEC.md) | Interaction detection and execution |
+| [`15_LEVEL_RUNTIME_SYSTEM_SPEC.md`](docs/15_LEVEL_RUNTIME_SYSTEM_SPEC.md) | Runtime level lifecycle |
+| [`16_CHECKPOINT_SYSTEM_SPEC.md`](docs/16_CHECKPOINT_SYSTEM_SPEC.md) | Checkpoint registration and progress |
+| [`17_RESPAWN_SYSTEM_SPEC.md`](docs/17_RESPAWN_SYSTEM_SPEC.md) | Player recovery lifecycle |
+| [`18_PLAYER_STATE_SYSTEM_SPEC.md`](docs/18_PLAYER_STATE_SYSTEM_SPEC.md) | Aggregated player lifecycle and state |
+
+### Gameplay Orchestration
+
+| Document | Description |
+|---|---|
+| [`19_GAMEPLAY_SESSION_SYSTEM_SPEC.md`](docs/19_GAMEPLAY_SESSION_SYSTEM_SPEC.md) | Gameplay session lifecycle |
+| [`20_GAMEPLAY_FLOW_SYSTEM_SPEC.md`](docs/20_GAMEPLAY_FLOW_SYSTEM_SPEC.md) | Application navigation and transitions |
+| [`21_TRAINING_SYSTEM_SPEC.md`](docs/21_TRAINING_SYSTEM_SPEC.md) | Training exercises and objective evaluation |
+| [`22_PROGRESSION_SYSTEM_SPEC.md`](docs/22_PROGRESSION_SYSTEM_SPEC.md) | Content unlocks and long-term progression |
+| [`28_TUTORIAL_SYSTEM_SPEC.md`](docs/28_TUTORIAL_SYSTEM_SPEC.md) | Tutorial guidance |
+| [`29_ACHIEVEMENT_SYSTEM_SPEC.md`](docs/29_ACHIEVEMENT_SYSTEM_SPEC.md) | Achievement definitions and unlocking |
+| [`30_STATISTICS_SYSTEM_SPEC.md`](docs/30_STATISTICS_SYSTEM_SPEC.md) | Gameplay statistics and aggregation |
+
+### Presentation and Player Experience
+
+| Document | Description |
+|---|---|
+| [`23_HUD_SYSTEM_SPEC.md`](docs/23_HUD_SYSTEM_SPEC.md) | In-game HUD and gameplay feedback |
+| [`24_MENU_SYSTEM_SPEC.md`](docs/24_MENU_SYSTEM_SPEC.md) | Menu screens and behavior |
+| [`25_SETTINGS_SYSTEM_SPEC.md`](docs/25_SETTINGS_SYSTEM_SPEC.md) | Application settings and configuration |
+| [`26_ACCESSIBILITY_SYSTEM_SPEC.md`](docs/26_ACCESSIBILITY_SYSTEM_SPEC.md) | Accessibility policies and adaptations |
+| [`27_LOCALIZATION_SYSTEM_SPEC.md`](docs/27_LOCALIZATION_SYSTEM_SPEC.md) | Translation and localization |
+
+### Project Tracking
+
+| Document | Description |
+|---|---|
+| [`IMPLEMENTATION_STATUS.md`](docs/IMPLEMENTATION_STATUS.md) | Implementation, integration, and verification tracking |
 
 ---
 
@@ -266,110 +277,85 @@ Prefer a working gameplay foundation over broad but incomplete implementations.
 
 Before implementing a feature:
 
-1. Read `docs/01_AGENT_RULES.md`.
-2. Read `docs/02_TECHNICAL_ARCHITECTURE.md`.
-3. Read the specification relevant to the requested task.
-4. Review related systems and their ownership boundaries.
-5. Inspect the existing codebase before creating new modules.
-6. Identify dependencies and integration requirements.
+1. Read [`AGENT.md`](AGENT.md).
+2. Read `docs/01_AGENT_RULES.md`.
+3. Read `docs/02_TECHNICAL_ARCHITECTURE.md`.
+4. Read the relevant system specifications.
+5. Inspect the existing codebase and tests.
+6. Check `docs/IMPLEMENTATION_STATUS.md`.
 7. Implement only the agreed scope.
-8. Run relevant tests and validation commands.
-9. Update `docs/IMPLEMENTATION_STATUS.md`.
+8. Run relevant validation commands.
+9. Update implementation status honestly.
 
-Implementation agents must not:
+Do not recreate existing functionality, duplicate system ownership, or introduce undocumented gameplay rules.
 
-- Invent undocumented gameplay rules.
-- Duplicate existing system responsibilities.
-- Replace established architecture without justification.
-- Introduce unnecessary dependencies.
-- Mark untested functionality as verified.
-- Implement deferred features as part of initial scope without approval.
-- Modify unrelated systems without explaining the reason.
-
-When a specification conflicts with the existing implementation or another specification, identify the conflict before making a potentially incompatible architectural change.
+When specifications conflict, identify the conflict before making an incompatible architectural decision.
 
 ---
 
-## Initial Development Priorities
+## Initial Release Scope
 
-The recommended development sequence is:
-
-1. Architecture validation and repository setup.
-2. Runtime foundation and input handling.
-3. First-person player movement and camera.
-4. Traversal mechanics and recovery.
-5. Level runtime and checkpoints.
-6. Gameplay sessions and game modes.
-7. Speedrun functionality.
-8. UI, HUD, menus, and audio.
-9. Progression, tutorials, achievements, and statistics.
-10. Stabilization and acceptance testing.
-
-See `docs/IMPLEMENTATION_STATUS.md` for detailed phases and completion criteria.
-
----
-
-## Current Scope
-
-### Initial Release
-
-The initial release focuses on delivering a complete playable experience:
+The initial release focuses on a complete playable experience:
 
 - First-person parkour movement.
+- Mouse and keyboard input.
+- Core traversal mechanics.
+- Basic collision and player recovery.
 - Training mode.
 - Prologue with five sections.
 - Five required checkpoints.
 - Speedrun timing and splits.
-- Local leaderboard.
 - Personal best records.
-- Persistent local progress.
-- Functional menus and HUD.
-- Basic audio and accessibility support.
+- Local leaderboard.
+- IndexedDB persistence.
+- Main Menu, Pause Menu, Settings, and Results.
+- Gameplay HUD.
+- Basic procedural audio feedback.
+- Initial accessibility support.
+- English localization.
+- Core tutorial guidance.
 
-### Future Development
+### Deferred Features
 
-The following are intentionally outside the initial implementation scope:
+The following features must not block the initial release:
 
-- Ghost Replay.
+- Ghost Replay recording and playback.
 - Online leaderboards.
 - Cloud saves.
 - Multiplayer.
 - Online accounts.
 - Advanced procedural campaigns.
-- Advanced traversal mechanics beyond the initial movement specification.
+- Ledge grabbing.
+- Swinging and ziplines.
+- Advanced traversal variants outside the initial movement scope.
 - Remote analytics.
+- Full RTL layout.
 
-Future features should extend the existing architecture rather than introduce parallel gameplay systems.
+Future features should extend the existing architecture rather than introduce parallel systems.
 
 ---
 
 ## Repository Structure
 
-The following is the intended high-level organization. The actual source directory names should follow the repository's technical architecture.
+The following is a conceptual overview. Actual source directories and configuration must follow the repository's technical architecture.
 
 ```text
 glassline/
+├── AGENT.md
 ├── README.md
+├── package.json
 ├── docs/
+│   ├── 00_PROJECT_BRIEF.md
 │   ├── 01_AGENT_RULES.md
 │   ├── 02_TECHNICAL_ARCHITECTURE.md
 │   ├── ...
-│   ├── 30_STATISTICS_SYSTEM_SPEC.md
 │   └── IMPLEMENTATION_STATUS.md
-│
 ├── src/
-│   └── ...
-│
 ├── public/
-│   └── ...
-│
-├── tests/
-│   └── ...
-│
-└── package.json
+└── tests/
 ```
 
-This is a conceptual overview, not a requirement to create empty directories or duplicate the repository's existing structure.
+Do not create empty directories merely to match this illustration.
 
 ---
 
