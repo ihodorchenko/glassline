@@ -3,8 +3,8 @@
 **Document:** `IMPLEMENTATION_STATUS.md`  
 **Project:** Glassline  
 **Last Updated:** 2026-11-17  
-**Project Stage:** Runtime Foundation Complete  
-**Status:** Phase 0 and Phase 1 Complete; Phase 2 Next
+**Project Stage:** First-Person Player Complete  
+**Status:** Phases 0–2 Complete; Phase 3 Next
 
 ---
 
@@ -89,8 +89,8 @@ Only `Verified` means that the applicable acceptance criteria have been checked 
 |---|---|---|---|---|
 | Project Foundation | Defined | Implemented | Integrated | Verified |
 | Technical Architecture | Defined | In Progress | In Progress | Partially Verified |
-| Core Gameplay | Defined | Not Started | Not Started | Not Verified |
-| Player Systems | Defined | Not Started | Not Started | Not Verified |
+| Core Gameplay | Defined | In Progress | In Progress | Partially Verified |
+| Player Systems | Defined | In Progress | In Progress | Partially Verified |
 | Level Systems | Defined | Not Started | Not Started | Not Verified |
 | Gameplay Modes | Defined | Not Started | Not Started | Not Verified |
 | UI / UX | Defined | Not Started | Not Started | Not Verified |
@@ -101,9 +101,9 @@ Only `Verified` means that the applicable acceptance criteria have been checked 
 | Localization | Defined | In Progress | In Progress | Partially Verified |
 | Statistics | Defined | Not Started | Not Started | Not Verified |
 
-**Current phase:** Phases 0 (repository foundation) and 1 (application runtime) are complete. Phase 2 (first-person player) is the next active workstream.
+**Current phase:** Phases 0 (repository foundation), 1 (application runtime), and 2 (first-person player) are complete. Phase 3 (traversal and recovery) is the next active workstream.
 
-**Implementation readiness:** The repository is initialized and the application runtime is runnable: settings, localization, input, rendering, physics, audio lifecycle, and persistence foundations are in place. Gameplay systems (movement, player state, level runtime, sessions) have not been implemented yet.
+**Implementation readiness:** The player is controllable in a test environment with first-person camera, fixed-step movement, jumping, crouching, landing, and collision. Traversal mechanics (slide, vault, wall run/jump), recovery/respawn, level runtime, and game sessions are the next implementation areas.
 
 ### 3.1. Documentation Reconciliation (2026-11-17)
 
@@ -140,13 +140,13 @@ The following documents form the current specification baseline.
 | 09 | `09_SPEEDRUN_SYSTEM_SPEC.md` | Defined | Not Started |
 | 10 | `10_SAVE_SYSTEM_SPEC.md` | Defined | In Progress |
 | 11 | `11_INPUT_SYSTEM_SPEC.md` | Defined | In Progress |
-| 12 | `12_MOVEMENT_SYSTEM_SPEC.md` | Defined | Not Started |
-| 13 | `13_CAMERA_SYSTEM_SPEC.md` | Defined | Not Started |
+| 12 | `12_MOVEMENT_SYSTEM_SPEC.md` | Defined | In Progress |
+| 13 | `13_CAMERA_SYSTEM_SPEC.md` | Defined | In Progress |
 | 14 | `14_INTERACTION_SYSTEM_SPEC.md` | Defined | Not Started |
 | 15 | `15_LEVEL_RUNTIME_SYSTEM_SPEC.md` | Defined | Not Started |
 | 16 | `16_CHECKPOINT_SYSTEM_SPEC.md` | Defined | Not Started |
 | 17 | `17_RESPAWN_SYSTEM_SPEC.md` | Defined | Not Started |
-| 18 | `18_PLAYER_STATE_SYSTEM_SPEC.md` | Defined | Not Started |
+| 18 | `18_PLAYER_STATE_SYSTEM_SPEC.md` | Defined | In Progress |
 | 19 | `19_GAMEPLAY_SESSION_SYSTEM_SPEC.md` | Defined | Not Started |
 | 20 | `20_GAMEPLAY_FLOW_SYSTEM_SPEC.md` | Defined | Not Started |
 | 21 | `21_TRAINING_SYSTEM_SPEC.md` | Defined | Not Started |
@@ -184,9 +184,9 @@ Systems are not completely independent. Integration should happen continuously a
 
 | System | Specification | Initial Goal | Status |
 |---|---|---|---|
-| Player State | 18 | Establish authoritative player lifecycle state | Not Started |
-| Movement | 12 | Implement first-person locomotion and traversal physics | Not Started |
-| Camera | 13 | Implement first-person camera and movement feedback | Not Started |
+| Player State | 18 | Establish authoritative player lifecycle state | In Progress |
+| Movement | 12 | Implement first-person locomotion and traversal physics | In Progress |
+| Camera | 13 | Implement first-person camera and movement feedback | In Progress |
 | Interaction | 14 | Implement interaction detection and execution | Not Started |
 | Respawn | 17 | Implement player recovery lifecycle | Not Started |
 
@@ -341,16 +341,18 @@ Deferred beyond the foundation (belongs to later phases, not Phase 1 gaps):
 - Settings transactions, preview, and display confirmation flows — with the Settings UI/menu phase.
 - Additional languages and the full translation resource set — with the localization implementation phase.
 - Procedural audio synthesis and gameplay sounds — with the audio implementation phase.
-- Removal of the temporary debug sandbox — when the player controller arrives (Phase 2).
+- Removal of the temporary debug sandbox — completed in Phase 2 (replaced by the test level and player controller).
 
 Known notes:
 
 - The production bundle is currently a single ~4.9 MB chunk (Three.js + Rapier WASM). Code splitting is deferred until the gameplay modules exist; the build warning is expected and not a blocker for the prototype.
-- The `StatusOverlay` and `PhysicsDebugSandbox` are temporary diagnostics and must not become permanent gameplay coupling.
+- The `StatusOverlay` remains a temporary diagnostic; the Phase 1 `PhysicsDebugSandbox` was removed in Phase 2.
 
 ### Phase 2 — First-Person Player
 
 **Goal:** Make the player controllable in a basic test environment.
+
+**Status:** Complete (2026-11-17).
 
 Systems:
 
@@ -371,13 +373,43 @@ Initial features:
 - Landing behavior.
 - Movement state transitions.
 
+Implemented and smoke-verified:
+
+- `MovementTuning` + `MovementModel`: fixed-step locomotion (walk/run/sprint bands), acceleration/deceleration, crouch posture with reduced speed, jump with buffered input (0.12 s), coyote time (0.10 s), variable jump height, air control with a maximum air speed, gravity and fall-speed clamping, landing recovery, and canonical movement state selection. Unit-tested.
+- `PlayerSystem`: Rapier capsule on a kinematic-position body driven by `KinematicCharacterController` (autostep, ground snapping, slope limits, wall sliding); reconciles velocity with the movement actually allowed by collisions; interpolated position for rendering; reset; emits canonical `player:jumped` / `player:landed` events. Integration-tested against a Rapier world (settling, movement, jump/land, wall blocking).
+- `PlayerStateSystem`: aggregated lifecycle (`initializing` → `active`/`disabled`), control projection, capability resolution (`canMove`, `canLook`, `canJump`, `canSprint`, `canCrouch`, `canSlide` reserved, `canInteract`, `canPause`, `canRestart`), revisioned immutable snapshots, and change listeners. Unit-tested.
+- `CameraSystem`: first-person perspective camera, yaw/pitch look with ±85° pitch clamp, mouse and gamepad look with Settings-owned sensitivity/inversion, smooth standing/crouching eye-height transitions, speed-dependent bob, landing dip, single-owner FOV controller with sprint FOV, and reduced-motion behavior. Unit-tested.
+- `TestLevel`: temporary authored test environment (ground, boundary walls, steps, obstacles, jumpable platforms, wall surface, accent marker) with matching visual meshes and static Rapier colliders.
+- `Application` integration: startup order now includes test level → player state → player → camera; fixed update runs player movement before the physics step; render interpolates the player body between fixed steps and updates the camera; Settings adapters apply `controls.*`, `camera.*`, and shared reduced-motion preferences to the camera; a short warm-up settles the player on the ground before the first frame; status overlay reports player state, speed, grounded flag, and stance.
+- Removed the Phase 1 `PhysicsDebugSandbox`; the test level and player controller replace it.
+
+Verification performed:
+
+- `npm run typecheck` — passes.
+- `npm run check` — Biome lint, formatting, and import order pass.
+- `npm test` — 111 unit tests pass across 13 files (movement model 13, player state 7, camera 13, player physics integration 6, plus the Phase 1 suites).
+- `npm run build` — production build succeeds.
+- Headless browser smoke check (Microsoft Edge, WebGL2/SwiftShader): first-person view of the test level renders; player reports `IDLE`, `grounded yes`, `stance standing`; settings/localization/audio states remain correct.
+
 Exit criteria:
 
-- Player can move through a test environment.
-- Movement is independent of rendering frame rate.
-- Collision prevents movement through solid geometry.
-- Camera responds correctly to player movement.
-- Focus loss does not leave input actions stuck.
+- [x] Player can move through a test environment (forward/strafe/turn, jump, crouch).
+- [x] Movement is independent of rendering frame rate (all movement runs on the fixed 60 Hz step; the render loop only interpolates).
+- [x] Collision prevents movement through solid geometry (Rapier character controller integration test against a static wall).
+- [x] Camera responds correctly to player movement (look, eye height, bob, landing dip, sprint FOV).
+- [x] Focus loss does not leave input actions stuck (InputManager clears held state on focus loss/visibility change; movement decelerates from the fixed step).
+
+Deferred to Phase 3 and later (not Phase 2 gaps):
+
+- Sliding, vaulting, wall running, and wall jumping controllers and their camera responses.
+- Player recovery/respawn integration and checkpoint destination usage.
+- Physical capsule resizing for crouch/slide clearance (crouch currently changes stance, speed, and camera height; low-ceiling traversal belongs to the slide work).
+- Test level ownership moves to Level Design/Level Runtime content once those systems exist.
+
+Known notes:
+
+- The production bundle is currently a single ~4.9 MB chunk (Three.js + Rapier WASM); code splitting is deferred until the gameplay modules settle.
+- `TestLevel` and `StatusOverlay` are temporary verification scaffolding.
 
 ### Phase 3 — Traversal and Recovery
 
@@ -609,11 +641,11 @@ Integration is tracked separately from individual system implementation.
 
 | Integration | Expected Contract | Status |
 |---|---|---|
-| Input → Movement | Abstract movement and traversal actions | Not Started |
-| Input → Camera | Look input | Not Started |
+| Input → Movement | Abstract movement and traversal actions | Integrated |
+| Input → Camera | Look input | Integrated |
 | Input → UI | Navigation and confirmation actions | Not Started |
-| Movement → Camera | Movement metrics and traversal events | Not Started |
-| Movement → Player State | Authoritative locomotion state | Not Started |
+| Movement → Camera | Movement metrics and traversal events | Integrated |
+| Movement → Player State | Authoritative locomotion state | Integrated |
 | Movement → HUD | Speed and movement feedback | Not Started |
 | Interaction → UI | Prompt and interaction state | Not Started |
 | Interaction → Training | Interaction completion events | Not Started |

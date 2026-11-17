@@ -208,7 +208,9 @@ The repository foundation (**Phase 0**) is complete: Vite + TypeScript (strict) 
 
 **Phase 1** (application runtime) is complete: application lifecycle, fixed 60 Hz game loop, WebGL2 renderer, Rapier physics world, input abstraction, IndexedDB save foundation, Settings System foundation, localization foundation, resource loading with structured errors, and the audio lifecycle foundation are implemented, unit-tested, and smoke-verified in a browser.
 
-**Phase 2** (first-person player: Movement, Camera, Player State) is the next implementation phase.
+**Phase 2** (first-person player) is complete: fixed-step locomotion (walk/run/sprint), jump with buffering and coyote time, crouch, landing, Rapier kinematic character collision, first-person camera with mouse/gamepad look, camera height and movement feedback, and aggregated player state with capabilities.
+
+**Phase 3** (traversal and recovery: sliding, vaulting, wall running/jumping, respawn integration) is the next implementation phase.
 
 For actual implementation, integration, and verification status, see:
 
@@ -315,13 +317,13 @@ CI runs the same `npm run validate` pipeline on pushes to `main` and on pull req
 
 ### Current Runtime State (Phase 1)
 
-Running `npm run dev` opens a placeholder 3D scene with a falling physics cube and a development status overlay showing frame rate, fixed stepping, renderer/physics/storage status, settings revision, active language, audio state, and input state.
+Running `npm run dev` starts a first-person player in a temporary test environment (ground, boundary walls, steps, obstacles, jumpable platforms).
 
 - Click the canvas to capture the mouse (pointer lock); the first click or key press also resumes the Web Audio context.
+- `WASD` move, `Space` jump, `Ctrl` crouch, `Shift` sprint.
 - `Esc` releases pointer lock.
-- `WASD` move, `Space` jump, `Ctrl` crouch/slide, `Shift` sprint, `E` interact, `R` restart, `Esc` pause.
 
-The overlay is a temporary diagnostic, not the HUD. The placeholder scene and debug cube are removed when the player controller and level runtime arrive (Phase 2–4).
+The development status overlay shows frame rate, fixed stepping, renderer/physics/storage status, settings revision, language, audio state, input state, and player state (movement state, speed, grounded flag, stance). It is a temporary diagnostic, not the HUD. The test environment and overlay are verification scaffolding and are replaced when Level Design/Level Runtime and the HUD arrive.
 
 ---
 

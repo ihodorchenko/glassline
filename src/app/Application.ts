@@ -1,23 +1,30 @@
 import { AudioManager } from "../audio/AudioManager";
+import { CameraSystem } from "../camera/CameraSystem";
 import { type Disposable, disposeAll } from "../core/Disposable";
 import { GameLoop } from "../core/GameLoop";
-import { PhysicsDebugSandbox } from "../debug/PhysicsDebugSandbox";
 import { StatusOverlay } from "../diagnostics/StatusOverlay";
 import { InputManager } from "../input/InputManager";
+import { IDLE_INPUT_FRAME, type InputFrame } from "../input/InputState";
 import { DEFAULT_LANGUAGE_ID, DEFAULT_LANGUAGE_REGISTRY } from "../localization/Language";
 import { LocalizationManager } from "../localization/LocalizationManager";
 import { createDefaultLocalizationResourceLoader } from "../localization/LocalizationResourceLoader";
 import { PhysicsWorld } from "../physics/PhysicsWorld";
+import type { MovementInputSample } from "../player/MovementModel";
+import { PlayerStateSystem } from "../player/PlayerStateSystem";
+import { PlayerSystem } from "../player/PlayerSystem";
 import { Renderer } from "../rendering/Renderer";
 import { RenderScene } from "../rendering/RenderScene";
 import { ResourceLoader } from "../resources/ResourceLoader";
 import { AudioSettingsAdapter } from "../settings/adapters/AudioSettingsAdapter";
+import { CameraSettingsAdapter } from "../settings/adapters/CameraSettingsAdapter";
+import { ControlsSettingsAdapter } from "../settings/adapters/ControlsSettingsAdapter";
 import { SettingsApplicationPipeline } from "../settings/SettingsApplication";
 import { SETTING_DEFINITIONS } from "../settings/SettingsDefinitions";
 import { SettingsManager } from "../settings/SettingsManager";
 import { readStringValue, type SettingsSnapshot } from "../settings/SettingsTypes";
 import { Database, StorageError } from "../storage/Database";
 import { SettingsRepository } from "../storage/repositories/SettingsRepository";
+import { TestLevel } from "../world/TestLevel";
 import { type ApplicationConfig, DEFAULT_APPLICATION_CONFIG } from "./ApplicationConfig";
 
 export type ApplicationState = "idle" | "initializing" | "ready" | "running" | "stopped" | "failed";
@@ -53,7 +60,6 @@ export class Application implements Disposable {
   private physics: PhysicsWorld | null = null;
   private input: InputManager | null = null;
   private database: Database | null = null;
-  private debugSandbox: PhysicsDebugSandbox | null = null;
   private gameLoop: GameLoop | null = null;
   private settingsManager: SettingsManager | null = null;
   private settingsPipeline: SettingsApplicationPipeline | null = null;
@@ -61,6 +67,10 @@ export class Application implements Disposable {
   private localizationManager: LocalizationManager | null = null;
   private resourceLoader: ResourceLoader | null = null;
   private audioManager: AudioManager | null = null;
+  private cameraSystem: CameraSystem | null = null;
+  private player: PlayerSystem | null = null;
+  private playerState: PlayerStateSystem | null = null;
+  private testLevel: TestLevel | null = null;
 
   private storageStatus = "not initialized";
   private localizationStatus = "not initialized";
@@ -109,14 +119,20 @@ export class Application implements Disposable {
 
       // Fatal: the application requires a working renderer and physics world.
       await this.initializePhysics();
+      this.initializeTestLevel();
+      this.initializePlayer();
+      this.initializeCamera();
       this.initializeInput();
       this.initializeAudio();
       await this.initializeSettingsApplication();
-      this.initializeDebugSandbox();
       this.initializeGameLoop();
       this.registerWindowHandlers();
       this.handleResize();
       this.resetStatusWindow();
+
+      this.player?.activate();
+      this.playerState?.activate();
+      this.settlePlayer();
 
       this.state = "ready";
     } catch (error) {
@@ -234,6 +250,87 @@ export class Application implements Disposable {
     }
   }
 
+  private initializeRendering(): void {
+    if (!this.canvas) {
+      throw new Error("Canvas is not available.");
+    }
+
+    this.renderer = new Renderer(this.canvas, this.config.renderer);
+    this.resources.push(this.renderer);
+
+    this.renderScene = new RenderScene();
+    this.resources.push(this.renderScene);
+  }
+
+  private async initializePhysics(): Promise<void> {
+    const expectedTimestep = 1 / this.config.gameLoop.physicsHz;
+
+    if (Math.abs(this.config.physics.timestepSeconds - expectedTimestep) > 1e-9) {
+      throw new Error(
+        "Physics timestep must match the game loop fixed timestep " +
+          `(${expectedTimestep}s), received ${this.config.physics.timestepSeconds}s.`,
+      );
+    }
+
+    this.physics = new PhysicsWorld(this.config.physics);
+    await this.physics.initialize();
+    this.resources.push(this.physics);
+  }
+
+  private initializeTestLevel(): void {
+    if (!this.physics || !this.renderScene) {
+      throw new Error("Test level requires initialized physics and rendering.");
+    }
+
+    this.testLevel = new TestLevel(this.physics, this.renderScene);
+    this.resources.push(this.testLevel);
+  }
+
+  private initializePlayer(): void {
+    if (!this.physics) {
+      throw new Error("Player requires an initialized physics world.");
+    }
+
+    const tuning = this.config.movement;
+    const spawnPoint = { x: 0, y: tuning.capsuleHeight / 2 + 0.05, z: 6 };
+
+    this.playerState = new PlayerStateSystem();
+    this.resources.push(this.playerState);
+
+    this.player = new PlayerSystem(this.physics, { tuning, spawnPoint });
+    this.resources.push(this.player);
+
+    this.playerState.updateFromMovement(this.player.getMovementSnapshot(), performance.now());
+  }
+
+  private initializeCamera(): void {
+    this.cameraSystem = new CameraSystem({
+      fovDegrees: this.config.camera.fovDegrees,
+      nearPlane: this.config.camera.nearPlane,
+      farPlane: this.config.camera.farPlane,
+      tuning: this.config.movement,
+    });
+    this.resources.push(this.cameraSystem);
+  }
+
+  private initializeInput(): void {
+    if (!this.canvas) {
+      throw new Error("Canvas is not available.");
+    }
+
+    this.input = new InputManager({
+      canvas: this.canvas,
+      onPointerLockChanged: (locked) => {
+        if (this.statusOverlay) {
+          this.statusOverlay.update(this.buildStatusLines(), performance.now());
+        }
+
+        console.info(`[Glassline] Pointer lock ${locked ? "acquired" : "released"}.`);
+      },
+    });
+    this.resources.push(this.input);
+  }
+
   private initializeAudio(): void {
     this.audioManager = new AudioManager();
     this.audioManager.initialize();
@@ -249,6 +346,11 @@ export class Application implements Disposable {
 
     if (this.audioManager) {
       pipeline.register(new AudioSettingsAdapter(this.audioManager));
+    }
+
+    if (this.cameraSystem) {
+      pipeline.register(new CameraSettingsAdapter(this.cameraSystem));
+      pipeline.register(new ControlsSettingsAdapter(this.cameraSystem));
     }
 
     this.settingsPipeline = pipeline;
@@ -276,62 +378,25 @@ export class Application implements Disposable {
     }
   }
 
-  private initializeRendering(): void {
-    if (!this.canvas) {
-      throw new Error("Canvas is not available.");
+  /** Runs a few fixed steps so the player is grounded before the first frame. */
+  private settlePlayer(steps = 20): void {
+    const idleSample: MovementInputSample = {
+      move: { x: 0, y: 0 },
+      jumpPressed: false,
+      jumpHeld: false,
+      sprintHeld: false,
+      crouchHeld: false,
+    };
+    const fixedDelta = 1 / this.config.gameLoop.physicsHz;
+
+    for (let step = 0; step < steps; step += 1) {
+      this.player?.fixedUpdate(idleSample, this.cameraSystem?.viewYaw ?? 0, fixedDelta);
+      this.physics?.step();
     }
 
-    this.renderer = new Renderer(this.canvas, this.config.renderer);
-    this.resources.push(this.renderer);
-
-    this.renderScene = new RenderScene(this.config.renderScene);
-    this.resources.push(this.renderScene);
-  }
-
-  private async initializePhysics(): Promise<void> {
-    const expectedTimestep = 1 / this.config.gameLoop.physicsHz;
-
-    if (Math.abs(this.config.physics.timestepSeconds - expectedTimestep) > 1e-9) {
-      throw new Error(
-        "Physics timestep must match the game loop fixed timestep " +
-          `(${expectedTimestep}s), received ${this.config.physics.timestepSeconds}s.`,
-      );
+    if (this.player && this.playerState) {
+      this.playerState.updateFromMovement(this.player.getMovementSnapshot(), performance.now());
     }
-
-    this.physics = new PhysicsWorld(this.config.physics);
-    await this.physics.initialize();
-    this.resources.push(this.physics);
-  }
-
-  private initializeInput(): void {
-    if (!this.canvas) {
-      throw new Error("Canvas is not available.");
-    }
-
-    this.input = new InputManager({
-      canvas: this.canvas,
-      onPointerLockChanged: (locked) => {
-        if (this.statusOverlay) {
-          this.statusOverlay.update(this.buildStatusLines(), performance.now());
-        }
-
-        console.info(`[Glassline] Pointer lock ${locked ? "acquired" : "released"}.`);
-      },
-    });
-    this.resources.push(this.input);
-  }
-
-  private initializeDebugSandbox(): void {
-    if (!this.config.enableDebugSandbox) {
-      return;
-    }
-
-    if (!this.physics || !this.renderScene) {
-      throw new Error("Debug sandbox requires initialized physics and rendering.");
-    }
-
-    this.debugSandbox = new PhysicsDebugSandbox(this.physics, this.renderScene);
-    this.resources.push(this.debugSandbox);
   }
 
   private initializeGameLoop(): void {
@@ -339,8 +404,8 @@ export class Application implements Disposable {
       onFrameStart: (timestampMs) => {
         this.input?.updateFrame(timestampMs);
       },
-      onFixedUpdate: () => {
-        this.physics?.step();
+      onFixedUpdate: (fixedDeltaSeconds) => {
+        this.fixedUpdate(fixedDeltaSeconds);
       },
       onRender: (alpha, frameDeltaSeconds) => {
         this.renderFrame(alpha, frameDeltaSeconds);
@@ -348,14 +413,47 @@ export class Application implements Disposable {
     });
   }
 
-  private renderFrame(_alpha: number, _frameDeltaSeconds: number): void {
-    this.debugSandbox?.syncMesh();
+  private fixedUpdate(fixedDeltaSeconds: number): void {
+    const frame = this.input?.currentFrame ?? IDLE_INPUT_FRAME;
 
-    if (this.renderer && this.renderScene) {
-      this.renderer.render(this.renderScene.scene, this.renderScene.camera);
+    this.player?.fixedUpdate(
+      this.toMovementSample(frame),
+      this.cameraSystem?.viewYaw ?? 0,
+      fixedDeltaSeconds,
+    );
+
+    this.physics?.step();
+
+    if (this.player && this.playerState) {
+      this.playerState.updateFromMovement(this.player.getMovementSnapshot(), performance.now());
+    }
+  }
+
+  private renderFrame(alpha: number, frameDeltaSeconds: number): void {
+    if (this.cameraSystem && this.player) {
+      this.cameraSystem.renderUpdate({
+        frame: this.input?.currentFrame ?? IDLE_INPUT_FRAME,
+        movement: this.player.getMovementSnapshot(),
+        playerPosition: this.player.getInterpolatedPosition(alpha),
+        deltaSeconds: frameDeltaSeconds,
+      });
+    }
+
+    if (this.renderer && this.renderScene && this.cameraSystem) {
+      this.renderer.render(this.renderScene.scene, this.cameraSystem.camera);
     }
 
     this.updateStatus();
+  }
+
+  private toMovementSample(frame: InputFrame): MovementInputSample {
+    return {
+      move: frame.move,
+      jumpPressed: frame.buttons.Jump.pressed,
+      jumpHeld: frame.buttons.Jump.held,
+      sprintHeld: frame.buttons.Sprint.held,
+      crouchHeld: frame.buttons.Crouch.held,
+    };
   }
 
   private updateStatus(): void {
@@ -401,6 +499,7 @@ export class Application implements Disposable {
 
   private buildStatusLines(): string[] {
     const frame = this.input?.currentFrame;
+    const movement = this.player?.getMovementSnapshot();
     const gameLoopStats = this.gameLoop?.getStats();
 
     const move = frame
@@ -412,6 +511,9 @@ export class Application implements Disposable {
     const pointerLock = this.input?.isPointerLocked ? "locked" : "released (click to capture)";
     const context = this.input?.activeContext ?? "gameplay";
     const dropped = gameLoopStats ? gameLoopStats.droppedTimeSeconds.toFixed(3) : "0.000";
+    const player = movement
+      ? `player ${movement.state} · speed ${movement.speed.toFixed(2)} m/s · vertical ${movement.verticalSpeed.toFixed(2)} · grounded ${movement.grounded ? "yes" : "no"} · stance ${movement.stance}`
+      : "player not initialized";
 
     return [
       `${this.config.appName} ${this.config.appVersion} · phase ${this.state}`,
@@ -421,7 +523,8 @@ export class Application implements Disposable {
       `settings ${this.describeSettings()} · language ${this.localizationManager?.activeLanguage.id ?? "n/a"} · audio ${this.audioManager?.state ?? "unavailable"}`,
       `localization ${this.localizationStatus} · resources ${this.resourceLoader?.activeCount ?? 0} active`,
       `input ${context} · pointer lock ${pointerLock} · move ${move} · look ${look}`,
-      "WASD move · Space jump · Ctrl crouch/slide · Shift sprint · E interact · Esc pause",
+      player,
+      "WASD move · Space jump · Ctrl crouch · Shift sprint · click to capture mouse · Esc pause",
     ];
   }
 
@@ -447,7 +550,7 @@ export class Application implements Disposable {
     const height = window.innerHeight;
 
     this.renderer?.resize(width, height);
-    this.renderScene?.resize(width, height);
+    this.cameraSystem?.resize(width, height);
   }
 
   private resetStatusWindow(): void {
@@ -483,6 +586,10 @@ export class Application implements Disposable {
     this.resourceLoader = null;
 
     this.audioManager = null;
+    this.cameraSystem = null;
+    this.player = null;
+    this.playerState = null;
+    this.testLevel = null;
 
     if (this.resizeCleanup) {
       this.resizeCleanup();
@@ -504,6 +611,5 @@ export class Application implements Disposable {
     this.physics = null;
     this.input = null;
     this.database = null;
-    this.debugSandbox = null;
   }
 }
