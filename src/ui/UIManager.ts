@@ -63,6 +63,7 @@ export interface HudState {
   readonly training: HudTrainingState | null;
   readonly speedrun: HudSpeedrunState | null;
   readonly interactionPrompt: string | null;
+  readonly tutorialHint: { readonly title: string; readonly hint: string } | null;
   readonly speed: number;
   readonly movementState: string;
   readonly paused: boolean;
@@ -241,6 +242,9 @@ export class UIManager {
   private hudTrainingObjective: HTMLDivElement;
   private hudTrainingProgress: HTMLDivElement;
   private hudInteractionPrompt: HTMLDivElement;
+  private hudTutorial: HTMLDivElement;
+  private hudTutorialTitle: HTMLDivElement;
+  private hudTutorialHint: HTMLDivElement;
   private hudSpeed: HTMLDivElement;
   private hudHint: HTMLDivElement;
 
@@ -283,6 +287,10 @@ export class UIManager {
     );
 
     this.hudInteractionPrompt = element("div", "gl-hud__prompt");
+    this.hudTutorial = element("div", "gl-hud__tutorial");
+    this.hudTutorialTitle = element("div", "gl-hud__tutorial-title");
+    this.hudTutorialHint = element("div", "gl-hud__tutorial-hint");
+    this.hudTutorial.append(this.hudTutorialTitle, this.hudTutorialHint);
     this.hudSpeed = element("div", "gl-hud__speed");
     this.hudHint = element("div", "gl-hud__hint");
 
@@ -291,6 +299,7 @@ export class UIManager {
       this.hudTrainingPanel,
       this.hudSpeed,
       this.hudInteractionPrompt,
+      this.hudTutorial,
       this.hudHint,
     );
 
@@ -685,6 +694,12 @@ export class UIManager {
       "is-visible",
       this.showInteractionPrompts && state.interactionPrompt !== null,
     );
+    this.hudTutorial.classList.toggle("is-visible", state.tutorialHint !== null);
+
+    if (state.tutorialHint) {
+      this.hudTutorialTitle.textContent = `${this.localize("hud.tutorial")} · ${state.tutorialHint.title}`;
+      this.hudTutorialHint.textContent = state.tutorialHint.hint;
+    }
 
     if (state.speedrun && this.showTimer) {
       this.hudSpeedrunTimer.textContent = formatRunTime(state.speedrun.elapsedMs);

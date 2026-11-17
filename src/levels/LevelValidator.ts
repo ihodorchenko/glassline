@@ -91,6 +91,10 @@ function validateLevelBasics(collector: ValidationCollector, definition: LevelDe
   validateUniqueIds(collector, "Geometry", definition.geometry);
   validateUniqueIds(collector, "Checkpoints", definition.checkpoints);
   validateUniqueIds(collector, "Interaction targets", definition.interactionTargets);
+
+  if (definition.decorations) {
+    validateUniqueIds(collector, "Decorations", definition.decorations);
+  }
 }
 
 function validateSections(
@@ -401,6 +405,67 @@ function validateCheckpoints(
   }
 }
 
+function validateDecorations(
+  collector: ValidationCollector,
+  definition: LevelDefinition,
+  sectionIds: ReadonlySet<string>,
+): void {
+  for (const decoration of definition.decorations ?? []) {
+    if (!sectionIds.has(decoration.sectionId)) {
+      collector.error(
+        "INVALID_DECORATION_SECTION",
+        `Decoration "${decoration.id}" belongs to unknown section "${decoration.sectionId}".`,
+        decoration.id,
+      );
+    }
+
+    if (!isFiniteVector(decoration.position) || !isFiniteVector(decoration.size)) {
+      collector.error(
+        "INVALID_DECORATION_TRANSFORM",
+        `Decoration "${decoration.id}" has a non-finite transform.`,
+        decoration.id,
+      );
+      continue;
+    }
+
+    if (decoration.size.x <= 0 || decoration.size.y <= 0 || decoration.size.z <= 0) {
+      collector.error(
+        "INVALID_DECORATION_SIZE",
+        `Decoration "${decoration.id}" must have positive dimensions.`,
+        decoration.id,
+      );
+    }
+
+    if (decoration.opacity !== undefined && (decoration.opacity < 0 || decoration.opacity > 1)) {
+      collector.error(
+        "INVALID_DECORATION_OPACITY",
+        `Decoration "${decoration.id}" opacity must be in [0, 1].`,
+        decoration.id,
+      );
+    }
+  }
+
+  if (definition.environment) {
+    const environment = definition.environment;
+
+    if (!(environment.fogNear >= 0) || !(environment.fogFar > environment.fogNear)) {
+      collector.error(
+        "INVALID_FOG_RANGE",
+        "Environment fog range must satisfy 0 <= fogNear < fogFar.",
+        "environment",
+      );
+    }
+
+    if (environment.sunIntensity < 0 || environment.hemisphereIntensity < 0) {
+      collector.error(
+        "INVALID_LIGHT_INTENSITY",
+        "Environment light intensities must be non-negative.",
+        "environment",
+      );
+    }
+  }
+}
+
 function validateInteractionTargets(
   collector: ValidationCollector,
   definition: LevelDefinition,
@@ -492,6 +557,7 @@ export function validateLevelDefinition(definition: LevelDefinition): LevelValid
   validateTriggers(collector, definition, sectionIds, checkpointIds);
   validateCheckpoints(collector, definition, sectionIds, spawnPointIds, triggerIds);
   validateInteractionTargets(collector, definition, sectionIds);
+  validateDecorations(collector, definition, sectionIds);
   validatePrologueSections(collector, definition);
 
   return {

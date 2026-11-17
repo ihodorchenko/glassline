@@ -5,7 +5,7 @@ const BODY_Y = 0.93;
 /**
  * Initial ten-exercise Training set (`docs/21` §8).
  *
- * Objectives are authored against the temporary training_test arena. Final
+ * Objectives are authored against the initial release Training course. Future
  * Training environments may re-author positions without changing the Training
  * System contract.
  */

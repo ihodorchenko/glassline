@@ -116,6 +116,36 @@ describe("AudioManager", () => {
     expect(manager.state).toBe("running");
   });
 
+  it("starts ambience only after audio is running and stops all ambience nodes", async () => {
+    const context = new FakeAudioContext();
+    const manager = new AudioManager({ factory: () => context, gestureTarget: null });
+
+    manager.startAmbience("training");
+    expect(context.oscillatorCount).toBe(0);
+
+    await manager.notifyUserGesture();
+    expect(context.oscillatorCount).toBe(3);
+
+    manager.stopAmbience();
+    expect(context.oscillators.every((oscillator) => oscillator.stopCount === 1)).toBe(true);
+    expect(context.oscillatorCount).toBe(3);
+  });
+
+  it("plays a speed-scaled footstep only while audio is running", async () => {
+    const context = new FakeAudioContext();
+    const manager = new AudioManager({ factory: () => context, gestureTarget: null });
+
+    manager.playFootstep(1);
+    expect(context.oscillatorCount).toBe(0);
+
+    await manager.notifyUserGesture();
+    manager.playFootstep(0.8);
+
+    expect(context.oscillatorCount).toBe(1);
+    expect(context.oscillators[0]?.startCount).toBe(1);
+    expect(context.oscillators[0]?.frequency).toBeGreaterThan(100);
+  });
+
   it("applies master volume and mute to the master gain node", async () => {
     const context = new FakeAudioContext();
     const manager = new AudioManager({ factory: () => context, gestureTarget: null });

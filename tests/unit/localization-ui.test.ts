@@ -29,6 +29,7 @@ const REQUIRED_UI_KEYS = [
   "hud.checkpoints",
   "hud.checkpointReached",
   "hud.interactionPrompt",
+  "hud.tutorial",
   "hud.pauseHint",
   "speedrun.medal",
   "speedrun.valid",

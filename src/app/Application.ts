@@ -147,6 +147,7 @@ export class Application implements Disposable {
   private sessionRecoveries = 0;
   private sessionCheckpointsAllEmitted = false;
   private movementStartedEmitted = false;
+  private footstepAccumulatorSeconds = 0;
   private readonly longTermUnsubscribes: (() => void)[] = [];
   private lastResults: SessionResults | null = null;
 
@@ -605,6 +606,7 @@ export class Application implements Disposable {
     this.sessionRecoveries = 0;
     this.sessionCheckpointsAllEmitted = false;
     this.movementStartedEmitted = false;
+    this.footstepAccumulatorSeconds = 0;
 
     this.statisticsSystem?.startSession({
       sessionId: context.sessionId,
@@ -1004,6 +1006,9 @@ export class Application implements Disposable {
 
   private buildHudState(): HudState {
     const trainingSnapshot = this.trainingSystem?.getSnapshot() ?? null;
+    const tutorialSnapshot = this.tutorialSystem?.getSnapshot() ?? null;
+    const nextTutorialStep =
+      this.currentMode === "training" ? (tutorialSnapshot?.nextStep ?? null) : null;
     const speedrunSnapshot = this.speedrunSystem?.getSnapshot() ?? null;
     const movement = this.player?.getMovementSnapshot() ?? null;
 
@@ -1044,6 +1049,12 @@ export class Application implements Disposable {
       training,
       speedrun,
       interactionPrompt: this.interactionSystem?.getSnapshot().prompt ?? null,
+      tutorialHint: nextTutorialStep
+        ? {
+            title: this.localize(nextTutorialStep.titleKey),
+            hint: this.localize(nextTutorialStep.hintKey),
+          }
+        : null,
       speed: movement?.speed ?? 0,
       movementState: movement?.state ?? "IDLE",
       paused: this.flowManager?.getState() === "paused",
@@ -1087,6 +1098,7 @@ export class Application implements Disposable {
       this.publishDomainEvent("speedrun", "speedrun.attempt", { value: 1 });
     }
 
+    this.audioManager?.startAmbience(context.mode === "training" ? "training" : "prologue");
     this.syncInteractionPresentation();
     this.syncPlayerState();
   }
@@ -1140,6 +1152,7 @@ export class Application implements Disposable {
     this.respawnManager = null;
     this.trainingSystem = null;
     this.speedrunSystem = null;
+    this.audioManager?.stopAmbience();
     this.lastResults = null;
     this.completionRequested = false;
   }
@@ -1604,6 +1617,19 @@ export class Application implements Disposable {
       if (!this.movementStartedEmitted && movement.speed > 1) {
         this.movementStartedEmitted = true;
         this.publishDomainEvent("movement", "movement.started", { value: 1 });
+      }
+
+      if (movement.grounded && movement.stance !== "sliding" && movement.speed > 0.8) {
+        this.footstepAccumulatorSeconds += fixedDeltaSeconds;
+
+        const intervalSeconds = movement.speed > 5 ? 0.32 : 0.46;
+
+        if (this.footstepAccumulatorSeconds >= intervalSeconds) {
+          this.footstepAccumulatorSeconds = 0;
+          this.audioManager?.playFootstep(Math.min(1, movement.speed / 8.5));
+        }
+      } else {
+        this.footstepAccumulatorSeconds = 0;
       }
     }
 

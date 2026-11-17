@@ -72,6 +72,7 @@ export const ENGLISH_RESOURCES: TranslationResources = {
   "hud.speed": "Speed",
   "hud.pauseHint": "Esc pause",
   "hud.interactionPrompt": "Press E to interact",
+  "hud.tutorial": "Tutorial",
 
   "speedrun.medal": "Medal: {medal}",
   "speedrun.valid": "Valid run",

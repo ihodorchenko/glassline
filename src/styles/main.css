@@ -586,3 +586,44 @@ body {
   letter-spacing: 0.08em;
   text-transform: uppercase;
 }
+
+.gl-hud__tutorial {
+  position: absolute;
+  top: 24px;
+  left: 24px;
+  display: none;
+  max-width: min(420px, 44vw);
+  padding: 12px 16px;
+  border-left: 3px solid var(--gl-accent, #d52e36);
+  background: linear-gradient(135deg, rgba(12, 16, 20, 0.82), rgba(12, 16, 20, 0.42));
+  border-radius: 2px;
+  backdrop-filter: blur(8px);
+  pointer-events: none;
+}
+
+.gl-hud__tutorial.is-visible {
+  display: block;
+}
+
+.gl-hud__tutorial-title {
+  color: #f2f4f4;
+  font-size: calc(0.78rem * var(--gl-ui-scale));
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.gl-hud__tutorial-hint {
+  margin-top: 5px;
+  color: rgba(238, 242, 244, 0.78);
+  font-size: calc(0.86rem * var(--gl-ui-scale));
+  line-height: 1.35;
+}
+
+@media (max-width: 720px) {
+  .gl-hud__tutorial {
+    top: 14px;
+    left: 14px;
+    max-width: calc(100vw - 28px);
+  }
+}

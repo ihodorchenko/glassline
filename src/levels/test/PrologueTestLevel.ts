@@ -1,4 +1,5 @@
 import type { LevelDefinition } from "../LevelTypes";
+import { createPrologueDecorations, PROLOGUE_ENVIRONMENT } from "./ReleaseArenaPolish";
 import { createArenaGeometry, createArenaSurfaces } from "./SharedArena";
 
 export const PROLOGUE_TEST_LEVEL_ID = "prologue_test";
@@ -43,17 +44,17 @@ function sectionForZ(z: number): string {
 }
 
 /**
- * Authored Prologue test route: five ordered sections with five mandatory
- * checkpoints and a finish trigger. It reuses the shared test arena geometry.
+ * Initial release Prologue route: five ordered sections with five mandatory
+ * checkpoints, a finish trigger, and a dusk skyline presentation layer.
  */
 export const PROLOGUE_TEST_LEVEL: LevelDefinition = {
   id: PROLOGUE_TEST_LEVEL_ID,
-  version: "1.0.0",
+  version: "1.2.0",
   mode: "prologue",
-  displayName: "Prologue — Test Route",
+  displayName: "Prologue — Rooftop Run",
   initialSpawnPointId: "sp_initial",
   metadata: {
-    description: "Five-section Prologue verification route.",
+    description: "Rooftop Run: the five-section initial Prologue route.",
     difficulty: "test",
     supportsSpeedrun: true,
     supportsRespawn: true,
@@ -346,6 +347,8 @@ export const PROLOGUE_TEST_LEVEL: LevelDefinition = {
   ],
   surfaces: createArenaSurfaces((surfaceId) => SURFACE_SECTIONS[surfaceId] ?? SECTION_IDS.rooftop),
   geometry: createArenaGeometry((position) => sectionForZ(position.z)),
+  decorations: createPrologueDecorations((z) => sectionForZ(z)),
+  environment: PROLOGUE_ENVIRONMENT,
 };
 
 export const PROLOGUE_TEST_LEVEL_DEFINITIONS: readonly LevelDefinition[] = [PROLOGUE_TEST_LEVEL];

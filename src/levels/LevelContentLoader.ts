@@ -5,6 +5,7 @@ import type { Disposable } from "../core/Disposable";
 import type { PhysicsWorld } from "../physics/PhysicsWorld";
 import type { RenderScene } from "../rendering/RenderScene";
 import type {
+  LevelDecorationDefinition,
   LevelDefinition,
   LevelGeometryDefinition,
   LevelInteractionTargetDefinition,
@@ -60,6 +61,55 @@ function spawnObject(
   };
 }
 
+function resolveDecorationMaterial(
+  decoration: LevelDecorationDefinition,
+  sharedMaterials: Map<number, THREE.MeshStandardMaterial>,
+  decorationMaterials: Map<string, THREE.MeshStandardMaterial>,
+): THREE.MeshStandardMaterial {
+  const opacity = decoration.opacity ?? 1;
+  const emissive = decoration.emissive ?? 0x000000;
+  const emissiveIntensity = decoration.emissiveIntensity ?? 0;
+
+  if (opacity >= 1 && emissive === 0x000000) {
+    const existing = sharedMaterials.get(decoration.color);
+
+    if (existing) {
+      return existing;
+    }
+
+    const material = new THREE.MeshStandardMaterial({
+      color: decoration.color,
+      roughness: 0.68,
+      metalness: 0.12,
+    });
+
+    sharedMaterials.set(decoration.color, material);
+
+    return material;
+  }
+
+  const key = `${decoration.color}:${opacity}:${emissive}:${emissiveIntensity}`;
+  const existing = decorationMaterials.get(key);
+
+  if (existing) {
+    return existing;
+  }
+
+  const material = new THREE.MeshStandardMaterial({
+    color: decoration.color,
+    roughness: 0.6,
+    metalness: 0.15,
+    transparent: opacity < 1,
+    opacity,
+    emissive,
+    emissiveIntensity,
+  });
+
+  decorationMaterials.set(key, material);
+
+  return material;
+}
+
 /**
  * Instantiates authored box geometry as visual meshes and static Rapier
  * colliders, and registers level runtime objects.
@@ -75,9 +125,16 @@ export class BoxLevelContentLoader {
   ): Promise<LoadedLevelContent> {
     const unitBox = new THREE.BoxGeometry(1, 1, 1);
     const materials = new Map<number, THREE.MeshStandardMaterial>();
+    const decorationMaterials = new Map<string, THREE.MeshStandardMaterial>();
     const meshes: THREE.Mesh[] = [];
+    const decorationMeshes: THREE.Mesh[] = [];
+    const ownedDecorationGeometries: THREE.BufferGeometry[] = [];
     const bodies: RAPIER.RigidBody[] = [];
     const world = dependencies.physics.rapierWorld;
+
+    if (definition.environment) {
+      dependencies.scene.setEnvironment(definition.environment);
+    }
 
     const getMaterial = (color: number): THREE.MeshStandardMaterial => {
       const existing = materials.get(color);
@@ -152,6 +209,25 @@ export class BoxLevelContentLoader {
       dependencies.objects.register(surfaceObject(geometry, dependencies.surfaces));
     }
 
+    for (const decoration of definition.decorations ?? []) {
+      const material = resolveDecorationMaterial(decoration, materials, decorationMaterials);
+      const geometry =
+        decoration.shape === "cylinder" ? new THREE.CylinderGeometry(0.5, 0.5, 1, 12) : unitBox;
+      const mesh = new THREE.Mesh(geometry, material);
+
+      if (decoration.shape === "cylinder") {
+        ownedDecorationGeometries.push(geometry);
+      }
+
+      mesh.position.set(decoration.position.x, decoration.position.y, decoration.position.z);
+      mesh.scale.set(decoration.size.x, decoration.size.y, decoration.size.z);
+      mesh.rotation.y = decoration.rotationY ?? 0;
+      mesh.castShadow = decoration.castShadow ?? false;
+      mesh.receiveShadow = false;
+      dependencies.scene.addObject(mesh);
+      decorationMeshes.push(mesh);
+    }
+
     for (const spawnPoint of definition.spawnPoints) {
       dependencies.spawnPoints.register(spawnPoint);
       dependencies.objects.register(
@@ -213,6 +289,18 @@ export class BoxLevelContentLoader {
           dependencies.scene.removeObject(mesh);
         }
 
+        for (const mesh of decorationMeshes) {
+          dependencies.scene.removeObject(mesh);
+        }
+
+        for (const geometry of ownedDecorationGeometries) {
+          geometry.dispose();
+        }
+
+        for (const material of decorationMaterials.values()) {
+          material.dispose();
+        }
+
         if (dependencies.physics.isInitialized) {
           for (const body of bodies) {
             world.removeRigidBody(body);
@@ -226,8 +314,12 @@ export class BoxLevelContentLoader {
         }
 
         meshes.length = 0;
+        decorationMeshes.length = 0;
+        ownedDecorationGeometries.length = 0;
         bodies.length = 0;
         materials.clear();
+        decorationMaterials.clear();
+        dependencies.scene.setEnvironment(null);
       },
     };
   }

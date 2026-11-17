@@ -1,6 +1,7 @@
 import { afterEach, describe, expect, it } from "vitest";
 
 import { LevelRuntimeError, LevelRuntimeManager } from "../../src/levels/LevelRuntimeManager";
+import { TRAINING_ENVIRONMENT } from "../../src/levels/test/ReleaseArenaPolish";
 import {
   TRAINING_TEST_LEVEL,
   TRAINING_TEST_LEVEL_DEFINITIONS,
@@ -52,7 +53,11 @@ describe("LevelRuntimeManager lifecycle", () => {
     expect(session.state).toBe("ready");
     expect(session.levelId).toBe(TRAINING_TEST_LEVEL_ID);
     expect(harness.runtime.getCurrentSession()?.id).toBe(session.id);
-    expect(harness.runtime.getCurrentLevel()?.displayName).toBe("Runtime Test Range");
+    expect(harness.runtime.getCurrentLevel()?.displayName).toBe("Training — Movement Yard");
+    expect(harness.scene.scene.background).toBeInstanceOf(Object);
+    expect(
+      TRAINING_TEST_LEVEL.decorations?.every((decoration) => decoration.sectionId.length > 0),
+    ).toBe(true);
     expect(harness.runtime.getInitialSpawnPoint()?.id).toBe("sp_initial");
 
     const snapshot = harness.runtime.getSnapshot();
@@ -65,6 +70,21 @@ describe("LevelRuntimeManager lifecycle", () => {
     expect(snapshot.objectCount).toBeGreaterThan(TRAINING_TEST_LEVEL.geometry.length);
     expect(snapshot.activeSectionId).toBeNull();
     expect(harness.scene.scene.children.length).toBeGreaterThan(3);
+  });
+
+  it("restores the default scene atmosphere when a level unloads", async () => {
+    const harness = await createHarness();
+
+    await harness.runtime.loadLevel(TRAINING_TEST_LEVEL_ID);
+    const loadedBackground = harness.scene.scene.background as { getHex(): number };
+
+    expect(loadedBackground.getHex()).toBe(TRAINING_ENVIRONMENT.skyColor);
+
+    await harness.runtime.unloadLevel();
+
+    const restoredBackground = harness.scene.scene.background as { getHex(): number };
+
+    expect(restoredBackground.getHex()).toBe(0xa7b9c4);
   });
 
   it("rejects unknown level ids and invalid definitions", async () => {

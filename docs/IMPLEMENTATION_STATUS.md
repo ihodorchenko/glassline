@@ -3,8 +3,8 @@
 **Document:** `IMPLEMENTATION_STATUS.md`  
 **Project:** Glassline  
 **Last Updated:** 2026-11-17  
-**Project Stage:** Initial Release Candidate  
-**Status:** Phases 0–8 Complete; Initial Release Candidate
+**Project Stage:** Polished Initial Release Candidate  
+**Status:** Phases 0–8 Complete; Release Polish Pass Complete
 
 ---
 
@@ -101,9 +101,9 @@ Only `Verified` means that the applicable acceptance criteria have been checked 
 | Localization | Defined | Implemented | Integrated | Verified |
 | Statistics | Defined | Implemented | Integrated | Verified |
 
-**Current phase:** Phases 0–7 are complete, and Phase 8 (stabilization) is complete. The repository is at an initial release candidate: all required initial-release features are implemented and the Phase 8 stabilization checks below have been executed. Residual verification limitations are recorded in the Phase 8 section.
+**Current phase:** Phases 0–7 and Phase 8 (stabilization) are complete. A post-roadmap **Release Polish** pass has also been completed: initial release content presentation, HUD tutorial guidance, atmosphere, and procedural ambience/footsteps. The repository is a polished initial release candidate; residual verification limitations are recorded below.
 
-**Implementation readiness:** The game is feature-complete for the initial release scope and stabilized: core gameplay, Training/Prologue sessions, Speedrun validation and local records, persistent progression/achievements/statistics/tutorial, UI/accessibility/localization, Save System recovery, and the fixed-step loop are implemented, integrated, and covered by automated and browser checks. Remaining limitations are compatibility verification depth (Firefox/Safari gameplay, actual assistive-technology testing) and intentionally deferred features.
+**Implementation readiness:** The game is feature-complete for the initial release scope, stabilized, and visually/audio-polished: core gameplay, Training/Prologue sessions, Speedrun validation and local records, persistent progression/achievements/statistics/tutorial, HUD tutorial guidance, level atmosphere and ambience, UI/accessibility/localization, Save System recovery, and the fixed-step loop are implemented, integrated, and covered by automated and browser checks. Remaining limitations are compatibility verification depth (Firefox/Safari gameplay, actual assistive-technology testing), asset-level art polish, and intentionally deferred features.
 
 ### 3.1. Documentation Reconciliation (2026-11-17)
 
@@ -867,6 +867,46 @@ Residual risks / limitations:
 - Deferred features (ghost replay, online leaderboards/cloud/accounts/multiplayer, advanced traversal/audio, RTL, remote analytics) remain out of initial-release scope.
 
 ---
+### Release Polish (post-Phase 8)
+
+**Goal:** Turn the stabilized candidate into a presentable initial release without changing validated gameplay contracts.
+
+**Status:** Complete (2026-11-17).
+
+Implemented:
+
+- **Initial release content identity:** the authored arenas are promoted from verification content to release content and renamed for players:
+  - `Training — Movement Yard` (technical id remains `training_test`).
+  - `Prologue — Rooftop Run` (technical id remains `prologue_test`).
+  - Internal IDs and Speedrun route IDs are intentionally retained so existing save data, route validation, tests, and progression identifiers remain valid.
+- **Level presentation layer:** `LevelDefinition` now supports optional visual decorations and environment settings. The validator checks decoration sections/dimensions/opacity and fog/light ranges; the content loader instantiates decoration meshes without colliders and applies level-owned sky/fog/sun/hemisphere values; `RenderScene` restores its default atmosphere when a level unloads.
+- **Training course dressing:** start/finish gates, route lane markings, start/finish lines, training signage, scaffold frame, traffic cones, checkpoint beacons, and a surrounding city silhouette with lit window accents.
+- **Prologue rooftop dressing:** dusk skyline with lit windows, construction cranes, rooftop ventilation units and pipes, section signage, checkpoint beacons, edge trim, finish gate/stripes, and cool atmospheric fog.
+- **Tutorial HUD guidance:** Training now shows the next incomplete tutorial step and its instruction (`TUTORIAL · MOVE`, `TUTORIAL · JUMP`, etc.) in a dedicated HUD panel. It is localized, appears only in Training, hides when the tutorial is complete, and is presentation-only — Tutorial System remains authoritative.
+- **Procedural atmosphere audio:** a low-volume ambience bed starts per mode (Training/Prologue) after the user gesture and stops when gameplay is shut down; it respects the SFX volume setting. Speed-scaled procedural footsteps play while grounded and moving, and stop during slides/airtime.
+- **Player-facing naming:** results, level metadata, and session displays use `Training — Movement Yard` / `Prologue — Rooftop Run`; UI copy no longer calls the courses test ranges.
+- **Regression coverage:** validator tests for decoration/environment support, scene atmosphere restoration, ambience/footstep audio tests, HUD tutorial localization key coverage, and updated level display-name expectations.
+
+Verification performed:
+
+- `npm run validate` passes: typecheck, Biome, **250 tests in 34 files**, production build.
+- Browser (Chromium headless, WebGL2/SwiftShader):
+  - Training shows the tutorial panel, level name `Training — Movement Yard`, skyline/decorated course, 77 draw calls / ~1k triangles; Prologue shows `Prologue — Rooftop Run`, dusk skyline with lit windows, 80 draw calls / ~1,068 triangles.
+  - Level environment values applied at load and level unload restores defaults (covered by test); HUD tutorial updates as tutorial steps progress.
+  - Trusted-gesture audio startup produced a running AudioContext, 3 ambience oscillators for Training; ambience/audio lifecycle is also unit-tested. Actual audible output cannot be assessed in headless automation.
+  - Screenshots captured for menu, Training yard, and Prologue rooftop presentations.
+
+Known limitations:
+
+- Visual dressing uses procedural primitives, not final authored art assets; it is a cohesive stylized direction for the initial release, not a replacement for a full art pass.
+- The initial release content is one Training course and one Prologue route; broader campaign content remains deferred.
+- Ambience is a simple procedural oscillator bed; no mixing buses, reverb zones, or asset-based environmental sound.
+- Tutorial guidance is HUD copy; contextual in-world hint markers remain deferred.
+- Content-unlock gating for Training selection remains evaluated/persisted but not enforced in the exercise list (as recorded previously).
+- Browser/AT verification limitations from Phase 8 remain unchanged.
+
+---
+
 ## 7. Initial Release Scope
 
 ### Required

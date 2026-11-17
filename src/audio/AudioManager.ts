@@ -135,6 +135,9 @@ export class AudioManager implements Disposable {
   private desiredMuted = false;
   private uiVolume = 0.8;
   private sfxVolume = 1;
+  private ambienceProfile: "training" | "prologue" | null = null;
+  private ambienceGain: GainNodeLike | null = null;
+  private ambienceOscillators: OscillatorNodeLike[] = [];
   private disposed = false;
 
   constructor(options: AudioManagerOptions = {}) {
@@ -217,6 +220,7 @@ export class AudioManager implements Disposable {
 
       if (this.context.state === "running") {
         this.detachGestureListeners();
+        this.startAmbienceNodes();
 
         return true;
       }
@@ -242,6 +246,55 @@ export class AudioManager implements Disposable {
   /** Settings-owned gameplay SFX volume. */
   setSfxVolume(volume: number): void {
     this.sfxVolume = clamp(volume, 0, 1);
+    this.applyAmbienceVolume();
+  }
+
+  /** Starts a low-volume level ambience bed once audio is running. */
+  startAmbience(profile: "training" | "prologue"): void {
+    this.ambienceProfile = profile;
+
+    if (this.context?.state === "running") {
+      this.startAmbienceNodes();
+    }
+  }
+
+  stopAmbience(): void {
+    this.ambienceProfile = null;
+    this.stopAmbienceNodes();
+  }
+
+  /** Short, speed-scaled footstep tick for grounded locomotion. */
+  playFootstep(intensity: number): void {
+    const context = this.context;
+    const master = this.masterGain;
+
+    if (
+      this.disposed ||
+      !context ||
+      context.state !== "running" ||
+      !master ||
+      !context.createOscillator ||
+      this.sfxVolume <= 0.0001
+    ) {
+      return;
+    }
+
+    const strength = clamp(intensity, 0, 1);
+
+    try {
+      const oscillator = context.createOscillator();
+      const gain = context.createGain();
+
+      oscillator.type = "sine";
+      oscillator.frequency.value = 82 + strength * 46;
+      gain.gain.value = (0.025 + strength * 0.035) * this.sfxVolume;
+      oscillator.connect(gain);
+      gain.connect(master);
+      oscillator.start();
+      oscillator.stop(context.currentTime + 0.055);
+    } catch (error) {
+      console.warn("[Glassline] Footstep could not be played.", error);
+    }
   }
 
   /**
@@ -296,6 +349,7 @@ export class AudioManager implements Disposable {
     }
 
     this.disposed = true;
+    this.stopAmbienceNodes();
     this.detachGestureListeners();
 
     const context = this.context;
@@ -305,6 +359,80 @@ export class AudioManager implements Disposable {
 
     if (context && context.state !== "closed") {
       void context.close().catch(() => undefined);
+    }
+  }
+
+  private startAmbienceNodes(): void {
+    const profile = this.ambienceProfile;
+    const context = this.context;
+    const master = this.masterGain;
+
+    if (
+      this.disposed ||
+      !profile ||
+      !context ||
+      context.state !== "running" ||
+      !master ||
+      !context.createOscillator ||
+      this.ambienceOscillators.length > 0
+    ) {
+      return;
+    }
+
+    const frequencies = profile === "training" ? [55, 110, 220] : [48, 96, 192];
+    const gain = context.createGain();
+
+    gain.gain.value = this.ambienceVolume();
+
+    try {
+      gain.connect(master);
+    } catch (error) {
+      console.warn("[Glassline] Ambience could not connect.", error);
+      return;
+    }
+
+    for (const [index, frequency] of frequencies.entries()) {
+      const oscillator = context.createOscillator();
+
+      oscillator.type = index === 0 ? "sine" : "triangle";
+      oscillator.frequency.value = frequency;
+      oscillator.connect(gain);
+      oscillator.start();
+      this.ambienceOscillators.push(oscillator);
+    }
+
+    this.ambienceGain = gain;
+  }
+
+  private stopAmbienceNodes(): void {
+    for (const oscillator of this.ambienceOscillators) {
+      try {
+        oscillator.stop();
+      } catch {
+        // A stopped/disconnected oscillator is already silent.
+      }
+    }
+
+    this.ambienceOscillators.length = 0;
+
+    if (this.ambienceGain) {
+      try {
+        this.ambienceGain.disconnect();
+      } catch {
+        // The context may already be closing.
+      }
+
+      this.ambienceGain = null;
+    }
+  }
+
+  private ambienceVolume(): number {
+    return this.sfxVolume * 0.018;
+  }
+
+  private applyAmbienceVolume(): void {
+    if (this.ambienceGain) {
+      this.ambienceGain.gain.value = this.ambienceVolume();
     }
   }
 

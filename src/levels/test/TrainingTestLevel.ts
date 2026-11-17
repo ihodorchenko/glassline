@@ -1,4 +1,5 @@
 import type { LevelDefinition } from "../LevelTypes";
+import { createTrainingDecorations, TRAINING_ENVIRONMENT } from "./ReleaseArenaPolish";
 import { createArenaGeometry, createArenaSurfaces } from "./SharedArena";
 
 export const TRAINING_TEST_LEVEL_ID = "training_test";
@@ -15,17 +16,17 @@ const SURFACE_SECTIONS: Record<string, string> = {
 };
 
 /**
- * Authored Training test level: three sections, checkpoints, fall pit, an
- * interaction terminal, and traversal test geometry.
+ * Initial release Training course: three sections, checkpoints, a fall pit,
+ * an interaction terminal, traversal training geometry, and visual dressing.
  */
 export const TRAINING_TEST_LEVEL: LevelDefinition = {
   id: TRAINING_TEST_LEVEL_ID,
-  version: "1.1.0",
+  version: "1.2.0",
   mode: "training",
-  displayName: "Runtime Test Range",
+  displayName: "Training — Movement Yard",
   initialSpawnPointId: "sp_initial",
   metadata: {
-    description: "Training and traversal verification environment.",
+    description: "The Movement Yard: the initial Training and traversal course.",
     difficulty: "training",
     supportsSpeedrun: false,
     supportsRespawn: true,
@@ -207,6 +208,10 @@ export const TRAINING_TEST_LEVEL: LevelDefinition = {
   geometry: createArenaGeometry((position) =>
     position.z > 0 ? "sec_start" : position.z <= -16 ? "sec_finish" : "sec_traversal",
   ),
+  decorations: createTrainingDecorations((z) =>
+    z > 0 ? "sec_start" : z <= -16 ? "sec_finish" : "sec_traversal",
+  ),
+  environment: TRAINING_ENVIRONMENT,
 };
 
 export const TRAINING_TEST_LEVEL_DEFINITIONS: readonly LevelDefinition[] = [TRAINING_TEST_LEVEL];

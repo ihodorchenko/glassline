@@ -48,6 +48,34 @@ export interface LevelSurfaceDefinition {
   readonly metadata?: Readonly<Record<string, unknown>>;
 }
 
+export type LevelDecorationShape = "box" | "cylinder";
+
+/** Visual-only authored geometry; it never receives a physics collider. */
+export interface LevelDecorationDefinition {
+  readonly id: string;
+  readonly sectionId: string;
+  readonly shape: LevelDecorationShape;
+  readonly position: LevelVector3;
+  readonly size: LevelVector3;
+  readonly color: number;
+  readonly rotationY?: number;
+  readonly opacity?: number;
+  readonly emissive?: number;
+  readonly emissiveIntensity?: number;
+  readonly castShadow?: boolean;
+}
+
+/** Lighting, fog, and sky treatment applied while a level is loaded. */
+export interface LevelEnvironmentDefinition {
+  readonly skyColor: number;
+  readonly fogColor: number;
+  readonly fogNear: number;
+  readonly fogFar: number;
+  readonly sunColor: number;
+  readonly sunIntensity: number;
+  readonly hemisphereIntensity: number;
+}
+
 export interface LevelGeometryDefinition {
   readonly id: string;
   readonly sectionId: string;
@@ -135,5 +163,7 @@ export interface LevelDefinition {
   readonly interactionTargets: readonly LevelInteractionTargetDefinition[];
   readonly geometry: readonly LevelGeometryDefinition[];
   readonly surfaces: readonly LevelSurfaceDefinition[];
+  readonly decorations?: readonly LevelDecorationDefinition[];
+  readonly environment?: LevelEnvironmentDefinition;
   readonly metadata: LevelMetadata;
 }
