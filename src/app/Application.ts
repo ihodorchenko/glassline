@@ -1,11 +1,21 @@
+import { AudioManager } from "../audio/AudioManager";
 import { type Disposable, disposeAll } from "../core/Disposable";
 import { GameLoop } from "../core/GameLoop";
 import { PhysicsDebugSandbox } from "../debug/PhysicsDebugSandbox";
 import { StatusOverlay } from "../diagnostics/StatusOverlay";
 import { InputManager } from "../input/InputManager";
+import { DEFAULT_LANGUAGE_ID, DEFAULT_LANGUAGE_REGISTRY } from "../localization/Language";
+import { LocalizationManager } from "../localization/LocalizationManager";
+import { createDefaultLocalizationResourceLoader } from "../localization/LocalizationResourceLoader";
 import { PhysicsWorld } from "../physics/PhysicsWorld";
 import { Renderer } from "../rendering/Renderer";
 import { RenderScene } from "../rendering/RenderScene";
+import { ResourceLoader } from "../resources/ResourceLoader";
+import { AudioSettingsAdapter } from "../settings/adapters/AudioSettingsAdapter";
+import { SettingsApplicationPipeline } from "../settings/SettingsApplication";
+import { SETTING_DEFINITIONS } from "../settings/SettingsDefinitions";
+import { SettingsManager } from "../settings/SettingsManager";
+import { readStringValue, type SettingsSnapshot } from "../settings/SettingsTypes";
 import { Database, StorageError } from "../storage/Database";
 import { SettingsRepository } from "../storage/repositories/SettingsRepository";
 import { type ApplicationConfig, DEFAULT_APPLICATION_CONFIG } from "./ApplicationConfig";
@@ -45,8 +55,15 @@ export class Application implements Disposable {
   private database: Database | null = null;
   private debugSandbox: PhysicsDebugSandbox | null = null;
   private gameLoop: GameLoop | null = null;
+  private settingsManager: SettingsManager | null = null;
+  private settingsPipeline: SettingsApplicationPipeline | null = null;
+  private settingsUnsubscribe: (() => void) | null = null;
+  private localizationManager: LocalizationManager | null = null;
+  private resourceLoader: ResourceLoader | null = null;
+  private audioManager: AudioManager | null = null;
 
   private storageStatus = "not initialized";
+  private localizationStatus = "not initialized";
   private resizeCleanup: (() => void) | null = null;
   private visibilityCleanup: (() => void) | null = null;
 
@@ -85,12 +102,16 @@ export class Application implements Disposable {
 
       // Recoverable: the application must remain usable without persistence.
       await this.initializeStorage();
+      await this.initializeSettings();
+      await this.initializeLocalization();
 
       this.initializeRendering();
 
       // Fatal: the application requires a working renderer and physics world.
       await this.initializePhysics();
       this.initializeInput();
+      this.initializeAudio();
+      await this.initializeSettingsApplication();
       this.initializeDebugSandbox();
       this.initializeGameLoop();
       this.registerWindowHandlers();
@@ -168,18 +189,90 @@ export class Application implements Disposable {
 
       this.database = database;
       this.resources.push(database);
-
-      const settingsRepository = new SettingsRepository(database);
-      const settings = await settingsRepository.load();
-
-      this.storageStatus = settings
-        ? `ready (schema ${settings.schemaVersion}, revision ${settings.revision})`
-        : "ready (no saved data)";
+      this.storageStatus = `ready (version ${this.config.storage.version})`;
     } catch (error) {
       this.database = null;
       this.storageStatus = `unavailable (${error instanceof StorageError ? error.code : "unknown"})`;
 
       console.warn("[Glassline] Persistence is unavailable; continuing without saved data.", error);
+    }
+  }
+
+  private async initializeSettings(): Promise<void> {
+    const persistence = this.database ? new SettingsRepository(this.database) : null;
+
+    this.settingsManager = new SettingsManager({
+      definitions: SETTING_DEFINITIONS,
+      persistence,
+    });
+    await this.settingsManager.initialize();
+  }
+
+  private async initializeLocalization(): Promise<void> {
+    this.resourceLoader = new ResourceLoader();
+
+    const localizationLoader = createDefaultLocalizationResourceLoader(this.resourceLoader);
+    const localization = new LocalizationManager({
+      loader: localizationLoader,
+      registry: DEFAULT_LANGUAGE_REGISTRY,
+    });
+
+    this.localizationManager = localization;
+
+    const requestedLanguage =
+      this.settingsManager?.getValue<string>("general.language") ?? DEFAULT_LANGUAGE_ID;
+
+    try {
+      const result = await localization.initialize(requestedLanguage);
+
+      this.localizationStatus = result.usedFallback
+        ? `fallback to ${result.languageId} (${result.error})`
+        : `ready (${result.languageId})`;
+    } catch (error) {
+      this.localizationStatus = `unavailable (${describeError(error)})`;
+      console.warn("[Glassline] Localization is unavailable; using raw keys.", error);
+    }
+  }
+
+  private initializeAudio(): void {
+    this.audioManager = new AudioManager();
+    this.audioManager.initialize();
+    this.resources.push(this.audioManager);
+  }
+
+  private async initializeSettingsApplication(): Promise<void> {
+    if (!this.settingsManager) {
+      return;
+    }
+
+    const pipeline = new SettingsApplicationPipeline();
+
+    if (this.audioManager) {
+      pipeline.register(new AudioSettingsAdapter(this.audioManager));
+    }
+
+    this.settingsPipeline = pipeline;
+    await pipeline.apply(this.settingsManager.getSnapshot());
+
+    this.settingsUnsubscribe = this.settingsManager.subscribe((snapshot) => {
+      void this.handleSettingsChange(snapshot);
+    });
+  }
+
+  private async handleSettingsChange(snapshot: SettingsSnapshot): Promise<void> {
+    await this.settingsPipeline?.apply(snapshot);
+
+    const language = readStringValue(snapshot.values, "general.language", DEFAULT_LANGUAGE_ID);
+    const localization = this.localizationManager;
+
+    if (!localization || language === localization.activeLanguage.id) {
+      return;
+    }
+
+    const result = await localization.setLanguage(language);
+
+    if (!result.changed) {
+      console.warn(`[Glassline] Language "${language}" could not be applied: ${result.error}`);
     }
   }
 
@@ -296,6 +389,16 @@ export class Application implements Disposable {
     this.statusOverlay?.update(this.buildStatusLines(), nowMs);
   }
 
+  private describeSettings(): string {
+    const manager = this.settingsManager;
+
+    if (!manager) {
+      return "unavailable";
+    }
+
+    return `rev ${manager.getSnapshot().revision} (${manager.getPersistenceStatus()})`;
+  }
+
   private buildStatusLines(): string[] {
     const frame = this.input?.currentFrame;
     const gameLoopStats = this.gameLoop?.getStats();
@@ -315,6 +418,8 @@ export class Application implements Disposable {
       `fps ${this.displayedFps.toFixed(1)} · fixed ${this.displayedFixedHz.toFixed(1)} Hz · dropped ${dropped}s`,
       `renderer ${this.renderer?.backendDescription ?? "not initialized"}`,
       `physics Rapier · gravity ${this.config.physics.gravity.y.toFixed(2)} · storage ${this.storageStatus}`,
+      `settings ${this.describeSettings()} · language ${this.localizationManager?.activeLanguage.id ?? "n/a"} · audio ${this.audioManager?.state ?? "unavailable"}`,
+      `localization ${this.localizationStatus} · resources ${this.resourceLoader?.activeCount ?? 0} active`,
       `input ${context} · pointer lock ${pointerLock} · move ${move} · look ${look}`,
       "WASD move · Space jump · Ctrl crouch/slide · Shift sprint · E interact · Esc pause",
     ];
@@ -364,6 +469,20 @@ export class Application implements Disposable {
   private releaseResources(): void {
     this.gameLoop?.stop();
     this.gameLoop = null;
+
+    this.settingsUnsubscribe?.();
+    this.settingsUnsubscribe = null;
+    this.settingsManager?.dispose();
+    this.settingsManager = null;
+    this.settingsPipeline = null;
+
+    this.localizationManager?.dispose();
+    this.localizationManager = null;
+
+    this.resourceLoader?.cancelAll();
+    this.resourceLoader = null;
+
+    this.audioManager = null;
 
     if (this.resizeCleanup) {
       this.resizeCleanup();

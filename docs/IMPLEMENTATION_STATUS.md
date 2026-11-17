@@ -3,8 +3,8 @@
 **Document:** `IMPLEMENTATION_STATUS.md`  
 **Project:** Glassline  
 **Last Updated:** 2026-11-17  
-**Project Stage:** Pre-Implementation → Runtime Foundation  
-**Status:** Phase 0 Complete; Phase 1 In Progress
+**Project Stage:** Runtime Foundation Complete  
+**Status:** Phase 0 and Phase 1 Complete; Phase 2 Next
 
 ---
 
@@ -87,23 +87,23 @@ Only `Verified` means that the applicable acceptance criteria have been checked 
 
 | Area | Specification | Implementation | Integration | Verification |
 |---|---|---|---|---|
-| Project Foundation | Defined | In Progress | In Progress | Partially Verified |
+| Project Foundation | Defined | Implemented | Integrated | Verified |
 | Technical Architecture | Defined | In Progress | In Progress | Partially Verified |
 | Core Gameplay | Defined | Not Started | Not Started | Not Verified |
 | Player Systems | Defined | Not Started | Not Started | Not Verified |
 | Level Systems | Defined | Not Started | Not Started | Not Verified |
 | Gameplay Modes | Defined | Not Started | Not Started | Not Verified |
 | UI / UX | Defined | Not Started | Not Started | Not Verified |
-| Audio | Defined | Not Started | Not Started | Not Verified |
+| Audio | Defined | In Progress | In Progress | Partially Verified |
 | Persistence | Defined | In Progress | In Progress | Partially Verified |
 | Progression | Defined | Not Started | Not Started | Not Verified |
 | Accessibility | Defined | Not Started | Not Started | Not Verified |
-| Localization | Defined | Not Started | Not Started | Not Verified |
+| Localization | Defined | In Progress | In Progress | Partially Verified |
 | Statistics | Defined | Not Started | Not Started | Not Verified |
 
-**Current phase:** Phase 0 (repository foundation) is complete. Phase 1 (application runtime) is in progress.
+**Current phase:** Phases 0 (repository foundation) and 1 (application runtime) are complete. Phase 2 (first-person player) is the next active workstream.
 
-**Implementation readiness:** The repository is initialized and the application foundation is runnable. Gameplay systems (movement, player state, level runtime, sessions) have not been implemented yet. The next active workstream is completing Phase 1 and then starting Phase 2.
+**Implementation readiness:** The repository is initialized and the application runtime is runnable: settings, localization, input, rendering, physics, audio lifecycle, and persistence foundations are in place. Gameplay systems (movement, player state, level runtime, sessions) have not been implemented yet.
 
 ### 3.1. Documentation Reconciliation (2026-11-17)
 
@@ -136,7 +136,7 @@ The following documents form the current specification baseline.
 | 05 | `05_PROCEDURAL_GENERATION_SPEC.md` | Defined | Not Started |
 | 06 | `06_LEVEL_DESIGN_SPEC.md` | Defined | Not Started |
 | 07 | `07_UI_UX_SPEC.md` | Defined | Not Started |
-| 08 | `08_AUDIO_DESIGN_SPEC.md` | Defined | Not Started |
+| 08 | `08_AUDIO_DESIGN_SPEC.md` | Defined | In Progress |
 | 09 | `09_SPEEDRUN_SYSTEM_SPEC.md` | Defined | Not Started |
 | 10 | `10_SAVE_SYSTEM_SPEC.md` | Defined | In Progress |
 | 11 | `11_INPUT_SYSTEM_SPEC.md` | Defined | In Progress |
@@ -153,9 +153,9 @@ The following documents form the current specification baseline.
 | 22 | `22_PROGRESSION_SYSTEM_SPEC.md` | Defined | Not Started |
 | 23 | `23_HUD_SYSTEM_SPEC.md` | Defined | Not Started |
 | 24 | `24_MENU_SYSTEM_SPEC.md` | Defined | Not Started |
-| 25 | `25_SETTINGS_SYSTEM_SPEC.md` | Defined | Not Started |
+| 25 | `25_SETTINGS_SYSTEM_SPEC.md` | Defined | In Progress |
 | 26 | `26_ACCESSIBILITY_SYSTEM_SPEC.md` | Defined | Not Started |
-| 27 | `27_LOCALIZATION_SYSTEM_SPEC.md` | Defined | Not Started |
+| 27 | `27_LOCALIZATION_SYSTEM_SPEC.md` | Defined | In Progress |
 | 28 | `28_TUTORIAL_SYSTEM_SPEC.md` | Defined | Not Started |
 | 29 | `29_ACHIEVEMENT_SYSTEM_SPEC.md` | Defined | Not Started |
 | 30 | `30_STATISTICS_SYSTEM_SPEC.md` | Defined | Not Started |
@@ -177,8 +177,8 @@ Systems are not completely independent. Integration should happen continuously a
 | Procedural Generation | 05 | Establish reusable procedural generation foundations | Not Started |
 | Input | 11 | Provide abstract input actions and device handling | In Progress |
 | Save | 10 | Establish IndexedDB persistence infrastructure | In Progress |
-| Settings | 25 | Establish configuration registry and runtime application | Not Started |
-| Localization | 27 | Establish translation resources and resolution | Not Started |
+| Settings | 25 | Establish configuration registry and runtime application | In Progress |
+| Localization | 27 | Establish translation resources and resolution | In Progress |
 
 ### 5.2. Core Player
 
@@ -219,7 +219,7 @@ Systems are not completely independent. Integration should happen continuously a
 | UI / UX | 07 | Establish visual and interaction conventions | Not Started |
 | Menu | 24 | Implement application screens and menu interactions | Not Started |
 | HUD | 23 | Implement gameplay HUD and feedback widgets | Not Started |
-| Audio | 08 | Implement gameplay audio and feedback | Not Started |
+| Audio | 08 | Implement gameplay audio and feedback | In Progress |
 | Accessibility | 26 | Implement accessibility preferences and adaptations | Not Started |
 
 ---
@@ -281,7 +281,7 @@ Exit criteria:
 
 **Goal:** Establish a working application runtime.
 
-**Status:** In Progress (runtime foundation complete; Settings/Localization systems not started).
+**Status:** Complete (2026-11-17).
 
 Systems:
 
@@ -305,42 +305,48 @@ Initial features:
 
 Implemented and smoke-verified:
 
-- `Application` composition root: documented startup order (storage → renderer → physics → input), recoverable storage failure, fatal-error overlay, idempotent shutdown, resize and visibility handling.
+- `Application` composition root: documented startup order (storage → settings → localization → renderer → physics → input → audio → settings application), recoverable storage/settings/localization failures, fatal-error overlay, idempotent shutdown, resize and visibility handling.
 - `GameLoop`: fixed 60 Hz simulation step, frame-delta clamping, catch-up protection, interpolation alpha, render/fixed callbacks. Unit-tested (60 steps per simulated second, dropped-time accounting, restart, stop).
 - `Renderer` + `RenderScene`: WebGL2 renderer, sRGB/tone mapping, shadows, camera, lighting, placeholder architecture scene.
 - `PhysicsWorld`: Rapier init, fixed timestep matching the game loop, world stepping, deterministic disposal. Unit-tested with a falling rigid body.
 - `InputManager` + `InputActionResolver`: action registry, configurable keyboard/gamepad bindings, gameplay/menu contexts, pointer lock, mouse deltas, dead zones, pressed/held/released edges. Unit-tested without a DOM.
+- Settings System foundation: canonical definitions registry (`audio.*`, `controls.*`, `camera.*`, `display.*`, `hud.*`, `accessibility.*`, `gameplay.*`, `general.language`), validation, defaults, atomic updates, revisioned immutable snapshots, persistence through `SettingsRepository`, runtime application pipeline with domain adapters. Unit-tested.
+- Localization foundation: language registry (English), bundled resource loading through the shared `ResourceLoader`, translation resolution with fallback, interpolation, pluralization via `Intl.PluralRules`, runtime language switching wired to `general.language`. Unit-tested.
+- Resource loading: `ResourceLoader` with in-flight deduplication, cancellation, timeouts, and structured `ResourceLoadError` values. Unit-tested.
+- Audio foundation: `AudioManager` with lazy `AudioContext` creation after a genuine user gesture, resume, master gain, Settings-owned volume/mute application, and deterministic disposal. Unit-tested with a fake context.
 - `Database` + `SaveSchema` + `SettingsRepository`: IndexedDB `GlasslineSaveData`, schema migrations, versioned stores, transactions, typed errors, malformed-payload rejection. Tested with fake-indexeddb.
 - `EventBus`, `Time`, `Disposable`/`disposeAll`, `StatusOverlay` diagnostics.
 
 Verification performed:
 
 - `npm run typecheck` — passes.
-- `npm test` — 38 unit tests pass (game loop, input, database, physics, event bus).
+- `npm run check` — Biome lint, formatting, and import order pass.
+- `npm test` — 72 unit tests pass across 9 files (game loop, input, database, physics, event bus, settings, localization, resource loading, audio).
 - `npm run build` — production build succeeds.
-- Headless browser smoke check (Microsoft Edge, WebGL2/SwiftShader): application reaches `phase running`; renderer reports WebGL2 + Three.js r187; Rapier initializes; persistence reports `ready (no saved data)`; the placeholder scene and falling physics cube render correctly.
+- Headless browser smoke check (Microsoft Edge, WebGL2/SwiftShader): application reaches `phase running`; renderer reports WebGL2 + Three.js r187; Rapier initializes; storage reports `ready (version 1)`; settings report `rev 0 (ready)`; localization reports `ready (en)`; audio reports `idle` until a user gesture; the placeholder scene and falling physics cube render correctly.
 
 Exit criteria:
 
 - [x] Application starts successfully.
 - [x] Renderer and physics initialize correctly.
 - [x] Input actions can be read through the abstraction layer.
-- [ ] Settings can be loaded and saved (repository exists; Settings System not implemented).
+- [x] Settings can be loaded and saved (SettingsManager + SettingsRepository, tested).
 - [x] IndexedDB persistence works at the storage layer.
-- [ ] Resource loading reports failures safely (asset loading not implemented yet).
+- [x] Resource loading reports failures safely (`ResourceLoader` structured errors; localization fallback path).
 
-Remaining Phase 1 work:
+Remaining Phase 1 work: none.
 
-- Settings System foundation: definitions registry, defaults, validation, snapshot, runtime application adapters.
-- Localization system foundation: language registry and translation resource loading.
-- Resource loading and non-fatal error reporting for procedural assets.
-- Audio manager foundation (deferred until a user gesture is available).
-- Replace the temporary debug sandbox when the player controller arrives (Phase 2).
+Deferred beyond the foundation (belongs to later phases, not Phase 1 gaps):
+
+- Settings transactions, preview, and display confirmation flows — with the Settings UI/menu phase.
+- Additional languages and the full translation resource set — with the localization implementation phase.
+- Procedural audio synthesis and gameplay sounds — with the audio implementation phase.
+- Removal of the temporary debug sandbox — when the player controller arrives (Phase 2).
 
 Known notes:
 
 - The production bundle is currently a single ~4.9 MB chunk (Three.js + Rapier WASM). Code splitting is deferred until the gameplay modules exist; the build warning is expected and not a blocker for the prototype.
-- The `StatusOverlay` and `PhysicsDebugSandbox` are temporary Phase 1 diagnostics and must not become permanent gameplay coupling.
+- The `StatusOverlay` and `PhysicsDebugSandbox` are temporary diagnostics and must not become permanent gameplay coupling.
 
 ### Phase 2 — First-Person Player
 
@@ -622,7 +628,7 @@ Integration is tracked separately from individual system implementation.
 | Speedrun → Checkpoint | Ordered checkpoint validation | Not Started |
 | Speedrun → Save | Persistent records | Not Started |
 | Training → Save | Persistent training progress | Not Started |
-| Settings → Save | Configuration persistence | Not Started |
+| Settings → Save | Configuration persistence | Integrated |
 | Settings → Accessibility | Accessibility preferences | Not Started |
 | Localization → UI | Localized text and formatting | Not Started |
 | Gameplay Events → Statistics | Normalized event aggregation | Not Started |

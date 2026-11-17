@@ -206,7 +206,9 @@ The specification baseline was reconciled on 2026-11-17: cross-document ownershi
 
 The repository foundation (**Phase 0**) is complete: Vite + TypeScript (strict) + Three.js + Rapier project scaffold, Biome linting/formatting, CI validation, and a unit-test runner are in place.
 
-**Phase 1** (application runtime) is in progress: application lifecycle, fixed 60 Hz game loop, WebGL2 renderer, Rapier physics world, input abstraction, and the IndexedDB save foundation are implemented and smoke-verified in a browser. Settings, localization, and audio systems are not implemented yet.
+**Phase 1** (application runtime) is complete: application lifecycle, fixed 60 Hz game loop, WebGL2 renderer, Rapier physics world, input abstraction, IndexedDB save foundation, Settings System foundation, localization foundation, resource loading with structured errors, and the audio lifecycle foundation are implemented, unit-tested, and smoke-verified in a browser.
+
+**Phase 2** (first-person player: Movement, Camera, Player State) is the next implementation phase.
 
 For actual implementation, integration, and verification status, see:
 
@@ -313,9 +315,9 @@ CI runs the same `npm run validate` pipeline on pushes to `main` and on pull req
 
 ### Current Runtime State (Phase 1)
 
-Running `npm run dev` opens a placeholder 3D scene with a falling physics cube and a development status overlay showing frame rate, fixed stepping, renderer/physics/storage status, and input state.
+Running `npm run dev` opens a placeholder 3D scene with a falling physics cube and a development status overlay showing frame rate, fixed stepping, renderer/physics/storage status, settings revision, active language, audio state, and input state.
 
-- Click the canvas to capture the mouse (pointer lock).
+- Click the canvas to capture the mouse (pointer lock); the first click or key press also resumes the Web Audio context.
 - `Esc` releases pointer lock.
 - `WASD` move, `Space` jump, `Ctrl` crouch/slide, `Shift` sprint, `E` interact, `R` restart, `Esc` pause.
 
