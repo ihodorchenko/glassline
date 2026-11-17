@@ -1,12 +1,17 @@
 import { AudioManager } from "../audio/AudioManager";
 import { CameraSystem } from "../camera/CameraSystem";
-import { CheckpointSystem } from "../checkpoint/CheckpointSystem";
+import { type CheckpointDefinition, CheckpointSystem } from "../checkpoint/CheckpointSystem";
 import { type Disposable, disposeAll } from "../core/Disposable";
 import { GameLoop } from "../core/GameLoop";
 import { StatusOverlay } from "../diagnostics/StatusOverlay";
 import { InputManager } from "../input/InputManager";
 import { IDLE_INPUT_FRAME, type InputFrame } from "../input/InputState";
 import { InteractionSystem } from "../interaction/InteractionSystem";
+import { LevelRuntimeManager } from "../levels/LevelRuntimeManager";
+import {
+  TRAINING_TEST_LEVEL_DEFINITIONS,
+  TRAINING_TEST_LEVEL_ID,
+} from "../levels/test/TrainingTestLevel";
 import { DEFAULT_LANGUAGE_ID, DEFAULT_LANGUAGE_REGISTRY } from "../localization/Language";
 import { LocalizationManager } from "../localization/LocalizationManager";
 import { createDefaultLocalizationResourceLoader } from "../localization/LocalizationResourceLoader";
@@ -28,7 +33,6 @@ import { readStringValue, type SettingsSnapshot } from "../settings/SettingsType
 import type { Vector3Like } from "../shared/math";
 import { Database, StorageError } from "../storage/Database";
 import { SettingsRepository } from "../storage/repositories/SettingsRepository";
-import { TestLevel, type TestLevelData } from "../world/TestLevel";
 import { type ApplicationConfig, DEFAULT_APPLICATION_CONFIG } from "./ApplicationConfig";
 
 export type ApplicationState = "idle" | "initializing" | "ready" | "running" | "stopped" | "failed";
@@ -47,8 +51,9 @@ function describeError(error: unknown): string {
  * Composition root.
  *
  * Creates and connects core services in the documented startup order
- * (`docs/02_TECHNICAL_ARCHITECTURE.md` §5), owns the game loop, and coordinates
- * shutdown. It contains no gameplay implementation.
+ * (`docs/02_TECHNICAL_ARCHITECTURE.md` §5), loads the level through the Level
+ * Runtime, owns the game loop, and coordinates shutdown. It contains no gameplay
+ * implementation.
  */
 export class Application implements Disposable {
   private readonly config: ApplicationConfig;
@@ -74,11 +79,11 @@ export class Application implements Disposable {
   private cameraSystem: CameraSystem | null = null;
   private player: PlayerSystem | null = null;
   private playerState: PlayerStateSystem | null = null;
-  private testLevel: TestLevel | null = null;
-  private testLevelData: TestLevelData | null = null;
+  private levelRuntime: LevelRuntimeManager | null = null;
   private checkpointSystem: CheckpointSystem | null = null;
   private interactionSystem: InteractionSystem | null = null;
   private respawnManager: RespawnManager | null = null;
+  private levelEventUnsubscribes: (() => void)[] = [];
 
   private storageStatus = "not initialized";
   private localizationStatus = "not initialized";
@@ -125,9 +130,9 @@ export class Application implements Disposable {
 
       this.initializeRendering();
 
-      // Fatal: the application requires a working renderer and physics world.
+      // Fatal: the application requires a working renderer, physics, and level.
       await this.initializePhysics();
-      this.initializeTestLevel();
+      await this.initializeLevelRuntime();
       this.initializePlayer();
       this.initializeCamera();
       this.initializeInput();
@@ -138,6 +143,9 @@ export class Application implements Disposable {
       this.registerWindowHandlers();
       this.handleResize();
       this.resetStatusWindow();
+
+      await this.levelRuntime?.startSession();
+      this.syncInteractionPresentation();
 
       this.player?.activate();
       this.playerState?.activate();
@@ -286,14 +294,19 @@ export class Application implements Disposable {
     this.resources.push(this.physics);
   }
 
-  private initializeTestLevel(): void {
-    if (!this.physics || !this.renderScene) {
-      throw new Error("Test level requires initialized physics and rendering.");
+  private async initializeLevelRuntime(): Promise<void> {
+    if (!this.renderScene || !this.physics) {
+      throw new Error("Level Runtime requires initialized rendering and physics.");
     }
 
-    this.testLevel = new TestLevel(this.physics, this.renderScene);
-    this.testLevelData = this.testLevel.getData();
-    this.resources.push(this.testLevel);
+    this.levelRuntime = new LevelRuntimeManager({
+      scene: this.renderScene,
+      physics: this.physics,
+      definitions: TRAINING_TEST_LEVEL_DEFINITIONS,
+    });
+    this.resources.push(this.levelRuntime);
+
+    await this.levelRuntime.loadLevel(TRAINING_TEST_LEVEL_ID);
   }
 
   private initializePlayer(): void {
@@ -301,8 +314,18 @@ export class Application implements Disposable {
       throw new Error("Player requires an initialized physics world.");
     }
 
+    const initialSpawn = this.levelRuntime?.getInitialSpawnPoint();
+
+    if (!initialSpawn) {
+      throw new Error("Level Runtime did not resolve an initial spawn point.");
+    }
+
     const tuning = this.config.movement;
-    const spawnPoint = { x: 0, y: tuning.capsuleHeight / 2 + 0.05, z: 6 };
+    const spawnPoint = {
+      x: initialSpawn.position.x,
+      y: initialSpawn.position.y,
+      z: initialSpawn.position.z,
+    };
 
     this.playerState = new PlayerStateSystem();
     this.resources.push(this.playerState);
@@ -347,6 +370,141 @@ export class Application implements Disposable {
     this.resources.push(this.audioManager);
   }
 
+  private initializeTraversalSystems(): void {
+    const levelRuntime = this.levelRuntime;
+    const level = levelRuntime?.getCurrentLevel();
+    const session = levelRuntime?.getCurrentSession();
+    const player = this.player;
+    const camera = this.cameraSystem;
+    const input = this.input;
+    const physics = this.physics;
+
+    if (!levelRuntime || !level || !session || !player || !camera || !input || !physics) {
+      throw new Error(
+        "Traversal systems require the loaded level, player, camera, input, and physics.",
+      );
+    }
+
+    const checkpointDefinitions: CheckpointDefinition[] = level.checkpoints.map((checkpoint) => ({
+      id: checkpoint.id,
+      levelId: level.id,
+      sectionId: checkpoint.sectionId,
+      spawnPointId: checkpoint.spawnPointId,
+      displayName: checkpoint.displayName,
+      activationMode: checkpoint.activationMode ?? "automatic",
+      enabled: checkpoint.enabled ?? true,
+      repeatable: checkpoint.repeatable ?? true,
+      respawnEnabled: checkpoint.respawnEnabled ?? true,
+      ...(checkpoint.order === undefined ? {} : { order: checkpoint.order }),
+    }));
+
+    this.checkpointSystem = new CheckpointSystem(checkpointDefinitions, {
+      levelId: level.id,
+      sessionId: session.id,
+      spawnResolver: {
+        resolve: (spawnPointId: string) => {
+          const spawnPoint = this.levelRuntime?.resolveSpawnPoint(spawnPointId);
+
+          if (!spawnPoint) {
+            return null;
+          }
+
+          return { position: spawnPoint.position, rotationY: spawnPoint.rotationY };
+        },
+      },
+    });
+    this.resources.push(this.checkpointSystem);
+
+    this.interactionSystem = new InteractionSystem(levelRuntime.getInteractionTargets(), {
+      lineOfSight: (eyePosition, target) => this.hasLineOfSight(eyePosition, target.position),
+    });
+    this.resources.push(this.interactionSystem);
+
+    const initialSpawn = levelRuntime.getInitialSpawnPoint();
+
+    if (!initialSpawn) {
+      throw new Error("Level Runtime did not resolve an initial spawn point for respawn fallback.");
+    }
+
+    this.respawnManager = new RespawnManager(
+      {
+        checkpoints: this.checkpointSystem,
+        player,
+        camera,
+        input,
+      },
+      {
+        fallbackSpawn: initialSpawn.position,
+        fallbackRotationY: initialSpawn.rotationY,
+      },
+    );
+    this.resources.push(this.respawnManager);
+
+    this.subscribeLevelRuntimeEvents();
+  }
+
+  private subscribeLevelRuntimeEvents(): void {
+    const levelRuntime = this.levelRuntime;
+
+    if (!levelRuntime) {
+      return;
+    }
+
+    this.levelEventUnsubscribes.push(
+      levelRuntime.on("trigger:enter", (event) => {
+        const checkpointId = event.metadata?.checkpointId;
+
+        if (checkpointId) {
+          const activation = this.checkpointSystem?.notifyTriggerEnter(
+            checkpointId,
+            event.timestamp,
+          );
+
+          if (activation) {
+            console.info(`[Glassline] Checkpoint activated: ${activation.checkpointId}`);
+          }
+
+          return;
+        }
+
+        if (event.metadata?.kind === "kill-volume") {
+          this.respawnManager?.request("fall");
+        }
+      }),
+    );
+
+    this.levelEventUnsubscribes.push(
+      levelRuntime.on("section:activated", (event) => {
+        console.info(`[Glassline] Section activated: ${event.sectionId}`);
+        this.syncInteractionPresentation();
+      }),
+    );
+
+    this.levelEventUnsubscribes.push(
+      levelRuntime.on("level:failed", (event) => {
+        console.error("[Glassline] Level Runtime failed.", event.error);
+      }),
+    );
+  }
+
+  private syncInteractionPresentation(): void {
+    const interaction = this.interactionSystem;
+    const levelRuntime = this.levelRuntime;
+
+    if (!interaction || !levelRuntime) {
+      return;
+    }
+
+    const activeSectionId = levelRuntime.getActiveSectionId();
+
+    for (const target of levelRuntime.getInteractionTargets()) {
+      interaction.setTargetEnabled(
+        target.id,
+        target.enabled !== false && target.sectionId === activeSectionId,
+      );
+    }
+  }
+
   private async initializeSettingsApplication(): Promise<void> {
     if (!this.settingsManager) {
       return;
@@ -388,6 +546,20 @@ export class Application implements Disposable {
     }
   }
 
+  private initializeGameLoop(): void {
+    this.gameLoop = new GameLoop(this.config.gameLoop, {
+      onFrameStart: (timestampMs) => {
+        this.input?.updateFrame(timestampMs);
+      },
+      onFixedUpdate: (fixedDeltaSeconds) => {
+        this.fixedUpdate(fixedDeltaSeconds);
+      },
+      onRender: (alpha, frameDeltaSeconds) => {
+        this.renderFrame(alpha, frameDeltaSeconds);
+      },
+    });
+  }
+
   /** Runs a few fixed steps so the player is grounded before the first frame. */
   private settlePlayer(steps = 20): void {
     const idleSample: MovementInputSample = {
@@ -408,86 +580,6 @@ export class Application implements Disposable {
     if (this.player && this.playerState) {
       this.playerState.updateFromMovement(this.player.getMovementSnapshot(), performance.now());
     }
-  }
-
-  private initializeTraversalSystems(): void {
-    if (!this.testLevelData || !this.player || !this.cameraSystem || !this.input || !this.physics) {
-      throw new Error(
-        "Traversal systems require the test level, player, camera, input, and physics.",
-      );
-    }
-
-    const data = this.testLevelData;
-
-    this.checkpointSystem = new CheckpointSystem(
-      data.checkpoints,
-      data.spawnPoints,
-      data.initialSpawnPointId,
-    );
-    this.resources.push(this.checkpointSystem);
-
-    this.interactionSystem = new InteractionSystem(data.interactionTargets, {
-      lineOfSight: (eyePosition, target) =>
-        this.hasLineOfSight(eyePosition, target.position, target.colliderHandle),
-    });
-    this.resources.push(this.interactionSystem);
-
-    const fallbackSpawn = data.spawnPoints.find(
-      (spawnPoint) => spawnPoint.id === data.initialSpawnPointId,
-    )?.position ?? { x: 0, y: 0.93, z: 0 };
-
-    this.respawnManager = new RespawnManager(
-      {
-        checkpoints: this.checkpointSystem,
-        player: this.player,
-        camera: this.cameraSystem,
-        input: this.input,
-      },
-      { fallbackSpawn },
-    );
-    this.resources.push(this.respawnManager);
-  }
-
-  private hasLineOfSight(
-    from: Vector3Like,
-    to: Vector3Like,
-    targetColliderHandle?: number,
-  ): boolean {
-    if (!this.physics) {
-      return true;
-    }
-
-    const delta = { x: to.x - from.x, y: to.y - from.y, z: to.z - from.z };
-    const length = Math.hypot(delta.x, delta.y, delta.z);
-
-    if (length < 1e-6) {
-      return true;
-    }
-
-    const hit = this.physics.castRay(from, to, { ignoreKinematic: true });
-
-    if (!hit) {
-      return true;
-    }
-
-    // A hit close to the target is the target itself (or its host collider).
-    void targetColliderHandle;
-
-    return hit.distance >= length - 0.4;
-  }
-
-  private initializeGameLoop(): void {
-    this.gameLoop = new GameLoop(this.config.gameLoop, {
-      onFrameStart: (timestampMs) => {
-        this.input?.updateFrame(timestampMs);
-      },
-      onFixedUpdate: (fixedDeltaSeconds) => {
-        this.fixedUpdate(fixedDeltaSeconds);
-      },
-      onRender: (alpha, frameDeltaSeconds) => {
-        this.renderFrame(alpha, frameDeltaSeconds);
-      },
-    });
   }
 
   private fixedUpdate(fixedDeltaSeconds: number): void {
@@ -515,21 +607,8 @@ export class Application implements Disposable {
 
     const playerPosition = this.player?.getPosition();
 
-    if (playerPosition && this.checkpointSystem) {
-      const checkpointEvent = this.checkpointSystem.update(playerPosition, performance.now());
-
-      if (checkpointEvent) {
-        console.info(`[Glassline] Checkpoint activated: ${checkpointEvent.checkpointId}`);
-      }
-    }
-
-    if (
-      playerPosition &&
-      respawn &&
-      this.testLevelData &&
-      playerPosition.y < this.testLevelData.killPlaneY
-    ) {
-      respawn.request("fall");
+    if (playerPosition) {
+      this.levelRuntime?.update(playerPosition, performance.now());
     }
 
     this.physics?.step();
@@ -559,6 +638,28 @@ export class Application implements Disposable {
         console.info(`[Glassline] Interaction executed: ${result.targetId}`);
       }
     }
+  }
+
+  private hasLineOfSight(from: Vector3Like, to: Vector3Like): boolean {
+    if (!this.physics) {
+      return true;
+    }
+
+    const delta = { x: to.x - from.x, y: to.y - from.y, z: to.z - from.z };
+    const length = Math.hypot(delta.x, delta.y, delta.z);
+
+    if (length < 1e-6) {
+      return true;
+    }
+
+    const hit = this.physics.castRay(from, to, { ignoreKinematic: true });
+
+    if (!hit) {
+      return true;
+    }
+
+    // A hit close to the target is the target itself (or its host collider).
+    return hit.distance >= length - 0.4;
   }
 
   private renderFrame(alpha: number, frameDeltaSeconds: number): void {
@@ -657,9 +758,39 @@ export class Application implements Disposable {
       `localization ${this.localizationStatus} · resources ${this.resourceLoader?.activeCount ?? 0} active`,
       `input ${context} · pointer lock ${pointerLock} · move ${move} · look ${look}`,
       player,
+      this.buildLevelStatusLine(),
       this.buildTraversalStatusLine(),
-      "WASD move · Space jump · Ctrl crouch · Shift sprint · click to capture mouse · Esc pause",
+      "WASD move · Space jump · Ctrl crouch/slide · Shift sprint · E vault/interact · click to capture mouse · Esc pause",
     ];
+  }
+
+  private buildLevelStatusLine(): string {
+    const runtime = this.levelRuntime?.getSnapshot();
+
+    if (!runtime) {
+      return "level not initialized";
+    }
+
+    const surface = this.player ? this.getPlayerSurfaceLabel() : "n/a";
+
+    return `level ${runtime.levelId ?? "none"} · ${runtime.sessionState ?? "no session"} · section ${runtime.activeSectionId ?? "none"} · objects ${runtime.objectCount} · triggers ${runtime.activeTriggerCount}/${runtime.triggerCount} · surfaces ${runtime.activeSurfaceCount}/${runtime.objectSurfaceCount} · underfoot ${surface}`;
+  }
+
+  private getPlayerSurfaceLabel(): string {
+    const player = this.player;
+
+    if (!player) {
+      return "n/a";
+    }
+
+    const feet = player.getFeetPosition();
+    const surface = this.levelRuntime?.getSurfaceAt(feet);
+
+    if (!surface) {
+      return "none";
+    }
+
+    return `${surface.definition.surfaceType}${surface.definition.walkable ? "/walkable" : ""}`;
   }
 
   private buildTraversalStatusLine(): string {
@@ -731,11 +862,16 @@ export class Application implements Disposable {
     this.cameraSystem = null;
     this.player = null;
     this.playerState = null;
-    this.testLevel = null;
-    this.testLevelData = null;
     this.checkpointSystem = null;
     this.interactionSystem = null;
     this.respawnManager = null;
+
+    for (const unsubscribe of this.levelEventUnsubscribes) {
+      unsubscribe();
+    }
+
+    this.levelEventUnsubscribes = [];
+    this.levelRuntime = null;
 
     if (this.resizeCleanup) {
       this.resizeCleanup();

@@ -3,8 +3,8 @@
 **Document:** `IMPLEMENTATION_STATUS.md`  
 **Project:** Glassline  
 **Last Updated:** 2026-11-17  
-**Project Stage:** Core Parkour Complete  
-**Status:** Phases 0–3 Complete; Phase 4 Next
+**Project Stage:** Level Runtime Complete  
+**Status:** Phases 0–4 Complete; Phase 5 Next
 
 ---
 
@@ -91,7 +91,7 @@ Only `Verified` means that the applicable acceptance criteria have been checked 
 | Technical Architecture | Defined | In Progress | In Progress | Partially Verified |
 | Core Gameplay | Defined | In Progress | In Progress | Partially Verified |
 | Player Systems | Defined | In Progress | In Progress | Partially Verified |
-| Level Systems | Defined | Not Started | Not Started | Not Verified |
+| Level Systems | Defined | In Progress | In Progress | Partially Verified |
 | Gameplay Modes | Defined | Not Started | Not Started | Not Verified |
 | UI / UX | Defined | Not Started | Not Started | Not Verified |
 | Audio | Defined | In Progress | In Progress | Partially Verified |
@@ -101,9 +101,9 @@ Only `Verified` means that the applicable acceptance criteria have been checked 
 | Localization | Defined | In Progress | In Progress | Partially Verified |
 | Statistics | Defined | Not Started | Not Started | Not Verified |
 
-**Current phase:** Phases 0 (repository foundation), 1 (application runtime), 2 (first-person player), and 3 (traversal and recovery) are complete. Phase 4 (level runtime) is the next active workstream.
+**Current phase:** Phases 0 (repository foundation), 1 (application runtime), 2 (first-person player), 3 (traversal and recovery), and 4 (level runtime) are complete. Phase 5 (gameplay sessions and modes) is the next active workstream.
 
-**Implementation readiness:** The core parkour loop is playable in a test environment: first-person movement, jump, crouch/slide, vault, wall running/jumping, checkpoints, contextual interaction, and checkpoint-based respawn. Level runtime, structured gameplay sessions, and presentation systems are the next implementation areas.
+**Implementation readiness:** The core parkour loop runs in a Level Runtime-managed level with sections, spawn points, triggers, traversal surface metadata, checkpoints, contextual interaction, and checkpoint-based respawn. Structured gameplay sessions/modes, final level content, and presentation systems are the next implementation areas.
 
 ### 3.1. Documentation Reconciliation (2026-11-17)
 
@@ -143,7 +143,7 @@ The following documents form the current specification baseline.
 | 12 | `12_MOVEMENT_SYSTEM_SPEC.md` | Defined | In Progress |
 | 13 | `13_CAMERA_SYSTEM_SPEC.md` | Defined | In Progress |
 | 14 | `14_INTERACTION_SYSTEM_SPEC.md` | Defined | In Progress |
-| 15 | `15_LEVEL_RUNTIME_SYSTEM_SPEC.md` | Defined | Not Started |
+| 15 | `15_LEVEL_RUNTIME_SYSTEM_SPEC.md` | Defined | In Progress |
 | 16 | `16_CHECKPOINT_SYSTEM_SPEC.md` | Defined | In Progress |
 | 17 | `17_RESPAWN_SYSTEM_SPEC.md` | Defined | In Progress |
 | 18 | `18_PLAYER_STATE_SYSTEM_SPEC.md` | Defined | In Progress |
@@ -195,7 +195,7 @@ Systems are not completely independent. Integration should happen continuously a
 | System | Specification | Initial Goal | Status |
 |---|---|---|---|
 | Level Design | 06 | Establish level definitions and route structure | Not Started |
-| Level Runtime | 15 | Load and manage runtime level sessions | Not Started |
+| Level Runtime | 15 | Load and manage runtime level sessions | In Progress |
 | Checkpoint | 16 | Register and activate checkpoints | In Progress |
 | Procedural Generation | 05 | Generate validated environment geometry and assets | Not Started |
 
@@ -379,7 +379,7 @@ Implemented and smoke-verified:
 - `PlayerSystem`: Rapier capsule on a kinematic-position body driven by `KinematicCharacterController` (autostep, ground snapping, slope limits, wall sliding); reconciles velocity with the movement actually allowed by collisions; interpolated position for rendering; reset; emits canonical `player:jumped` / `player:landed` events. Integration-tested against a Rapier world (settling, movement, jump/land, wall blocking).
 - `PlayerStateSystem`: aggregated lifecycle (`initializing` → `active`/`disabled`), control projection, capability resolution (`canMove`, `canLook`, `canJump`, `canSprint`, `canCrouch`, `canSlide` reserved, `canInteract`, `canPause`, `canRestart`), revisioned immutable snapshots, and change listeners. Unit-tested.
 - `CameraSystem`: first-person perspective camera, yaw/pitch look with ±85° pitch clamp, mouse and gamepad look with Settings-owned sensitivity/inversion, smooth standing/crouching eye-height transitions, speed-dependent bob, landing dip, single-owner FOV controller with sprint FOV, and reduced-motion behavior. Unit-tested.
-- `TestLevel`: temporary authored test environment (ground, boundary walls, steps, obstacles, jumpable platforms, wall surface, accent marker) with matching visual meshes and static Rapier colliders.
+- Test-level content: temporary authored test environment (ground, boundary walls, steps, obstacles, jumpable platforms, wall surface, accent marker) with matching visual meshes and static Rapier colliders. Superseded by the Level Runtime content rewrite in Phase 4.
 - `Application` integration: startup order now includes test level → player state → player → camera; fixed update runs player movement before the physics step; render interpolates the player body between fixed steps and updates the camera; Settings adapters apply `controls.*`, `camera.*`, and shared reduced-motion preferences to the camera; a short warm-up settles the player on the ground before the first frame; status overlay reports player state, speed, grounded flag, and stance.
 - Removed the Phase 1 `PhysicsDebugSandbox`; the test level and player controller replace it.
 
@@ -409,7 +409,7 @@ Deferred to Phase 3 and later (not Phase 2 gaps):
 Known notes:
 
 - The production bundle is currently a single ~4.9 MB chunk (Three.js + Rapier WASM); code splitting is deferred until the gameplay modules settle.
-- `TestLevel` and `StatusOverlay` are temporary verification scaffolding.
+- The test environment and `StatusOverlay` are temporary verification scaffolding; level content now loads through Level Runtime.
 
 ### Phase 3 — Traversal and Recovery
 
@@ -475,12 +475,14 @@ Known limitations and deferred integration:
 - Respawn has no fade/transition presentation yet; the camera snaps to the destination. Recovery presentation belongs to Phase 6.
 - Checkpoint progress is session-scoped and not persisted; persistent run state belongs to Phase 5 (Speedrun/Save).
 - Checkpoint order is deterministic but not yet validated against the Speedrun route; Speedrun owns ordered validation (Phase 5).
-- `TestLevel` remains temporary level content: definitions are passed directly to the checkpoint/interaction systems. Level Runtime will own level loading, spawn registration, and trigger registration in Phase 4.
+- Level content was moved under Level Runtime in Phase 4: authored definitions now provide spawn points, triggers, checkpoints, interaction targets, surfaces, and geometry. Final Training/Prologue content is still deferred.
 - Interaction currently exposes prompt snapshots without HUD rendering; HUD belongs to Phase 6.
 
 ### Phase 4 — Level Runtime
 
 **Goal:** Establish the runtime level lifecycle.
+
+**Status:** Complete (2026-11-17).
 
 Systems:
 
@@ -498,12 +500,54 @@ Initial features:
 - Section lifecycle.
 - Runtime cleanup.
 
+Implemented and verified:
+
+- Level definitions and validation:
+  - Typed `LevelDefinition`, section, spawn point, trigger, authored checkpoint, interaction target, geometry, and surface metadata models.
+  - `validateLevelDefinition` checks ids, section ordering/references, spawn ownership and finite transforms, geometry/surface references, trigger volumes and target references, checkpoint trigger/spawn references, interaction targets, and Prologue section count/order.
+- `LevelRuntimeManager` session lifecycle:
+  - Load → initializing → ready → active → paused/completed → unloading with structured `LevelRuntimeError` codes.
+  - Loaded definitions are validated before initialization; unknown levels, duplicate definitions, invalid definitions, invalid session states, and disallowed transitions are rejected deterministically.
+  - Cancellation through `AbortSignal` and operation generations; partially initialized content rolls back on failure.
+  - Level lifecycle and section/trigger events via a typed event bus; session IDs are unique per load and preserved across section transitions.
+  - Idempotent unload that disposes content, clears registries/managers, and supports clean reloading with a new session.
+- Section lifecycle: explicit `loaded`/`active` states, chain-validated activation (`nextSectionId`), deterministic no-op for repeated activation, deactivation of previous-section trigger/interactable objects, and section events.
+- Spawn points (`SpawnPointManager`): registration, validation, initial spawn resolution, section-aware priority, and explicit/section/fallback/initial resolution order.
+- Triggers (`TriggerManager`): registration, enabled state, section gating, enter/exit deduplication, repeatable/non-repeatable behavior, exit events on disable, metadata pass-through, and clearing on unload. Section-entry triggers drive automatic section activation.
+- Surface metadata (`SurfaceRegistry`): registered per geometry with concrete/metal surface type and walkable/landing/wall-run/wall-jump/vault flags, collider-handle lookup, active state, and feet-position surface resolution. The player status line reports the surface underfoot.
+- Runtime object registry (`RuntimeObjectRegistry`): unique ids, section/type queries, section activation/deactivation, aggregated failure reporting, and aggregated disposal.
+- Content loading (`BoxLevelContentLoader`): instantiates authored box geometry as Three.js meshes and static Rapier colliders, registers surfaces/spawn points/triggers/checkpoints/interactables, and releases meshes, materials, colliders, and registrations on unload. Whole-level loading is synchronous behind an asynchronous contract, ready for procedural generation or streaming adapters.
+- Checkpoint integration refactor: Level Runtime owns trigger detection and spawn resolution; `CheckpointSystem` now activates from validated trigger signals and resolves spawn points through Level Runtime, scoped to the active level session. Trigger-based activation replaces direct position polling.
+- Interaction integration: interaction targets come from the level definition; only targets in the active section are enabled, and prompts remain owned by the Interaction System.
+- Failure volumes: the test level authors a kill-volume trigger in the fall pit; the Application interprets the validated trigger signal and requests recovery through `RespawnManager`.
+- Application integration: level is loaded through Level Runtime before player creation; player spawn comes from the resolved initial spawn; player movement starts only after session start; fixed-step order is movement → interaction → Level Runtime triggers/section → physics; status overlay shows level/session/section/object/trigger/surface counts and underfoot surface.
+- Content: temporary authored `training_test` level with three sections (Start, Traversal, Finish), six spawn points, three checkpoints, six triggers (two section-entry, three checkpoint, one kill volume), one interaction terminal, 18 box geometry objects, and eight surface definitions.
+
+Verification performed:
+
+- `npm run typecheck` — passes.
+- `npm run check` — Biome lint/format/import checks pass.
+- `npm test` — 185 unit and integration tests across 20 files pass, including: Level Runtime lifecycle 13, level registries/validator 19, checkpoint 7, plus the Phase 1–3 suites (movement, player traversal, respawn, interaction, detection, camera, player state, player physics, and foundations).
+- `npm run build` — production build succeeds.
+- Headless browser smoke check: level loads and starts (`level training_test · active · section sec_start · objects 34 · triggers 3/6 · surfaces 18/18 · underfoot concrete/walkable`), player spawns grounded, no fatal overlay.
+- Browser CDP check: movement activates `cp_rooftop`; vaulting crosses the section-entry trigger into `sec_traversal` (trigger count changes to 2/6); continued movement activates `cp_industrial`; Level Runtime content remains stable.
+
 Exit criteria:
 
-- A test level can be loaded and unloaded.
-- Spawn points resolve correctly.
-- Traversal surfaces expose expected metadata.
-- Runtime objects do not leak between sessions.
+- [x] A test level can be loaded and unloaded: load/start/complete/unload covered by tests; unload removes all scene content and runtime registrations, and reload works with a new session ID.
+- [x] Spawn points resolve correctly: initial, explicit, section, fallback, and checkpoint-resolved spawns are covered by tests and used by player initialization/respawn.
+- [x] Traversal surfaces expose expected metadata: concrete/metal types and walkable/landing/wall-run/wall-jump/vault flags are registered per geometry, queryable by section/collider/feet position, and displayed in the status overlay.
+- [x] Runtime objects do not leak between sessions: scene children return to baseline after unload, registry/trigger/surface/spawn/object counts return to zero, reload produces a fresh session and identical content count, and unload is idempotent.
+
+Known limitations and deferred integration:
+
+- Only the initial Training test level is authored. The five-section Prologue definition, final Training content, procedural generation adapter, and asset streaming are deferred to later phases.
+- Section transitions currently use trigger-driven automatic activation through `LevelRuntimeManager.activateSection`; the dedicated `LevelTransitionManager` façade (fades, cancellation, scripted transitions) and `EnvironmentStateManager` are deferred until presentation/session phases.
+- `restartSession` is not exposed by Level Runtime: restart orchestration belongs to Gameplay Session (Phase 5), which will unload and load through the public lifecycle.
+- Pause/resume suspends trigger evaluation but does not yet apply global time/input/camera pause; that coordination belongs to Gameplay Session/Application.
+- Interaction targets are enabled per active section in the Application; Runtime Object Registry interactable objects are registered for lifecycle counts but do not yet own Interaction System state.
+- Level Runtime debug panel UI is not implemented; the status overlay exposes the runtime snapshot.
+- Checkpoint progress remains session-scoped and non-persistent; Speedrun ordered checkpoint validation is Phase 5.
 
 ### Phase 5 — Gameplay Sessions and Modes
 
@@ -688,8 +732,8 @@ Integration is tracked separately from individual system implementation.
 | Interaction → UI | Prompt and interaction state | Not Started |
 | Interaction → Training | Interaction completion events | Not Started |
 | Checkpoint → Respawn | Active recovery destination | Integrated |
-| Level Runtime → Checkpoint | Checkpoint registration and lifecycle | Not Started |
-| Level Runtime → Respawn | Spawn point resolution | Not Started |
+| Level Runtime → Checkpoint | Checkpoint registration and lifecycle | Integrated |
+| Level Runtime → Respawn | Spawn point resolution | Integrated |
 | Respawn → Movement | Placement and transient state reset | Integrated |
 | Respawn → Camera | Camera recovery | Integrated |
 | Gameplay Session → Level Runtime | Level lifecycle orchestration | Not Started |

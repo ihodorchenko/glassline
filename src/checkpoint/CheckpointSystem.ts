@@ -1,28 +1,37 @@
 import type { Disposable } from "../core/Disposable";
 import type { Vector3Like } from "../shared/math";
 
-export interface CheckpointTrigger {
-  readonly center: Vector3Like;
-  readonly halfExtents: Vector3Like;
-}
-
+/** Runtime checkpoint definition owned by level content and interpreted here (`docs/16` §6.1). */
 export interface CheckpointDefinition {
   readonly id: string;
+  readonly levelId: string;
   readonly sectionId: string;
-  readonly displayName: string;
-  readonly trigger: CheckpointTrigger;
   readonly spawnPointId: string;
-  readonly respawnEnabled: boolean;
+  readonly displayName: string;
+  readonly activationMode?: "automatic" | "interaction" | "scripted";
+  readonly enabled?: boolean;
+  readonly repeatable?: boolean;
+  readonly respawnEnabled?: boolean;
+  readonly order?: number;
 }
 
-export interface SpawnPointDefinition {
-  readonly id: string;
-  readonly position: Vector3Like;
-  readonly rotationY: number;
+/** Resolves a Level Runtime spawn point into a placement transform (`docs/16` §11.2). */
+export interface CheckpointSpawnResolver {
+  resolve(spawnPointId: string): {
+    readonly position: Vector3Like;
+    readonly rotationY: number;
+  } | null;
+}
+
+export interface CheckpointSystemOptions {
+  readonly levelId: string;
+  readonly sessionId: string;
+  readonly spawnResolver: CheckpointSpawnResolver;
 }
 
 export interface CheckpointActivatedEvent {
   readonly sessionId: string;
+  readonly levelId: string;
   readonly checkpointId: string;
   readonly sectionId: string;
   readonly spawnPointId: string;
@@ -32,11 +41,13 @@ export interface CheckpointActivatedEvent {
 
 export interface CheckpointProgressSnapshot {
   readonly sessionId: string;
+  readonly levelId: string;
   readonly activeCheckpointId: string | null;
   readonly activatedCheckpointIds: readonly string[];
   readonly revision: number;
 }
 
+/** Destination data consumed by `RespawnManager` through its adapter contract. */
 export interface RespawnDestination {
   readonly checkpointId: string;
   readonly spawnPointId: string;
@@ -46,70 +57,54 @@ export interface RespawnDestination {
 
 export type CheckpointListener = (event: CheckpointActivatedEvent) => void;
 
-function contains(trigger: CheckpointTrigger, position: Vector3Like): boolean {
-  return (
-    Math.abs(position.x - trigger.center.x) <= trigger.halfExtents.x &&
-    Math.abs(position.y - trigger.center.y) <= trigger.halfExtents.y &&
-    Math.abs(position.z - trigger.center.z) <= trigger.halfExtents.z
-  );
-}
-
 /**
- * Owns checkpoint definitions, deterministic activation order, session-scoped
- * progress, and respawn destination resolution.
+ * Owns checkpoint activation, session-scoped progress, and respawn destination
+ * selection (`docs/16`).
  *
- * It does not orchestrate player recovery; `RespawnManager` owns that lifecycle
- * (`docs/16_CHECKPOINT_SYSTEM_SPEC.md`).
+ * Level Runtime owns trigger detection and spawn resolution; this system turns
+ * validated trigger signals into checkpoint progress.
  */
 export class CheckpointSystem implements Disposable {
-  private readonly definitions: readonly CheckpointDefinition[];
-  private readonly spawnPoints = new Map<string, SpawnPointDefinition>();
-  private readonly initialSpawnPointId: string;
+  private readonly definitions = new Map<string, CheckpointDefinition>();
+  private readonly levelId: string;
+  private readonly spawnResolver: CheckpointSpawnResolver;
+  private sessionId: string;
   private readonly listeners = new Set<CheckpointListener>();
   private readonly activatedCheckpointIds: string[] = [];
 
-  private sessionId: string;
   private activeCheckpointId: string | null = null;
   private revision = 0;
 
-  constructor(
-    definitions: readonly CheckpointDefinition[],
-    spawnPoints: readonly SpawnPointDefinition[],
-    initialSpawnPointId: string,
-    sessionId = "local-session",
-  ) {
-    this.definitions = [...definitions];
-    this.sessionId = sessionId;
-    this.initialSpawnPointId = initialSpawnPointId;
+  constructor(definitions: readonly CheckpointDefinition[], options: CheckpointSystemOptions) {
+    this.levelId = options.levelId;
+    this.sessionId = options.sessionId;
+    this.spawnResolver = options.spawnResolver;
 
-    const seenCheckpointIds = new Set<string>();
-
-    for (const spawnPoint of spawnPoints) {
-      this.spawnPoints.set(spawnPoint.id, spawnPoint);
-    }
-
-    for (const definition of this.definitions) {
-      if (seenCheckpointIds.has(definition.id)) {
+    for (const definition of definitions) {
+      if (this.definitions.has(definition.id)) {
         throw new Error(`Duplicate checkpoint id "${definition.id}".`);
       }
 
-      seenCheckpointIds.add(definition.id);
-
-      if (!this.spawnPoints.has(definition.spawnPointId)) {
+      if (definition.levelId !== options.levelId) {
         throw new Error(
-          `Checkpoint "${definition.id}" references missing spawn point "${definition.spawnPointId}".`,
+          `Checkpoint "${definition.id}" belongs to level "${definition.levelId}", expected "${options.levelId}".`,
         );
       }
-    }
 
-    if (!this.spawnPoints.has(initialSpawnPointId)) {
-      throw new Error(`Initial spawn point "${initialSpawnPointId}" is not registered.`);
+      this.definitions.set(definition.id, {
+        ...definition,
+        activationMode: definition.activationMode ?? "automatic",
+        enabled: definition.enabled ?? true,
+        repeatable: definition.repeatable ?? true,
+        respawnEnabled: definition.respawnEnabled ?? true,
+      });
     }
   }
 
   getSnapshot(): CheckpointProgressSnapshot {
     return {
       sessionId: this.sessionId,
+      levelId: this.levelId,
       activeCheckpointId: this.activeCheckpointId,
       activatedCheckpointIds: [...this.activatedCheckpointIds],
       revision: this.revision,
@@ -120,50 +115,63 @@ export class CheckpointSystem implements Disposable {
     return this.activeCheckpointId;
   }
 
-  getInitialSpawnPoint(): SpawnPointDefinition | undefined {
-    return this.spawnPoints.get(this.initialSpawnPointId);
+  getDefinition(checkpointId: string): CheckpointDefinition | null {
+    return this.definitions.get(checkpointId) ?? null;
   }
 
   /**
-   * Activates at most one checkpoint per call, in definition order.
-   * Deterministic for the same player position and progress state.
+   * Handles a validated trigger signal from Level Runtime.
+   * Returns the activation event, or null for duplicate/disabled/invalid requests.
    */
-  update(playerPosition: Vector3Like, timestampMs: number): CheckpointActivatedEvent | null {
-    for (const definition of this.definitions) {
-      if (
-        this.activatedCheckpointIds.includes(definition.id) ||
-        !contains(definition.trigger, playerPosition)
-      ) {
-        continue;
-      }
+  notifyTriggerEnter(checkpointId: string, timestampMs: number): CheckpointActivatedEvent | null {
+    const definition = this.definitions.get(checkpointId);
 
-      this.activatedCheckpointIds.push(definition.id);
-      this.activeCheckpointId = definition.id;
-      this.revision += 1;
-
-      const event: CheckpointActivatedEvent = {
-        sessionId: this.sessionId,
-        checkpointId: definition.id,
-        sectionId: definition.sectionId,
-        spawnPointId: definition.spawnPointId,
-        timestamp: timestampMs,
-        activationIndex: this.activatedCheckpointIds.length - 1,
-      };
-
-      for (const listener of [...this.listeners]) {
-        try {
-          listener(event);
-        } catch (error) {
-          console.error("[Glassline] A checkpoint listener failed.", error);
-        }
-      }
-
-      return event;
+    if (!definition || definition.enabled === false) {
+      return null;
     }
 
-    return null;
+    if (definition.activationMode !== "automatic") {
+      return null;
+    }
+
+    if (this.activatedCheckpointIds.includes(checkpointId)) {
+      return null;
+    }
+
+    if (!this.spawnResolver.resolve(definition.spawnPointId)) {
+      console.warn(
+        `[Glassline] Checkpoint "${checkpointId}" was ignored: spawn point "${definition.spawnPointId}" is unavailable.`,
+      );
+
+      return null;
+    }
+
+    this.activatedCheckpointIds.push(checkpointId);
+    this.activeCheckpointId = checkpointId;
+    this.revision += 1;
+
+    const event: CheckpointActivatedEvent = {
+      sessionId: this.sessionId,
+      levelId: this.levelId,
+      checkpointId,
+      sectionId: definition.sectionId,
+      spawnPointId: definition.spawnPointId,
+      timestamp: timestampMs,
+      activationIndex: this.activatedCheckpointIds.length - 1,
+    };
+
+    for (const listener of [...this.listeners]) {
+      try {
+        listener(event);
+      } catch (error) {
+        console.error("[Glassline] A checkpoint listener failed.", error);
+      }
+    }
+
+    return event;
   }
 
+  /** Resolves the active (or explicitly preferred activated) destination. */
   resolveRespawnDestination(preferredCheckpointId?: string): RespawnDestination | null {
     const checkpointId = preferredCheckpointId ?? this.activeCheckpointId;
 
@@ -171,23 +179,23 @@ export class CheckpointSystem implements Disposable {
       return null;
     }
 
-    const definition = this.definitions.find((candidate) => candidate.id === checkpointId);
+    const definition = this.definitions.get(checkpointId);
 
-    if (!definition || !definition.respawnEnabled) {
+    if (!definition || definition.enabled === false || definition.respawnEnabled === false) {
       return null;
     }
 
-    const spawnPoint = this.spawnPoints.get(definition.spawnPointId);
+    const spawn = this.spawnResolver.resolve(definition.spawnPointId);
 
-    if (!spawnPoint) {
+    if (!spawn) {
       return null;
     }
 
     return {
       checkpointId: definition.id,
-      spawnPointId: spawnPoint.id,
-      position: { ...spawnPoint.position },
-      rotationY: spawnPoint.rotationY,
+      spawnPointId: definition.spawnPointId,
+      position: { ...spawn.position },
+      rotationY: spawn.rotationY,
     };
   }
 

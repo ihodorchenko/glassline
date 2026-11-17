@@ -212,7 +212,9 @@ The repository foundation (**Phase 0**) is complete: Vite + TypeScript (strict) 
 
 **Phase 3** (traversal and recovery) is complete: sliding with physical posture changes, contextual vaulting over validated obstacles, wall running and wall jumping, checkpoint activation with deterministic progress, checkpoint-based respawn with control suspension, and validated contextual interactions (range, facing, line-of-sight, cooldown).
 
-**Phase 4** (level runtime) is the next implementation phase.
+**Phase 4** (level runtime) is complete: validated level definitions, Level Runtime session lifecycle (load/start/pause/resume/complete/unload), section activation, spawn-point resolution, trigger registration with enter/exit signals, traversal surface metadata, runtime object registration/cleanup, and a full-level content loader. The checkpoint and interaction systems now consume Level Runtime authored content instead of hardcoded test scaffolding.
+
+**Phase 5** (gameplay sessions and modes) is the next implementation phase.
 
 For actual implementation, integration, and verification status, see:
 
@@ -329,7 +331,7 @@ Running `npm run dev` starts a first-person player in a temporary test environme
 - Checkpoints activate automatically inside their trigger volumes; falling into the pit respawns the player at the active checkpoint (or the initial spawn).
 - `Esc` releases pointer lock.
 
-The development status overlay shows frame rate, fixed stepping, renderer/physics/storage status, settings revision, language, audio state, input state, player state (movement state, speed, grounded flag, stance), and traversal state (active checkpoint, interaction prompt, respawn state). It is a temporary diagnostic, not the HUD. The test environment and overlay are verification scaffolding and are replaced when Level Design/Level Runtime and the HUD arrive.
+The development status overlay shows frame rate, fixed stepping, renderer/physics/storage status, settings revision, language, audio state, input state, player state (movement state, speed, grounded flag, stance), Level Runtime state (level, session, active section, runtime object/trigger/surface counts, surface underfoot), and traversal state (active checkpoint, interaction prompt, respawn state). It is a temporary diagnostic, not the HUD. The authored `training_test` level and the overlay are verification scaffolding and are replaced by final Training/Prologue content and the HUD in later phases.
 
 ---
 

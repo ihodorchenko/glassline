@@ -1,11 +1,7 @@
 import RAPIER from "@dimforge/rapier3d-compat";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
-import {
-  type CheckpointDefinition,
-  CheckpointSystem,
-  type SpawnPointDefinition,
-} from "../../src/checkpoint/CheckpointSystem";
+import { type CheckpointDefinition, CheckpointSystem } from "../../src/checkpoint/CheckpointSystem";
 import { PhysicsWorld } from "../../src/physics/PhysicsWorld";
 import type { MovementInputSample } from "../../src/player/MovementModel";
 import { DEFAULT_MOVEMENT_TUNING } from "../../src/player/MovementTuning";
@@ -167,24 +163,32 @@ describe("Respawn integration with the player controller", () => {
 
     step(harness, input(), 120);
 
-    const spawnPoints: SpawnPointDefinition[] = [
-      { id: "sp_initial", position: { x: 0, y: 0.93, z: 0 }, rotationY: 0 },
-      { id: "sp_cp", position: { x: 0, y: 0.93, z: 2 }, rotationY: 0 },
-    ];
+    const spawnTransforms: Record<
+      string,
+      { position: { x: number; y: number; z: number }; rotationY: number }
+    > = {
+      sp_initial: { position: { x: 0, y: 0.93, z: 0 }, rotationY: 0 },
+      sp_cp: { position: { x: 0, y: 0.93, z: 2 }, rotationY: 0 },
+    };
     const checkpoints: CheckpointDefinition[] = [
       {
         id: "cp",
+        levelId: "test_level",
         sectionId: "test",
         displayName: "Test",
-        trigger: { center: { x: 0, y: 1, z: 2 }, halfExtents: { x: 2, y: 2, z: 2 } },
         spawnPointId: "sp_cp",
         respawnEnabled: true,
       },
     ];
-    const checkpointSystem = new CheckpointSystem(checkpoints, spawnPoints, "sp_initial");
+    const checkpointSystem = new CheckpointSystem(checkpoints, {
+      levelId: "test_level",
+      sessionId: "test_session",
+      spawnResolver: {
+        resolve: (spawnPointId) => spawnTransforms[spawnPointId] ?? null,
+      },
+    });
 
-    harness.player.teleportTo({ x: 0, y: 0.93, z: 2 });
-    expect(checkpointSystem.update(harness.player.getPosition(), 100)?.checkpointId).toBe("cp");
+    expect(checkpointSystem.notifyTriggerEnter("cp", 100)?.checkpointId).toBe("cp");
 
     const camera = { resetForRespawn: vi.fn() };
     const control = { setEnabled: vi.fn() };
