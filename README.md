@@ -220,6 +220,8 @@ The repository foundation (**Phase 0**) is complete: Vite + TypeScript (strict) 
 
 **Phase 7** (progression and long-term systems) is complete: normalized gameplay event routing into persistent long-term systems — session/lifetime/mode statistics, achievement definitions and evaluation, cross-mode player progression with deterministic content unlock rules and milestones, event-driven tutorial progression, and local Speedrun records/personal bests. The main menu now shows a persistent progress summary, and the Local Records screen presents records and personal bests, progression, tutorial completion, lifetime statistics, and unlocked achievements. All long-term state is stored through Save System repositories and restored after reload; duplicate events are deduplicated and achievements unlock only from authoritative events.
 
+**Phase 8** (stabilization) is complete: full Prologue speedrun E2E regression, Training lifecycle regression, performance/memory profiling, persistence corruption and migration checks, input/focus edge cases, accessibility/focus-trap/UI-scaling checks, and error handling. Stabilization fixed a critical reload deduplication bug in domain-event identities, made Speedrun record dates wall-clock and repaired legacy dates, corrected medal counting, rejected stale statistics replays, and improved accessible menu names. See [`docs/IMPLEMENTATION_STATUS.md`](docs/IMPLEMENTATION_STATUS.md) for the verification matrix and residual compatibility risks (Firefox/Safari gameplay verification remains environment-limited).
+
 For actual implementation, integration, and verification status, see:
 
 **[`docs/IMPLEMENTATION_STATUS.md`](docs/IMPLEMENTATION_STATUS.md)**
@@ -295,7 +297,7 @@ The `docs/` directory is the primary source of implementation specifications.
 
 - Node.js **22.12** or newer (Node 22 LTS recommended).
 - npm **10** or newer.
-- A desktop browser with WebGL2 for runtime verification.
+- A desktop browser with WebGL2 for runtime verification. The initial verified runtime target is Chromium-based desktop browsers (Chrome/Edge); Firefox/Safari gameplay verification remains partially environment-limited (see implementation status).
 
 ### Install
 
@@ -323,7 +325,7 @@ Do not report a task as complete based on `npm run build` alone. Runtime behavio
 
 CI runs the same `npm run validate` pipeline on pushes to `main` and on pull requests (`.github/workflows/validate.yml`).
 
-### Current Runtime State (Phase 7)
+### Current Runtime State (Phase 8 — Release Candidate)
 
 Running `npm run dev` boots to the Game Glassline main menu. Use the mouse, keyboard arrows (`↑`/`↓`), or gamepad to navigate and `Enter`/`Space`/confirm to activate.
 

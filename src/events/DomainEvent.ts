@@ -17,7 +17,16 @@ export interface DomainEvent {
 
 export type DomainEventPayload = Readonly<Record<string, unknown>>;
 
-let eventSequence = 0;
+function createEventIdentity(): string {
+  const cryptoApi = globalThis.crypto;
+
+  if (cryptoApi && typeof cryptoApi.randomUUID === "function") {
+    return cryptoApi.randomUUID();
+  }
+
+  // Event identity must remain unique across page reloads, where module state resets.
+  return `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 12)}`;
+}
 
 export function createDomainEvent(
   source: string,
@@ -30,10 +39,8 @@ export function createDomainEvent(
     readonly eventId?: string;
   } = {},
 ): DomainEvent {
-  eventSequence += 1;
-
   return {
-    eventId: options.eventId ?? `${source}:${type}:${eventSequence}`,
+    eventId: options.eventId ?? `${source}:${type}:${createEventIdentity()}`,
     type,
     source,
     timestamp: options.timestamp ?? Date.now(),

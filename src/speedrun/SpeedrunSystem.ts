@@ -92,6 +92,8 @@ export type SpeedrunListener = (event: SpeedrunEvent) => void;
 export interface SpeedrunSystemOptions {
   readonly route: SpeedrunRoute;
   readonly clock?: Clock;
+  /** Wall-clock timestamp source for persisted record dates. */
+  readonly wallClock?: () => number;
   readonly records?: {
     addRecord(entry: SpeedrunRecordEntry): boolean;
   } | null;
@@ -107,6 +109,7 @@ export interface SpeedrunSystemOptions {
 export class SpeedrunSystem {
   private readonly route: SpeedrunRoute;
   private readonly clock: Clock;
+  private readonly wallClock: () => number;
   private readonly timer: RunTimer;
   private readonly records: SpeedrunSystemOptions["records"];
   private readonly listeners = new Set<SpeedrunListener>();
@@ -122,6 +125,7 @@ export class SpeedrunSystem {
   constructor(options: SpeedrunSystemOptions) {
     this.route = options.route;
     this.clock = options.clock ?? (() => performance.now());
+    this.wallClock = options.wallClock ?? (() => Date.now());
     this.records = options.records ?? null;
     this.timer = new MonotonicRunTimer(this.clock);
   }
@@ -247,7 +251,7 @@ export class SpeedrunSystem {
       this.validationErrors.push(`INVALID_FINISH_TRIGGER: "${finishTriggerId}".`);
     }
 
-    const completedAt = this.clock();
+    const completedAt = this.wallClock();
     const totalTimeMs = this.timer.stop();
     const errors: string[] = [...this.validationErrors];
 

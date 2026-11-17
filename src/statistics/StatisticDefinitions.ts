@@ -62,7 +62,7 @@ export const STATISTIC_DEFINITIONS: readonly StatisticDefinition[] = [
   statistic("speedrun.total_attempts", "speedrun", "sum", "speedrun", ["speedrun.attempt"]),
   statistic("speedrun.completed_runs", "speedrun", "sum", "speedrun", ["speedrun.completed"]),
   statistic("speedrun.invalid_runs", "speedrun", "sum", "speedrun", ["speedrun.invalid"]),
-  statistic("speedrun.medals", "speedrun", "sum", "speedrun", ["speedrun.medal"]),
+  statistic("speedrun.medals", "speedrun", "count", "speedrun", ["speedrun.medal"]),
   statistic("interaction.total_interactions", "interaction", "sum", "interaction", [
     "interaction.completed",
   ]),

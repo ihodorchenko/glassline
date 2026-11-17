@@ -1163,6 +1163,7 @@ export class UIManager {
     );
 
     button.setAttribute("role", "button");
+    button.setAttribute("aria-label", label);
     container.append(button);
 
     return button;

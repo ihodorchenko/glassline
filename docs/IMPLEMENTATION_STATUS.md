@@ -3,8 +3,8 @@
 **Document:** `IMPLEMENTATION_STATUS.md`  
 **Project:** Glassline  
 **Last Updated:** 2026-11-17  
-**Project Stage:** Progression and Long-Term Systems Complete  
-**Status:** Phases 0–7 Complete; Phase 8 Next
+**Project Stage:** Initial Release Candidate  
+**Status:** Phases 0–8 Complete; Initial Release Candidate
 
 ---
 
@@ -88,22 +88,22 @@ Only `Verified` means that the applicable acceptance criteria have been checked 
 | Area | Specification | Implementation | Integration | Verification |
 |---|---|---|---|---|
 | Project Foundation | Defined | Implemented | Integrated | Verified |
-| Technical Architecture | Defined | In Progress | In Progress | Partially Verified |
-| Core Gameplay | Defined | In Progress | In Progress | Partially Verified |
-| Player Systems | Defined | In Progress | In Progress | Partially Verified |
-| Level Systems | Defined | In Progress | In Progress | Partially Verified |
-| Gameplay Modes | Defined | In Progress | In Progress | Partially Verified |
-| UI / UX | Defined | In Progress | In Progress | Partially Verified |
-| Audio | Defined | In Progress | In Progress | Partially Verified |
-| Persistence | Defined | In Progress | In Progress | Partially Verified |
-| Progression | Defined | In Progress | In Progress | Partially Verified |
-| Accessibility | Defined | In Progress | In Progress | Partially Verified |
-| Localization | Defined | In Progress | In Progress | Partially Verified |
-| Statistics | Defined | In Progress | In Progress | Partially Verified |
+| Technical Architecture | Defined | Implemented | Integrated | Partially Verified |
+| Core Gameplay | Defined | Implemented | Integrated | Verified |
+| Player Systems | Defined | Implemented | Integrated | Verified |
+| Level Systems | Defined | Implemented | Integrated | Verified |
+| Gameplay Modes | Defined | Implemented | Integrated | Verified |
+| UI / UX | Defined | Implemented | Integrated | Verified |
+| Audio | Defined | Implemented | Integrated | Partially Verified |
+| Persistence | Defined | Implemented | Integrated | Verified |
+| Progression | Defined | Implemented | Integrated | Verified |
+| Accessibility | Defined | Implemented | Integrated | Partially Verified |
+| Localization | Defined | Implemented | Integrated | Verified |
+| Statistics | Defined | Implemented | Integrated | Verified |
 
-**Current phase:** Phases 0 (repository foundation), 1 (application runtime), 2 (first-person player), 3 (traversal and recovery), 4 (level runtime), 5 (gameplay sessions and modes), 6 (presentation and player feedback), and 7 (progression and long-term systems) are complete. Phase 8 (stabilization) is the next active workstream.
+**Current phase:** Phases 0–7 are complete, and Phase 8 (stabilization) is complete. The repository is at an initial release candidate: all required initial-release features are implemented and the Phase 8 stabilization checks below have been executed. Residual verification limitations are recorded in the Phase 8 section.
 
-**Implementation readiness:** The game now includes persistent long-term progress: Training/Prologue completion, deterministic content unlocks, milestones, achievement evaluation/unlocking, session/lifetime statistics, tutorial progression, and local Speedrun records/personal bests, all restored through Save System repositories after reload. Stabilization, final content, and richer audio remain for later phases.
+**Implementation readiness:** The game is feature-complete for the initial release scope and stabilized: core gameplay, Training/Prologue sessions, Speedrun validation and local records, persistent progression/achievements/statistics/tutorial, UI/accessibility/localization, Save System recovery, and the fixed-step loop are implemented, integrated, and covered by automated and browser checks. Remaining limitations are compatibility verification depth (Firefox/Safari gameplay, actual assistive-technology testing) and intentionally deferred features.
 
 ### 3.1. Documentation Reconciliation (2026-11-17)
 
@@ -824,28 +824,49 @@ Known limitations and deferred integration:
 
 **Goal:** Prepare the initial release.
 
-Tasks:
+**Status:** Complete — initial release candidate (2026-11-17).
 
-- Full gameplay regression.
-- Browser compatibility checks.
-- Performance profiling.
-- Memory and resource lifecycle checks.
-- Persistence migration tests.
-- Input and focus edge-case testing.
-- Accessibility checks.
-- UI scaling and localization checks.
-- Error handling.
-- Final acceptance testing.
+Tasks and results:
+
+- **Full gameplay regression:** Chromium headless full-route Prologue speedrun from spawn to finish completed all five sections/checkpoints in order, produced a valid Gold run (5.663s), rendered results with splits, and persisted the record/PB across reload. Training was exercised in-browser through the first six exercises; the ten-exercise completion path is covered by the TrainingSystem integration test. Pause/resume, restart (player and exercise reset), abandonment, focus-loss input release, and results/menu transitions were exercised.
+- **Browser compatibility:** Chromium (Microsoft Edge, headless, WebGL2/SwiftShader) passed the full E2E flow. Firefox 160 headless reached the main menu with the real UI, progress summary, and persistence initialization through WebDriver Marionette; gameplay/WebGL could not be exercised in this host environment because Firefox renderer processes crash under the sandbox/software-renderer constraints. Safari 27 WebDriver is present but `Allow Remote Automation` is disabled and cannot be enabled non-interactively in this environment. See Residual risks.
+- **Performance profiling:** Headless Edge at 1280×720 measured ~54 FPS over five seconds with 35 draw calls and 420 triangles; the fixed 60 Hz simulation remained deterministic, with no per-frame persistence writes. Repeated Training retry cycles produced no cumulative renderer geometry/program growth after level unload; dropped fixed-step time occurred only during loading/restart transitions (catch-up protection bounded by the loop configuration).
+- **Memory and resource lifecycle:** JavaScript heap stayed around 20–23 MB across menu/gameplay/restart cycles. After five retry cycles and return to menu, forced-GC DOM nodes dropped from 460 to 125 with 31 event listeners; level geometry, materials, colliders, and scene objects were released, and renderer geometries returned to zero. No leak was observed in repeated session lifecycle tests.
+- **Persistence migration tests:** IndexedDB structural migration v1→v2 is covered by an automated test that preserves existing data; malformed settings and malformed long-term domain payloads are covered by automated recovery tests; browser corruption injection recovered to a clean main menu with defaults and no fatal overlay, and settings persistence recovered on the next committed update. Legacy Speedrun records written with monotonic `completedAt` values are normalized on load to a wall-clock date. Logical save-data version remains 1; no historical logical migrations exist yet.
+- **Critical persistence regression fixed:** domain-event IDs were sequence-based and reset on page reload while processed IDs were persisted, causing new events after reload to collide with old IDs and be silently deduplicated (lost checkpoints/statistics/progression). Event IDs now use a random UUID identity; a regression test covers restoration of legacy processed IDs and acceptance of new post-reload events.
+- **Input and focus edge cases:** window blur releases held input (move/speed drop to zero), visibility loss releases held keys, Tab focus remains trapped inside the active screen, Escape pause/resume works, and `R` restart resets the player position and Training exercise while creating a fresh Analytics session.
+- **Accessibility checks:** accessibility tree exposes all menu actions with names; screens use dialog/aria-modal and tab roles; keyboard focus trap and live regions are present and browser-checked. Menu buttons now carry explicit `aria-label` values so CSS arrow decoration is not announced. High contrast, large text, reduced motion, and UI scale classes were verified; actual screen-reader testing remains outstanding.
+- **UI scaling and localization checks:** 800×600 viewport with UI scale 1.4 and large text produced no horizontal/vertical overflow; the canvas resized to the viewport; English resource completeness is covered by localization/ui tests. All UI strings used by the new screens are keyed/localized.
+- **Error handling:** malformed settings fall back to defaults and are reported; corrupt long-term payloads initialize fresh systems without blocking startup; settings recover after a successful save; storage-unavailable/fatal paths remain guarded; error paths do not leave partially initialized gameplay.
+- **Final acceptance testing:** `npm run validate` passes (typecheck, Biome, **247 tests in 34 files**, production build). Browser acceptance verified: full Prologue speedrun with all checkpoints and persistence; progression/achievements/statistics/records screens; reload consistency; corrupted-save recovery; accessibility/focus/scaling checks; performance and lifecycle sampling.
+
+Notable stabilization fixes:
+
+- Random UUID domain-event identity to survive page reloads and prevent cross-reload deduplication loss.
+- Wall-clock `completedAt` for Speedrun records and normalization of legacy monotonic timestamps.
+- Medal statistics counted as count instead of summing medal ranks.
+- Stale statistics events are consumed on rejection and cannot replay into a later session with a reused session ID.
+- Explicit accessible names for menu buttons.
+- Regression tests for persistence corruption, stale sessions, legacy event IDs, record date repair, medal aggregation, and event identity.
 
 Exit criteria:
 
-- All critical acceptance criteria pass.
-- No unresolved critical gameplay blockers remain.
-- Persistence survives reload and supported migration scenarios.
-- Core gameplay is stable across supported browsers and devices.
+- [x] All critical acceptance criteria pass: full required initial-release feature set is implemented; core gameplay and full Prologue route are browser-verified; Training completion logic is automated-test verified; menus/HUD/results/records function.
+- [x] No unresolved critical gameplay blockers remain: the reload event-ID collision (silent progress/statistics loss) and record-date/medal issues were fixed; no open blocker was found in the final regression.
+- [x] Persistence survives reload and supported migration scenarios: reload persistence is verified automatically and in-browser; structural migration, corrupt payloads, and legacy record dates are tested. Only save-data version 1 is supported at this time.
+- [x] Core gameplay is stable in the verified environment: Chromium desktop passes the full E2E; Firefox/Safari gameplay verification remains environment-limited (see Residual risks). Desktop Chromium (Chrome/Edge) with WebGL2 is the initial verified browser target.
+
+Residual risks / limitations:
+
+- Firefox gameplay/WebGL and Safari gameplay were not fully exercised in this environment (Firefox renderer sandbox crash; Safari Remote Automation disabled). The UI/menu boot path passed in Firefox. These remain pre-release compatibility risks if Firefox/Safari are in the supported matrix.
+- Real screen-reader/hardware gamepad/device testing has not been performed; accessibility was verified through ARIA/live-region inspection, keyboard focus testing, and preference classes. Physical gamepads were unavailable (gamepad path shares the input resolver and has unit coverage).
+- Performance was profiled in headless software WebGL; GPU/desktop-vsync performance on target hardware should be spot-checked.
+- Logical save-schema migrations beyond version 1 do not exist yet; unsupported newer-schema payloads may be treated as recoverable fresh data rather than preserved indefinitely.
+- Visual/audio regressions still rely on manual verification; automated coverage is dominated by logic/integration tests.
+- Content unlock rules remain evaluated/persisted but Training selection gating is still deferred (as recorded in Phase 7).
+- Deferred features (ghost replay, online leaderboards/cloud/accounts/multiplayer, advanced traversal/audio, RTL, remote analytics) remain out of initial-release scope.
 
 ---
-
 ## 7. Initial Release Scope
 
 ### Required
@@ -903,12 +924,12 @@ Integration is tracked separately from individual system implementation.
 |---|---|---|
 | Input → Movement | Abstract movement and traversal actions | Integrated |
 | Input → Camera | Look input | Integrated |
-| Input → UI | Navigation and confirmation actions | Not Started |
+| Input → UI | Navigation and confirmation actions | Integrated |
 | Movement → Camera | Movement metrics and traversal events | Integrated |
 | Movement → Player State | Authoritative locomotion state | Integrated |
 | Movement → HUD | Speed and movement feedback | Integrated |
 | Interaction → UI | Prompt and interaction state | Integrated |
-| Interaction → Training | Interaction completion events | Not Started |
+| Interaction → Training | Interaction completion events | Integrated |
 | Checkpoint → Respawn | Active recovery destination | Integrated |
 | Level Runtime → Checkpoint | Checkpoint registration and lifecycle | Integrated |
 | Level Runtime → Respawn | Spawn point resolution | Integrated |

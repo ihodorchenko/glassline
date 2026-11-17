@@ -118,6 +118,28 @@ describe("StatisticsSystem", () => {
     expect(system.getCurrentSession()?.values["general.total_jumps"]).toBe(1);
   });
 
+  it("counts medal events independently of medal rank payloads", () => {
+    const { system } = createSystem();
+
+    system.startSession({ sessionId: "session-1", mode: "speedrun" });
+    system.recordEvent(
+      createDomainEvent("speedrun", "speedrun.medal", {
+        eventId: "medal-gold",
+        sessionId: "session-1",
+        payload: { value: 3 },
+      }),
+    );
+    system.recordEvent(
+      createDomainEvent("speedrun", "speedrun.medal", {
+        eventId: "medal-silver",
+        sessionId: "session-1",
+        payload: { value: 2 },
+      }),
+    );
+
+    expect(system.getCurrentSession()?.values["speedrun.medals"]).toBe(2);
+  });
+
   it("rejects invalid numeric values and unknown event types", () => {
     const { system } = createSystem();
 

@@ -63,10 +63,38 @@ describe("SpeedrunRecordStore", () => {
     expect(restored.getPersonalBest("route", 1)?.id).toBe("fast");
   });
 
-  it("records valid SpeedrunSystem runs", () => {
+  it("repairs records written with monotonic completion timestamps", async () => {
+    let stored: PersistedSpeedrunRecords = {
+      schemaVersion: 1,
+      records: [{ ...entry("legacy", 50000, 0), completedAt: 1234 }],
+      updatedAt: 1234,
+    };
+    const persistence = {
+      load: async () => stored,
+      save: async (data: PersistedSpeedrunRecords) => {
+        stored = data;
+      },
+    };
+    const store = new SpeedrunRecordStore({
+      persistence,
+      clock: () => 1_700_000_000_000,
+    });
+
+    await store.initialize();
+
+    expect(store.getPersonalBest("route", 1)?.completedAt).toBe(1_700_000_000_000);
+    expect(store.getRecords()).toHaveLength(1);
+  });
+
+  it("records valid SpeedrunSystem runs with wall-clock completion dates", () => {
     let now = 1000;
     const store = new SpeedrunRecordStore();
-    const system = new SpeedrunSystem({ route: ROUTE, clock: () => now, records: store });
+    const system = new SpeedrunSystem({
+      route: ROUTE,
+      clock: () => now,
+      wallClock: () => 1_700_000_000_000,
+      records: store,
+    });
 
     system.prepare("session-1");
     system.startRun();
@@ -76,7 +104,9 @@ describe("SpeedrunRecordStore", () => {
     const result = system.finishRun("finish");
 
     expect(result.validation.valid).toBe(true);
+    expect(result.completedAt).toBe(1_700_000_000_000);
     expect(store.getRecords()).toHaveLength(1);
     expect(store.getPersonalBest("route", 1)?.completionTimeMs).toBe(6000);
+    expect(store.getPersonalBest("route", 1)?.completedAt).toBe(1_700_000_000_000);
   });
 });

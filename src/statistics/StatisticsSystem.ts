@@ -240,6 +240,10 @@ export class StatisticsSystem implements Disposable {
     }
 
     if (event.sessionId !== undefined && event.sessionId !== this.currentSession.sessionId) {
+      // A rejected stale event must never be replayed into a later session.
+      this.processedEventIds.add(event.eventId);
+      this.trimProcessedEventIds();
+
       return false;
     }
 

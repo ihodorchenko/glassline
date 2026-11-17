@@ -8,6 +8,7 @@ import type {
 
 const SCHEMA_VERSION = 1;
 const MAX_STORED_RECORDS = 50;
+const PLAUSIBLE_EPOCH_MIN = Date.UTC(2000, 0, 1);
 
 function sortRecords(records: readonly SpeedrunRecordEntry[]): SpeedrunRecordEntry[] {
   return [...records].sort((left, right) => {
@@ -44,7 +45,11 @@ export class SpeedrunRecordStore implements Disposable {
       const loaded = await this.persistence.load();
 
       if (loaded) {
-        this.records = sortRecords(loaded.records.filter((entry) => entry.validation.valid));
+        this.records = sortRecords(
+          loaded.records
+            .map((entry) => this.normalizeLoadedRecord(entry))
+            .filter((entry): entry is SpeedrunRecordEntry => entry !== null),
+        );
       }
     } catch (error) {
       console.warn("[Glassline] Speedrun records could not be restored.", error);
@@ -102,6 +107,35 @@ export class SpeedrunRecordStore implements Disposable {
 
   dispose(): void {
     this.disposed = true;
+  }
+
+  /**
+   * Recovers records written by older builds where `completedAt` used a
+   * monotonic clock value instead of an epoch timestamp.
+   */
+  private normalizeLoadedRecord(record: SpeedrunRecordEntry): SpeedrunRecordEntry | null {
+    if (
+      !record ||
+      typeof record.id !== "string" ||
+      typeof record.routeId !== "string" ||
+      !Number.isFinite(record.routeVersion) ||
+      !Number.isFinite(record.completionTimeMs) ||
+      record.completionTimeMs <= 0 ||
+      record.validation?.valid !== true
+    ) {
+      return null;
+    }
+
+    const completedAt =
+      Number.isFinite(record.completedAt) && record.completedAt >= PLAUSIBLE_EPOCH_MIN
+        ? record.completedAt
+        : this.clock();
+
+    return {
+      ...record,
+      completedAt,
+      splits: Array.isArray(record.splits) ? [...record.splits] : [],
+    };
   }
 
   private schedulePersistence(): void {
