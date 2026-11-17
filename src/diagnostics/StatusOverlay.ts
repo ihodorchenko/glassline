@@ -17,6 +17,7 @@ export class StatusOverlay implements Disposable {
   private readonly content: HTMLPreElement;
   private lastUpdateAtMs = 0;
   private disposed = false;
+  private visible = true;
 
   constructor(parent: HTMLElement = document.body) {
     this.root = document.createElement("div");
@@ -36,6 +37,15 @@ export class StatusOverlay implements Disposable {
 
     this.lastUpdateAtMs = nowMs;
     this.content.textContent = lines.join("\n");
+  }
+
+  setVisible(visible: boolean): void {
+    this.visible = visible;
+    this.root.style.display = visible ? "" : "none";
+  }
+
+  isVisible(): boolean {
+    return this.visible;
   }
 
   showFatal(title: string, details: string): void {

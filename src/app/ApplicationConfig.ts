@@ -46,5 +46,5 @@ export const DEFAULT_APPLICATION_CONFIG: ApplicationConfig = {
     version: DATABASE_VERSION,
     openTimeoutMs: 3000,
   },
-  enableStatusOverlay: true,
+  enableStatusOverlay: false,
 };

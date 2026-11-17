@@ -15,6 +15,14 @@ export interface GainNodeLike {
   disconnect(): void;
 }
 
+export interface OscillatorNodeLike {
+  type: string;
+  readonly frequency: AudioParamLike;
+  connect(destination: unknown): void;
+  start(when?: number): void;
+  stop(when?: number): void;
+}
+
 export interface AudioContextLike {
   readonly state: "suspended" | "running" | "closed" | "interrupted";
   readonly destination: unknown;
@@ -22,11 +30,57 @@ export interface AudioContextLike {
   resume(): Promise<void>;
   close(): Promise<void>;
   createGain(): GainNodeLike;
+  createOscillator?(): OscillatorNodeLike;
 }
 
 export type AudioContextFactory = () => AudioContextLike | null;
 
 export type AudioManagerState = "unavailable" | "idle" | "suspended" | "running" | "closed";
+
+export type UiCue =
+  | "navigate"
+  | "confirm"
+  | "back"
+  | "checkpoint"
+  | "exercise-complete"
+  | "finish"
+  | "land";
+
+interface UiCueConfiguration {
+  readonly frequency: number;
+  readonly durationSeconds?: number;
+  readonly volume?: number;
+  readonly waveform?: string;
+  readonly channel: "ui" | "sfx";
+}
+
+const UI_CUES: Readonly<Record<UiCue, UiCueConfiguration>> = {
+  navigate: { frequency: 620, durationSeconds: 0.035, volume: 0.12, channel: "ui" },
+  confirm: { frequency: 880, durationSeconds: 0.07, volume: 0.16, channel: "ui" },
+  back: { frequency: 420, durationSeconds: 0.07, volume: 0.14, channel: "ui" },
+  checkpoint: {
+    frequency: 1040,
+    durationSeconds: 0.16,
+    volume: 0.2,
+    channel: "sfx",
+    waveform: "triangle",
+  },
+  "exercise-complete": {
+    frequency: 1240,
+    durationSeconds: 0.18,
+    volume: 0.2,
+    channel: "sfx",
+    waveform: "triangle",
+  },
+  finish: {
+    frequency: 1560,
+    durationSeconds: 0.3,
+    volume: 0.24,
+    channel: "sfx",
+    waveform: "triangle",
+  },
+  land: { frequency: 180, durationSeconds: 0.06, volume: 0.12, channel: "sfx" },
+};
 
 export interface AudioManagerOptions {
   /** `null` simulates an environment without Web Audio support. */
@@ -71,6 +125,8 @@ export class AudioManager implements Disposable {
   private gestureCleanup: (() => void) | null = null;
   private desiredVolume = 1;
   private desiredMuted = false;
+  private uiVolume = 0.8;
+  private sfxVolume = 1;
   private disposed = false;
 
   constructor(options: AudioManagerOptions = {}) {
@@ -168,6 +224,58 @@ export class AudioManager implements Disposable {
     this.desiredVolume = clamp(volume, 0, 1);
     this.desiredMuted = muted;
     this.applyMasterVolume();
+  }
+
+  /** Settings-owned UI feedback volume. */
+  setUiVolume(volume: number): void {
+    this.uiVolume = clamp(volume, 0, 1);
+  }
+
+  /** Settings-owned gameplay SFX volume. */
+  setSfxVolume(volume: number): void {
+    this.sfxVolume = clamp(volume, 0, 1);
+  }
+
+  /**
+   * Plays a short procedural feedback cue. Presentation systems request cues;
+   * the Audio System owns the actual playback and mixing.
+   */
+  playUiCue(cue: UiCue): void {
+    const context = this.context;
+    const master = this.masterGain;
+
+    if (
+      this.disposed ||
+      !context ||
+      context.state !== "running" ||
+      !master ||
+      !context.createOscillator
+    ) {
+      return;
+    }
+
+    const config = UI_CUES[cue];
+    const channelVolume = config.channel === "ui" ? this.uiVolume : this.sfxVolume;
+    const volume = channelVolume * (config.volume ?? 0.18);
+
+    if (volume <= 0.0001) {
+      return;
+    }
+
+    try {
+      const oscillator = context.createOscillator();
+      const gain = context.createGain();
+
+      oscillator.type = config.waveform ?? "sine";
+      oscillator.frequency.value = config.frequency;
+      gain.gain.value = volume;
+      oscillator.connect(gain);
+      gain.connect(master);
+      oscillator.start();
+      oscillator.stop(context.currentTime + (config.durationSeconds ?? 0.08));
+    } catch (error) {
+      console.warn("[Glassline] Audio cue could not be played.", error);
+    }
   }
 
   get effectiveVolume(): number {

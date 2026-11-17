@@ -3,8 +3,8 @@
 **Document:** `IMPLEMENTATION_STATUS.md`  
 **Project:** Glassline  
 **Last Updated:** 2026-11-17  
-**Project Stage:** Gameplay Sessions and Modes Complete  
-**Status:** Phases 0–5 Complete; Phase 6 Next
+**Project Stage:** Presentation and Player Feedback Complete  
+**Status:** Phases 0–6 Complete; Phase 7 Next
 
 ---
 
@@ -93,17 +93,17 @@ Only `Verified` means that the applicable acceptance criteria have been checked 
 | Player Systems | Defined | In Progress | In Progress | Partially Verified |
 | Level Systems | Defined | In Progress | In Progress | Partially Verified |
 | Gameplay Modes | Defined | In Progress | In Progress | Partially Verified |
-| UI / UX | Defined | Not Started | Not Started | Not Verified |
+| UI / UX | Defined | In Progress | In Progress | Partially Verified |
 | Audio | Defined | In Progress | In Progress | Partially Verified |
 | Persistence | Defined | In Progress | In Progress | Partially Verified |
 | Progression | Defined | Not Started | Not Started | Not Verified |
-| Accessibility | Defined | Not Started | Not Started | Not Verified |
+| Accessibility | Defined | In Progress | In Progress | Partially Verified |
 | Localization | Defined | In Progress | In Progress | Partially Verified |
 | Statistics | Defined | Not Started | Not Started | Not Verified |
 
-**Current phase:** Phases 0 (repository foundation), 1 (application runtime), 2 (first-person player), 3 (traversal and recovery), 4 (level runtime), and 5 (gameplay sessions and modes) are complete. Phase 6 (presentation and player feedback) is the next active workstream.
+**Current phase:** Phases 0 (repository foundation), 1 (application runtime), 2 (first-person player), 3 (traversal and recovery), 4 (level runtime), 5 (gameplay sessions and modes), and 6 (presentation and player feedback) are complete. Phase 7 (progression and long-term systems) is the next active workstream.
 
-**Implementation readiness:** The game is playable through a session-driven flow: Training (ten exercises), Prologue (five sections with five checkpoints), and ranked Prologue speedruns with authoritative timing, splits, validation, and results. Presentation (HUD/menu/audio feedback/accessibility) and final content are the next implementation areas.
+**Implementation readiness:** The game is playable through a complete presentation layer: main menu, loading, HUD, pause menu, settings, results, credits/records placeholders, keyboard/gamepad/mouse navigation, accessibility preferences, localized English strings, and procedural audio feedback. Progression/unlocks, long-term records, final content, and richer audio remain for later phases.
 
 ### 3.1. Documentation Reconciliation (2026-11-17)
 
@@ -135,7 +135,7 @@ The following documents form the current specification baseline.
 | 04 | `04_ASSET_BIBLE.md` | Defined | Not Started |
 | 05 | `05_PROCEDURAL_GENERATION_SPEC.md` | Defined | Not Started |
 | 06 | `06_LEVEL_DESIGN_SPEC.md` | Defined | Not Started |
-| 07 | `07_UI_UX_SPEC.md` | Defined | Not Started |
+| 07 | `07_UI_UX_SPEC.md` | Defined | In Progress |
 | 08 | `08_AUDIO_DESIGN_SPEC.md` | Defined | In Progress |
 | 09 | `09_SPEEDRUN_SYSTEM_SPEC.md` | Defined | In Progress |
 | 10 | `10_SAVE_SYSTEM_SPEC.md` | Defined | In Progress |
@@ -151,10 +151,10 @@ The following documents form the current specification baseline.
 | 20 | `20_GAMEPLAY_FLOW_SYSTEM_SPEC.md` | Defined | In Progress |
 | 21 | `21_TRAINING_SYSTEM_SPEC.md` | Defined | In Progress |
 | 22 | `22_PROGRESSION_SYSTEM_SPEC.md` | Defined | Not Started |
-| 23 | `23_HUD_SYSTEM_SPEC.md` | Defined | Not Started |
-| 24 | `24_MENU_SYSTEM_SPEC.md` | Defined | Not Started |
+| 23 | `23_HUD_SYSTEM_SPEC.md` | Defined | In Progress |
+| 24 | `24_MENU_SYSTEM_SPEC.md` | Defined | In Progress |
 | 25 | `25_SETTINGS_SYSTEM_SPEC.md` | Defined | In Progress |
-| 26 | `26_ACCESSIBILITY_SYSTEM_SPEC.md` | Defined | Not Started |
+| 26 | `26_ACCESSIBILITY_SYSTEM_SPEC.md` | Defined | In Progress |
 | 27 | `27_LOCALIZATION_SYSTEM_SPEC.md` | Defined | In Progress |
 | 28 | `28_TUTORIAL_SYSTEM_SPEC.md` | Defined | Not Started |
 | 29 | `29_ACHIEVEMENT_SYSTEM_SPEC.md` | Defined | Not Started |
@@ -216,11 +216,11 @@ Systems are not completely independent. Integration should happen continuously a
 
 | System | Specification | Initial Goal | Status |
 |---|---|---|---|
-| UI / UX | 07 | Establish visual and interaction conventions | Not Started |
-| Menu | 24 | Implement application screens and menu interactions | Not Started |
-| HUD | 23 | Implement gameplay HUD and feedback widgets | Not Started |
+| UI / UX | 07 | Establish visual and interaction conventions | In Progress |
+| Menu | 24 | Implement application screens and menu interactions | In Progress |
+| HUD | 23 | Implement gameplay HUD and feedback widgets | In Progress |
 | Audio | 08 | Implement gameplay audio and feedback | In Progress |
-| Accessibility | 26 | Implement accessibility preferences and adaptations | Not Started |
+| Accessibility | 26 | Implement accessibility preferences and adaptations | In Progress |
 
 ---
 
@@ -643,6 +643,8 @@ Known limitations and deferred integration:
 
 **Goal:** Deliver a coherent game interface and feedback experience.
 
+**Status:** Complete (2026-11-17).
+
 Systems:
 
 - UI / UX.
@@ -666,12 +668,67 @@ Initial features:
 - Keyboard and gamepad navigation.
 - Initial English localization.
 
+Implemented and verified:
+
+- UI layer (`UIManager`, DOM/CSS):
+  - Main menu (Training, Prologue, Ranked Prologue, Local Records, Settings, Credits, version/hints), loading screen, pause menu (Resume, Restart, Settings, Abandon), settings screen, results screen, records placeholder, credits, and error screen.
+  - Menu screens use typographic hierarchy, accent panels, focus states, and accessible dialog semantics; mouse, keyboard, and gamepad share Input System navigation actions.
+- HUD:
+  - Speedrun timer with `MM:SS.mmm` formatting, checkpoint progress, recent splits, and medal/result state.
+  - Training exercise number/title, objective description, and progress; speed indicator; interaction prompt; pause hint; checkpoint/exercise notification toasts with a short queue.
+  - HUD respects `hud.*` visibility settings, UI scale, and authoritative Speedrun/Training/Interaction snapshots from the Application.
+- Settings UI:
+  - Category tabs (Audio, Controls, Camera, HUD, Accessibility, Gameplay, Language), localized setting labels, boolean/number/enum controls, immediate validation/application through SettingsManager and existing adapters, category reset, and focus preservation while adjusting values.
+  - Unsupported browser display settings are hidden; optional note communicates this.
+- Menu input:
+  - Arrow keys/gamepad navigate; Enter/Space/confirm activates; Escape/cancel returns; focus is DOM-visible and trapped within the active screen; gamepad navigation uses the same `Navigate`/`Confirm`/`Cancel` actions as keyboard.
+- Accessibility:
+  - Reduced Motion disables interface transitions/spinner animation and is already respected by camera presentation.
+  - High contrast and large text modes apply UI classes; UI scale respects the HUD setting.
+  - ARIA dialog labeling, button roles/labels, focus outlines, and polite/assertive live regions for feedback. Keyboard-only operation is fully supported.
+- Localization:
+  - Initial English resource set extended with all UI/settings/HUD/results/pause/credits/error strings and plural keys; UI text resolves through LocalizationManager, and switching language refreshes the active screen.
+- Audio feedback:
+  - Procedural UI/gameplay cues (navigate, confirm, back, checkpoint, exercise complete, finish, landing) through the Audio System, honoring master/mute plus UI/SFX channel volumes.
+- Application integration:
+  - Flow-driven screens: boot → main menu; loading; gameplay HUD; pause; results; error. Settings overlays from main menu/pause preserve the return context; gameplay pause/resume, result retry, and abandon-to-menu all work through the Gameplay Session ports.
+  - Diagnostics moved behind a development overlay toggled with `F3`; `F2` (dev builds) completes the current session for results verification. Status overlay is disabled by default and is no longer player-facing presentation.
+  - Settings changes apply immediately, including reduced motion/high contrast/large text and UI scale; localization refresh occurs on language change.
+- Localization/UI tests cover required interface keys and every exposed settings label (English resource completeness).
+
+Verification performed:
+
+- `npm run typecheck` — passes.
+- `npm run check` — Biome lint/format/import checks pass.
+- `npm test` — 218 unit/integration tests across 26 files pass, including three new audio feedback-cue tests and four UI localization resource tests, plus all Phase 1–5 suites.
+- `npm run build` — production build succeeds.
+- Headless browser screenshots:
+  - Main menu renders title, subtitle, six actions, focus ring, hints, and version.
+  - Gameplay HUD renders training exercise/objective/progress, speed, and pause hint without stray widgets.
+  - Ranked Prologue HUD renders timer, checkpoint count, split, and speed.
+- Browser CDP verification:
+  - Keyboard navigation moves through menu items; Enter starts Training; HUD shows exercise 1/10; movement completes the exercise and shows a queued checkpoint toast; pause menu appears with Resume/Restart/Settings/Abandon.
+  - Settings opens from pause; category tabs, setting rows, and values render; Left/Right adjusts numeric settings with focus preserved across re-render; Accessibility tab toggles Reduced Motion and High Contrast classes on the UI root; Back returns to the pause context.
+  - Credits and records screens render; results flow shows mode/duration/actions; retry or main-menu navigation returns to the correct state.
+  - Ranked session timer HUD updates, checkpoint toast appears, and split data is displayed.
+
 Exit criteria:
 
-- Primary gameplay states have appropriate presentation.
-- UI reflects authoritative gameplay state.
-- Accessibility preferences are respected.
-- Initial localization resources contain required strings.
+- [x] Primary gameplay states have appropriate presentation: main menu, loading, gameplay HUD, pause, settings, results, credits/records, and error states all render.
+- [x] UI reflects authoritative gameplay state: HUD derives from Speedrun/Training/Interaction/Player snapshots; results derive from Gameplay Session results; settings read/write through SettingsManager.
+- [x] Accessibility preferences are respected: Reduced Motion classes/animation policy, high contrast, large text, UI scale, focus visibility, ARIA labeling, keyboard navigation, and live-region feedback are implemented and browser-verified; camera already honors Reduced Motion.
+- [x] Initial localization resources contain required strings: English resource completeness is covered by tests for all UI keys and setting labels.
+
+Known limitations and deferred integration:
+
+- Mode Selection/local record persistence, Continue, and browser-exit handling are placeholders or omitted; records screen currently reports that no records exist.
+- Some HUD widgets from the full spec (section progress, directional/runner-vision indicators, tutorial guidance, crosshair) are deferred; interaction prompts and training objectives are implemented.
+- Settings presentation exposes all registry controls, but some underlying values (music volume, gamepad dead zones, HUD section toggles, tutorial/gameplay hints) are not yet consumed by their target systems; display settings are hidden as unsupported.
+- Audio uses procedural cues only; no music, ambience, footsteps, or asset-based mix yet.
+- Localization ships English only; additional languages and RTL layout remain deferred.
+- Screen-reader support is partial (labels/live regions/focus trap) and has not been tested with an actual AT/browser combination.
+- Gamepad navigation shares the Input System action path and is covered by input resolver tests, but was not exercised with physical hardware in this environment.
+- `F2`/`F3` are development-only diagnostics and must be removed or gated from release configuration; the diagnostic status overlay remains a development tool.
 
 ### Phase 7 — Progression and Long-Term Systems
 
@@ -787,8 +844,8 @@ Integration is tracked separately from individual system implementation.
 | Input → UI | Navigation and confirmation actions | Not Started |
 | Movement → Camera | Movement metrics and traversal events | Integrated |
 | Movement → Player State | Authoritative locomotion state | Integrated |
-| Movement → HUD | Speed and movement feedback | Not Started |
-| Interaction → UI | Prompt and interaction state | Not Started |
+| Movement → HUD | Speed and movement feedback | Integrated |
+| Interaction → UI | Prompt and interaction state | Integrated |
 | Interaction → Training | Interaction completion events | Not Started |
 | Checkpoint → Respawn | Active recovery destination | Integrated |
 | Level Runtime → Checkpoint | Checkpoint registration and lifecycle | Integrated |
@@ -802,12 +859,12 @@ Integration is tracked separately from individual system implementation.
 | Speedrun → Save | Persistent records | Not Started |
 | Training → Save | Persistent training progress | Not Started |
 | Settings → Save | Configuration persistence | Integrated |
-| Settings → Accessibility | Accessibility preferences | Not Started |
-| Localization → UI | Localized text and formatting | Not Started |
+| Settings → Accessibility | Accessibility preferences | Integrated |
+| Localization → UI | Localized text and formatting | Integrated |
 | Gameplay Events → Statistics | Normalized event aggregation | Not Started |
 | Achievement → Progression | Achievement unlock notifications | Not Started |
 | Progression → Menu | Unlock and milestone snapshots | Not Started |
-| Gameplay Events → Audio | Gameplay feedback events | Not Started |
+| Gameplay Events → Audio | Gameplay feedback events | Integrated |
 
 An integration is complete only when both sides use the agreed contract and the interaction has been tested.
 

@@ -4,6 +4,7 @@ import {
   type AudioContextLike,
   AudioManager,
   type GainNodeLike,
+  type OscillatorNodeLike,
 } from "../../src/audio/AudioManager";
 import { AudioSettingsAdapter } from "../../src/settings/adapters/AudioSettingsAdapter";
 import type { SettingsSnapshot } from "../../src/settings/SettingsTypes";
@@ -13,6 +14,12 @@ class FakeAudioContext implements AudioContextLike {
   readonly destination: unknown = {};
   readonly currentTime = 0;
   readonly gainNode: GainNodeLike;
+  readonly oscillators: {
+    type: string;
+    frequency: number;
+    startCount: number;
+    stopCount: number;
+  }[] = [];
   resumeCount = 0;
   closeCount = 0;
 
@@ -26,6 +33,40 @@ class FakeAudioContext implements AudioContextLike {
 
   createGain(): GainNodeLike {
     return this.gainNode;
+  }
+
+  createOscillator(): OscillatorNodeLike {
+    const record = { type: "sine", frequency: 0, startCount: 0, stopCount: 0 };
+
+    this.oscillators.push(record);
+
+    return {
+      get type() {
+        return record.type;
+      },
+      set type(value: string) {
+        record.type = value;
+      },
+      frequency: {
+        get value() {
+          return record.frequency;
+        },
+        set value(next: number) {
+          record.frequency = next;
+        },
+      },
+      connect: () => undefined,
+      start: () => {
+        record.startCount += 1;
+      },
+      stop: () => {
+        record.stopCount += 1;
+      },
+    };
+  }
+
+  get oscillatorCount(): number {
+    return this.oscillators.length;
   }
 
   async resume(): Promise<void> {
@@ -110,6 +151,41 @@ describe("AudioManager", () => {
 
     expect(context.closeCount).toBe(1);
     expect(manager.state).toBe("unavailable");
+  });
+});
+
+describe("AudioManager feedback cues", () => {
+  it("does not play cues before the context is running", () => {
+    const context = new FakeAudioContext();
+    const manager = new AudioManager({ factory: () => context, gestureTarget: null });
+
+    manager.playUiCue("confirm");
+
+    expect(context.oscillatorCount).toBe(0);
+  });
+
+  it("plays a procedural cue after the context is running", async () => {
+    const context = new FakeAudioContext();
+    const manager = new AudioManager({ factory: () => context, gestureTarget: null });
+
+    await manager.notifyUserGesture();
+    manager.playUiCue("confirm");
+
+    expect(context.oscillatorCount).toBe(1);
+    expect(context.oscillators[0]?.frequency).toBe(880);
+    expect(context.oscillators[0]?.startCount).toBe(1);
+    expect(context.oscillators[0]?.stopCount).toBe(1);
+  });
+
+  it("suppresses cues when the channel volume is zero", async () => {
+    const context = new FakeAudioContext();
+    const manager = new AudioManager({ factory: () => context, gestureTarget: null });
+
+    await manager.notifyUserGesture();
+    manager.setUiVolume(0);
+    manager.playUiCue("navigate");
+
+    expect(context.oscillatorCount).toBe(0);
   });
 });
 

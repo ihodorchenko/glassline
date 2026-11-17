@@ -47,6 +47,7 @@ import { Database, StorageError } from "../storage/Database";
 import { SettingsRepository } from "../storage/repositories/SettingsRepository";
 import { TRAINING_EXERCISES } from "../training/TrainingExercises";
 import { TrainingSystem } from "../training/TrainingSystem";
+import { type HudState, type UIActions, UIManager } from "../ui/UIManager";
 import { type ApplicationConfig, DEFAULT_APPLICATION_CONFIG } from "./ApplicationConfig";
 
 export type ApplicationState = "idle" | "initializing" | "ready" | "running" | "stopped" | "failed";
@@ -99,6 +100,7 @@ export class Application implements Disposable {
   private levelRuntime: LevelRuntimeManager | null = null;
   private sessionManager: GameplaySessionManager | null = null;
   private flowManager: GameplayFlowManager | null = null;
+  private ui: UIManager | null = null;
 
   private player: PlayerSystem | null = null;
   private playerState: PlayerStateSystem | null = null;
@@ -161,6 +163,7 @@ export class Application implements Disposable {
       this.initializeInput();
       this.initializeAudio();
       this.initializeFlowAndSessions();
+      this.initializeUserInterface();
       await this.initializeSettingsApplication();
       this.initializeGameLoop();
       this.registerWindowHandlers();
@@ -169,6 +172,7 @@ export class Application implements Disposable {
       this.resetStatusWindow();
 
       this.flowManager?.navigate({ target: "main-menu", reason: "boot-complete" });
+      this.ui?.showMainMenu();
       this.syncInputContext();
 
       this.state = "ready";
@@ -368,6 +372,56 @@ export class Application implements Disposable {
     this.resources.push(this.sessionManager);
   }
 
+  private initializeUserInterface(): void {
+    const settings = this.settingsManager;
+
+    if (!settings) {
+      return;
+    }
+
+    const actions: UIActions = {
+      onStartTraining: () => {
+        void this.startGameplay("training");
+      },
+      onStartPrologue: () => {
+        void this.startGameplay("prologue");
+      },
+      onStartSpeedrun: () => {
+        void this.startGameplay("speedrun");
+      },
+      onResume: () => {
+        void this.resumeGameplay();
+      },
+      onRestart: () => {
+        void this.restartGameplay();
+      },
+      onAbandon: () => {
+        void this.returnToMenu();
+      },
+      onRetry: () => {
+        void this.restartGameplay();
+      },
+      onReturnToMenu: () => {
+        void this.returnToMenu();
+      },
+      onPause: () => {
+        void this.pauseGameplay();
+      },
+      onAudioCue: (cue) => {
+        this.audioManager?.playUiCue(cue);
+      },
+    };
+
+    this.ui = new UIManager({
+      localize: (key, params) => this.localizationManager?.t(key, (params ?? {}) as never) ?? key,
+      settings,
+      actions,
+      onScreenChanged: () => this.syncInputContext(),
+    });
+    this.resources.push(this.ui);
+    this.ui.applySettings(settings.getSnapshot());
+  }
+
   private createSessionPorts(): GameplaySessionPorts {
     return {
       loadLevel: (context) => this.loadLevelPort(context),
@@ -554,6 +608,10 @@ export class Application implements Disposable {
               : never,
             timestamp: performance.now(),
           });
+
+          if (eventName === "player:landed") {
+            this.audioManager?.playUiCue("land");
+          }
         });
 
         this.sessionUnsubscribes.push(unsubscribe);
@@ -575,12 +633,119 @@ export class Application implements Disposable {
     if (training) {
       this.sessionUnsubscribes.push(
         training.subscribe((event) => {
+          if (event.type === "exercise:completed") {
+            const definition = training
+              .getDefinitions()
+              .find((candidate) => candidate.id === event.exerciseId);
+
+            this.ui?.showToast(
+              this.localize("hud.exerciseComplete", {
+                title: definition?.title ?? event.exerciseId,
+              }),
+              performance.now(),
+            );
+            this.audioManager?.playUiCue("exercise-complete");
+          }
+
           if (event.type === "session:completed") {
             void this.completeGameplay("training-complete");
           }
         }),
       );
     }
+  }
+
+  private handleGameplayInput(): void {
+    if (this.flowManager?.getState() !== "gameplay" || !this.sessionManager?.isRunning()) {
+      return;
+    }
+
+    const frame = this.input?.currentFrame;
+
+    if (!frame) {
+      return;
+    }
+
+    if (frame.buttons.Pause.pressed) {
+      void this.pauseGameplay();
+      return;
+    }
+
+    if (frame.buttons.Restart.pressed) {
+      void this.restartGameplay();
+    }
+  }
+
+  private updateUi(): void {
+    const nowMs = performance.now();
+    const frame = this.input?.currentFrame ?? IDLE_INPUT_FRAME;
+
+    this.ui?.update(frame, nowMs);
+    this.ui?.updateHud(this.buildHudState(), nowMs);
+  }
+
+  private buildHudState(): HudState {
+    const trainingSnapshot = this.trainingSystem?.getSnapshot() ?? null;
+    const speedrunSnapshot = this.speedrunSystem?.getSnapshot() ?? null;
+    const movement = this.player?.getMovementSnapshot() ?? null;
+
+    let training: HudState["training"] = null;
+
+    if (trainingSnapshot?.currentExercise) {
+      const exercise = trainingSnapshot.currentExercise;
+      const objective =
+        exercise.definition.objectives[trainingSnapshot.currentExercise.currentObjectiveIndex];
+      const progress = trainingSnapshot.currentObjective;
+
+      training = {
+        current: trainingSnapshot.exerciseIndex + 1,
+        total: trainingSnapshot.exerciseCount,
+        title: exercise.definition.title,
+        objectiveDescription: objective?.description ?? "",
+        value: progress?.currentValue ?? 0,
+        target: progress?.targetValue ?? 1,
+      };
+    }
+
+    const speedrun: HudState["speedrun"] = speedrunSnapshot
+      ? {
+          elapsedMs: speedrunSnapshot.elapsedTimeMs,
+          checkpointsCompleted: speedrunSnapshot.checkpointsCompleted,
+          required: speedrunSnapshot.requiredCheckpoints,
+          splits: speedrunSnapshot.splits.map((split) => ({
+            index: split.index,
+            splitTimeMs: split.splitTimeMs,
+            totalTimeMs: split.totalTimeMs,
+          })),
+          medal: speedrunSnapshot.result?.medal ?? null,
+        }
+      : null;
+
+    return {
+      mode: this.currentMode,
+      training,
+      speedrun,
+      interactionPrompt: this.interactionSystem?.getSnapshot().prompt ?? null,
+      speed: movement?.speed ?? 0,
+      movementState: movement?.state ?? "IDLE",
+      paused: this.flowManager?.getState() === "paused",
+    };
+  }
+
+  private localize(key: string, params: Readonly<Record<string, unknown>> = {}): string {
+    return this.localizationManager?.t(key, params as never) ?? key;
+  }
+
+  private toggleDiagnostics(): void {
+    if (!this.statusOverlay) {
+      this.statusOverlay = new StatusOverlay();
+      this.resources.push(this.statusOverlay);
+      this.statusOverlay.setVisible(true);
+
+      return;
+    }
+
+    this.statusOverlay.setVisible(!this.statusOverlay.isVisible());
   }
 
   private async activateGameplayPort(context: GameplaySessionContext): Promise<void> {
@@ -683,6 +848,15 @@ export class Application implements Disposable {
 
       if (activation) {
         console.info(`[Glassline] Checkpoint activated: ${activation.checkpointId}`);
+        const displayName =
+          this.checkpointSystem?.getDefinition(activation.checkpointId)?.displayName ??
+          activation.checkpointId;
+
+        this.ui?.showToast(
+          `${this.localize("hud.checkpointReached")}: ${displayName}`,
+          performance.now(),
+        );
+        this.audioManager?.playUiCue("checkpoint");
         this.speedrunSystem?.recordCheckpoint(activation.checkpointId);
       }
 
@@ -728,6 +902,8 @@ export class Application implements Disposable {
 
       this.lastResults = this.sessionManager.getLastResults();
       this.flowManager?.navigate({ target: "results", reason: "complete" });
+      this.audioManager?.playUiCue("finish");
+      this.ui?.showResults(this.lastResults);
       this.syncInputContext();
       this.syncPlayerState();
     } finally {
@@ -759,6 +935,8 @@ export class Application implements Disposable {
         this.flowManager.navigate({ target: "main-menu", reason: "return-to-menu" });
       }
 
+      this.ui?.showLoading(mode);
+
       const navigated = this.flowManager?.navigate({ target: "loading", reason: "start-gameplay" });
 
       if (!navigated?.success) {
@@ -777,6 +955,7 @@ export class Application implements Disposable {
       if (!result?.success) {
         console.error(`[Glassline] Session start failed: ${result?.error ?? "unknown"}`);
         this.flowManager?.navigate({ target: "error", reason: "error" });
+        this.ui?.showError(result?.error ?? "Session start failed.");
 
         return;
       }
@@ -784,6 +963,7 @@ export class Application implements Disposable {
       this.currentMode = mode;
       this.completionRequested = false;
       this.flowManager?.navigate({ target: "gameplay", reason: "gameplay-ready" });
+      this.ui?.hideScreens();
       this.syncInputContext();
     } finally {
       this.busy = false;
@@ -802,6 +982,7 @@ export class Application implements Disposable {
 
       if (result?.success) {
         this.flowManager?.navigate({ target: "paused", reason: "pause" });
+        this.ui?.showPause();
         this.syncInputContext();
       }
     } finally {
@@ -821,6 +1002,7 @@ export class Application implements Disposable {
 
       if (result?.success) {
         this.flowManager?.navigate({ target: "gameplay", reason: "resume" });
+        this.ui?.hideScreens();
         this.syncInputContext();
       }
     } finally {
@@ -839,6 +1021,7 @@ export class Application implements Disposable {
       const fromResults = this.flowManager?.getState() === "results";
 
       if (fromResults) {
+        this.ui?.showLoading(this.currentMode ?? "training");
         this.flowManager?.navigate({ target: "loading", reason: "restart" });
       }
 
@@ -854,6 +1037,7 @@ export class Application implements Disposable {
       this.currentMode = result.session?.mode ?? this.currentMode;
       this.completionRequested = false;
       this.flowManager?.navigate({ target: "gameplay", reason: "restart" });
+      this.ui?.hideScreens();
       this.syncInputContext();
     } finally {
       this.busy = false;
@@ -874,6 +1058,7 @@ export class Application implements Disposable {
 
       this.flowManager?.navigate({ target: "main-menu", reason: "return-to-menu" });
       this.lastResults = null;
+      this.ui?.showMainMenu();
       this.syncInputContext();
     } finally {
       this.busy = false;
@@ -882,17 +1067,19 @@ export class Application implements Disposable {
 
   private syncInputContext(): void {
     const flow = this.flowManager?.getState() ?? "main-menu";
+    const uiContext = this.ui?.getActiveScreen() ? this.ui.getInputContext() : null;
     const context: InputContext =
-      flow === "gameplay"
+      uiContext ??
+      (flow === "gameplay"
         ? "gameplay"
         : flow === "paused"
           ? "pause-menu"
           : flow === "results"
             ? "results"
-            : "main-menu";
+            : "main-menu");
 
     this.input?.setContext(context);
-    this.input?.setEnabled(flow === "gameplay");
+    this.input?.setEnabled(true);
   }
 
   private syncInteractionPresentation(): void {
@@ -936,7 +1123,10 @@ export class Application implements Disposable {
     }
 
     this.settingsPipeline = pipeline;
-    await pipeline.apply(this.settingsManager.getSnapshot());
+    const initialSnapshot = this.settingsManager.getSnapshot();
+
+    await pipeline.apply(initialSnapshot);
+    this.ui?.applySettings(initialSnapshot);
 
     this.settingsUnsubscribe = this.settingsManager.subscribe((snapshot) => {
       void this.handleSettingsChange(snapshot);
@@ -945,6 +1135,7 @@ export class Application implements Disposable {
 
   private async handleSettingsChange(snapshot: SettingsSnapshot): Promise<void> {
     await this.settingsPipeline?.apply(snapshot);
+    this.ui?.applySettings(snapshot);
 
     const language = readStringValue(snapshot.values, "general.language", DEFAULT_LANGUAGE_ID);
     const localization = this.localizationManager;
@@ -957,6 +1148,8 @@ export class Application implements Disposable {
 
     if (!result.changed) {
       console.warn(`[Glassline] Language "${language}" could not be applied: ${result.error}`);
+    } else {
+      this.ui?.refreshLocalization();
     }
   }
 
@@ -964,12 +1157,14 @@ export class Application implements Disposable {
     this.gameLoop = new GameLoop(this.config.gameLoop, {
       onFrameStart: (timestampMs) => {
         this.input?.updateFrame(timestampMs);
+        this.handleGameplayInput();
       },
       onFixedUpdate: (fixedDeltaSeconds) => {
         this.fixedUpdate(fixedDeltaSeconds);
       },
       onRender: (alpha, frameDeltaSeconds) => {
         this.renderFrame(alpha, frameDeltaSeconds);
+        this.updateUi();
       },
     });
   }
@@ -1311,68 +1506,25 @@ export class Application implements Disposable {
   }
 
   private registerDevKeys(): void {
+    if (!import.meta.env.DEV) {
+      return;
+    }
+
     const onKeyDown = (event: KeyboardEvent): void => {
       if (event.repeat || this.busy) {
         return;
       }
 
-      const flow = this.flowManager?.getState() ?? "boot";
-      const key = event.code;
-
-      if (import.meta.env.DEV && key === "F2" && flow === "gameplay" && !this.completionRequested) {
+      if (event.code === "F2" && this.flowManager?.getState() === "gameplay") {
         event.preventDefault();
         void this.completeGameplay("debug-complete");
 
         return;
       }
 
-      if (key === "KeyT" && (flow === "main-menu" || flow === "results" || flow === "error")) {
+      if (event.code === "F3") {
         event.preventDefault();
-        void this.startGameplay("training");
-
-        return;
-      }
-
-      if (key === "KeyP" && (flow === "main-menu" || flow === "results" || flow === "error")) {
-        event.preventDefault();
-        void this.startGameplay("prologue");
-
-        return;
-      }
-
-      if (key === "KeyO" && (flow === "main-menu" || flow === "results" || flow === "error")) {
-        event.preventDefault();
-        void this.startGameplay("speedrun");
-
-        return;
-      }
-
-      if (key === "Escape") {
-        if (flow === "gameplay") {
-          void this.pauseGameplay();
-        } else if (flow === "paused") {
-          void this.resumeGameplay();
-        } else if (flow === "results") {
-          void this.returnToMenu();
-        }
-
-        return;
-      }
-
-      if (key === "KeyR") {
-        if (flow === "gameplay" || flow === "paused" || flow === "results") {
-          event.preventDefault();
-          void this.restartGameplay();
-        }
-
-        return;
-      }
-
-      if (key === "KeyQ") {
-        if (flow === "gameplay" || flow === "paused" || flow === "results" || flow === "error") {
-          event.preventDefault();
-          void this.returnToMenu();
-        }
+        this.toggleDiagnostics();
       }
     };
 
@@ -1457,6 +1609,7 @@ export class Application implements Disposable {
     this.flowManager = null;
     this.sessionManager = null;
     this.levelRuntime = null;
+    this.ui = null;
 
     disposeAll(this.resources);
     this.resources.length = 0;

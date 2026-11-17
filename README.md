@@ -216,7 +216,9 @@ The repository foundation (**Phase 0**) is complete: Vite + TypeScript (strict) 
 
 **Phase 5** (gameplay sessions and modes) is complete: session-driven flow (main menu → loading → gameplay → pause/results), Gameplay Session lifecycle with restart/completion/abandonment, ten Training exercises with event-driven objective evaluation, a five-section Prologue route with five checkpoints, and ranked Prologue speedruns with a monotonic timer, splits, checkpoint-sequence validation, medals, and results. Training and Prologue are launched from a temporary development session menu (final UI is Phase 6).
 
-**Phase 6** (presentation and player feedback) is the next implementation phase.
+**Phase 6** (presentation and player feedback) is complete: player-facing DOM UI with main menu, loading, gameplay HUD, pause menu, settings, results, credits/records placeholders, and error screens; speedrun timer/splits, training objectives, interaction prompts, and checkpoint/exercise notifications; keyboard/gamepad/mouse navigation; accessibility preferences (Reduced Motion, high contrast, large text, UI scale, focus/ARIA/live regions); initial English localization; and procedural UI/gameplay audio cues. The previous development session menu and status overlay were replaced by this interface (the diagnostic overlay is now dev-only via `F3`).
+
+**Phase 7** (progression and long-term systems) is the next implementation phase.
 
 For actual implementation, integration, and verification status, see:
 
@@ -321,24 +323,25 @@ Do not report a task as complete based on `npm run build` alone. Runtime behavio
 
 CI runs the same `npm run validate` pipeline on pushes to `main` and on pull requests (`.github/workflows/validate.yml`).
 
-### Current Runtime State (Phase 1)
+### Current Runtime State (Phase 6)
 
-Running `npm run dev` boots to the temporary development main menu. Press `T`, `P`, or `O` to load and start a Training, Prologue, or ranked Prologue session; the corresponding level is loaded through Level Runtime and unloaded when the session ends.
+Running `npm run dev` boots to the Game Glassline main menu. Use the mouse, keyboard arrows (`↑`/`↓`), or gamepad to navigate and `Enter`/`Space`/confirm to activate.
 
-- `T` Training · `P` Prologue · `O` Ranked Prologue (ranked speedrun with authoritative timer).
-- `Esc` pause/resume in gameplay; in results it returns to the menu.
-- `R` restarts the current session (new execution generation).
-- `Q` abandons the session and returns to the menu.
-- In development builds, `F2` completes the current session for results-flow verification. These session controls are temporary scaffolding until Phase 6.
-- During gameplay: click the canvas to capture the mouse (pointer lock); the first click or key press also resumes the Web Audio context.
+- Main menu: Training, Prologue, Ranked Prologue (authoritative speedrun), Local Records (placeholder), Settings, Credits.
+- `Esc` pauses during gameplay; the pause menu offers Resume, Restart, Settings, and Abandon to Main Menu.
+- Settings changes apply immediately (audio/controls/camera/HUD/accessibility/gameplay/language). Unsupported browser display settings are hidden.
+- Accessibility: Reduced Motion, High Contrast, Large Text, UI Scale; keyboard-only navigation and focus visibility are supported. Reduced Motion is also honored by camera presentation.
+- Gameplay HUD: Speedrun timer/checkpoints/splits, Training exercise/objective progress, speed, interaction prompt, and checkpoint/exercise notifications.
+- Results: mode, duration, Training completion, Speedrun time/splits/medal/validity; Retry or return to Main Menu.
+- During gameplay: click the canvas to capture the mouse (pointer lock); the first click or key press resumes the Web Audio context.
 - `WASD` move, `Space` jump, `Ctrl` crouch, `Shift` sprint.
 - `Ctrl` while running starts a slide; sliding lets the player pass under low ceilings.
 - `E` vaults over a valid low obstacle ahead, and activates contextual interactions when one is in range and in view.
 - Jumping while close to a wall at speed starts a wall run; `Space` again performs a wall jump.
 - Checkpoints activate automatically inside their trigger volumes; falling into the pit respawns the player at the active checkpoint (or the initial spawn).
-- `Esc` releases pointer lock.
+- `Esc` releases pointer lock and opens the pause menu.
 
-The development status overlay shows flow and Gameplay Session state (mode, status, generation), level/section/runtime counts, player state (movement state, speed, grounded flag, stance), Training exercise progress, Speedrun timer/checkpoints/medal, traversal state, and session results. It is a temporary diagnostic, not the HUD. The authored test levels and the overlay/session menu are verification scaffolding and are replaced by final content and the Phase 6 UI.
+Development-only diagnostics: `F3` toggles the diagnostics overlay; in dev builds `F2` completes the current session for results-flow verification. The diagnostics overlay is not player-facing UI and is disabled by default. Authored `training_test`/`prologue_test` levels remain verification content until final Training/Prologue content.
 
 ---
 

@@ -68,3 +68,506 @@ body {
   max-width: min(720px, calc(100vw - 24px));
   white-space: pre-wrap;
 }
+
+/* ---------- Phase 6 UI ---------- */
+
+.gl-ui {
+  position: fixed;
+  inset: 0;
+  z-index: 20;
+  pointer-events: none;
+  color: var(--glassline-text);
+  font-family: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+  --gl-ui-scale: 1;
+}
+
+.gl-ui__screens,
+.gl-screen {
+  pointer-events: none;
+}
+
+.gl-screen {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 18px;
+  padding: clamp(28px, 6vw, 96px);
+  background: linear-gradient(
+    115deg,
+    rgba(10, 14, 17, 0.94) 0%,
+    rgba(16, 23, 28, 0.86) 45%,
+    rgba(16, 23, 28, 0.55) 100%
+  );
+  pointer-events: auto;
+  overflow-y: auto;
+}
+
+.gl-screen--main-menu {
+  background: linear-gradient(
+    100deg,
+    rgba(8, 12, 15, 0.96) 0%,
+    rgba(13, 20, 25, 0.82) 48%,
+    rgba(13, 20, 25, 0.3) 100%
+  );
+}
+
+.gl-screen--panel {
+  align-items: center;
+  justify-content: flex-start;
+  padding-top: clamp(48px, 8vh, 120px);
+}
+
+.gl-screen__title {
+  margin: 0;
+  font-size: clamp(2rem, 4vw, 3.4rem);
+  font-weight: 800;
+  letter-spacing: 0.02em;
+}
+
+.gl-title {
+  font-size: clamp(3rem, 8vw, 7rem);
+  line-height: 0.95;
+  text-transform: uppercase;
+  letter-spacing: -0.01em;
+}
+
+.gl-title::after {
+  content: "";
+  display: block;
+  width: 88px;
+  height: 5px;
+  margin-top: 22px;
+  background: var(--glassline-accent);
+}
+
+.gl-screen__subtitle {
+  margin: 0 0 10px;
+  color: rgba(238, 242, 244, 0.72);
+  font-size: clamp(1rem, 1.5vw, 1.25rem);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.gl-screen__text {
+  max-width: 62ch;
+  margin: 0;
+  color: rgba(238, 242, 244, 0.88);
+  font-size: clamp(0.95rem, 1.2vw, 1.1rem);
+  line-height: 1.65;
+}
+
+.gl-screen__muted {
+  margin: 0;
+  color: rgba(238, 242, 244, 0.55);
+  font-size: 0.9rem;
+}
+
+.gl-screen__footer {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: clamp(18px, 4vh, 48px);
+}
+
+.gl-menu {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 8px;
+  width: min(420px, 100%);
+  margin-top: 10px;
+}
+
+.gl-menu-button {
+  position: relative;
+  padding: 12px 16px 12px 20px;
+  border-left: 3px solid transparent;
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--glassline-text);
+  font-size: clamp(1rem, 1.4vw, 1.2rem);
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  cursor: pointer;
+  transition:
+    background 120ms ease,
+    border-color 120ms ease,
+    transform 120ms ease;
+}
+
+.gl-menu-button::before {
+  content: "›";
+  position: absolute;
+  left: 8px;
+  opacity: 0;
+  transform: translateX(-4px);
+  transition:
+    opacity 120ms ease,
+    transform 120ms ease;
+}
+
+.gl-menu-button.is-focused,
+.gl-menu-button:hover {
+  border-left-color: var(--glassline-accent);
+  background: rgba(213, 46, 54, 0.16);
+}
+
+.gl-menu-button.is-focused::before,
+.gl-menu-button:hover::before {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.gl-menu-button:focus-visible,
+.gl-setting__control:focus-visible,
+.gl-tab:focus-visible,
+.gl-settings__reset:focus-visible {
+  outline: 2px solid #ffffff;
+  outline-offset: 2px;
+}
+
+.gl-menu-hint,
+.gl-settings__hint {
+  color: rgba(238, 242, 244, 0.5);
+  font-size: 0.82rem;
+  line-height: 1.5;
+}
+
+.gl-screen--loading {
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+.gl-spinner {
+  width: 34px;
+  height: 34px;
+  border: 3px solid rgba(255, 255, 255, 0.18);
+  border-top-color: var(--glassline-accent);
+  border-radius: 50%;
+  animation: gl-spin 900ms linear infinite;
+}
+
+@keyframes gl-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Tabs and settings */
+.gl-screen--settings {
+  align-items: stretch;
+  gap: 14px;
+}
+
+.gl-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  max-width: 1100px;
+}
+
+.gl-tab {
+  padding: 8px 12px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 2px;
+  background: rgba(255, 255, 255, 0.03);
+  color: rgba(238, 242, 244, 0.72);
+  font-size: 0.86rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+}
+
+.gl-tab.is-active {
+  border-color: var(--glassline-accent);
+  color: #ffffff;
+  background: rgba(213, 46, 54, 0.14);
+}
+
+.gl-settings {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 8px;
+  width: min(900px, 100%);
+  max-height: 46vh;
+  overflow-y: auto;
+  padding-right: 8px;
+}
+
+.gl-setting {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  background: rgba(255, 255, 255, 0.035);
+  border-left: 2px solid rgba(255, 255, 255, 0.08);
+}
+
+.gl-setting__label {
+  font-size: 0.95rem;
+}
+
+.gl-setting__value {
+  color: rgba(238, 242, 244, 0.8);
+  font-family: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+  font-size: 0.86rem;
+}
+
+.gl-setting__control {
+  grid-column: 1 / -1;
+  height: 2px;
+  background: transparent;
+  cursor: pointer;
+}
+
+.gl-setting__control.is-focused {
+  background: var(--glassline-accent);
+}
+
+.gl-settings__reset {
+  justify-self: start;
+  margin-top: 6px;
+  padding: 8px 12px;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  color: rgba(238, 242, 244, 0.8);
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+
+.gl-settings__reset.is-focused,
+.gl-settings__reset:hover {
+  border-color: var(--glassline-accent);
+  background: rgba(213, 46, 54, 0.12);
+}
+
+/* Results and records */
+.gl-results {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: min(760px, 100%);
+  margin-top: 8px;
+}
+
+.gl-results__row {
+  padding: 8px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  font-size: 1.02rem;
+}
+
+.gl-results__list {
+  margin: 4px 0;
+  padding-left: 18px;
+  max-height: 30vh;
+  overflow-y: auto;
+}
+
+.gl-results__item {
+  padding: 4px 0;
+  color: rgba(238, 242, 244, 0.7);
+  font-size: 0.9rem;
+}
+
+.gl-results__item.is-complete {
+  color: #b6e3b8;
+}
+
+/* HUD */
+.gl-hud {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 180ms ease;
+}
+
+.gl-hud.is-visible {
+  opacity: 1;
+}
+
+.gl-hud__panel {
+  display: none;
+  position: absolute;
+  padding: 10px 12px;
+  border-left: 3px solid var(--glassline-accent);
+  background: rgba(10, 14, 17, 0.62);
+  backdrop-filter: blur(4px);
+  font-size: calc(0.86rem * var(--gl-ui-scale));
+  pointer-events: none;
+}
+
+.gl-hud__panel.is-visible {
+  display: block;
+}
+
+.gl-hud__panel--timer {
+  top: 18px;
+  left: 18px;
+  min-width: 190px;
+}
+
+.gl-hud__panel--training {
+  top: 18px;
+  right: 18px;
+  max-width: 320px;
+  text-align: right;
+  border-left: none;
+  border-right: 3px solid var(--glassline-accent);
+}
+
+.gl-hud__timer {
+  font-family: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+  font-size: calc(1.6rem * var(--gl-ui-scale));
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+.gl-hud__meta {
+  margin-top: 2px;
+  color: rgba(238, 242, 244, 0.66);
+  font-size: calc(0.78rem * var(--gl-ui-scale));
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.gl-hud__splits {
+  margin: 6px 0 0;
+  padding: 0;
+  list-style: none;
+  font-family: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+  font-size: calc(0.78rem * var(--gl-ui-scale));
+  color: rgba(238, 242, 244, 0.8);
+}
+
+.gl-hud__objective {
+  margin-top: 4px;
+  font-weight: 600;
+  font-size: calc(0.95rem * var(--gl-ui-scale));
+}
+
+.gl-hud__progress {
+  margin-top: 4px;
+  color: rgba(238, 242, 244, 0.68);
+  font-size: calc(0.8rem * var(--gl-ui-scale));
+  line-height: 1.4;
+}
+
+.gl-hud__speed {
+  position: absolute;
+  left: 22px;
+  bottom: 22px;
+  padding: 6px 10px;
+  background: rgba(10, 14, 17, 0.55);
+  font-family: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+  font-size: calc(0.82rem * var(--gl-ui-scale));
+  color: rgba(238, 242, 244, 0.72);
+  opacity: 0;
+}
+
+.gl-hud__speed.is-visible {
+  opacity: 1;
+}
+
+.gl-hud__prompt {
+  position: absolute;
+  left: 50%;
+  bottom: 92px;
+  transform: translateX(-50%);
+  padding: 9px 16px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  background: rgba(10, 14, 17, 0.72);
+  font-size: calc(0.92rem * var(--gl-ui-scale));
+  letter-spacing: 0.02em;
+  opacity: 0;
+}
+
+.gl-hud__prompt.is-visible {
+  opacity: 1;
+}
+
+.gl-hud__hint {
+  position: absolute;
+  right: 22px;
+  bottom: 22px;
+  color: rgba(238, 242, 244, 0.38);
+  font-size: calc(0.72rem * var(--gl-ui-scale));
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.gl-toast {
+  position: fixed;
+  top: 22px;
+  left: 50%;
+  transform: translateX(-50%) translateY(-6px);
+  padding: 9px 16px;
+  background: rgba(10, 14, 17, 0.8);
+  border-top: 2px solid var(--glassline-accent);
+  font-size: 0.9rem;
+  letter-spacing: 0.03em;
+  opacity: 0;
+  pointer-events: none;
+  transition:
+    opacity 150ms ease,
+    transform 150ms ease;
+}
+
+.gl-toast.is-visible {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
+.gl-sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Accessibility */
+.gl-ui--reduced-motion .gl-menu-button,
+.gl-ui--reduced-motion .gl-hud,
+.gl-ui--reduced-motion .gl-toast,
+.gl-ui--reduced-motion .gl-spinner {
+  transition: none;
+  animation: none;
+}
+
+.gl-ui--large-text .gl-screen__title {
+  font-size: clamp(2.4rem, 5vw, 4rem);
+}
+
+.gl-ui--large-text .gl-setting__label,
+.gl-ui--large-text .gl-menu-button {
+  font-size: 1.08rem;
+}
+
+.gl-ui--high-contrast {
+  --glassline-panel: rgba(0, 0, 0, 0.92);
+}
+
+.gl-ui--high-contrast .gl-screen {
+  background: #000000;
+}
+
+.gl-ui--high-contrast .gl-menu-button,
+.gl-ui--high-contrast .gl-setting,
+.gl-ui--high-contrast .gl-tab {
+  background: #000000;
+  border-color: #ffffff;
+  color: #ffffff;
+}
+
+.gl-ui--high-contrast .gl-menu-button.is-focused,
+.gl-ui--high-contrast .gl-tab.is-active {
+  background: #ffffff;
+  color: #000000;
+}

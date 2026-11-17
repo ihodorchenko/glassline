@@ -291,7 +291,7 @@ export class TrainingSystem {
     }
 
     if (objective.type === "maintain_speed") {
-      return Math.max(1, (objective.targetDurationSeconds ?? 1) * 1000);
+      return objective.targetDurationSeconds ?? 1;
     }
 
     return 1;
@@ -306,7 +306,8 @@ export class TrainingSystem {
   ): void {
     const tracking = this.objectiveTracking.get(objective.objectiveId) ?? { maintainSinceMs: null };
     const requiredSpeed = definition.targetSpeed ?? 0;
-    const requiredMs = (definition.targetDurationSeconds ?? 1) * 1000;
+    const requiredSeconds = definition.targetDurationSeconds ?? 1;
+    const requiredMs = requiredSeconds * 1000;
 
     if (speed >= requiredSpeed) {
       if (tracking.maintainSinceMs === null) {
@@ -314,17 +315,17 @@ export class TrainingSystem {
       }
 
       const maintainedMs = timestampMs - tracking.maintainSinceMs;
-      const nextValue = Math.round(maintainedMs);
+      const nextValue = Number((maintainedMs / 1000).toFixed(2));
 
       this.objectiveTracking.set(objective.objectiveId, tracking);
 
       if (maintainedMs >= requiredMs) {
-        this.completeObjective(exercise, objective, timestampMs, requiredMs);
+        this.completeObjective(exercise, objective, timestampMs, requiredSeconds);
       } else if (nextValue !== objective.currentValue) {
         this.replaceObjective(exercise, objective.objectiveId, {
           ...objective,
           currentValue: nextValue,
-          targetValue: requiredMs,
+          targetValue: requiredSeconds,
         });
       }
     } else {

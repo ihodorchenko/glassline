@@ -17,5 +17,7 @@ export class AudioSettingsAdapter implements ISettingsApplicationAdapter {
     const muted = readBooleanValue(snapshot.values, "audio.muted", false);
 
     this.audioManager.setMasterVolume(volume, muted);
+    this.audioManager.setUiVolume(readNumberValue(snapshot.values, "audio.ui_volume", 0.8));
+    this.audioManager.setSfxVolume(readNumberValue(snapshot.values, "audio.sfx_volume", 1));
   }
 }
