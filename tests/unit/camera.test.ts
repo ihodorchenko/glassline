@@ -26,6 +26,14 @@ function movement(overrides: Partial<MovementModelSnapshot> = {}): MovementModel
     verticalSpeed: 0,
     velocity: { x: 0, y: 0, z: 0 },
     canJump: true,
+    canSlide: false,
+    postureHeight:
+      overrides.stance === "sliding"
+        ? DEFAULT_MOVEMENT_TUNING.slideHeight
+        : overrides.stance === "crouching"
+          ? DEFAULT_MOVEMENT_TUNING.crouchHeight
+          : DEFAULT_MOVEMENT_TUNING.capsuleHeight,
+    wallRunSide: null,
     landingRemainingSeconds: 0,
     landingIntensity: 0,
     ...overrides,
@@ -131,7 +139,7 @@ describe("CameraSystem posture and response", () => {
     renderFrames(camera, movement({ stance: "crouching" }), 180);
 
     const expectedOffset =
-      DEFAULT_MOVEMENT_TUNING.crouchingEyeHeight - DEFAULT_MOVEMENT_TUNING.capsuleHeight / 2;
+      DEFAULT_MOVEMENT_TUNING.crouchingEyeHeight - DEFAULT_MOVEMENT_TUNING.crouchHeight / 2;
 
     expect(camera.camera.position.y).toBeCloseTo(PLAYER_POSITION.y + expectedOffset, 2);
   });
@@ -216,5 +224,71 @@ describe("CameraSystem posture and response", () => {
     camera.resize(1600, 900);
 
     expect(camera.camera.aspect).toBeCloseTo(1600 / 900, 6);
+  });
+});
+
+describe("CameraSystem traversal responses", () => {
+  it("lowers the camera to the sliding eye height", () => {
+    const camera = createCamera();
+
+    renderFrames(camera, movement({ stance: "sliding" }), 180);
+
+    const expectedOffset =
+      DEFAULT_MOVEMENT_TUNING.slidingEyeHeight - DEFAULT_MOVEMENT_TUNING.slideHeight / 2;
+
+    expect(camera.camera.position.y).toBeCloseTo(PLAYER_POSITION.y + expectedOffset, 2);
+  });
+
+  it("rolls toward the wall during a wall run", () => {
+    const rightWall = createCamera();
+    const leftWall = createCamera();
+
+    renderFrames(
+      rightWall,
+      movement({ state: "WALLRUN", wallRunSide: "right", moving: true, speed: 6 }),
+      120,
+    );
+    renderFrames(
+      leftWall,
+      movement({ state: "WALLRUN", wallRunSide: "left", moving: true, speed: 6 }),
+      120,
+    );
+
+    expect(rightWall.getCurrentRoll()).toBeLessThan(-0.03);
+    expect(leftWall.getCurrentRoll()).toBeGreaterThan(0.03);
+  });
+
+  it("disables wall-run roll under reduced motion", () => {
+    const camera = createCamera();
+
+    camera.setViewConfiguration({
+      baseFov: 75,
+      sprintFov: 82,
+      bobIntensity: 1,
+      motionIntensity: 1,
+      reducedMotion: true,
+    });
+
+    renderFrames(
+      camera,
+      movement({ state: "WALLRUN", wallRunSide: "right", moving: true, speed: 6 }),
+      120,
+    );
+
+    expect(Math.abs(camera.getCurrentRoll())).toBeLessThan(0.001);
+  });
+
+  it("resets transient camera effects after respawn", () => {
+    const camera = createCamera();
+
+    camera.applyLook(frame({ x: 100, y: 100 }), FIXED_DT);
+    renderFrames(camera, movement({ state: "SPRINTING", moving: true, speed: 8.5 }), 120);
+
+    camera.resetForRespawn(1.2);
+
+    expect(camera.viewYaw).toBeCloseTo(1.2, 6);
+    expect(camera.viewPitch).toBeCloseTo(0, 6);
+    expect(camera.getCurrentFov()).toBeCloseTo(75, 6);
+    expect(camera.getCurrentRoll()).toBeCloseTo(0, 6);
   });
 });

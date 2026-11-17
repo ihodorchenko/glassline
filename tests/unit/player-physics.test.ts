@@ -22,6 +22,7 @@ function input(overrides: Partial<MovementInputSample> = {}): MovementInputSampl
     jumpHeld: false,
     sprintHeld: false,
     crouchHeld: false,
+    interactPressed: false,
     ...overrides,
   };
 }

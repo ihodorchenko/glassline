@@ -12,6 +12,8 @@ const GAMEPAD_RADIANS_PER_SECOND = 2.4;
 const PITCH_LIMIT_RADIANS = (85 * Math.PI) / 180;
 const EYE_HEIGHT_DAMPING = 12;
 const FOV_DAMPING = 8;
+const ROLL_DAMPING = 10;
+const WALL_RUN_ROLL_RADIANS = 0.06;
 const LANDING_DIP_METERS = 0.06;
 const BOB_AMPLITUDE_METERS = 0.018;
 
@@ -71,6 +73,7 @@ export class CameraSystem implements Disposable {
   private pitch = 0;
   private currentEyeHeightOffset: number;
   private currentFov: number;
+  private currentRoll = 0;
   private bobPhase = 0;
   private disposed = false;
 
@@ -93,7 +96,8 @@ export class CameraSystem implements Disposable {
     };
 
     this.currentFov = options.fovDegrees;
-    this.currentEyeHeightOffset = this.tuning.standingEyeHeight - this.tuning.capsuleHeight / 2;
+    this.modelPostureHeight = this.tuning.capsuleHeight;
+    this.currentEyeHeightOffset = this.tuning.standingEyeHeight - this.modelPostureHeight / 2;
   }
 
   get viewYaw(): number {
@@ -153,8 +157,9 @@ export class CameraSystem implements Disposable {
     const deltaSeconds = Math.max(0, input.deltaSeconds);
 
     this.applyLook(input.frame, deltaSeconds);
-    this.updateEyeHeight(input.movement.stance, deltaSeconds);
+    this.updateEyeHeight(input.movement.stance, deltaSeconds, input.movement.postureHeight);
     this.updateFov(input.movement, deltaSeconds);
+    this.updateRoll(input.movement, deltaSeconds);
 
     const bobOffset = this.computeBobOffset(input.movement, deltaSeconds);
     const landingDip = this.view.reducedMotion
@@ -166,7 +171,7 @@ export class CameraSystem implements Disposable {
       input.playerPosition.y + this.currentEyeHeightOffset + bobOffset - landingDip,
       input.playerPosition.z,
     );
-    this.camera.rotation.set(this.pitch, this.yaw, 0);
+    this.camera.rotation.set(this.pitch, this.yaw, this.currentRoll);
 
     if (this.camera.fov !== this.currentFov) {
       this.camera.fov = this.currentFov;
@@ -179,14 +184,46 @@ export class CameraSystem implements Disposable {
     return this.currentFov;
   }
 
+  getCurrentRoll(): number {
+    return this.currentRoll;
+  }
+
+  /** World-space direction the camera is looking along. */
+  getLookDirection(): Vector3Like {
+    const cosPitch = Math.cos(this.pitch);
+
+    return {
+      x: -Math.sin(this.yaw) * cosPitch,
+      y: Math.sin(this.pitch),
+      z: -Math.cos(this.yaw) * cosPitch,
+    };
+  }
+
+  /** Resets transient effects after respawn. */
+  resetForRespawn(rotationY = 0): void {
+    this.yaw = rotationY;
+    this.pitch = 0;
+    this.currentRoll = 0;
+    this.bobPhase = 0;
+    this.currentFov = this.view.baseFov;
+    this.currentEyeHeightOffset = this.tuning.standingEyeHeight - this.tuning.capsuleHeight / 2;
+  }
+
   dispose(): void {
     this.disposed = true;
   }
 
-  private updateEyeHeight(stance: PlayerStance, deltaSeconds: number): void {
+  private modelPostureHeight: number;
+
+  private updateEyeHeight(stance: PlayerStance, deltaSeconds: number, postureHeight: number): void {
+    this.modelPostureHeight = postureHeight;
     const eyeHeight =
-      stance === "crouching" ? this.tuning.crouchingEyeHeight : this.tuning.standingEyeHeight;
-    const targetOffset = eyeHeight - this.tuning.capsuleHeight / 2;
+      stance === "sliding"
+        ? this.tuning.slidingEyeHeight
+        : stance === "crouching"
+          ? this.tuning.crouchingEyeHeight
+          : this.tuning.standingEyeHeight;
+    const targetOffset = eyeHeight - this.modelPostureHeight / 2;
 
     this.currentEyeHeightOffset = damp(
       this.currentEyeHeightOffset,
@@ -205,6 +242,17 @@ export class CameraSystem implements Disposable {
     const targetFov = this.view.baseFov + (this.view.sprintFov - this.view.baseFov) * sprintBlend;
 
     this.currentFov = damp(this.currentFov, targetFov, FOV_DAMPING, deltaSeconds);
+  }
+
+  private updateRoll(movement: MovementModelSnapshot, deltaSeconds: number): void {
+    const targetRoll =
+      !this.view.reducedMotion && movement.state === "WALLRUN" && movement.wallRunSide !== null
+        ? movement.wallRunSide === "left"
+          ? WALL_RUN_ROLL_RADIANS
+          : -WALL_RUN_ROLL_RADIANS
+        : 0;
+
+    this.currentRoll = damp(this.currentRoll, targetRoll, ROLL_DAMPING, deltaSeconds);
   }
 
   private computeBobOffset(movement: MovementModelSnapshot, deltaSeconds: number): number {

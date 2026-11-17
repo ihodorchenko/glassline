@@ -3,8 +3,8 @@
 **Document:** `IMPLEMENTATION_STATUS.md`  
 **Project:** Glassline  
 **Last Updated:** 2026-11-17  
-**Project Stage:** First-Person Player Complete  
-**Status:** Phases 0–2 Complete; Phase 3 Next
+**Project Stage:** Core Parkour Complete  
+**Status:** Phases 0–3 Complete; Phase 4 Next
 
 ---
 
@@ -101,9 +101,9 @@ Only `Verified` means that the applicable acceptance criteria have been checked 
 | Localization | Defined | In Progress | In Progress | Partially Verified |
 | Statistics | Defined | Not Started | Not Started | Not Verified |
 
-**Current phase:** Phases 0 (repository foundation), 1 (application runtime), and 2 (first-person player) are complete. Phase 3 (traversal and recovery) is the next active workstream.
+**Current phase:** Phases 0 (repository foundation), 1 (application runtime), 2 (first-person player), and 3 (traversal and recovery) are complete. Phase 4 (level runtime) is the next active workstream.
 
-**Implementation readiness:** The player is controllable in a test environment with first-person camera, fixed-step movement, jumping, crouching, landing, and collision. Traversal mechanics (slide, vault, wall run/jump), recovery/respawn, level runtime, and game sessions are the next implementation areas.
+**Implementation readiness:** The core parkour loop is playable in a test environment: first-person movement, jump, crouch/slide, vault, wall running/jumping, checkpoints, contextual interaction, and checkpoint-based respawn. Level runtime, structured gameplay sessions, and presentation systems are the next implementation areas.
 
 ### 3.1. Documentation Reconciliation (2026-11-17)
 
@@ -142,10 +142,10 @@ The following documents form the current specification baseline.
 | 11 | `11_INPUT_SYSTEM_SPEC.md` | Defined | In Progress |
 | 12 | `12_MOVEMENT_SYSTEM_SPEC.md` | Defined | In Progress |
 | 13 | `13_CAMERA_SYSTEM_SPEC.md` | Defined | In Progress |
-| 14 | `14_INTERACTION_SYSTEM_SPEC.md` | Defined | Not Started |
+| 14 | `14_INTERACTION_SYSTEM_SPEC.md` | Defined | In Progress |
 | 15 | `15_LEVEL_RUNTIME_SYSTEM_SPEC.md` | Defined | Not Started |
-| 16 | `16_CHECKPOINT_SYSTEM_SPEC.md` | Defined | Not Started |
-| 17 | `17_RESPAWN_SYSTEM_SPEC.md` | Defined | Not Started |
+| 16 | `16_CHECKPOINT_SYSTEM_SPEC.md` | Defined | In Progress |
+| 17 | `17_RESPAWN_SYSTEM_SPEC.md` | Defined | In Progress |
 | 18 | `18_PLAYER_STATE_SYSTEM_SPEC.md` | Defined | In Progress |
 | 19 | `19_GAMEPLAY_SESSION_SYSTEM_SPEC.md` | Defined | Not Started |
 | 20 | `20_GAMEPLAY_FLOW_SYSTEM_SPEC.md` | Defined | Not Started |
@@ -187,8 +187,8 @@ Systems are not completely independent. Integration should happen continuously a
 | Player State | 18 | Establish authoritative player lifecycle state | In Progress |
 | Movement | 12 | Implement first-person locomotion and traversal physics | In Progress |
 | Camera | 13 | Implement first-person camera and movement feedback | In Progress |
-| Interaction | 14 | Implement interaction detection and execution | Not Started |
-| Respawn | 17 | Implement player recovery lifecycle | Not Started |
+| Interaction | 14 | Implement interaction detection and execution | In Progress |
+| Respawn | 17 | Implement player recovery lifecycle | In Progress |
 
 ### 5.3. Level Infrastructure
 
@@ -196,7 +196,7 @@ Systems are not completely independent. Integration should happen continuously a
 |---|---|---|---|
 | Level Design | 06 | Establish level definitions and route structure | Not Started |
 | Level Runtime | 15 | Load and manage runtime level sessions | Not Started |
-| Checkpoint | 16 | Register and activate checkpoints | Not Started |
+| Checkpoint | 16 | Register and activate checkpoints | In Progress |
 | Procedural Generation | 05 | Generate validated environment geometry and assets | Not Started |
 
 ### 5.4. Gameplay Orchestration
@@ -415,6 +415,8 @@ Known notes:
 
 **Goal:** Implement the core parkour experience.
 
+**Status:** Complete (2026-11-17).
+
 Systems:
 
 - Movement extensions.
@@ -433,12 +435,48 @@ Initial features:
 - Respawn at the active checkpoint.
 - Interaction prompts.
 
+Implemented and verified:
+
+- Movement extensions:
+  - Sliding: entry requires grounded speed ≥ 5.0 m/s and crouch; friction 2.0 m/s², minimum duration 0.25 s, maximum duration 1.2 s, exit at 2.5 m/s, jump-out allowed after the minimum duration. The capsule physically shortens to a 0.9 m posture height with feet anchored, so the player can pass under 1.05 m ceilings.
+  - Vaulting: contextual action (`Interact`) with a detector that validates obstacle height (0.35–1.15 m), landing surface, and head clearance; execution is a scripted 0.45 s arc with a 0.25 m lift that preserves horizontal momentum. The player's kinematic body follows the validated trajectory.
+  - Wall running: side ray detection within 0.75 m, minimum speed 5.0 m/s, maximum duration 1.5 s, reduced gravity (×0.35), speed decay, and automatic exit when the wall is lost or duration expires.
+  - Wall jumping: jump input during a wall run produces outward (5.5 m/s) and upward (6.0 m/s) velocity with a short `WALLJUMP` state.
+  - Posture volumes: posture changes move the kinematic body while keeping feet anchored; standing up is blocked under low ceilings; capsule resizing is synchronized with the character-controller queries.
+  - Canonical traversal events emitted by `PlayerSystem`: `player:sliding-started`, `player:sliding-ended`, `player:vault-started`, `player:wallrun-started`, `player:wallrun-ended`, `player:walljumped` (plus the Phase 2 jump/land events).
+- Camera traversal responses: sliding eye height (0.65 m), wall-run roll toward the wall (±0.06 rad, disabled by reduced motion), posture-aware eye offsets, and respawn reset of transient effects.
+- Interaction System: distance/facing validation, physics line-of-sight (rays ignore the player's kinematic body), nearest-target selection, prompt snapshot, 0.6 s cooldown, runtime enable/disable, and execution listeners. The Application executes `Interact` only when the player is not vaulting.
+- Checkpoint System: validated definitions and spawn-point references, deterministic activation (one checkpoint per update, definition order), deduplicated session-scoped progress, active-checkpoint tracking, respawn destination resolution (including `respawnEnabled`), reset, and listeners.
+- Respawn System: `RespawnManager` is the sole recovery orchestrator. Requests reject while busy, resolve the destination through the Checkpoint System (falling back to the level's initial spawn), suspend player control and input, teleport/reset the player, reset camera transient effects, restore control after a deterministic 0.15 s window, and publish completion results. Fall detection compares the player position with the test level's kill plane.
+- Test level: spawn points, three checkpoints, a fall pit, a vault obstacle, a low-ceiling slide tunnel, a wall-run corridor, an interaction terminal, and traversal verification geometry.
+- Application integration: traversal systems are created after the player/camera/input, updated in the fixed step (movement → interaction → checkpoint activation → fall detection → physics), and reported in the status overlay (`traversal checkpoint … · interaction … · respawn …`).
+- Removed the Phase 2 debug physics scaffolding in favor of gameplay-driven test level content (already removed in Phase 2; no new scaffolding added).
+
+Verification performed:
+
+- `npm run typecheck` — passes.
+- `npm run check` — Biome lint/format/import checks pass.
+- `npm test` — 151 unit and integration tests across 18 files pass, including: movement model 23 (slide/vault/wall-run/wall-jump), player traversal integration 4 (slide under low ceiling, crouch blocked, vault crossing, respawn restore), checkpoint 5, respawn 5, interaction 6, traversal detection 6 (Rapier ray detection), camera 17, player state 7, player physics 6, plus the prior suites.
+- `npm run build` — production build succeeds.
+- Headless browser smoke check: first-person test level renders; status reports player `IDLE`, `grounded yes`, `traversal checkpoint none · interaction none · respawn idle`.
+- Browser CDP input check: synthetic keyboard movement reaches the first checkpoint (`test_cp_rooftop`); a vault plus continued movement reaches `test_cp_industrial`; crouch changes stance to `crouching`; no fatal overlay or console failure.
+
 Exit criteria:
 
-- Core traversal mechanics work reliably.
-- Recovery restores a valid player state.
-- Checkpoint activation is deterministic.
-- Interactions are validated before execution.
+- [x] Core traversal mechanics work reliably: slide, vault, wall run, and wall jump are implemented, unit-tested, and integrated with the player controller; slide/vault pass end-to-end physics integration tests.
+- [x] Recovery restores a valid player state: `RespawnManager` places the player at the active checkpoint destination, resets transient movement/camera state, and restores movement (integration-tested).
+- [x] Checkpoint activation is deterministic: definition-order activation, deduplication, revisioned snapshots, and destination resolution are unit-tested.
+- [x] Interactions are validated before execution: target enabled state, range, facing, line-of-sight, and cooldown are checked before execution and covered by tests.
+
+Known limitations and deferred integration:
+
+- Vaulting is an explicit contextual interaction (no auto-vault); obstacle detection is horizontal and tuned for the test geometry.
+- Wall running requires manual timing and a nearby wall; no wall-run camera framing beyond roll.
+- Respawn has no fade/transition presentation yet; the camera snaps to the destination. Recovery presentation belongs to Phase 6.
+- Checkpoint progress is session-scoped and not persisted; persistent run state belongs to Phase 5 (Speedrun/Save).
+- Checkpoint order is deterministic but not yet validated against the Speedrun route; Speedrun owns ordered validation (Phase 5).
+- `TestLevel` remains temporary level content: definitions are passed directly to the checkpoint/interaction systems. Level Runtime will own level loading, spawn registration, and trigger registration in Phase 4.
+- Interaction currently exposes prompt snapshots without HUD rendering; HUD belongs to Phase 6.
 
 ### Phase 4 — Level Runtime
 
@@ -649,11 +687,11 @@ Integration is tracked separately from individual system implementation.
 | Movement → HUD | Speed and movement feedback | Not Started |
 | Interaction → UI | Prompt and interaction state | Not Started |
 | Interaction → Training | Interaction completion events | Not Started |
-| Checkpoint → Respawn | Active recovery destination | Not Started |
+| Checkpoint → Respawn | Active recovery destination | Integrated |
 | Level Runtime → Checkpoint | Checkpoint registration and lifecycle | Not Started |
 | Level Runtime → Respawn | Spawn point resolution | Not Started |
-| Respawn → Movement | Placement and transient state reset | Not Started |
-| Respawn → Camera | Camera recovery | Not Started |
+| Respawn → Movement | Placement and transient state reset | Integrated |
+| Respawn → Camera | Camera recovery | Integrated |
 | Gameplay Session → Level Runtime | Level lifecycle orchestration | Not Started |
 | Gameplay Flow → Gameplay Session | Session lifecycle requests | Not Started |
 | Training → Movement | Authoritative traversal events | Not Started |

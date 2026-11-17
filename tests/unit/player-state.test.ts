@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
 
 import type { MovementModelSnapshot } from "../../src/player/MovementModel";
+import { DEFAULT_MOVEMENT_TUNING } from "../../src/player/MovementTuning";
 import { PlayerStateSystem } from "../../src/player/PlayerStateSystem";
 
 function movementSnapshot(overrides: Partial<MovementModelSnapshot> = {}): MovementModelSnapshot {
@@ -13,6 +14,14 @@ function movementSnapshot(overrides: Partial<MovementModelSnapshot> = {}): Movem
     verticalSpeed: 0,
     velocity: { x: 0, y: 0, z: 0 },
     canJump: true,
+    canSlide: false,
+    postureHeight:
+      overrides.stance === "sliding"
+        ? DEFAULT_MOVEMENT_TUNING.slideHeight
+        : overrides.stance === "crouching"
+          ? DEFAULT_MOVEMENT_TUNING.crouchHeight
+          : DEFAULT_MOVEMENT_TUNING.capsuleHeight,
+    wallRunSide: null,
     landingRemainingSeconds: 0,
     landingIntensity: 0,
     ...overrides,

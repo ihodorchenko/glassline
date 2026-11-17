@@ -210,7 +210,9 @@ The repository foundation (**Phase 0**) is complete: Vite + TypeScript (strict) 
 
 **Phase 2** (first-person player) is complete: fixed-step locomotion (walk/run/sprint), jump with buffering and coyote time, crouch, landing, Rapier kinematic character collision, first-person camera with mouse/gamepad look, camera height and movement feedback, and aggregated player state with capabilities.
 
-**Phase 3** (traversal and recovery: sliding, vaulting, wall running/jumping, respawn integration) is the next implementation phase.
+**Phase 3** (traversal and recovery) is complete: sliding with physical posture changes, contextual vaulting over validated obstacles, wall running and wall jumping, checkpoint activation with deterministic progress, checkpoint-based respawn with control suspension, and validated contextual interactions (range, facing, line-of-sight, cooldown).
+
+**Phase 4** (level runtime) is the next implementation phase.
 
 For actual implementation, integration, and verification status, see:
 
@@ -321,9 +323,13 @@ Running `npm run dev` starts a first-person player in a temporary test environme
 
 - Click the canvas to capture the mouse (pointer lock); the first click or key press also resumes the Web Audio context.
 - `WASD` move, `Space` jump, `Ctrl` crouch, `Shift` sprint.
+- `Ctrl` while running starts a slide; sliding lets the player pass under low ceilings.
+- `E` vaults over a valid low obstacle ahead, and activates contextual interactions when one is in range and in view.
+- Jumping while close to a wall at speed starts a wall run; `Space` again performs a wall jump.
+- Checkpoints activate automatically inside their trigger volumes; falling into the pit respawns the player at the active checkpoint (or the initial spawn).
 - `Esc` releases pointer lock.
 
-The development status overlay shows frame rate, fixed stepping, renderer/physics/storage status, settings revision, language, audio state, input state, and player state (movement state, speed, grounded flag, stance). It is a temporary diagnostic, not the HUD. The test environment and overlay are verification scaffolding and are replaced when Level Design/Level Runtime and the HUD arrive.
+The development status overlay shows frame rate, fixed stepping, renderer/physics/storage status, settings revision, language, audio state, input state, player state (movement state, speed, grounded flag, stance), and traversal state (active checkpoint, interaction prompt, respawn state). It is a temporary diagnostic, not the HUD. The test environment and overlay are verification scaffolding and are replaced when Level Design/Level Runtime and the HUD arrive.
 
 ---
 

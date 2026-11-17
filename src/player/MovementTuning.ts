@@ -7,6 +7,9 @@ export interface MovementTuning {
   readonly capsuleRadius: number;
   readonly standingEyeHeight: number;
   readonly crouchingEyeHeight: number;
+  readonly slidingEyeHeight: number;
+  readonly crouchHeight: number;
+  readonly slideHeight: number;
   readonly groundDetectionDistance: number;
   readonly maxStepHeight: number;
 
@@ -27,6 +30,24 @@ export interface MovementTuning {
   readonly coyoteTimeSeconds: number;
   readonly jumpReleaseGravityMultiplier: number;
 
+  readonly slideMinEntrySpeed: number;
+  readonly slideFriction: number;
+  readonly slideMinDurationSeconds: number;
+  readonly slideMaxDurationSeconds: number;
+  readonly slideExitSpeed: number;
+
+  readonly vaultMinHeight: number;
+  readonly vaultMaxHeight: number;
+  readonly vaultDurationSeconds: number;
+  readonly vaultArcLift: number;
+
+  readonly wallRunMinSpeed: number;
+  readonly wallRunMaxDurationSeconds: number;
+  readonly wallRunGravityMultiplier: number;
+  readonly wallRunSpeedDecay: number;
+  readonly wallJumpOutwardSpeed: number;
+  readonly wallJumpUpSpeed: number;
+
   readonly landingRecoverySeconds: number;
 }
 
@@ -35,6 +56,9 @@ export const DEFAULT_MOVEMENT_TUNING: MovementTuning = {
   capsuleRadius: 0.3,
   standingEyeHeight: 1.6,
   crouchingEyeHeight: 1.05,
+  slidingEyeHeight: 0.65,
+  crouchHeight: 1.15,
+  slideHeight: 0.9,
   groundDetectionDistance: 0.12,
   maxStepHeight: 0.3,
 
@@ -54,6 +78,24 @@ export const DEFAULT_MOVEMENT_TUNING: MovementTuning = {
   jumpBufferSeconds: 0.12,
   coyoteTimeSeconds: 0.1,
   jumpReleaseGravityMultiplier: 2.5,
+
+  slideMinEntrySpeed: 5,
+  slideFriction: 2,
+  slideMinDurationSeconds: 0.25,
+  slideMaxDurationSeconds: 1.2,
+  slideExitSpeed: 2.5,
+
+  vaultMinHeight: 0.35,
+  vaultMaxHeight: 1.15,
+  vaultDurationSeconds: 0.45,
+  vaultArcLift: 0.25,
+
+  wallRunMinSpeed: 5,
+  wallRunMaxDurationSeconds: 1.5,
+  wallRunGravityMultiplier: 0.35,
+  wallRunSpeedDecay: 1,
+  wallJumpOutwardSpeed: 5.5,
+  wallJumpUpSpeed: 6,
 
   landingRecoverySeconds: 0.18,
 };

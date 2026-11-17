@@ -1,10 +1,12 @@
 import { AudioManager } from "../audio/AudioManager";
 import { CameraSystem } from "../camera/CameraSystem";
+import { CheckpointSystem } from "../checkpoint/CheckpointSystem";
 import { type Disposable, disposeAll } from "../core/Disposable";
 import { GameLoop } from "../core/GameLoop";
 import { StatusOverlay } from "../diagnostics/StatusOverlay";
 import { InputManager } from "../input/InputManager";
 import { IDLE_INPUT_FRAME, type InputFrame } from "../input/InputState";
+import { InteractionSystem } from "../interaction/InteractionSystem";
 import { DEFAULT_LANGUAGE_ID, DEFAULT_LANGUAGE_REGISTRY } from "../localization/Language";
 import { LocalizationManager } from "../localization/LocalizationManager";
 import { createDefaultLocalizationResourceLoader } from "../localization/LocalizationResourceLoader";
@@ -15,6 +17,7 @@ import { PlayerSystem } from "../player/PlayerSystem";
 import { Renderer } from "../rendering/Renderer";
 import { RenderScene } from "../rendering/RenderScene";
 import { ResourceLoader } from "../resources/ResourceLoader";
+import { RespawnManager } from "../respawn/RespawnManager";
 import { AudioSettingsAdapter } from "../settings/adapters/AudioSettingsAdapter";
 import { CameraSettingsAdapter } from "../settings/adapters/CameraSettingsAdapter";
 import { ControlsSettingsAdapter } from "../settings/adapters/ControlsSettingsAdapter";
@@ -22,9 +25,10 @@ import { SettingsApplicationPipeline } from "../settings/SettingsApplication";
 import { SETTING_DEFINITIONS } from "../settings/SettingsDefinitions";
 import { SettingsManager } from "../settings/SettingsManager";
 import { readStringValue, type SettingsSnapshot } from "../settings/SettingsTypes";
+import type { Vector3Like } from "../shared/math";
 import { Database, StorageError } from "../storage/Database";
 import { SettingsRepository } from "../storage/repositories/SettingsRepository";
-import { TestLevel } from "../world/TestLevel";
+import { TestLevel, type TestLevelData } from "../world/TestLevel";
 import { type ApplicationConfig, DEFAULT_APPLICATION_CONFIG } from "./ApplicationConfig";
 
 export type ApplicationState = "idle" | "initializing" | "ready" | "running" | "stopped" | "failed";
@@ -71,6 +75,10 @@ export class Application implements Disposable {
   private player: PlayerSystem | null = null;
   private playerState: PlayerStateSystem | null = null;
   private testLevel: TestLevel | null = null;
+  private testLevelData: TestLevelData | null = null;
+  private checkpointSystem: CheckpointSystem | null = null;
+  private interactionSystem: InteractionSystem | null = null;
+  private respawnManager: RespawnManager | null = null;
 
   private storageStatus = "not initialized";
   private localizationStatus = "not initialized";
@@ -124,6 +132,7 @@ export class Application implements Disposable {
       this.initializeCamera();
       this.initializeInput();
       this.initializeAudio();
+      this.initializeTraversalSystems();
       await this.initializeSettingsApplication();
       this.initializeGameLoop();
       this.registerWindowHandlers();
@@ -283,6 +292,7 @@ export class Application implements Disposable {
     }
 
     this.testLevel = new TestLevel(this.physics, this.renderScene);
+    this.testLevelData = this.testLevel.getData();
     this.resources.push(this.testLevel);
   }
 
@@ -386,6 +396,7 @@ export class Application implements Disposable {
       jumpHeld: false,
       sprintHeld: false,
       crouchHeld: false,
+      interactPressed: false,
     };
     const fixedDelta = 1 / this.config.gameLoop.physicsHz;
 
@@ -397,6 +408,72 @@ export class Application implements Disposable {
     if (this.player && this.playerState) {
       this.playerState.updateFromMovement(this.player.getMovementSnapshot(), performance.now());
     }
+  }
+
+  private initializeTraversalSystems(): void {
+    if (!this.testLevelData || !this.player || !this.cameraSystem || !this.input || !this.physics) {
+      throw new Error(
+        "Traversal systems require the test level, player, camera, input, and physics.",
+      );
+    }
+
+    const data = this.testLevelData;
+
+    this.checkpointSystem = new CheckpointSystem(
+      data.checkpoints,
+      data.spawnPoints,
+      data.initialSpawnPointId,
+    );
+    this.resources.push(this.checkpointSystem);
+
+    this.interactionSystem = new InteractionSystem(data.interactionTargets, {
+      lineOfSight: (eyePosition, target) =>
+        this.hasLineOfSight(eyePosition, target.position, target.colliderHandle),
+    });
+    this.resources.push(this.interactionSystem);
+
+    const fallbackSpawn = data.spawnPoints.find(
+      (spawnPoint) => spawnPoint.id === data.initialSpawnPointId,
+    )?.position ?? { x: 0, y: 0.93, z: 0 };
+
+    this.respawnManager = new RespawnManager(
+      {
+        checkpoints: this.checkpointSystem,
+        player: this.player,
+        camera: this.cameraSystem,
+        input: this.input,
+      },
+      { fallbackSpawn },
+    );
+    this.resources.push(this.respawnManager);
+  }
+
+  private hasLineOfSight(
+    from: Vector3Like,
+    to: Vector3Like,
+    targetColliderHandle?: number,
+  ): boolean {
+    if (!this.physics) {
+      return true;
+    }
+
+    const delta = { x: to.x - from.x, y: to.y - from.y, z: to.z - from.z };
+    const length = Math.hypot(delta.x, delta.y, delta.z);
+
+    if (length < 1e-6) {
+      return true;
+    }
+
+    const hit = this.physics.castRay(from, to, { ignoreKinematic: true });
+
+    if (!hit) {
+      return true;
+    }
+
+    // A hit close to the target is the target itself (or its host collider).
+    void targetColliderHandle;
+
+    return hit.distance >= length - 0.4;
   }
 
   private initializeGameLoop(): void {
@@ -415,6 +492,18 @@ export class Application implements Disposable {
 
   private fixedUpdate(fixedDeltaSeconds: number): void {
     const frame = this.input?.currentFrame ?? IDLE_INPUT_FRAME;
+    const respawn = this.respawnManager;
+
+    if (respawn?.isRespawning) {
+      respawn.update(fixedDeltaSeconds);
+      this.physics?.step();
+
+      if (this.player && this.playerState) {
+        this.playerState.updateFromMovement(this.player.getMovementSnapshot(), performance.now());
+      }
+
+      return;
+    }
 
     this.player?.fixedUpdate(
       this.toMovementSample(frame),
@@ -422,10 +511,53 @@ export class Application implements Disposable {
       fixedDeltaSeconds,
     );
 
+    this.updateInteraction(frame);
+
+    const playerPosition = this.player?.getPosition();
+
+    if (playerPosition && this.checkpointSystem) {
+      const checkpointEvent = this.checkpointSystem.update(playerPosition, performance.now());
+
+      if (checkpointEvent) {
+        console.info(`[Glassline] Checkpoint activated: ${checkpointEvent.checkpointId}`);
+      }
+    }
+
+    if (
+      playerPosition &&
+      respawn &&
+      this.testLevelData &&
+      playerPosition.y < this.testLevelData.killPlaneY
+    ) {
+      respawn.request("fall");
+    }
+
     this.physics?.step();
 
     if (this.player && this.playerState) {
       this.playerState.updateFromMovement(this.player.getMovementSnapshot(), performance.now());
+    }
+  }
+
+  private updateInteraction(frame: InputFrame): void {
+    const player = this.player;
+    const camera = this.cameraSystem;
+    const interaction = this.interactionSystem;
+
+    if (!player || !camera || !interaction) {
+      return;
+    }
+
+    const eyePosition = player.getEyePosition(this.config.movement.standingEyeHeight);
+
+    interaction.update(eyePosition, camera.getLookDirection(), performance.now());
+
+    if (frame.buttons.Interact.pressed && player.getState() !== "VAULTING") {
+      const result = interaction.tryInteract(true, performance.now());
+
+      if (result.executed) {
+        console.info(`[Glassline] Interaction executed: ${result.targetId}`);
+      }
     }
   }
 
@@ -453,6 +585,7 @@ export class Application implements Disposable {
       jumpHeld: frame.buttons.Jump.held,
       sprintHeld: frame.buttons.Sprint.held,
       crouchHeld: frame.buttons.Crouch.held,
+      interactPressed: frame.buttons.Interact.pressed,
     };
   }
 
@@ -524,8 +657,17 @@ export class Application implements Disposable {
       `localization ${this.localizationStatus} · resources ${this.resourceLoader?.activeCount ?? 0} active`,
       `input ${context} · pointer lock ${pointerLock} · move ${move} · look ${look}`,
       player,
+      this.buildTraversalStatusLine(),
       "WASD move · Space jump · Ctrl crouch · Shift sprint · click to capture mouse · Esc pause",
     ];
+  }
+
+  private buildTraversalStatusLine(): string {
+    const checkpoint = this.checkpointSystem?.getActiveCheckpointId() ?? "none";
+    const interaction = this.interactionSystem?.getSnapshot().prompt ?? "none";
+    const respawn = this.respawnManager?.currentState ?? "idle";
+
+    return `traversal checkpoint ${checkpoint} · interaction ${interaction} · respawn ${respawn}`;
   }
 
   private registerWindowHandlers(): void {
@@ -590,6 +732,10 @@ export class Application implements Disposable {
     this.player = null;
     this.playerState = null;
     this.testLevel = null;
+    this.testLevelData = null;
+    this.checkpointSystem = null;
+    this.interactionSystem = null;
+    this.respawnManager = null;
 
     if (this.resizeCleanup) {
       this.resizeCleanup();

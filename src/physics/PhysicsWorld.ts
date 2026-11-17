@@ -1,6 +1,7 @@
 import RAPIER from "@dimforge/rapier3d-compat";
 
 import type { Disposable } from "../core/Disposable";
+import type { Vector3Like } from "../shared/math";
 import type { PhysicsWorldOptions } from "./PhysicsConfig";
 
 /**
@@ -50,6 +51,38 @@ export class PhysicsWorld implements Disposable {
 
     world.timestep = this.options.timestepSeconds;
     this.world = world;
+  }
+
+  /** Casts a ray and returns the first hit. */
+  castRay(
+    from: Vector3Like,
+    to: Vector3Like,
+    options: { readonly ignoreKinematic?: boolean } = {},
+  ): { readonly colliderHandle: number; readonly distance: number } | null {
+    const direction = { x: to.x - from.x, y: to.y - from.y, z: to.z - from.z };
+    const length = Math.hypot(direction.x, direction.y, direction.z);
+
+    if (length < 1e-6) {
+      return null;
+    }
+
+    const normalized = {
+      x: direction.x / length,
+      y: direction.y / length,
+      z: direction.z / length,
+    };
+    const hit = this.rapierWorld.castRay(
+      new RAPIER.Ray(from, normalized),
+      length,
+      true,
+      options.ignoreKinematic ? RAPIER.QueryFilterFlags.EXCLUDE_KINEMATIC : undefined,
+    );
+
+    if (!hit) {
+      return null;
+    }
+
+    return { colliderHandle: hit.collider.handle, distance: hit.timeOfImpact };
   }
 
   /** Advances the simulation by exactly one fixed timestep. */

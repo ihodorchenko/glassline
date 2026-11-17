@@ -1,7 +1,9 @@
 import RAPIER from "@dimforge/rapier3d-compat";
 import * as THREE from "three";
 
+import type { CheckpointDefinition, SpawnPointDefinition } from "../checkpoint/CheckpointSystem";
 import type { Disposable } from "../core/Disposable";
+import type { InteractionTargetDefinition } from "../interaction/InteractionSystem";
 import type { PhysicsWorld } from "../physics/PhysicsWorld";
 import type { RenderScene } from "../rendering/RenderScene";
 
@@ -11,15 +13,26 @@ const STEEL = 0x747a7d;
 const DARK_METAL = 0x33393d;
 const RUNNER_RED = 0xd52e36;
 
+const SPAWN_Y = 0.93;
+
 type BoxSize = readonly [number, number, number];
 type BoxPosition = readonly [number, number, number];
 
+export interface TestLevelData {
+  readonly initialSpawnPointId: string;
+  readonly killPlaneY: number;
+  readonly spawnPoints: readonly SpawnPointDefinition[];
+  readonly checkpoints: readonly CheckpointDefinition[];
+  readonly interactionTargets: readonly InteractionTargetDefinition[];
+}
+
 /**
- * Temporary Phase 2 test environment: authored visual geometry with matching
- * static colliders.
+ * Temporary Phase 3 test environment: authored geometry with matching static
+ * colliders plus checkpoint triggers, spawn points, a fall pit, an interaction
+ * terminal, and traversal features (vault obstacle, slide tunnel, wall-run
+ * corridor).
  *
- * It is a verification level for the player controller, not the final Training
- * or Prologue content (those arrive with the Level Design/Runtime phases).
+ * Final Training/Prologue content arrives with the Level Design/Runtime phases.
  */
 export class TestLevel implements Disposable {
   private readonly physics: PhysicsWorld;
@@ -28,13 +41,19 @@ export class TestLevel implements Disposable {
   private readonly meshes: THREE.Mesh[] = [];
   private readonly unitBox = new THREE.BoxGeometry(1, 1, 1);
   private readonly materials = new Map<number, THREE.MeshStandardMaterial>();
+  private readonly data: TestLevelData;
   private disposed = false;
 
   constructor(physics: PhysicsWorld, renderScene: RenderScene) {
     this.physics = physics;
     this.renderScene = renderScene;
 
-    this.build();
+    this.buildGeometry();
+    this.data = this.createLevelData();
+  }
+
+  getData(): TestLevelData {
+    return this.data;
   }
 
   dispose(): void {
@@ -67,32 +86,98 @@ export class TestLevel implements Disposable {
     this.materials.clear();
   }
 
-  private build(): void {
-    // Ground and boundary walls.
-    this.addBox([44, 0.2, 44], [0, -0.1, 0], CONCRETE);
-    this.addBox([0.5, 3, 40], [-19.75, 1.5, 0], DARK_METAL);
-    this.addBox([0.5, 3, 40], [19.75, 1.5, 0], DARK_METAL);
-    this.addBox([40, 3, 0.5], [0, 1.5, -19.75], DARK_METAL);
-    this.addBox([40, 3, 0.5], [0, 1.5, 19.75], DARK_METAL);
+  private createLevelData(): TestLevelData {
+    const spawnPoints: SpawnPointDefinition[] = [
+      { id: "sp_initial", position: { x: 0, y: SPAWN_Y, z: 6 }, rotationY: 0 },
+      { id: "sp_cp_01", position: { x: 0, y: SPAWN_Y, z: 3 }, rotationY: 0 },
+      { id: "sp_cp_02", position: { x: 0, y: SPAWN_Y, z: -4 }, rotationY: 0 },
+      { id: "sp_cp_03", position: { x: 0, y: SPAWN_Y, z: -18.5 }, rotationY: 0 },
+    ];
 
-    // Low step (climbable through autostep).
-    this.addBox([1.6, 0.18, 1.6], [4, 0.09, 1], PURE_WHITE);
-    this.addBox([1.6, 0.3, 1.6], [4, 0.15, -0.8], PURE_WHITE);
+    const checkpoints: CheckpointDefinition[] = [
+      {
+        id: "test_cp_rooftop",
+        sectionId: "rooftop",
+        displayName: "Rooftop",
+        trigger: { center: { x: 0, y: 1, z: 3 }, halfExtents: { x: 3, y: 1.5, z: 2 } },
+        spawnPointId: "sp_cp_01",
+        respawnEnabled: true,
+      },
+      {
+        id: "test_cp_industrial",
+        sectionId: "industrial",
+        displayName: "Industrial",
+        trigger: { center: { x: 0, y: 1, z: -4 }, halfExtents: { x: 3, y: 1.5, z: 2 } },
+        spawnPointId: "sp_cp_02",
+        respawnEnabled: true,
+      },
+      {
+        id: "test_cp_skybridge",
+        sectionId: "skybridge",
+        displayName: "Skybridge",
+        trigger: { center: { x: 0, y: 1, z: -18.5 }, halfExtents: { x: 3, y: 1.5, z: 2 } },
+        spawnPointId: "sp_cp_03",
+        respawnEnabled: true,
+      },
+    ];
 
-    // Obstacles for collision and air-control testing.
-    this.addBox([2.5, 0.6, 1.2], [-2.5, 0.3, -2], STEEL);
-    this.addBox([1.2, 2, 1.2], [-4.5, 1, -5], DARK_METAL);
-    this.addBox([4, 0.5, 3], [0, 0.25, -7], PURE_WHITE);
-    this.addBox([2, 1.4, 2], [0, 0.7, -10], PURE_WHITE);
+    const terminalHandle = this.terminalColliderHandle;
 
-    // Wall surface reserved for the Phase 3 wall-run work.
-    this.addBox([10, 3, 0.4], [0, 1.5, -14], STEEL);
+    const interactionTargets: InteractionTargetDefinition[] = [
+      {
+        id: "test_terminal",
+        position: { x: 2.5, y: 1.2, z: -18 },
+        radius: 2.5,
+        prompt: "Press E to access the terminal",
+        enabled: true,
+        ...(terminalHandle === null ? {} : { colliderHandle: terminalHandle }),
+      },
+    ];
 
-    // Navigation accent marker.
-    this.addBox([0.5, 2.2, 0.5], [6, 1.1, -8], RUNNER_RED);
+    return {
+      initialSpawnPointId: "sp_initial",
+      killPlaneY: -3,
+      spawnPoints,
+      checkpoints,
+      interactionTargets,
+    };
   }
 
-  private addBox(size: BoxSize, position: BoxPosition, color: number): void {
+  private buildGeometry(): void {
+    // Ground plates leave a square fall pit at x/z in [8, 14] x [2, 8].
+    this.addBox([30, 0.2, 44], [-7, -0.1, 0], CONCRETE);
+    this.addBox([8, 0.2, 44], [18, -0.1, 0], CONCRETE);
+    this.addBox([6, 0.2, 24], [11, -0.1, -10], CONCRETE);
+    this.addBox([6, 0.2, 14], [11, -0.1, 15], CONCRETE);
+
+    // Boundary walls.
+    this.addBox([0.5, 3, 44], [-22.25, 1.5, 0], DARK_METAL);
+    this.addBox([0.5, 3, 44], [22.25, 1.5, 0], DARK_METAL);
+    this.addBox([44, 3, 0.5], [0, 1.5, -22.25], DARK_METAL);
+    this.addBox([44, 3, 0.5], [0, 1.5, 22.25], DARK_METAL);
+
+    // Vault obstacle on the start route.
+    this.addBox([2.4, 0.75, 0.7], [0, 0.375, -1], PURE_WHITE);
+
+    // Slide tunnel: ceiling bottom at 1.05 m (standing and crouch blocked, slide passes).
+    this.addBox([0.4, 2.6, 4], [-1.9, 1.3, -7.6], STEEL);
+    this.addBox([0.4, 2.6, 4], [1.9, 1.3, -7.6], STEEL);
+    this.addBox([4, 0.2, 4], [0, 1.15, -7.6], STEEL);
+
+    // Wall-run corridor.
+    this.addBox([0.4, 3.4, 7], [-2.4, 1.7, -12.5], PURE_WHITE);
+    this.addBox([0.4, 3.4, 7], [2.4, 1.7, -12.5], PURE_WHITE);
+
+    // Interaction terminal and navigation accent.
+    this.terminalColliderHandle = this.addBox([0.6, 1.2, 0.6], [2.5, 0.6, -18], DARK_METAL);
+    this.addBox([0.5, 2.2, 0.5], [6, 1.1, -8], RUNNER_RED);
+
+    // Small step feature near the start.
+    this.addBox([1.6, 0.18, 1.6], [4, 0.09, 1], PURE_WHITE);
+    this.addBox([1.6, 0.3, 1.6], [4, 0.15, -0.8], PURE_WHITE);
+  }
+
+  private addBox(size: BoxSize, position: BoxPosition, color: number): number {
     const material = this.getMaterial(color);
     const mesh = new THREE.Mesh(this.unitBox, material);
 
@@ -106,13 +191,16 @@ export class TestLevel implements Disposable {
     const body = this.physics.rapierWorld.createRigidBody(
       RAPIER.RigidBodyDesc.fixed().setTranslation(position[0], position[1], position[2]),
     );
-    this.physics.rapierWorld.createCollider(
+    const collider = this.physics.rapierWorld.createCollider(
       RAPIER.ColliderDesc.cuboid(size[0] / 2, size[1] / 2, size[2] / 2)
         .setFriction(1)
         .setRestitution(0),
       body,
     );
+
     this.bodies.push(body);
+
+    return collider.handle;
   }
 
   private getMaterial(color: number): THREE.MeshStandardMaterial {
@@ -132,4 +220,6 @@ export class TestLevel implements Disposable {
 
     return material;
   }
+
+  private terminalColliderHandle: number | null = null;
 }

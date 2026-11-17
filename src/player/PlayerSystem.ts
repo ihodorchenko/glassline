@@ -1,10 +1,14 @@
 import RAPIER from "@dimforge/rapier3d-compat";
+
 import type { Disposable } from "../core/Disposable";
 import { EventBus, type Unsubscribe } from "../core/EventBus";
 import type { PhysicsWorld } from "../physics/PhysicsWorld";
 import type { Vector2Like, Vector3Like } from "../shared/math";
 import { clamp } from "../shared/math";
+import { VaultDetector } from "./detection/VaultDetector";
+import { WallRunDetector } from "./detection/WallRunDetector";
 import {
+  type MovementEnvironment,
   type MovementInputSample,
   MovementModel,
   type MovementModelSnapshot,
@@ -17,18 +21,18 @@ export interface MovementEventMap {
   [key: string]: unknown;
   "player:jumped": { readonly speed: number };
   "player:landed": { readonly impactSpeed: number };
+  "player:sliding-started": { readonly speed: number };
+  "player:sliding-ended": Record<string, never>;
+  "player:vault-started": { readonly speed: number };
+  "player:wallrun-started": { readonly side: "left" | "right" };
+  "player:wallrun-ended": Record<string, never>;
+  "player:walljumped": Record<string, never>;
 }
 
 export interface PlayerSystemOptions {
   readonly tuning?: MovementTuning;
   /** Capsule center world position. */
   readonly spawnPoint: Vector3Like;
-}
-
-export interface PlayerStepResult {
-  readonly jumped: boolean;
-  readonly landed: boolean;
-  readonly impactSpeed: number;
 }
 
 function toWorldDirection(move: Vector2Like, viewYaw: number): Vector3Like {
@@ -49,7 +53,8 @@ function toWorldDirection(move: Vector2Like, viewYaw: number): Vector3Like {
  * Rapier's kinematic character controller.
  *
  * Movement rules live in `MovementModel`; this class handles physics
- * integration, collision results, interpolation, and canonical movement events.
+ * integration, obstacle detection, scripted vault motion, collision results,
+ * posture volumes, interpolation, and canonical movement events.
  */
 export class PlayerSystem implements Disposable {
   readonly body: RAPIER.RigidBody;
@@ -59,6 +64,8 @@ export class PlayerSystem implements Disposable {
   private readonly tuning: MovementTuning;
   private readonly spawnPoint: Vector3Like;
   private readonly controller: RAPIER.KinematicCharacterController;
+  private readonly wallRunDetector: WallRunDetector;
+  private readonly vaultDetector: VaultDetector;
   private readonly events = new EventBus<MovementEventMap>();
   private readonly desiredTranslation = { x: 0, y: 0, z: 0 };
   private readonly actualMovement = { x: 0, y: 0, z: 0 };
@@ -67,6 +74,9 @@ export class PlayerSystem implements Disposable {
   private active = false;
   private disposed = false;
 
+  private postureHeight: number;
+  private effectiveStance: PlayerStance = "standing";
+
   private previousPosition: Vector3Like;
   private currentPosition: Vector3Like;
 
@@ -74,6 +84,7 @@ export class PlayerSystem implements Disposable {
     this.physics = physics;
     this.tuning = options.tuning ?? DEFAULT_MOVEMENT_TUNING;
     this.spawnPoint = options.spawnPoint;
+    this.postureHeight = this.tuning.capsuleHeight;
 
     const world = physics.rapierWorld;
     const halfHeight = this.tuning.capsuleHeight / 2 - this.tuning.capsuleRadius;
@@ -98,6 +109,11 @@ export class PlayerSystem implements Disposable {
     this.controller.setMinSlopeSlideAngle((35 * Math.PI) / 180);
     this.controller.setSlideEnabled(true);
     this.controller.setApplyImpulsesToDynamicBodies(false);
+
+    this.wallRunDetector = new WallRunDetector(world, {
+      minSpeed: this.tuning.wallRunMinSpeed,
+    });
+    this.vaultDetector = new VaultDetector(world, this.tuning);
 
     this.model = new MovementModel(this.tuning);
     this.previousPosition = { ...options.spawnPoint };
@@ -131,18 +147,37 @@ export class PlayerSystem implements Disposable {
     return this.events.on(type, listener);
   }
 
-  /**
-   * One fixed simulation step: computes desired movement, resolves collisions,
-   * and queues the kinematic translation for the following physics step.
-   */
-  fixedUpdate(input: MovementInputSample, viewYaw: number, deltaSeconds: number): PlayerStepResult {
+  /** One fixed simulation step. */
+  fixedUpdate(input: MovementInputSample, viewYaw: number, deltaSeconds: number): void {
     if (!this.isActive || deltaSeconds <= 0) {
-      return { jumped: false, landed: false, impactSpeed: 0 };
+      return;
     }
 
     const worldDirection = toWorldDirection(input.move, viewYaw);
+    const activeVault = this.model.getActiveVault();
 
-    this.model.step(input, worldDirection, this.controller.computedGrounded(), deltaSeconds);
+    if (activeVault) {
+      this.updateScriptedVault(input, worldDirection, activeVault, deltaSeconds);
+
+      return;
+    }
+
+    const translation = this.body.translation();
+    const grounded = this.controller.computedGrounded();
+    const environment: MovementEnvironment = {
+      grounded,
+      wallRun: grounded ? null : this.wallRunDetector.detect(translation, this.model.getVelocity()),
+      vault: grounded
+        ? this.vaultDetector.detect(
+            translation,
+            this.resolveForward(input, worldDirection, viewYaw),
+            this.getFeetPosition().y,
+          )
+        : null,
+    };
+
+    this.model.step(input, worldDirection, environment, deltaSeconds);
+    this.applyPosture(this.resolveDesiredStance());
 
     const desired = this.model.getDesiredTranslation(deltaSeconds);
 
@@ -174,26 +209,35 @@ export class PlayerSystem implements Disposable {
       this.controller.computedGrounded(),
     );
 
-    const stepEvents = this.model.consumeEvents();
-    const snapshot = this.model.getSnapshot();
-
-    if (stepEvents.jumped) {
-      this.events.emit("player:jumped", { speed: snapshot.speed });
-    }
-
-    if (stepEvents.landed) {
-      this.events.emit("player:landed", { impactSpeed: stepEvents.impactSpeed });
-    }
-
-    return {
-      jumped: stepEvents.jumped,
-      landed: stepEvents.landed,
-      impactSpeed: stepEvents.impactSpeed,
-    };
+    this.emitMovementEvents();
   }
 
   getMovementSnapshot(): MovementModelSnapshot {
-    return this.model.getSnapshot();
+    return {
+      ...this.model.getSnapshot(),
+      stance: this.effectiveStance,
+      postureHeight: this.postureHeight,
+    };
+  }
+
+  getPostureHeight(): number {
+    return this.postureHeight;
+  }
+
+  getFeetPosition(): Vector3Like {
+    const translation = this.body.translation();
+
+    return {
+      x: translation.x,
+      y: translation.y - this.postureHeight / 2,
+      z: translation.z,
+    };
+  }
+
+  getEyePosition(eyeHeightAboveFeet: number): Vector3Like {
+    const feet = this.getFeetPosition();
+
+    return { x: feet.x, y: feet.y + eyeHeightAboveFeet, z: feet.z };
   }
 
   getState(): MovementState {
@@ -201,15 +245,13 @@ export class PlayerSystem implements Disposable {
   }
 
   getStance(): PlayerStance {
-    return this.model.getStance();
+    return this.effectiveStance;
   }
 
-  /** Latest simulated capsule center. */
   getPosition(): Vector3Like {
     return this.currentPosition;
   }
 
-  /** Body center interpolated between the last two fixed steps. */
   getInterpolatedPosition(alpha: number): Vector3Like {
     const t = clamp(alpha, 0, 1);
 
@@ -220,13 +262,22 @@ export class PlayerSystem implements Disposable {
     };
   }
 
-  /** Resets the player to its spawn point. Used by diagnostics and tests. */
-  reset(): void {
+  /** Teleports the player and resets transient movement state (used by respawn). */
+  teleportTo(position: Vector3Like): void {
     this.model = new MovementModel(this.tuning);
-    this.body.setTranslation(this.spawnPoint, true);
-    this.body.setNextKinematicTranslation(this.spawnPoint);
-    this.previousPosition = { ...this.spawnPoint };
-    this.currentPosition = { ...this.spawnPoint };
+    this.effectiveStance = "standing";
+    this.postureHeight = this.tuning.capsuleHeight;
+    this.collider.setHalfHeight(this.tuning.capsuleHeight / 2 - this.tuning.capsuleRadius);
+    this.collider.setTranslationWrtParent({ x: 0, y: 0, z: 0 });
+    this.body.setTranslation(position, true);
+    this.body.setNextKinematicTranslation(position);
+    this.collider.setTranslation(position);
+    this.previousPosition = { ...position };
+    this.currentPosition = { ...position };
+  }
+
+  reset(): void {
+    this.teleportTo(this.spawnPoint);
   }
 
   dispose(): void {
@@ -241,6 +292,172 @@ export class PlayerSystem implements Disposable {
 
       world.removeCharacterController(this.controller);
       world.removeRigidBody(this.body);
+    }
+  }
+
+  private updateScriptedVault(
+    input: MovementInputSample,
+    worldDirection: Vector3Like,
+    activeVault: NonNullable<ReturnType<MovementModel["getActiveVault"]>>,
+    deltaSeconds: number,
+  ): void {
+    this.model.step(
+      input,
+      worldDirection,
+      { grounded: false, wallRun: null, vault: null },
+      deltaSeconds,
+    );
+
+    const remainingVault = this.model.getActiveVault();
+    const elapsed = remainingVault ? remainingVault.elapsedSeconds : activeVault.durationSeconds;
+    const progress = elapsed / activeVault.durationSeconds;
+    const target = VaultDetector.samplePosition(activeVault.candidate, this.tuning, progress);
+    const translationBefore = this.body.translation();
+    const movement = {
+      x: target.x - translationBefore.x,
+      y: target.y - translationBefore.y,
+      z: target.z - translationBefore.z,
+    };
+
+    this.previousPosition = {
+      x: translationBefore.x,
+      y: translationBefore.y,
+      z: translationBefore.z,
+    };
+    this.currentPosition = { ...target };
+    this.body.setNextKinematicTranslation(target);
+    this.model.applyVaultMotion(movement, deltaSeconds);
+    this.emitMovementEvents();
+  }
+
+  private resolveForward(
+    input: MovementInputSample,
+    worldDirection: Vector3Like,
+    viewYaw: number,
+  ): Vector3Like {
+    const magnitude = Math.hypot(input.move.x, input.move.y);
+
+    if (magnitude > 0.1) {
+      const length = Math.hypot(worldDirection.x, worldDirection.z);
+
+      if (length > 1e-6) {
+        return { x: worldDirection.x / length, y: 0, z: worldDirection.z / length };
+      }
+    }
+
+    return { x: -Math.sin(viewYaw), y: 0, z: -Math.cos(viewYaw) };
+  }
+
+  private resolveDesiredStance(): PlayerStance {
+    const snapshot = this.model.getSnapshot();
+
+    if (snapshot.state === "SLIDING") {
+      return "sliding";
+    }
+
+    return snapshot.stance;
+  }
+
+  private applyPosture(desiredStance: PlayerStance): void {
+    const targetHeight =
+      desiredStance === "sliding"
+        ? this.tuning.slideHeight
+        : desiredStance === "crouching"
+          ? this.tuning.crouchHeight
+          : this.tuning.capsuleHeight;
+
+    if (targetHeight > this.postureHeight && !this.hasStandingClearance(targetHeight)) {
+      this.effectiveStance =
+        this.postureHeight < this.tuning.capsuleHeight ? "crouching" : this.effectiveStance;
+
+      return;
+    }
+
+    this.effectiveStance = desiredStance;
+
+    if (targetHeight === this.postureHeight) {
+      return;
+    }
+
+    this.applyPostureGeometry(targetHeight);
+  }
+
+  private applyPostureGeometry(targetHeight: number): void {
+    const halfCapsule = Math.max(0.05, targetHeight / 2 - this.tuning.capsuleRadius);
+    const translation = this.body.translation();
+    const feetY = translation.y - this.postureHeight / 2;
+    const bodyY = feetY + targetHeight / 2;
+    const deltaY = bodyY - translation.y;
+
+    this.collider.setHalfHeight(halfCapsule);
+    this.collider.setTranslationWrtParent({ x: 0, y: 0, z: 0 });
+    this.body.setTranslation({ x: translation.x, y: bodyY, z: translation.z }, true);
+    this.body.setNextKinematicTranslation({ x: translation.x, y: bodyY, z: translation.z });
+    this.collider.setTranslation({ x: translation.x, y: bodyY, z: translation.z });
+
+    this.previousPosition = {
+      x: this.previousPosition.x,
+      y: this.previousPosition.y + deltaY,
+      z: this.previousPosition.z,
+    };
+    this.currentPosition = {
+      x: this.currentPosition.x,
+      y: this.currentPosition.y + deltaY,
+      z: this.currentPosition.z,
+    };
+    this.postureHeight = targetHeight;
+  }
+
+  private hasStandingClearance(targetHeight: number): boolean {
+    const translation = this.body.translation();
+    const feetY = translation.y - this.postureHeight / 2;
+    const headroom = targetHeight - this.postureHeight;
+    const originY = feetY + this.postureHeight + 0.02;
+    const hit = this.physics.rapierWorld.castRay(
+      new RAPIER.Ray({ x: translation.x, y: originY, z: translation.z }, { x: 0, y: 1, z: 0 }),
+      Math.max(0.01, headroom - 0.02 + 0.05),
+      true,
+    );
+
+    return hit === null;
+  }
+
+  private emitMovementEvents(): void {
+    const events = this.model.consumeEvents();
+    const snapshot = this.model.getSnapshot();
+
+    if (events.jumped) {
+      this.events.emit("player:jumped", { speed: snapshot.speed });
+    }
+
+    if (events.landed) {
+      this.events.emit("player:landed", { impactSpeed: events.impactSpeed });
+    }
+
+    if (events.slidingStarted) {
+      this.events.emit("player:sliding-started", { speed: snapshot.speed });
+    }
+
+    if (events.slidingEnded) {
+      this.events.emit("player:sliding-ended", {});
+    }
+
+    if (events.vaultStarted) {
+      this.events.emit("player:vault-started", { speed: snapshot.speed });
+    }
+
+    if (events.wallRunStarted) {
+      this.events.emit("player:wallrun-started", {
+        side: snapshot.wallRunSide ?? "right",
+      });
+    }
+
+    if (events.wallRunEnded) {
+      this.events.emit("player:wallrun-ended", {});
+    }
+
+    if (events.wallJumped) {
+      this.events.emit("player:walljumped", {});
     }
   }
 }

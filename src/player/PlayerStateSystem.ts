@@ -77,8 +77,7 @@ function resolveCapabilities(
     canJump: canMove && (locomotion?.canJump ?? false),
     canSprint: canMove && grounded,
     canCrouch: canMove && grounded,
-    // Sliding and traversal mechanics arrive with the Phase 3 movement work.
-    canSlide: false,
+    canSlide: canMove && (locomotion?.canSlide ?? false),
     canInteract: canMove && grounded,
     // Application-level actions remain available while gameplay movement is not.
     canPause: true,

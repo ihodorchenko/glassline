@@ -14,8 +14,32 @@ export type MovementState =
   | "WALLRUN"
   | "WALLJUMP";
 
-/** Crouching is a posture modifier, not a separate canonical state. */
-export type PlayerStance = "standing" | "crouching";
+/** Crouching and sliding are posture modifiers, not separate canonical states. */
+export type PlayerStance = "standing" | "crouching" | "sliding";
+
+export type WallRunSide = "left" | "right";
+
+export interface WallRunCandidate {
+  readonly side: WallRunSide;
+  /** Unit normal pointing from the wall toward the player. */
+  readonly normal: Vector3Like;
+  /** Unit horizontal direction along the wall. */
+  readonly tangent: Vector3Like;
+  /** Point on the wall surface. */
+  readonly point: Vector3Like;
+}
+
+export interface VaultCandidate {
+  readonly startPosition: Vector3Like;
+  readonly landingPosition: Vector3Like;
+  readonly direction: Vector3Like;
+}
+
+export interface MovementEnvironment {
+  readonly grounded: boolean;
+  readonly wallRun: WallRunCandidate | null;
+  readonly vault: VaultCandidate | null;
+}
 
 export interface MovementInputSample {
   /** Local movement intent: x = right, y = forward. Magnitude 0..1. */
@@ -24,6 +48,7 @@ export interface MovementInputSample {
   readonly jumpHeld: boolean;
   readonly sprintHeld: boolean;
   readonly crouchHeld: boolean;
+  readonly interactPressed: boolean;
 }
 
 export interface MovementModelSnapshot {
@@ -35,6 +60,10 @@ export interface MovementModelSnapshot {
   readonly verticalSpeed: number;
   readonly velocity: Vector3Like;
   readonly canJump: boolean;
+  readonly canSlide: boolean;
+  /** Physical capsule height in the current posture; overridden by PlayerSystem. */
+  readonly postureHeight: number;
+  readonly wallRunSide: WallRunSide | null;
   readonly landingRemainingSeconds: number;
   /** 1 right after landing, decaying to 0 during the recovery window. */
   readonly landingIntensity: number;
@@ -44,7 +73,28 @@ export interface MovementStepEvents {
   readonly jumped: boolean;
   readonly landed: boolean;
   readonly impactSpeed: number;
+  readonly slidingStarted: boolean;
+  readonly slidingEnded: boolean;
+  readonly vaultStarted: boolean;
+  readonly wallRunStarted: boolean;
+  readonly wallRunEnded: boolean;
+  readonly wallJumped: boolean;
 }
+
+const NO_EVENTS: MovementStepEvents = {
+  jumped: false,
+  landed: false,
+  impactSpeed: 0,
+  slidingStarted: false,
+  slidingEnded: false,
+  vaultStarted: false,
+  wallRunStarted: false,
+  wallRunEnded: false,
+  wallJumped: false,
+};
+
+const MOVING_SPEED_THRESHOLD = 0.1;
+const WALL_JUMP_STATE_SECONDS = 0.25;
 
 interface MutableVector3 {
   x: number;
@@ -52,12 +102,15 @@ interface MutableVector3 {
   z: number;
 }
 
-const NO_EVENTS: MovementStepEvents = { jumped: false, landed: false, impactSpeed: 0 };
-const MOVING_SPEED_THRESHOLD = 0.1;
-
 interface MutableVector2 {
   x: number;
   y: number;
+}
+
+interface ActiveVault {
+  readonly candidate: VaultCandidate;
+  elapsedSeconds: number;
+  readonly durationSeconds: number;
 }
 
 function moveTowards(
@@ -80,10 +133,14 @@ function moveTowards(
   return { x: currentX + deltaX * scale, y: currentZ + deltaZ * scale };
 }
 
+function horizontalSpeed(velocity: Vector3Like): number {
+  return Math.hypot(velocity.x, velocity.z);
+}
+
 /**
- * Pure movement simulation for grounded locomotion, jumping, air control, and
- * crouch posture. Physics/collision is applied externally by `PlayerSystem`
- * through Rapier's kinematic character controller.
+ * Pure movement simulation: grounded locomotion, jumping, crouch/slide posture,
+ * vaulting, wall running, and wall jumping. Collision is applied externally by
+ * `PlayerSystem` through Rapier's kinematic character controller.
  */
 export class MovementModel {
   private readonly tuning: MovementTuning;
@@ -96,6 +153,14 @@ export class MovementModel {
   private jumpBufferSeconds = 0;
   private coyoteRemainingSeconds = 0;
   private sprintIntent = false;
+
+  private slideElapsedSeconds = 0;
+  private vault: ActiveVault | null = null;
+
+  private wallRunSide: WallRunSide | null = null;
+  private wallRunTangent: Vector3Like | null = null;
+  private wallRunElapsedSeconds = 0;
+  private wallJumpRemainingSeconds = 0;
 
   private stepEvents: MovementStepEvents = NO_EVENTS;
 
@@ -123,48 +188,71 @@ export class MovementModel {
     return this.velocity;
   }
 
+  getActiveVault(): ActiveVault | null {
+    return this.vault;
+  }
+
   /** Advances movement intent by one fixed timestep before collision. */
   step(
     input: MovementInputSample,
     moveDirectionWorld: Vector3Like,
-    grounded: boolean,
+    environment: MovementEnvironment,
     deltaSeconds: number,
   ): void {
     const tuning = this.tuning;
     const wasGrounded = this.grounded;
 
     this.stepEvents = NO_EVENTS;
-    this.grounded = grounded;
+    this.grounded = environment.grounded;
 
     this.landingRemainingSeconds = Math.max(0, this.landingRemainingSeconds - deltaSeconds);
     this.jumpBufferSeconds = Math.max(0, this.jumpBufferSeconds - deltaSeconds);
-
-    if (grounded) {
-      this.coyoteRemainingSeconds = 0;
-    } else if (wasGrounded) {
-      this.coyoteRemainingSeconds = tuning.coyoteTimeSeconds;
-    } else {
-      this.coyoteRemainingSeconds = Math.max(0, this.coyoteRemainingSeconds - deltaSeconds);
-    }
+    this.updateCoyoteTime(wasGrounded, deltaSeconds);
 
     if (input.jumpPressed) {
       this.jumpBufferSeconds = tuning.jumpBufferSeconds;
     }
 
-    this.stance = input.crouchHeld ? "crouching" : "standing";
-    this.sprintIntent = input.sprintHeld && this.stance === "standing";
+    if (this.vault) {
+      this.updateVault(deltaSeconds);
+
+      return;
+    }
+
+    if (this.state === "WALLRUN") {
+      this.updateWallRun(input, environment, deltaSeconds);
+
+      return;
+    }
+
+    if (this.state === "WALLJUMP") {
+      this.wallJumpRemainingSeconds = Math.max(0, this.wallJumpRemainingSeconds - deltaSeconds);
+    }
+
+    if (this.beginVault(input, environment)) {
+      return;
+    }
+
+    this.beginSlide(input);
+    this.updateStance(input);
 
     const moveMagnitude = Math.min(1, Math.hypot(moveDirectionWorld.x, moveDirectionWorld.z));
     const hasMoveIntent = moveMagnitude > 0.001;
     const targetHorizontal = this.resolveTargetVelocity(moveDirectionWorld, moveMagnitude);
 
-    if (grounded) {
-      const acceleration = hasMoveIntent ? tuning.groundAcceleration : tuning.groundDeceleration;
+    const sliding = this.state === "SLIDING";
+
+    if (this.grounded || sliding) {
+      const acceleration = sliding
+        ? tuning.slideFriction
+        : hasMoveIntent
+          ? tuning.groundAcceleration
+          : tuning.groundDeceleration;
       const next = moveTowards(
         this.velocity.x,
         this.velocity.z,
-        targetHorizontal.x,
-        targetHorizontal.y,
+        sliding ? 0 : targetHorizontal.x,
+        sliding ? 0 : targetHorizontal.y,
         acceleration * deltaSeconds,
       );
 
@@ -178,10 +266,10 @@ export class MovementModel {
         targetHorizontal.y,
         tuning.airAcceleration * deltaSeconds,
       );
-      const horizontalSpeed = Math.hypot(next.x, next.y);
+      const speed = Math.hypot(next.x, next.y);
 
-      if (horizontalSpeed > tuning.maxAirSpeed) {
-        const scale = tuning.maxAirSpeed / horizontalSpeed;
+      if (speed > tuning.maxAirSpeed) {
+        const scale = tuning.maxAirSpeed / speed;
 
         next.x *= scale;
         next.y *= scale;
@@ -191,25 +279,10 @@ export class MovementModel {
       this.velocity.z = next.y;
     }
 
-    const canExecuteBufferedJump =
-      this.jumpBufferSeconds > 0 && (grounded || this.coyoteRemainingSeconds > 0);
-
-    if (canExecuteBufferedJump) {
-      this.velocity.y = Math.sqrt(2 * tuning.gravity * tuning.jumpHeight);
-      this.grounded = false;
-      this.coyoteRemainingSeconds = 0;
-      this.jumpBufferSeconds = 0;
-      this.stepEvents = { jumped: true, landed: false, impactSpeed: 0 };
-    } else if (this.grounded) {
-      this.velocity.y = 0;
-    } else {
-      const gravityScale =
-        !input.jumpHeld && this.velocity.y > 0 ? tuning.jumpReleaseGravityMultiplier : 1;
-
-      this.velocity.y -= tuning.gravity * gravityScale * deltaSeconds;
-      this.velocity.y = Math.max(this.velocity.y, -tuning.maxFallSpeed);
-    }
-
+    this.tryBeginWallRun(environment);
+    this.executeJump();
+    this.applyVerticalMotion(input, deltaSeconds);
+    this.updateSlideExit(input, deltaSeconds);
     this.updateState();
   }
 
@@ -249,13 +322,25 @@ export class MovementModel {
       this.state = "LANDING";
       this.landingRemainingSeconds = this.tuning.landingRecoverySeconds;
       this.stepEvents = {
-        jumped: false,
+        ...NO_EVENTS,
         landed: true,
         impactSpeed: Math.max(0, -verticalBefore),
       };
     }
 
     this.updateState();
+  }
+
+  /** Applies a scripted vault translation produced by `PlayerSystem`. */
+  applyVaultMotion(actualMovement: Vector3Like, deltaSeconds: number): void {
+    if (deltaSeconds <= 0) {
+      return;
+    }
+
+    this.velocity.x = actualMovement.x / deltaSeconds;
+    this.velocity.z = actualMovement.z / deltaSeconds;
+    this.velocity.y = actualMovement.y / deltaSeconds;
+    this.grounded = false;
   }
 
   /** Returns and clears the events produced by the latest fixed step. */
@@ -268,7 +353,7 @@ export class MovementModel {
   }
 
   getSnapshot(): MovementModelSnapshot {
-    const horizontalSpeed = Math.hypot(this.velocity.x, this.velocity.z);
+    const speed = horizontalSpeed(this.velocity);
     const landingIntensity =
       this.landingRemainingSeconds > 0
         ? this.landingRemainingSeconds / this.tuning.landingRecoverySeconds
@@ -278,14 +363,262 @@ export class MovementModel {
       state: this.state,
       stance: this.stance,
       grounded: this.grounded,
-      moving: horizontalSpeed > MOVING_SPEED_THRESHOLD,
-      speed: horizontalSpeed,
+      moving: speed > MOVING_SPEED_THRESHOLD,
+      speed,
       verticalSpeed: this.velocity.y,
       velocity: { ...this.velocity },
-      canJump: this.grounded || this.coyoteRemainingSeconds > 0,
+      canJump:
+        this.grounded ||
+        this.coyoteRemainingSeconds > 0 ||
+        (this.state === "WALLRUN" && this.wallRunElapsedSeconds > 0) ||
+        (this.state === "SLIDING" &&
+          this.slideElapsedSeconds >= this.tuning.slideMinDurationSeconds),
+      canSlide:
+        this.grounded && this.state !== "SLIDING" && speed >= this.tuning.slideMinEntrySpeed,
+      postureHeight: this.tuning.capsuleHeight,
+      wallRunSide: this.wallRunSide,
       landingRemainingSeconds: this.landingRemainingSeconds,
       landingIntensity,
     };
+  }
+
+  private updateCoyoteTime(wasGrounded: boolean, deltaSeconds: number): void {
+    if (this.grounded) {
+      this.coyoteRemainingSeconds = 0;
+    } else if (wasGrounded) {
+      this.coyoteRemainingSeconds = this.tuning.coyoteTimeSeconds;
+    } else {
+      this.coyoteRemainingSeconds = Math.max(0, this.coyoteRemainingSeconds - deltaSeconds);
+    }
+  }
+
+  private beginVault(input: MovementInputSample, environment: MovementEnvironment): boolean {
+    if (!input.interactPressed || !this.grounded || !environment.vault) {
+      return false;
+    }
+
+    this.vault = {
+      candidate: environment.vault,
+      elapsedSeconds: 0,
+      durationSeconds: this.tuning.vaultDurationSeconds,
+    };
+    this.state = "VAULTING";
+    this.slideElapsedSeconds = 0;
+    this.stepEvents = { ...NO_EVENTS, vaultStarted: true };
+
+    return true;
+  }
+
+  private updateVault(deltaSeconds: number): void {
+    const vault = this.vault;
+
+    if (!vault) {
+      return;
+    }
+
+    vault.elapsedSeconds += deltaSeconds;
+
+    if (vault.elapsedSeconds >= vault.durationSeconds) {
+      this.vault = null;
+      this.state = "FALLING";
+      this.velocity.y = 0;
+    }
+  }
+
+  private beginSlide(input: MovementInputSample): void {
+    if (this.state === "SLIDING" || !this.grounded || !input.crouchHeld) {
+      return;
+    }
+
+    if (horizontalSpeed(this.velocity) < this.tuning.slideMinEntrySpeed) {
+      return;
+    }
+
+    this.state = "SLIDING";
+    this.slideElapsedSeconds = 0;
+    this.stance = "sliding";
+    this.stepEvents = { ...NO_EVENTS, slidingStarted: true };
+  }
+
+  private updateSlideExit(input: MovementInputSample, deltaSeconds: number): void {
+    if (this.state !== "SLIDING") {
+      return;
+    }
+
+    this.slideElapsedSeconds += deltaSeconds;
+
+    const speed = horizontalSpeed(this.velocity);
+    const minimumReached = this.slideElapsedSeconds >= this.tuning.slideMinDurationSeconds;
+    const shouldExit =
+      !this.grounded ||
+      speed <= this.tuning.slideExitSpeed ||
+      this.slideElapsedSeconds >= this.tuning.slideMaxDurationSeconds ||
+      (minimumReached && !input.crouchHeld);
+
+    if (shouldExit) {
+      this.endSlide();
+    }
+  }
+
+  private endSlide(): void {
+    if (this.state !== "SLIDING") {
+      return;
+    }
+
+    this.state = this.grounded ? "RUNNING" : "FALLING";
+    this.slideElapsedSeconds = 0;
+    this.stance = "standing";
+    this.stepEvents = { ...this.stepEvents, slidingEnded: true };
+  }
+
+  private updateStance(input: MovementInputSample): void {
+    if (this.state === "SLIDING") {
+      this.stance = "sliding";
+
+      return;
+    }
+
+    this.stance = input.crouchHeld ? "crouching" : "standing";
+    this.sprintIntent = input.sprintHeld && this.stance === "standing";
+  }
+
+  private tryBeginWallRun(environment: MovementEnvironment): void {
+    if (this.state === "WALLRUN" || this.grounded || !environment.wallRun) {
+      return;
+    }
+
+    if (this.state === "VAULTING") {
+      return;
+    }
+
+    const speed = horizontalSpeed(this.velocity);
+
+    if (speed < this.tuning.wallRunMinSpeed || this.velocity.y > 3) {
+      return;
+    }
+
+    this.state = "WALLRUN";
+    this.wallRunSide = environment.wallRun.side;
+    this.wallRunTangent = environment.wallRun.tangent;
+    this.wallRunElapsedSeconds = 0;
+    this.stepEvents = { ...this.stepEvents, wallRunStarted: true };
+  }
+
+  private updateWallRun(
+    input: MovementInputSample,
+    environment: MovementEnvironment,
+    deltaSeconds: number,
+  ): void {
+    const tuning = this.tuning;
+    const wallRun = environment.wallRun;
+
+    this.wallRunElapsedSeconds += deltaSeconds;
+
+    if (input.jumpPressed) {
+      this.performWallJump(wallRun);
+
+      return;
+    }
+
+    if (!wallRun || tuning.wallRunMaxDurationSeconds <= this.wallRunElapsedSeconds) {
+      this.endWallRun();
+
+      return;
+    }
+
+    const tangent = wallRun.tangent;
+    const speed = Math.max(
+      horizontalSpeed(this.velocity) - tuning.wallRunSpeedDecay * deltaSeconds,
+      tuning.wallRunMinSpeed,
+    );
+
+    this.wallRunTangent = tangent;
+    this.velocity.x = tangent.x * speed;
+    this.velocity.z = tangent.z * speed;
+    this.velocity.y = Math.max(
+      this.velocity.y - tuning.gravity * tuning.wallRunGravityMultiplier * deltaSeconds,
+      -tuning.maxFallSpeed,
+    );
+    this.stance = input.crouchHeld ? "crouching" : "standing";
+    this.grounded = false;
+    this.state = "WALLRUN";
+  }
+
+  private performWallJump(wallRun: WallRunCandidate | null): void {
+    const tuning = this.tuning;
+    const tangent = wallRun?.tangent ?? this.wallRunTangent ?? { x: 0, y: 0, z: -1 };
+    const normal = wallRun?.normal ?? { x: 0, y: 0, z: 0 };
+    const speed = Math.max(horizontalSpeed(this.velocity), tuning.wallRunMinSpeed);
+
+    this.velocity.x = tangent.x * speed * 0.9 + normal.x * tuning.wallJumpOutwardSpeed;
+    this.velocity.z = tangent.z * speed * 0.9 + normal.z * tuning.wallJumpOutwardSpeed;
+    this.velocity.y = tuning.wallJumpUpSpeed;
+    this.wallRunSide = null;
+    this.wallRunTangent = null;
+    this.wallRunElapsedSeconds = 0;
+    this.wallJumpRemainingSeconds = WALL_JUMP_STATE_SECONDS;
+    this.state = "WALLJUMP";
+    this.stepEvents = { ...this.stepEvents, wallJumped: true, wallRunEnded: true };
+  }
+
+  private endWallRun(): void {
+    if (this.state !== "WALLRUN") {
+      return;
+    }
+
+    this.wallRunSide = null;
+    this.wallRunTangent = null;
+    this.wallRunElapsedSeconds = 0;
+    this.state = "FALLING";
+    this.stepEvents = { ...this.stepEvents, wallRunEnded: true };
+  }
+
+  private executeJump(): void {
+    const tuning = this.tuning;
+    const slidingCanJump =
+      this.state === "SLIDING" && this.slideElapsedSeconds >= tuning.slideMinDurationSeconds;
+    const canExecute =
+      this.jumpBufferSeconds > 0 &&
+      (this.grounded || this.coyoteRemainingSeconds > 0 || slidingCanJump);
+
+    if (!canExecute) {
+      return;
+    }
+
+    if (this.state === "SLIDING") {
+      this.endSlide();
+    }
+
+    this.velocity.y = Math.sqrt(2 * tuning.gravity * tuning.jumpHeight);
+    this.grounded = false;
+    this.coyoteRemainingSeconds = 0;
+    this.jumpBufferSeconds = 0;
+    this.state = "JUMPING";
+    this.stepEvents = { ...this.stepEvents, jumped: true };
+  }
+
+  private applyVerticalMotion(input: MovementInputSample, deltaSeconds: number): void {
+    const tuning = this.tuning;
+
+    if (this.state === "SLIDING") {
+      // Keep a small downward bias so the character controller retains ground
+      // contact while the capsule is shortened for the slide.
+      this.velocity.y = this.grounded ? -0.5 : this.velocity.y;
+
+      return;
+    }
+
+    if (this.grounded) {
+      this.velocity.y = 0;
+
+      return;
+    }
+
+    const gravityScale =
+      !input.jumpHeld && this.velocity.y > 0 ? tuning.jumpReleaseGravityMultiplier : 1;
+
+    this.velocity.y -= tuning.gravity * gravityScale * deltaSeconds;
+    this.velocity.y = Math.max(this.velocity.y, -tuning.maxFallSpeed);
   }
 
   private resolveTargetVelocity(
@@ -314,10 +647,19 @@ export class MovementModel {
   }
 
   private updateState(): void {
-    const horizontalSpeed = Math.hypot(this.velocity.x, this.velocity.z);
+    const speed = horizontalSpeed(this.velocity);
+
+    if (this.state === "SLIDING" || this.state === "VAULTING" || this.state === "WALLRUN") {
+      return;
+    }
 
     if (!this.grounded) {
-      this.state = this.velocity.y > 0.05 ? "JUMPING" : "FALLING";
+      this.state =
+        this.wallJumpRemainingSeconds > 0
+          ? "WALLJUMP"
+          : this.velocity.y > 0.05
+            ? "JUMPING"
+            : "FALLING";
 
       return;
     }
@@ -328,13 +670,12 @@ export class MovementModel {
       return;
     }
 
-    if (horizontalSpeed <= MOVING_SPEED_THRESHOLD) {
+    if (speed <= MOVING_SPEED_THRESHOLD) {
       this.state = "IDLE";
 
       return;
     }
 
-    this.state =
-      this.sprintIntent && horizontalSpeed > this.tuning.runSpeed * 0.85 ? "SPRINTING" : "RUNNING";
+    this.state = this.sprintIntent && speed > this.tuning.runSpeed * 0.85 ? "SPRINTING" : "RUNNING";
   }
 }
