@@ -214,7 +214,9 @@ The repository foundation (**Phase 0**) is complete: Vite + TypeScript (strict) 
 
 **Phase 4** (level runtime) is complete: validated level definitions, Level Runtime session lifecycle (load/start/pause/resume/complete/unload), section activation, spawn-point resolution, trigger registration with enter/exit signals, traversal surface metadata, runtime object registration/cleanup, and a full-level content loader. The checkpoint and interaction systems now consume Level Runtime authored content instead of hardcoded test scaffolding.
 
-**Phase 5** (gameplay sessions and modes) is the next implementation phase.
+**Phase 5** (gameplay sessions and modes) is complete: session-driven flow (main menu → loading → gameplay → pause/results), Gameplay Session lifecycle with restart/completion/abandonment, ten Training exercises with event-driven objective evaluation, a five-section Prologue route with five checkpoints, and ranked Prologue speedruns with a monotonic timer, splits, checkpoint-sequence validation, medals, and results. Training and Prologue are launched from a temporary development session menu (final UI is Phase 6).
+
+**Phase 6** (presentation and player feedback) is the next implementation phase.
 
 For actual implementation, integration, and verification status, see:
 
@@ -321,9 +323,14 @@ CI runs the same `npm run validate` pipeline on pushes to `main` and on pull req
 
 ### Current Runtime State (Phase 1)
 
-Running `npm run dev` starts a first-person player in a temporary test environment (ground, boundary walls, steps, obstacles, jumpable platforms).
+Running `npm run dev` boots to the temporary development main menu. Press `T`, `P`, or `O` to load and start a Training, Prologue, or ranked Prologue session; the corresponding level is loaded through Level Runtime and unloaded when the session ends.
 
-- Click the canvas to capture the mouse (pointer lock); the first click or key press also resumes the Web Audio context.
+- `T` Training · `P` Prologue · `O` Ranked Prologue (ranked speedrun with authoritative timer).
+- `Esc` pause/resume in gameplay; in results it returns to the menu.
+- `R` restarts the current session (new execution generation).
+- `Q` abandons the session and returns to the menu.
+- In development builds, `F2` completes the current session for results-flow verification. These session controls are temporary scaffolding until Phase 6.
+- During gameplay: click the canvas to capture the mouse (pointer lock); the first click or key press also resumes the Web Audio context.
 - `WASD` move, `Space` jump, `Ctrl` crouch, `Shift` sprint.
 - `Ctrl` while running starts a slide; sliding lets the player pass under low ceilings.
 - `E` vaults over a valid low obstacle ahead, and activates contextual interactions when one is in range and in view.
@@ -331,7 +338,7 @@ Running `npm run dev` starts a first-person player in a temporary test environme
 - Checkpoints activate automatically inside their trigger volumes; falling into the pit respawns the player at the active checkpoint (or the initial spawn).
 - `Esc` releases pointer lock.
 
-The development status overlay shows frame rate, fixed stepping, renderer/physics/storage status, settings revision, language, audio state, input state, player state (movement state, speed, grounded flag, stance), Level Runtime state (level, session, active section, runtime object/trigger/surface counts, surface underfoot), and traversal state (active checkpoint, interaction prompt, respawn state). It is a temporary diagnostic, not the HUD. The authored `training_test` level and the overlay are verification scaffolding and are replaced by final Training/Prologue content and the HUD in later phases.
+The development status overlay shows flow and Gameplay Session state (mode, status, generation), level/section/runtime counts, player state (movement state, speed, grounded flag, stance), Training exercise progress, Speedrun timer/checkpoints/medal, traversal state, and session results. It is a temporary diagnostic, not the HUD. The authored test levels and the overlay/session menu are verification scaffolding and are replaced by final content and the Phase 6 UI.
 
 ---
 

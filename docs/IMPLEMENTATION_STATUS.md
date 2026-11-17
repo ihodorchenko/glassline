@@ -3,8 +3,8 @@
 **Document:** `IMPLEMENTATION_STATUS.md`  
 **Project:** Glassline  
 **Last Updated:** 2026-11-17  
-**Project Stage:** Level Runtime Complete  
-**Status:** Phases 0–4 Complete; Phase 5 Next
+**Project Stage:** Gameplay Sessions and Modes Complete  
+**Status:** Phases 0–5 Complete; Phase 6 Next
 
 ---
 
@@ -92,7 +92,7 @@ Only `Verified` means that the applicable acceptance criteria have been checked 
 | Core Gameplay | Defined | In Progress | In Progress | Partially Verified |
 | Player Systems | Defined | In Progress | In Progress | Partially Verified |
 | Level Systems | Defined | In Progress | In Progress | Partially Verified |
-| Gameplay Modes | Defined | Not Started | Not Started | Not Verified |
+| Gameplay Modes | Defined | In Progress | In Progress | Partially Verified |
 | UI / UX | Defined | Not Started | Not Started | Not Verified |
 | Audio | Defined | In Progress | In Progress | Partially Verified |
 | Persistence | Defined | In Progress | In Progress | Partially Verified |
@@ -101,9 +101,9 @@ Only `Verified` means that the applicable acceptance criteria have been checked 
 | Localization | Defined | In Progress | In Progress | Partially Verified |
 | Statistics | Defined | Not Started | Not Started | Not Verified |
 
-**Current phase:** Phases 0 (repository foundation), 1 (application runtime), 2 (first-person player), 3 (traversal and recovery), and 4 (level runtime) are complete. Phase 5 (gameplay sessions and modes) is the next active workstream.
+**Current phase:** Phases 0 (repository foundation), 1 (application runtime), 2 (first-person player), 3 (traversal and recovery), 4 (level runtime), and 5 (gameplay sessions and modes) are complete. Phase 6 (presentation and player feedback) is the next active workstream.
 
-**Implementation readiness:** The core parkour loop runs in a Level Runtime-managed level with sections, spawn points, triggers, traversal surface metadata, checkpoints, contextual interaction, and checkpoint-based respawn. Structured gameplay sessions/modes, final level content, and presentation systems are the next implementation areas.
+**Implementation readiness:** The game is playable through a session-driven flow: Training (ten exercises), Prologue (five sections with five checkpoints), and ranked Prologue speedruns with authoritative timing, splits, validation, and results. Presentation (HUD/menu/audio feedback/accessibility) and final content are the next implementation areas.
 
 ### 3.1. Documentation Reconciliation (2026-11-17)
 
@@ -137,7 +137,7 @@ The following documents form the current specification baseline.
 | 06 | `06_LEVEL_DESIGN_SPEC.md` | Defined | Not Started |
 | 07 | `07_UI_UX_SPEC.md` | Defined | Not Started |
 | 08 | `08_AUDIO_DESIGN_SPEC.md` | Defined | In Progress |
-| 09 | `09_SPEEDRUN_SYSTEM_SPEC.md` | Defined | Not Started |
+| 09 | `09_SPEEDRUN_SYSTEM_SPEC.md` | Defined | In Progress |
 | 10 | `10_SAVE_SYSTEM_SPEC.md` | Defined | In Progress |
 | 11 | `11_INPUT_SYSTEM_SPEC.md` | Defined | In Progress |
 | 12 | `12_MOVEMENT_SYSTEM_SPEC.md` | Defined | In Progress |
@@ -147,9 +147,9 @@ The following documents form the current specification baseline.
 | 16 | `16_CHECKPOINT_SYSTEM_SPEC.md` | Defined | In Progress |
 | 17 | `17_RESPAWN_SYSTEM_SPEC.md` | Defined | In Progress |
 | 18 | `18_PLAYER_STATE_SYSTEM_SPEC.md` | Defined | In Progress |
-| 19 | `19_GAMEPLAY_SESSION_SYSTEM_SPEC.md` | Defined | Not Started |
-| 20 | `20_GAMEPLAY_FLOW_SYSTEM_SPEC.md` | Defined | Not Started |
-| 21 | `21_TRAINING_SYSTEM_SPEC.md` | Defined | Not Started |
+| 19 | `19_GAMEPLAY_SESSION_SYSTEM_SPEC.md` | Defined | In Progress |
+| 20 | `20_GAMEPLAY_FLOW_SYSTEM_SPEC.md` | Defined | In Progress |
+| 21 | `21_TRAINING_SYSTEM_SPEC.md` | Defined | In Progress |
 | 22 | `22_PROGRESSION_SYSTEM_SPEC.md` | Defined | Not Started |
 | 23 | `23_HUD_SYSTEM_SPEC.md` | Defined | Not Started |
 | 24 | `24_MENU_SYSTEM_SPEC.md` | Defined | Not Started |
@@ -203,10 +203,10 @@ Systems are not completely independent. Integration should happen continuously a
 
 | System | Specification | Initial Goal | Status |
 |---|---|---|---|
-| Gameplay Session | 19 | Manage Training and Prologue lifecycle | Not Started |
-| Gameplay Flow | 20 | Coordinate application navigation and transitions | Not Started |
-| Training | 21 | Implement exercises and objective evaluation | Not Started |
-| Speedrun | 09 | Implement timing, splits, validation, and records | Not Started |
+| Gameplay Session | 19 | Manage Training and Prologue lifecycle | In Progress |
+| Gameplay Flow | 20 | Coordinate application navigation and transitions | In Progress |
+| Training | 21 | Implement exercises and objective evaluation | In Progress |
+| Speedrun | 09 | Implement timing, splits, validation, and records | In Progress |
 | Progression | 22 | Implement content unlocks and milestones | Not Started |
 | Tutorial | 28 | Implement contextual guidance and learning progression | Not Started |
 | Achievement | 29 | Implement achievement definitions and unlocking | Not Started |
@@ -553,6 +553,8 @@ Known limitations and deferred integration:
 
 **Goal:** Make the game playable as a structured experience.
 
+**Status:** Complete (2026-11-17).
+
 Systems:
 
 - Gameplay Session.
@@ -572,13 +574,70 @@ Initial features:
 - Speedrun timer and splits.
 - Results screen.
 
+Implemented and verified:
+
+- Gameplay Session (`GameplaySessionManager`):
+  - Session identity, immutable configuration, metadata, and execution generation.
+  - Lifecycle: created → preparing → loading → initializing → ready → starting → running, plus paused/resuming, restarting, completing/completed, abandoning/abandoned, and failed.
+  - Explicit lifecycle ports for Level Runtime loading/starting/unloading, gameplay preparation/activation, suspend/resume, restart, shutdown, and authoritative result building; the Application implements these ports.
+  - One active session at a time, transition guarding, ranked-run configuration validation, stale contexts via `isCurrent`, restart with generation increment, failure cleanup, and event publication.
+- Gameplay Flow (`GameplayFlowManager`): validated application navigation between boot, main menu, loading, gameplay, paused, results, and error, with single navigation authority, history, snapshots, and events.
+- Training (`TrainingSystem`):
+  - Ten authored exercises covering movement, running, jumping, sliding, vaulting, wall running, wall jumping, landing/momentum, interaction, and a combined final sequence.
+  - Objective types: perform action, action count, maintain speed, reach location, interact with target.
+  - Event-driven evaluation from Movement/Interaction authoritative events; time-based evaluation for speed maintenance and authored zones (no independent movement physics).
+  - Sequential exercise progression, objective progress, attempt tracking, current-exercise restart, session restart, abandonment, completion result, and session-scoped identity.
+- Speedrun (`SpeedrunSystem`, `MonotonicRunTimer`):
+  - Single monotonic run timer using `performance.now()` (no delta accumulation, no frame dependence); millisecond precision; MM:SS.mmm formatting.
+  - Route model built from authored Prologue sections/checkpoint order/finish trigger/medal thresholds.
+  - Run states idle/preparing/ready/running/finished/invalidated/abandoned/failed.
+  - Sequential checkpoint validation with split times; missing/out-of-order checkpoints invalidate the run; finish validation covers checkpoint completeness, sequence, timestamps, and completion time.
+  - Result model with total time, splits, checkpoint count, validation, medal, route version, and optional statistics summary; abandonment support.
+- Prologue level: authored five-section route (Rooftop, Industrial, Construction, Skybridge, Finish) with five mandatory checkpoints, section-entry triggers, finish trigger, and route metadata; Speedrun route is derived from the authored content.
+- Application integration (menu-first):
+  - Boots to main menu without loading level content; sessions are started from the menu.
+  - Gameplay Session ports load/unload levels through Level Runtime, create session-scoped player, checkpoint, interaction, respawn, and mode systems, and tear them down on completion/abandonment/restart.
+  - Training exercises consume Movement/Interaction events; checkpoint triggers update Checkpoint progress and the Speedrun sequence; kill-volume triggers request recovery; finish triggers complete the session.
+  - Flow transitions for loading/gameplay/paused/results/error; pause suspends Level Runtime and gameplay input, ranked timer keeps running.
+  - Results are built from authoritative Training/Speedrun state before shutdown and displayed in the diagnostic overlay.
+  - Temporary development session controls (until Phase 6 presentation): `T` Training, `P` Prologue, `O` Ranked Prologue, `Esc` pause/resume, `R` restart, `Q` abandon/return; dev-only `F2` completes the current session for verification.
+  - Status overlay reports flow, session/mode status, generation, level/section, player state, training progress, speedrun timer/checkpoints/medal, and results.
+- Level content: `PrologueTestLevel` (five sections/checkpoints) and `TrainingTestLevel` share authored arena geometry through `SharedArena`, keeping level content data-driven.
+
+Verification performed:
+
+- `npm run typecheck` — passes.
+- `npm run check` — Biome lint/format/import checks pass.
+- `npm test` — 211 unit and integration tests across 25 files pass, including: Speedrun 7, Training 5, Gameplay Session 8, Gameplay Flow 3, Prologue start-to-finish integration 3, plus all Phase 1–4 suites.
+- `npm run build` — production build succeeds.
+- Headless browser smoke: main menu renders with flow/session status and no level loaded.
+- Browser CDP verification:
+  - Main menu → Training session (level `training_test`, section `sec_start`, player spawned, exercise 1/10 active); movement completes the first exercise and activates `cp_rooftop`.
+  - Pause suspends Level Runtime input/simulation status (`flow paused`, level paused); resume restores gameplay.
+  - Restart creates execution generation 2 and resets Training to 0/10.
+  - Abandon returns to main menu and unloads the level.
+  - Prologue starts at `sec_rooftop`; vaulting transitions to `sec_industrial` and activates `cp_industrial`.
+  - Ranked Prologue starts a running speedrun with ticking timer (00:02 → 00:03); timer continues while paused per ranked-run policy.
+  - Dev completion shows the results flow (`RESULTS training · duration`), retry from results restarts, and return-to-menu abandons/unloads cleanly.
+
 Exit criteria:
 
-- Training can be started, completed, and restarted.
-- Prologue can be completed from start to finish.
-- Speedrun timing is independent of FPS.
-- Checkpoint order is validated.
-- Results are generated from authoritative gameplay data.
+- [x] Training can be started, completed, and restarted: start/restart verified in-browser; the ten-exercise completion path is covered by TrainingSystem tests and session completion/result tests.
+- [x] Prologue can be completed from start to finish: automated integration test drives all five sections/checkpoints/finish through Level Runtime + Checkpoint System + Speedrun and produces a valid `finished` run.
+- [x] Speedrun timing is independent of FPS: monotonic timer tests advance an injected clock without frame updates and produce exact elapsed times; no delta-time accumulation is used.
+- [x] Checkpoint order is validated: out-of-order activation invalidates the run; missing checkpoints invalidate the finish; the five-checkpoint Prologue sequence is validated by an integration test.
+- [x] Results are generated from authoritative gameplay data: session results are built from TrainingSystem/SpeedrunSystem state (completion and duration from the session clock), covered by unit tests and shown in the results flow.
+
+Known limitations and deferred integration:
+
+- Main menu, pause menu, results screen, and key hints are temporary diagnostic overlay scaffolding, not the final UI (Phase 6).
+- Training exercises are authored against the temporary shared test arena; the final Training environments and a full combined-traversal exercise route are content work for later phases.
+- Prologue content is a test route reusing the arena; final level design/content and route balancing remain deferred.
+- Speedrun records, personal bests, leaderboard persistence, and statistics summaries are not implemented (Save/Speedrun records and Statistics phases).
+- Ranked-run focus-loss/invalidation policy is not yet wired to application lifecycle events; pause behavior currently follows the ranked timer rule.
+- Training/speedrun results are session-scoped and not persisted.
+- Interaction-based Training objective evaluates interaction completion after the terminal target becomes available; full prompt/hint presentation is deferred.
+- `F2` completion and keyboard session controls are development-only scaffolding and must not ship as player-facing UI.
 
 ### Phase 6 — Presentation and Player Feedback
 
@@ -736,10 +795,10 @@ Integration is tracked separately from individual system implementation.
 | Level Runtime → Respawn | Spawn point resolution | Integrated |
 | Respawn → Movement | Placement and transient state reset | Integrated |
 | Respawn → Camera | Camera recovery | Integrated |
-| Gameplay Session → Level Runtime | Level lifecycle orchestration | Not Started |
-| Gameplay Flow → Gameplay Session | Session lifecycle requests | Not Started |
-| Training → Movement | Authoritative traversal events | Not Started |
-| Speedrun → Checkpoint | Ordered checkpoint validation | Not Started |
+| Gameplay Session → Level Runtime | Level lifecycle orchestration | Integrated |
+| Gameplay Flow → Gameplay Session | Session lifecycle requests | Integrated |
+| Training → Movement | Authoritative traversal events | Integrated |
+| Speedrun → Checkpoint | Ordered checkpoint validation | Integrated |
 | Speedrun → Save | Persistent records | Not Started |
 | Training → Save | Persistent training progress | Not Started |
 | Settings → Save | Configuration persistence | Integrated |

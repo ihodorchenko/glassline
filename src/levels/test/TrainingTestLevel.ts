@@ -1,29 +1,32 @@
 import type { LevelDefinition } from "../LevelTypes";
+import { createArenaGeometry, createArenaSurfaces } from "./SharedArena";
 
-const CONCRETE = 0xc7c9c7;
-const PURE_WHITE = 0xf1f1ed;
-const STEEL = 0x747a7d;
-const DARK_METAL = 0x33393d;
-const RUNNER_RED = 0xd52e36;
-
-/**
- * Authored test level for the Level Runtime and traversal systems.
- *
- * It is a single logical level with three sections, checkpoints, a fall pit,
- * an interaction terminal, and traversal test geometry. It is not final Training
- * or Prologue content.
- */
 export const TRAINING_TEST_LEVEL_ID = "training_test";
 
+const SURFACE_SECTIONS: Record<string, string> = {
+  surface_concrete: "sec_start",
+  surface_vault: "sec_start",
+  surface_step: "sec_start",
+  surface_boundary: "sec_start",
+  surface_tunnel: "sec_traversal",
+  surface_wallrun: "sec_traversal",
+  surface_terminal: "sec_finish",
+  surface_marker: "sec_traversal",
+};
+
+/**
+ * Authored Training test level: three sections, checkpoints, fall pit, an
+ * interaction terminal, and traversal test geometry.
+ */
 export const TRAINING_TEST_LEVEL: LevelDefinition = {
   id: TRAINING_TEST_LEVEL_ID,
-  version: "1.0.0",
+  version: "1.1.0",
   mode: "training",
   displayName: "Runtime Test Range",
   initialSpawnPointId: "sp_initial",
   metadata: {
-    description: "Level Runtime and traversal verification environment.",
-    difficulty: "test",
+    description: "Training and traversal verification environment.",
+    difficulty: "training",
     supportsSpeedrun: false,
     supportsRespawn: true,
   },
@@ -200,245 +203,10 @@ export const TRAINING_TEST_LEVEL: LevelDefinition = {
       enabled: true,
     },
   ],
-  surfaces: [
-    {
-      id: "surface_concrete",
-      sectionId: "sec_start",
-      surfaceType: "concrete",
-      walkable: true,
-      landingSurface: true,
-      wallRunSurface: false,
-      wallJumpSurface: false,
-      vaultObstacle: false,
-    },
-    {
-      id: "surface_vault",
-      sectionId: "sec_start",
-      surfaceType: "concrete",
-      walkable: true,
-      landingSurface: true,
-      wallRunSurface: false,
-      wallJumpSurface: false,
-      vaultObstacle: true,
-    },
-    {
-      id: "surface_step",
-      sectionId: "sec_start",
-      surfaceType: "concrete",
-      walkable: true,
-      landingSurface: true,
-      wallRunSurface: false,
-      wallJumpSurface: false,
-      vaultObstacle: false,
-    },
-    {
-      id: "surface_boundary",
-      sectionId: "sec_start",
-      surfaceType: "metal",
-      walkable: false,
-      landingSurface: false,
-      wallRunSurface: false,
-      wallJumpSurface: false,
-      vaultObstacle: false,
-      metadata: { role: "boundary" },
-    },
-    {
-      id: "surface_tunnel",
-      sectionId: "sec_traversal",
-      surfaceType: "metal",
-      walkable: false,
-      landingSurface: false,
-      wallRunSurface: false,
-      wallJumpSurface: false,
-      vaultObstacle: false,
-      metadata: { role: "slide-clearance" },
-    },
-    {
-      id: "surface_wallrun",
-      sectionId: "sec_traversal",
-      surfaceType: "concrete",
-      walkable: false,
-      landingSurface: false,
-      wallRunSurface: true,
-      wallJumpSurface: true,
-      vaultObstacle: false,
-    },
-    {
-      id: "surface_terminal",
-      sectionId: "sec_finish",
-      surfaceType: "metal",
-      walkable: false,
-      landingSurface: false,
-      wallRunSurface: false,
-      wallJumpSurface: false,
-      vaultObstacle: false,
-      metadata: { role: "interactable" },
-    },
-    {
-      id: "surface_marker",
-      sectionId: "sec_traversal",
-      surfaceType: "concrete",
-      walkable: false,
-      landingSurface: false,
-      wallRunSurface: false,
-      wallJumpSurface: false,
-      vaultObstacle: false,
-      metadata: { role: "navigation" },
-    },
-  ],
-  geometry: [
-    // Ground plates (a square fall pit remains at x/z in [8, 14] x [2, 8]).
-    {
-      id: "geo_ground_west",
-      sectionId: "sec_start",
-      position: { x: -7, y: -0.1, z: 0 },
-      size: { x: 30, y: 0.2, z: 44 },
-      surfaceId: "surface_concrete",
-      color: CONCRETE,
-    },
-    {
-      id: "geo_ground_east",
-      sectionId: "sec_start",
-      position: { x: 18, y: -0.1, z: 0 },
-      size: { x: 8, y: 0.2, z: 44 },
-      surfaceId: "surface_concrete",
-      color: CONCRETE,
-    },
-    {
-      id: "geo_ground_north",
-      sectionId: "sec_start",
-      position: { x: 11, y: -0.1, z: -10 },
-      size: { x: 6, y: 0.2, z: 24 },
-      surfaceId: "surface_concrete",
-      color: CONCRETE,
-    },
-    {
-      id: "geo_ground_south",
-      sectionId: "sec_start",
-      position: { x: 11, y: -0.1, z: 15 },
-      size: { x: 6, y: 0.2, z: 14 },
-      surfaceId: "surface_concrete",
-      color: CONCRETE,
-    },
-    // Boundary walls.
-    {
-      id: "geo_wall_west",
-      sectionId: "sec_start",
-      position: { x: -22.25, y: 1.5, z: 0 },
-      size: { x: 0.5, y: 3, z: 44 },
-      surfaceId: "surface_boundary",
-      color: DARK_METAL,
-    },
-    {
-      id: "geo_wall_east",
-      sectionId: "sec_start",
-      position: { x: 22.25, y: 1.5, z: 0 },
-      size: { x: 0.5, y: 3, z: 44 },
-      surfaceId: "surface_boundary",
-      color: DARK_METAL,
-    },
-    {
-      id: "geo_wall_north",
-      sectionId: "sec_start",
-      position: { x: 0, y: 1.5, z: -22.25 },
-      size: { x: 44, y: 3, z: 0.5 },
-      surfaceId: "surface_boundary",
-      color: DARK_METAL,
-    },
-    {
-      id: "geo_wall_south",
-      sectionId: "sec_start",
-      position: { x: 0, y: 1.5, z: 22.25 },
-      size: { x: 44, y: 3, z: 0.5 },
-      surfaceId: "surface_boundary",
-      color: DARK_METAL,
-    },
-    // Vault obstacle.
-    {
-      id: "geo_vault_obstacle",
-      sectionId: "sec_start",
-      position: { x: 0, y: 0.375, z: -1 },
-      size: { x: 2.4, y: 0.75, z: 0.7 },
-      surfaceId: "surface_vault",
-      color: PURE_WHITE,
-    },
-    // Steps.
-    {
-      id: "geo_step_low",
-      sectionId: "sec_start",
-      position: { x: 4, y: 0.09, z: 1 },
-      size: { x: 1.6, y: 0.18, z: 1.6 },
-      surfaceId: "surface_step",
-      color: PURE_WHITE,
-    },
-    {
-      id: "geo_step_high",
-      sectionId: "sec_start",
-      position: { x: 4, y: 0.15, z: -0.8 },
-      size: { x: 1.6, y: 0.3, z: 1.6 },
-      surfaceId: "surface_step",
-      color: PURE_WHITE,
-    },
-    // Slide tunnel.
-    {
-      id: "geo_tunnel_west",
-      sectionId: "sec_traversal",
-      position: { x: -1.9, y: 1.3, z: -7.6 },
-      size: { x: 0.4, y: 2.6, z: 4 },
-      surfaceId: "surface_tunnel",
-      color: STEEL,
-    },
-    {
-      id: "geo_tunnel_east",
-      sectionId: "sec_traversal",
-      position: { x: 1.9, y: 1.3, z: -7.6 },
-      size: { x: 0.4, y: 2.6, z: 4 },
-      surfaceId: "surface_tunnel",
-      color: STEEL,
-    },
-    {
-      id: "geo_tunnel_ceiling",
-      sectionId: "sec_traversal",
-      position: { x: 0, y: 1.15, z: -7.6 },
-      size: { x: 4, y: 0.2, z: 4 },
-      surfaceId: "surface_tunnel",
-      color: STEEL,
-    },
-    // Wall-run corridor.
-    {
-      id: "geo_wallrun_west",
-      sectionId: "sec_traversal",
-      position: { x: -2.4, y: 1.7, z: -12.5 },
-      size: { x: 0.4, y: 3.4, z: 7 },
-      surfaceId: "surface_wallrun",
-      color: PURE_WHITE,
-    },
-    {
-      id: "geo_wallrun_east",
-      sectionId: "sec_traversal",
-      position: { x: 2.4, y: 1.7, z: -12.5 },
-      size: { x: 0.4, y: 3.4, z: 7 },
-      surfaceId: "surface_wallrun",
-      color: PURE_WHITE,
-    },
-    // Interaction terminal and navigation marker.
-    {
-      id: "geo_terminal",
-      sectionId: "sec_finish",
-      position: { x: 2.5, y: 0.6, z: -18 },
-      size: { x: 0.6, y: 1.2, z: 0.6 },
-      surfaceId: "surface_terminal",
-      color: DARK_METAL,
-    },
-    {
-      id: "geo_marker",
-      sectionId: "sec_traversal",
-      position: { x: 6, y: 1.1, z: -8 },
-      size: { x: 0.5, y: 2.2, z: 0.5 },
-      surfaceId: "surface_marker",
-      color: RUNNER_RED,
-    },
-  ],
+  surfaces: createArenaSurfaces((surfaceId) => SURFACE_SECTIONS[surfaceId] ?? "sec_start"),
+  geometry: createArenaGeometry((position) =>
+    position.z > 0 ? "sec_start" : position.z <= -16 ? "sec_finish" : "sec_traversal",
+  ),
 };
 
 export const TRAINING_TEST_LEVEL_DEFINITIONS: readonly LevelDefinition[] = [TRAINING_TEST_LEVEL];
