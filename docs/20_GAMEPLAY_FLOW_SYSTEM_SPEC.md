@@ -848,7 +848,7 @@ Initial categories may include:
 - Graphics.
 - Accessibility.
 
-Settings behavior and persistence are defined in `24_SETTINGS_SYSTEM_SPEC.md`.
+Settings behavior and persistence are defined in `25_SETTINGS_SYSTEM_SPEC.md`.
 
 ---
 

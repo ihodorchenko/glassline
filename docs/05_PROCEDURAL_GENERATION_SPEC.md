@@ -1,8 +1,8 @@
 # 05_PROCEDURAL_GENERATION_SPEC.md
 
-**Project:** MIRROR'S EDGE — RUNNER PROTOCOL  
+**Project:** Glassline  
 **Document:** Procedural Generation Specification  
-**Version:** 1.0  
+**Version:** 1.1  
 **Status:** Technical Specification  
 **Applies to:** Procedural Geometry, Environment Generation, Textures, Asset Composition, Collision Proxies
 
@@ -56,6 +56,9 @@ This document extends the requirements defined in:
 - `02_TECHNICAL_ARCHITECTURE.md`
 - `03_GAMEPLAY_SPEC.md`
 - `04_ASSET_BIBLE.md`
+- `06_LEVEL_DESIGN_SPEC.md`
+- `12_MOVEMENT_SYSTEM_SPEC.md`
+- `15_LEVEL_RUNTIME_SYSTEM_SPEC.md`
 
 Document responsibilities:
 
@@ -67,8 +70,10 @@ Document responsibilities:
 | Gameplay Spec | Movement and gameplay requirements |
 | Asset Bible | Visual identity and asset standards |
 | Procedural Generation Spec | Generation algorithms and implementation contracts |
+| Level Design Spec | Authored gameplay layouts, routes, and spatial constraints |
+| Level Runtime System Spec | Loading, activation, and unloading generated level content |
 
-If a generator implementation conflicts with gameplay requirements, gameplay requirements take priority.
+If a generator implementation conflicts with gameplay requirements, gameplay requirements take priority. The Procedural Generation System creates environment content and descriptive metadata; it does not decide player movement rules, route progression, checkpoint behavior, or level lifecycle.
 
 If an implementation conflicts with the visual identity, revise the generated output rather than introducing arbitrary exceptions.
 
@@ -99,7 +104,7 @@ It must not randomly generate arbitrary geometry that violates architectural pro
 
 ### 3.2 Deterministic Output
 
-The same seed and configuration must produce the same logical result.
+The same seed, configuration, generator version, and stable object identifiers must produce the same logical result. The determinism contract applies to generated configuration and geometry data; GPU rendering output is not required to be bit-identical across devices.
 
 This applies to:
 
@@ -128,7 +133,7 @@ Generated geometry must not accidentally:
 - Create invisible obstacles.
 - Place decorative objects inside required traversal spaces.
 
-For important parkour structures, use explicit authored configurations rather than relying on unconstrained random placement.
+For gameplay-critical structures, use explicit authored configurations rather than relying on unconstrained random placement. The initial release supports authored jump routes, vault obstacles, wallrun surfaces, landing areas, and checkpoint spaces. A generated object must not become a traversal target merely because its shape resembles one.
 
 ### 3.4 Composition over Randomness
 
@@ -142,7 +147,19 @@ Use:
 - Configurable architectural patterns.
 - Explicit gameplay metadata.
 
-The level designer or level configuration remains responsible for the final spatial composition.
+The level designer or level configuration remains responsible for the final spatial composition. Training and Prologue are authored experiences; procedural generation supplies controlled architectural and environmental variation around their designed routes. It must not procedurally invent or rearrange required gameplay routes.
+
+### 3.5 Initial Release Scope
+
+Procedural generation in the initial release is limited to environment construction and visual variation required by Training and Prologue. It may generate:
+
+- Building volumes, facades, rooftops, and distant city silhouettes.
+- Industrial props such as pipes, ventilation, rails, stairs, and scaffolding.
+- Authored platforms, walkways, landing surfaces, and vault-obstacle geometry.
+- Wall surfaces that an authored level explicitly marks as valid for wallrunning.
+- Signs, route markings, and procedural surface textures.
+
+The generator must preserve authored route geometry and reserved gameplay spaces. It must not introduce gameplay systems for ledge grabbing, climbing, dedicated balance traversal, ziplines, swinging, or other deferred mechanics. Such geometry may appear as non-interactive environment art, but it must not be presented as a supported traversal affordance.
 
 ---
 
@@ -243,7 +260,7 @@ interface GeneratorContext {
 
 The actual interface should remain as small as possible.
 
-Avoid turning the context into a service locator containing every application dependency.
+Avoid turning the context into a service locator containing every application dependency. The context must not expose session, progression, checkpoint, respawn, or player-controller services.
 
 ---
 
@@ -284,7 +301,7 @@ const equipmentSeed = deriveSeed(buildingSeed, 'equipment');
 
 The exact hashing implementation may vary.
 
-It must be deterministic across supported browsers.
+It must be deterministic across supported browsers and must not depend on object insertion order, locale, or platform-specific numeric string formatting.
 
 Do not rely on unstable object serialization or runtime-specific hash behavior.
 
@@ -313,7 +330,7 @@ inside procedural generators.
 
 All randomness must be supplied through the generator context or a derived local stream.
 
-A generator must produce the same output for the same configuration and seed, regardless of unrelated generator execution order.
+A generator must produce the same output for the same configuration, seed, generator version, and stable object identifiers, regardless of unrelated generator execution order. Changes to a generator algorithm that intentionally alter output must update its generator/configuration version.
 
 ---
 
@@ -327,6 +344,7 @@ Example:
 
 ```ts
 interface BaseGeneratorConfig {
+  /** Explicit deterministic seed; never generated implicitly inside a generator. */
   seed: number;
 }
 
@@ -379,7 +397,7 @@ interface GeneratedAsset {
 
 The collision description is data. It must not require the rendering generator to instantiate Rapier bodies directly.
 
-Physics integration should be handled by the appropriate physics or level system.
+Physics integration should be handled by the appropriate physics or level system. The generator must not create Rapier bodies, register gameplay triggers, or decide whether a player action is valid.
 
 ### 6.4 Metadata
 
@@ -441,7 +459,7 @@ Define whether geometry is:
 
 Never dispose shared geometry from an individual asset.
 
-The owner of a resource must be responsible for its final disposal.
+The owner of a resource must be responsible for its final disposal. An asset-level `dispose()` may release only resources exclusively owned by that asset and must release references to shared resources through the owning cache or factory contract.
 
 ### 7.4 Transform Conventions
 
@@ -777,8 +795,7 @@ Supported variants:
 
 - Concrete platform.
 - Metal platform.
-- Narrow balance beam.
-- Maintenance walkway.
+- Narrow maintenance walkway (ordinary walkable geometry).
 - Elevated landing platform.
 - Connecting bridge.
 
@@ -796,17 +813,17 @@ Typical inputs:
 
 ### 13.3 Gameplay Metadata
 
-A platform may expose:
+A platform may expose explicit metadata such as:
 
 - Walkable.
 - Landing surface.
-- Balance surface.
-- Vault obstacle.
 - Checkpoint area.
+
+Vault-obstacle metadata belongs to the obstacle definition or authored gameplay configuration, not to every platform.
 
 These tags must be explicit.
 
-A platform should not become a balance surface merely because it is narrow unless the level or gameplay configuration identifies it as such.
+A narrow platform remains an ordinary walkable surface in the initial release. Do not add a balance-specific gameplay category or behavior.
 
 ---
 
@@ -918,15 +935,13 @@ All connections must be aligned using shared grid coordinates.
 
 Scaffolding may contain:
 
-- Climbable surfaces.
 - Walkable platforms.
 - Wallrun surfaces.
-- Ledges.
 - Jump transitions.
 
-Gameplay capabilities must be explicitly assigned.
+Gameplay capabilities must be explicitly assigned by authored level configuration. In the initial release, supported metadata may identify walkable platforms, landing surfaces, wallrun surfaces, vault obstacles, and trigger volumes.
 
-Do not infer traversal capabilities from the presence of a visual beam.
+Do not infer traversal capabilities from the presence of a visual beam, ladder, ledge, or cable. Visual resemblance does not implement a traversal mechanic.
 
 ---
 
@@ -1184,11 +1199,9 @@ Use the actual project's coordinate and rotation conventions.
 Support semantic collision categories such as:
 
 - Static environment.
-- Walkable platform.
+- Walkable platform / landing surface.
 - Wallrun surface.
-- Climbable surface.
 - Vault obstacle.
-- Balance surface.
 - Trigger volume.
 
 The physics layer should translate these descriptions into actual Rapier colliders and gameplay metadata.
@@ -1223,7 +1236,7 @@ Its responsibilities may include:
 - Producing environment metadata.
 - Supporting cleanup.
 
-It should not implement level progression or player gameplay logic.
+It should not implement level progression or player gameplay logic. It does not own level loading, activation, unloading, or spawn resolution; those responsibilities belong to Level Runtime.
 
 ### 21.2 Composition Model
 
@@ -1246,13 +1259,14 @@ The final implementation should use a typed configuration registry rather than u
 
 ### 21.3 Authored and Procedural Content
 
-Use authored placement for:
+Training and Prologue layouts are authored. Use authored placement for:
 
-- Main parkour routes.
-- Important jumps.
+- Main parkour routes and required traversal sequences.
+- Important jumps and jump gaps.
+- Vault obstacles and traversal clearance.
 - Wallrun sections.
-- Climbing sequences.
-- Checkpoints.
+- Landing areas.
+- Checkpoint locations and checkpoint approach spaces.
 - Finish areas.
 
 Use procedural variation for:
@@ -1272,6 +1286,8 @@ This combination preserves gameplay control while providing environmental variet
 ### 22.1 Generation Timing
 
 Do not generate expensive environment geometry every frame.
+
+Procedural generation is not a substitute for the Level Runtime lifecycle. The runtime requests generated content during level preparation and owns when that content is activated and released.
 
 Generate assets:
 
@@ -1515,14 +1531,15 @@ Recommended order:
 - Rail generator.
 - Stair generator.
 
-### Phase 4 — Parkour Structures
+### Phase 4 — Gameplay-Relevant Structures
 
-- Narrow platforms.
-- Ledges.
-- Scaffolding.
+- Authored platforms and landing surfaces.
+- Jump gaps and traversal clearances.
+- Vault obstacles.
 - Wallrun surfaces.
-- Climbing structures.
-- Balance beams.
+- Scaffolding used as authored level architecture.
+
+Do not implement ledge grabbing, climbing, dedicated balance traversal, or zipline traversal as part of the initial release.
 
 ### Phase 5 — Background Environment
 
@@ -1637,6 +1654,6 @@ Procedural generation is a controlled construction system.
 
 It should create coherent architecture, reusable industrial structures, and believable urban environments while preserving the precision required by first-person parkour gameplay.
 
-The project should never rely on randomness to solve a level-design problem.
+The initial release uses procedural generation for reusable architecture, industrial details, background city composition, and surface variation. Required Training and Prologue routes remain authored and deterministic. The project should never rely on randomness to solve a level-design problem.
 
 **Use procedural generation for variation, reuse, and scale. Use intentional design for gameplay.**

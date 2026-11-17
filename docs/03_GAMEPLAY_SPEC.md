@@ -1,17 +1,17 @@
 # GAMEPLAY SPECIFICATION
 
-## MIRROR'S EDGE — RUNNER PROTOCOL
+## GLASSLINE
 
 **Document:** `03_GAMEPLAY_SPEC.md`  
-**Version:** 1.0  
-**Status:** Initial Gameplay Specification  
+**Version:** 1.1  
+**Status:** Canonical High-Level Gameplay Specification  
 **Depends on:** `00_PROJECT_BRIEF.md`, `01_AGENT_RULES.md`, `02_TECHNICAL_ARCHITECTURE.md`
 
 ---
 
 # 1. Purpose
 
-This document defines the gameplay behavior of MIRROR'S EDGE — RUNNER PROTOCOL.
+This document defines the high-level gameplay experience and shared gameplay principles for Glassline. Detailed implementation contracts are owned by the corresponding system specifications.
 
 It describes:
 
@@ -22,10 +22,6 @@ It describes:
 - Vaulting.
 - Wallrunning.
 - Walljumping.
-- Ledge grabbing.
-- Climbing.
-- Balancing.
-- Zipline traversal.
 - Player state machine.
 - Camera behavior.
 - Gameplay feedback.
@@ -47,6 +43,8 @@ The game should emphasize:
 
 The player should feel that movement is a connected system rather than a collection of isolated actions.
 
+This document is a high-level gameplay contract, not a replacement for system-level specifications. In case of implementation detail or ownership conflict, the relevant system specification is authoritative. Initial-release scope is defined by `00_PROJECT_BRIEF.md`; implementation sequencing and completion status are tracked in `IMPLEMENTATION_STATUS.md`.
+
 ---
 
 # 2. Gameplay Philosophy
@@ -59,7 +57,7 @@ Player movement should preserve momentum.
 
 The player should not stop instantly when releasing movement input.
 
-Jumping, sliding, wallrunning, and landing should influence the player's horizontal velocity.
+Jumping, sliding, vaulting, wallrunning, walljumping, and landing should influence the player's horizontal velocity.
 
 ### Movement should feel responsive
 
@@ -75,8 +73,6 @@ Examples:
 
 - Vaulting requires a suitable obstacle.
 - Wallrunning requires a valid wall.
-- Ledge grabbing requires a reachable ledge.
-- Zipline traversal requires an available attachment point.
 
 ### Mechanics should connect
 
@@ -95,7 +91,7 @@ SLIDE
   ↓
 JUMP
   ↓
-WALLRUN
+WALL_RUNNING
   ↓
 WALLJUMP
   ↓
@@ -111,10 +107,9 @@ The player should understand why an action failed.
 Examples:
 
 - Insufficient speed.
-- Obstacle too high.
-- Wall contact lost.
-- Ledge out of reach.
-- Landing surface unavailable.
+- Obstacle is outside the supported vault envelope.
+- Wall contact is lost.
+- Landing surface is unavailable.
 
 Avoid arbitrary failures that feel disconnected from the environment.
 
@@ -148,21 +143,17 @@ The exact forward vector convention must remain consistent across camera, player
 
 ## 4.1 Responsibilities
 
-`PlayerController` coordinates player behavior.
+The player-facing controller receives normalized gameplay input and forwards movement/action requests to the Movement System.
 
-It receives normalized input and coordinates:
+It may:
 
-- Movement.
-- Player state transitions.
-- Jumping.
-- Sliding.
-- Vaulting.
-- Wallrunning.
-- Climbing.
-- Balancing.
-- Zipline traversal.
+- Forward normalized movement and action input.
+- Request supported movement actions.
+- Expose the current player movement state to presentation systems.
 
-It does not own rendering or low-level Rapier implementation.
+The Movement System owns locomotion, movement-state transitions, traversal execution, and movement physics. The controller must not become a second owner of movement rules or write physics velocity independently.
+
+The controller does not own rendering or low-level Rapier implementation. See `12_MOVEMENT_SYSTEM_SPEC.md` and `18_PLAYER_STATE_SYSTEM_SPEC.md` for authoritative contracts.
 
 ## 4.2 Player representation
 
@@ -231,7 +222,7 @@ For example:
 
 - Jump pressed shortly before landing.
 - Jump pressed while approaching a vault obstacle.
-- Context interaction pressed just before reaching a valid ledge.
+- Context interaction pressed just before entering a valid interaction range.
 
 Initial input buffer:
 
@@ -449,8 +440,6 @@ Examples:
 - Walking off a ledge.
 - Losing wallrun contact.
 - Failing a jump.
-- Releasing a ledge.
-- Falling after an invalid climb.
 
 Falling must:
 
@@ -635,7 +624,7 @@ Wallrunning requires:
 Initial minimum speed:
 
 ```ts
-const MIN_WALLRUN_SPEED = 5.0;
+const MIN_WALL_RUNNING_SPEED = 5.0;
 ```
 
 ## 11.3 Wall detection
@@ -725,7 +714,7 @@ The wall normal must influence the resulting trajectory.
 ## 12.4 State transition
 
 ```text
-WALLRUN
+WALL_RUNNING
    │
    ▼
 WALLJUMP
@@ -743,175 +732,20 @@ Do not create redundant states without a clear benefit.
 
 ---
 
-# 13. Ledge Grabbing
+# 13. Deferred Traversal Mechanics
 
-## 13.1 Purpose
+The following mechanics are outside the initial Glassline release scope:
 
-Ledge grabbing allows the player to catch the edge of a platform when a jump falls short or when approaching a reachable ledge.
+- Ledge grabbing and hanging.
+- Climbing from a hanging state.
+- Dedicated balance traversal.
+- Zipline traversal.
 
-## 13.2 Activation
+They must not be implemented as part of the initial gameplay milestone unless the Project Brief and Implementation Status are explicitly revised.
 
-Requires:
+The initial level design must not require these mechanics to complete Training or the Prologue. Visual geometry that resembles a ledge, narrow beam, ladder, or cable does not imply that the corresponding traversal mechanic is supported.
 
-- Airborne player.
-- Reachable ledge.
-- Valid ledge geometry.
-- Sufficient space for the player.
-- A suitable approach direction.
-
-## 13.3 Detection
-
-Use a combination of physics queries:
-
-1. Forward detection for a vertical surface.
-2. Upper detection for the top edge.
-3. Downward detection for a valid platform surface.
-4. Clearance checks for the player body.
-
-A ledge is valid only if the required geometry is present.
-
-## 13.4 Behavior
-
-When a valid ledge is detected:
-
-- Move the player into a stable hanging position.
-- Stop uncontrolled falling.
-- Disable incompatible movement.
-- Position the camera consistently.
-- Enter a hanging/climbing state.
-
-The player should not snap through geometry.
-
-## 13.5 Hanging
-
-While hanging:
-
-- Horizontal movement may be limited.
-- The player can move along the edge if the surface is continuous.
-- The player can climb up.
-- The player can release and fall.
-
-Do not allow arbitrary movement while hanging.
-
----
-
-# 14. Climbing
-
-## 14.1 Purpose
-
-Climbing allows the player to move from a hanging position onto the platform above.
-
-## 14.2 Activation
-
-Requires:
-
-- Active ledge grab.
-- Valid platform top.
-- Sufficient clearance.
-- Appropriate climb input.
-
-## 14.3 Behavior
-
-Climbing should:
-
-1. Validate the platform.
-2. Enter CLIMBING state.
-3. Move the player through a controlled path.
-4. Check clearance.
-5. Restore normal standing capsule.
-6. Place the player safely on the platform.
-7. Transition to a grounded state.
-
-The player must not end up inside the platform.
-
-## 14.4 Failure conditions
-
-Climbing must fail safely when:
-
-- The platform top is obstructed.
-- The player has lost valid ledge contact.
-- The destination cannot accommodate the player.
-- Another incompatible action has interrupted the climb.
-
----
-
-# 15. Balancing
-
-## 15.1 Purpose
-
-Balancing allows the player to traverse narrow surfaces.
-
-Examples:
-
-- Metal beams.
-- Narrow rooftop ledges.
-- Industrial pipes.
-- Narrow bridge sections.
-
-## 15.2 Activation
-
-Requires:
-
-- Contact with a designated balance surface.
-- Valid player orientation.
-- Appropriate movement direction.
-
-## 15.3 Behavior
-
-Balancing should:
-
-- Constrain lateral movement.
-- Allow forward movement.
-- Provide subtle balance feedback.
-- Allow the player to correct direction.
-- Allow the player to fall when leaving the surface.
-
-For the initial prototype, balancing may use simplified movement constraints rather than a complex physical balance simulation.
-
-## 15.4 Camera behavior
-
-Use subtle camera motion.
-
-Do not create aggressive camera oscillation that makes the player uncomfortable.
-
----
-
-# 16. Zipline
-
-## 16.1 Purpose
-
-Zipline traversal allows the player to move along a suspended cable between two points.
-
-## 16.2 Activation
-
-Requires:
-
-- Valid zipline.
-- Reachable attachment point.
-- Valid approach.
-- Interaction input.
-
-## 16.3 Behavior
-
-On activation:
-
-1. Validate attachment.
-2. Enter ZIPLINE state.
-3. Attach the player to the traversal path.
-4. Move the player along the cable.
-5. Apply controlled speed.
-6. Provide camera and audio feedback.
-7. Detach at the end or when permitted.
-
-## 16.4 Implementation
-
-The initial prototype may use a parameterized curve or line segment.
-
-The player follows a controlled path.
-
-Avoid a complex rope simulation.
-
-The zipline must have a clearly defined start, end, direction, and collision behavior.
+If these mechanics are introduced in a later milestone, each requires its own system specification, explicit input and state contracts, physics validation, accessibility review, and acceptance criteria. Until then, they are not valid player states or Training objectives.
 
 ---
 
@@ -926,27 +760,27 @@ It prevents incompatible mechanics from running simultaneously.
 ## 17.2 Initial states
 
 ```ts
-type PlayerState =
-  | "IDLE"
+type MovementState =
+  | "GROUNDED"
+  | "WALKING"
   | "RUNNING"
   | "SPRINTING"
+  | "CROUCHING"
+  | "SLIDING"
   | "JUMPING"
   | "FALLING"
   | "LANDING"
-  | "SLIDING"
   | "VAULTING"
-  | "WALLRUN"
-  | "CLIMBING"
-  | "BALANCING"
-  | "ZIPLINE";
+  | "WALL_RUNNING"
+  | "WALL_JUMPING";
 ```
 
-Additional internal substates may be introduced when justified.
+This list is a high-level summary. `12_MOVEMENT_SYSTEM_SPEC.md` is authoritative for movement states and transitions. `18_PLAYER_STATE_SYSTEM_SPEC.md` defines the aggregate player lifecycle state; do not duplicate that lifecycle state machine here.
 
 ## 17.3 Transition examples
 
 ```text
-IDLE
+GROUNDED
  └── movement input → RUNNING
 
 RUNNING
@@ -962,14 +796,12 @@ SPRINTING
  └── leave ground → FALLING
 
 JUMPING
- ├── wall contact → WALLRUN
- ├── valid ledge → CLIMBING
+ ├── wall contact → WALL_RUNNING
  ├── valid vault context → VAULTING
  └── ground contact → LANDING
 
 FALLING
- ├── valid wallrun → WALLRUN
- ├── valid ledge → CLIMBING
+ ├── valid wallrun → WALL_RUNNING
  └── ground contact → LANDING
 
 SLIDING
@@ -977,14 +809,11 @@ SLIDING
  ├── vault → VAULTING
  └── duration expired → RUNNING / IDLE
 
-WALLRUN
+WALL_RUNNING
  ├── jump → JUMPING
  ├── contact lost → FALLING
  └── ground contact → LANDING
 
-CLIMBING
- ├── climb completed → RUNNING / IDLE
- └── release → FALLING
 ```
 
 These transitions are conceptual.
@@ -998,9 +827,8 @@ Each state must have clear ownership of its active movement behavior.
 For example:
 
 - SLIDING controls the lowered capsule and slide friction.
-- WALLRUN controls wall-relative movement.
-- CLIMBING controls the traversal path.
-- ZIPLINE controls movement along the cable.
+- VAULTING controls the validated vault traversal.
+- WALL_JUMPING controls the wall departure impulse.
 
 Do not allow multiple systems to write conflicting velocity values during the same simulation step.
 
@@ -1029,18 +857,17 @@ Suggested priority:
 1. Forced recovery / invalid movement prevention.
 2. Active traversal state continuation.
 3. Landing.
-4. Ledge catch.
-5. Wallrun.
-6. Vault.
-7. Slide.
-8. Jump.
-9. Ordinary movement.
+4. Wallrun.
+5. Vault.
+6. Slide.
+7. Jump.
+8. Ordinary movement.
 
 This is a starting priority order.
 
 It may be refined after testing.
 
-A valid action should not be interrupted by a lower-priority action without an explicit rule.
+Deferred mechanics are excluded from this priority list. A valid action should not be interrupted by a lower-priority action without an explicit rule.
 
 ---
 
@@ -1069,8 +896,6 @@ It should depend on:
 It should be reduced or disabled while:
 
 - Standing still.
-- Climbing.
-- Ziplining.
 - Performing controlled vaults.
 
 ## 19.3 FOV
@@ -1133,7 +958,6 @@ Potential animations:
 - Jumping.
 - Landing.
 - Vaulting.
-- Climbing.
 - Sliding.
 - Wallrunning.
 
@@ -1161,11 +985,6 @@ type GameplayEvent =
   | { type: "player:wallrun-started"; side: "left" | "right" }
   | { type: "player:wallrun-ended" }
   | { type: "player:walljumped" }
-  | { type: "player:ledge-grabbed" }
-  | { type: "player:climb-completed" }
-  | { type: "player:balance-started" }
-  | { type: "player:zipline-started" }
-  | { type: "player:zipline-ended" };
 ```
 
 The final event model must use a consistent typed event architecture.
@@ -1190,17 +1009,18 @@ Entering an exercise zone does not automatically complete the exercise.
 
 Examples:
 
-| Exercise | Required validation |
+| Training exercise | Required validation |
 |---|---|
-| Movement | Reach and maintain a target movement speed |
+| Movement Basics | Reach and maintain the required movement speeds |
+| Running and Sprinting | Accelerate into running and sprinting under the defined conditions |
 | Jumping | Perform a valid jump and land safely |
-| Sliding | Enter and complete a valid slide |
+| Crouching and Sliding | Enter crouch and complete a valid momentum-based slide |
 | Vaulting | Successfully vault a suitable obstacle |
-| Wallrun | Maintain wall contact while traversing |
-| Climbing | Grab a ledge and climb onto the platform |
-| Balance | Traverse a designated narrow surface |
-| Zipline | Complete a valid zipline traversal |
-| Final Run | Complete a combined sequence of required mechanics |
+| Wall Running | Maintain valid wall contact while traversing |
+| Wall Jumping | Execute a valid wall jump and leave the wall safely |
+| Landing and Momentum | Land safely while preserving appropriate horizontal momentum |
+| Interaction | Activate a valid contextual interaction |
+| Combined Traversal | Complete a sequence combining the mechanics taught earlier |
 
 The Training system listens to gameplay events and evaluates exercise-specific conditions.
 
@@ -1213,7 +1033,7 @@ Each lesson should define:
 - Failure or retry behavior.
 - Next lesson.
 
-Detailed exercise layout and progression are defined in `05_TRAINING_LEVEL.md`.
+Detailed exercise layout and progression are defined in `21_TRAINING_SYSTEM_SPEC.md` and `06_LEVEL_DESIGN_SPEC.md`.
 
 ---
 
@@ -1234,7 +1054,7 @@ The run system validates the route.
 
 The level should reward smooth traversal and speed without requiring a single exact sequence of button presses.
 
-Detailed route design is defined in `06_PROLOGUE_LEVEL.md`.
+Detailed route design is defined in `06_LEVEL_DESIGN_SPEC.md`.
 
 ---
 
@@ -1246,15 +1066,11 @@ Implement mechanics in this order:
 |---:|---|---|
 | 1 | Walking / Running / Sprinting | Core locomotion |
 | 2 | Jumping | Basic airborne movement |
-| 3 | Landing | Ground recovery |
-| 4 | Sliding | Momentum-based traversal |
+| 3 | Landing | Ground recovery and momentum handling |
+| 4 | Crouching / Sliding | Low-profile movement and momentum-based traversal |
 | 5 | Vaulting | Contextual obstacle traversal |
-| 6 | Wallrunning | Wall-relative traversal |
-| 7 | Walljumping | Controlled wall departure |
-| 8 | Ledge grabbing | Catching reachable ledges |
-| 9 | Climbing | Reaching upper platforms |
-| 10 | Balancing | Narrow-surface traversal |
-| 11 | Zipline | Cable traversal |
+| 6 | Wall Running | Wall-relative traversal |
+| 7 | Wall Jumping | Controlled wall departure |
 
 Do not implement all mechanics at once.
 
@@ -1307,23 +1123,7 @@ Each mechanic must be integrated with the state machine and tested before moving
 - Walljump moves the player away from the wall.
 - The camera returns smoothly to normal.
 
-## 25.6 Ledge and climbing
-
-- Valid ledges can be detected.
-- The player can hang without falling.
-- Climbing reaches a valid position.
-- Invalid platforms are rejected.
-- The player cannot end inside geometry.
-
-## 25.7 Balance and zipline
-
-- Balancing constrains movement appropriately.
-- The player can leave a balance surface.
-- Zipline attachment is validated.
-- Traversal follows the defined cable.
-- Detachment leaves the player in a valid state.
-
-## 25.8 Overall gameplay
+## 25.6 Overall gameplay
 
 - Mechanics can be combined into continuous movement sequences.
 - Incompatible states cannot overlap.
@@ -1344,8 +1144,8 @@ Jumping should preserve momentum.
 
 Landing should prepare the player for the next action.
 
-Sliding, vaulting, wallrunning, climbing, and balancing should extend movement rather than interrupt it unnecessarily.
+Sliding, vaulting, wallrunning, and walljumping should extend movement rather than interrupt it unnecessarily.
 
 **The player should learn to maintain flow through the environment.**
 
-This is the central gameplay identity of MIRROR'S EDGE — RUNNER PROTOCOL.
+This is the central gameplay identity of Glassline.

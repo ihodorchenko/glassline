@@ -1,17 +1,17 @@
 # TECHNICAL ARCHITECTURE
 
-## MIRROR'S EDGE — RUNNER PROTOCOL
+## Glassline
 
 **Document:** `02_TECHNICAL_ARCHITECTURE.md`  
-**Version:** 1.0  
+**Version:** 1.1  
 **Status:** Proposed Architecture  
-**Depends on:** `00_PROJECT_BRIEF.md`, `01_AGENT_RULES.md`
+**Depends on:** `00_PROJECT_BRIEF.md`, `01_AGENT_RULES.md`, and the system specifications `09–30`
 
 ---
 
 # 1. Purpose
 
-This document defines the technical architecture of MIRROR'S EDGE — RUNNER PROTOCOL.
+This document defines the technical architecture of Glassline.
 
 It describes:
 
@@ -114,45 +114,89 @@ APPLICATION
 │
 ├── CORE
 │   ├── Application Lifecycle
-│   ├── Game Loop
-│   ├── Scene Management
+│   ├── Game Loop and Time
+│   ├── Scene / Level Runtime
 │   ├── Event System
 │   └── Configuration
 │
 ├── GAMEPLAY
-│   ├── Player
-│   ├── Movement
-│   ├── Parkour
-│   ├── Run Management
-│   ├── Checkpoints
+│   ├── Player State and Movement
+│   ├── Interaction
+│   ├── Gameplay Session and Flow
+│   ├── Training
+│   ├── Speedrun
+│   ├── Checkpoint and Respawn
+│   ├── Progression and Achievement
 │   └── Statistics
 │
 ├── WORLD
-│   ├── Level Management
+│   ├── Level Content
 │   ├── Procedural Generation
 │   ├── Environment
 │   └── Navigation
 │
 ├── ENGINE SYSTEMS
-│   ├── Rendering
+│   ├── Rendering and Camera
 │   ├── Physics
-│   ├── Audio
-│   └── Camera
+│   └── Audio
 │
 ├── PRESENTATION
-│   ├── Main Menu
+│   ├── Menus and Gameplay Flow UI
 │   ├── HUD
 │   ├── Training UI
 │   ├── Results
-│   └── Settings
+│   └── Settings UI
 │
 └── DATA
-    ├── IndexedDB
-    ├── Run Repository
-    └── Settings Repository
+    ├── Save / IndexedDB
+    ├── Domain Repositories
+    └── Settings
 ```
 
 This is a logical architecture, not a requirement to create one class for every box.
+
+The numbered system specifications define the authoritative behavior and ownership contracts.
+This document defines the technical composition and integration approach; it must not override
+the more specific contracts in those documents. In case of conflict, follow the system-specific
+specification and update this document during the next documentation reconciliation.
+
+## 3.2 Canonical system ownership
+
+The following ownership boundaries are mandatory:
+
+| System | Owns | Must not own |
+|---|---|---|
+| Application / Core | Composition, startup, shutdown, frame scheduling, shared infrastructure | Gameplay rules or domain progression |
+| Movement | Locomotion physics, movement modes, velocity and momentum behavior | Camera presentation, run timing, checkpoint progress |
+| Camera | First-person view, camera motion, FOV and visual response | Player physics or movement decisions |
+| Player State | Aggregated player lifecycle/state representation and state-facing contracts | Replacing Movement or Respawn state machines |
+| Interaction | Detecting and dispatching interaction requests | Domain-specific progression or checkpoint rules |
+| Level Runtime | Loaded level lifecycle, activation, deactivation and spawn resolution | Procedural generation policy or run progression |
+| Procedural Generation | Seeded construction of level/environment content | Level lifecycle, gameplay progression or session state |
+| Checkpoint | Checkpoint definitions, ordered progress and respawn destination data | Executing the respawn lifecycle |
+| Respawn | The complete recovery lifecycle, coordinated by `RespawnManager` | Owning checkpoint definitions or route progression |
+| Gameplay Session | A single gameplay session lifecycle and its identity | Application navigation between screens |
+| Gameplay Flow | Application-level navigation between menus, modes and gameplay | Owning the internal lifecycle of a gameplay session |
+| Training | Exercise lifecycle, objectives and completion evaluation | Replacing shared movement or interaction systems |
+| Speedrun | Run timer, route validation, splits, result construction and run records contract | HUD presentation or direct database implementation |
+| Progression | Content unlocks and progression milestones | Achievement definitions or achievement unlock state |
+| Achievement | Achievement definitions, evaluation and unlock state | General content progression |
+| Statistics | Aggregation of gameplay facts and session summaries | Changing gameplay rules or sampling transforms every render frame |
+| Save | Persistence infrastructure, schema versioning and repositories | Owning domain rules for saved data |
+| Settings | User configuration values and their persistence contract | Applying domain behavior directly |
+| Localization | Translation resources and localized string resolution | Owning the selected-language preference |
+| Accessibility | Cross-system accessibility policy and coordination | Owning preferences or replacing domain behavior |
+| HUD / Menu | Presentation and user commands | Mutating internal gameplay, physics or persistence state |
+
+`RespawnManager` is the sole orchestrator of the respawn lifecycle. Checkpoint data supplies
+the destination and checkpoint context; it must not introduce a second respawn coordinator.
+
+`AchievementSystem` (the canonical Achievement system) owns achievement state. Progression may
+consume achievement completion as an input where specified, but must not maintain a duplicate
+achievement registry or unlock state.
+
+The selected language is a Settings preference (`general.language`). Localization resolves the
+corresponding resources and strings; it does not maintain a competing language setting.
 
 ---
 
@@ -161,7 +205,7 @@ This is a logical architecture, not a requirement to create one class for every 
 Recommended initial directory structure:
 
 ```text
-runner-protocol/
+glassline/
 │
 ├── public/
 │   └── fonts/
@@ -217,11 +261,7 @@ runner-protocol/
 │   │       ├── SlideSystem.ts
 │   │       ├── VaultSystem.ts
 │   │       ├── WallRunSystem.ts
-│   │       ├── WallJumpSystem.ts
-│   │       ├── LedgeSystem.ts
-│   │       ├── ClimbSystem.ts
-│   │       ├── BalanceSystem.ts
-│   │       └── ZiplineSystem.ts
+│   │       └── WallJumpSystem.ts
 │   │
 │   ├── world/
 │   │   ├── World.ts
@@ -265,12 +305,15 @@ runner-protocol/
 │   │       └── PrologueCheckpoints.ts
 │   │
 │   ├── gameplay/
-│   │   ├── RunManager.ts
-│   │   ├── RunTimer.ts
-│   │   ├── RunStatistics.ts
-│   │   ├── CheckpointManager.ts
-│   │   ├── RunValidation.ts
-│   │   └── GhostRecorder.ts
+│   │   ├── session/
+│   │   ├── flow/
+│   │   ├── training/
+│   │   ├── speedrun/
+│   │   ├── checkpoint/
+│   │   ├── respawn/
+│   │   ├── progression/
+│   │   ├── achievement/
+│   │   └── statistics/
 │   │
 │   ├── audio/
 │   │   ├── AudioManager.ts
@@ -320,7 +363,7 @@ runner-protocol/
 
 ## 4.1 Structure rules
 
-This structure is the target organization, not a requirement to create every file immediately.
+This structure is an illustrative starting point, not a requirement to create every file immediately. Organize concrete modules according to the ownership contracts in the numbered system specifications; do not force the implementation into these example filenames.
 
 Create files only when their functionality is being implemented.
 
@@ -780,10 +823,10 @@ Centralize common queries where practical:
 - Ground detection.
 - Forward obstacle detection.
 - Wall detection.
-- Ledge detection.
 - Landing prediction.
 - Vault clearance.
-- Zipline attachment.
+
+Ledge detection and zipline attachment are deferred capabilities and must not be implemented in the initial release.
 
 Queries should support appropriate collision filtering.
 
@@ -880,9 +923,7 @@ type PlayerState =
   | "SLIDING"
   | "VAULTING"
   | "WALLRUN"
-  | "CLIMBING"
-  | "BALANCING"
-  | "ZIPLINE";
+  | "WALLJUMP";
 ```
 
 State transitions must be explicit.
@@ -912,10 +953,8 @@ Examples:
 - VaultSystem.
 - WallRunSystem.
 - WallJumpSystem.
-- LedgeSystem.
-- ClimbSystem.
-- BalanceSystem.
-- ZiplineSystem.
+
+Ledge grabbing, climbing, balancing and ziplines are outside the initial release scope. Do not add their states or modules unless the project scope is explicitly revised.
 
 ## 10.6 Player data
 
@@ -1186,9 +1225,9 @@ Do not combine their progression logic into one large level class.
 
 # 14. Gameplay Architecture
 
-## 14.1 RunManager
+## 14.1 Speedrun System
 
-`RunManager` coordinates a speedrun session.
+The Speedrun System coordinates a speedrun attempt according to `09_SPEEDRUN_SYSTEM_SPEC.md`. Its implementation may use focused components; do not treat the legacy `RunManager` name as a required class.
 
 Responsibilities:
 
@@ -1205,9 +1244,9 @@ It does not render the HUD or write directly to IndexedDB.
 
 Responsible for elapsed run time.
 
-Use a monotonic time source.
+Use a monotonic time source (`performance.now()`) with millisecond precision.
 
-Do not calculate run time from frame count.
+Do not calculate run time from frame count or physics-step count.
 
 The timer should support:
 
@@ -1220,17 +1259,9 @@ The timer should support:
 
 The timer must not be affected by rendering FPS.
 
-## 14.3 CheckpointManager
+## 14.3 Checkpoint System
 
-Responsible for route progression.
-
-It should:
-
-- Track the current checkpoint.
-- Validate checkpoint order.
-- Reject invalid checkpoint sequences.
-- Notify RunManager about progression.
-- Expose split information.
+The Checkpoint System owns checkpoint definitions, ordered checkpoint progress and the data needed to identify a respawn destination. It exposes checkpoint progression and split-related facts to the Speedrun System through explicit contracts. It does not orchestrate player recovery; `RespawnManager` owns that lifecycle. Do not introduce a separate `RespawnCoordinator` or duplicate respawn flow in this subsystem.
 
 ## 14.4 RunValidation
 
@@ -1246,9 +1277,11 @@ Potential validation rules:
 
 Validation must be independent of HUD presentation.
 
-## 14.5 RunStatistics
+## 14.5 Statistics System
 
-Collects:
+The Statistics System aggregates gameplay facts according to `30_STATISTICS_SYSTEM_SPEC.md`. It may consume movement and gameplay events, but it must not sample player transforms every render frame. Movement should report distance deltas or suitable summaries.
+
+The initial statistic categories include:
 
 - Total distance.
 - Average speed.
@@ -1264,13 +1297,9 @@ Statistics should be collected through gameplay events and reliable state inform
 
 Do not derive all statistics from visual animations.
 
-## 14.6 GhostRecorder
+## 14.6 Ghost Replay (Deferred)
 
-A minimal ghost recording system is optional future work.
-
-Do not implement full replay serialization in the initial prototype.
-
-If a basic recorder is introduced for experimentation, it must not delay core gameplay development.
+Ghost Replay recording and playback are not part of the initial release. Do not create `GhostRecorder`, replay serialization, playback or ghost UI as part of the initial implementation. The architecture may be extended later without coupling the initial Speedrun System to replay storage.
 
 ---
 
@@ -1316,7 +1345,7 @@ Examples:
 | Landing | Low-frequency impact |
 | Sliding | Filtered friction noise |
 | Wallrun | Movement-related surface sound |
-| Zipline | Metallic resonance and friction |
+| UI interaction | Short synthesized signal |
 | Sprint | Stronger movement ambience |
 | UI interaction | Short synthesized signal |
 
@@ -1419,7 +1448,7 @@ Training results should not be included in the speedrun leaderboard.
 
 ## 17.3 SettingsRepository
 
-Stores local settings.
+Stores local settings, including the selected language preference (`general.language`).
 
 Potential settings:
 
@@ -1429,6 +1458,7 @@ Potential settings:
 - Graphics quality.
 - Camera effects.
 - Control configuration.
+- Selected language (`general.language`).
 
 ## 17.4 Data safety
 
@@ -1684,19 +1714,19 @@ Recommended order:
 6. Player state machine.
 7. Jumping and landing.
 8. Sliding and vaulting.
-9. Wallrun and walljump.
-10. Ledge grab and climbing.
-11. Camera and hand animation.
-12. Procedural geometry foundation.
-13. Training level.
-14. Prologue level.
-15. Lighting and visual effects.
-16. Procedural audio.
-17. Speedrun systems.
-18. UI and persistence.
-19. Optimization and polish.
+9. Wall running and wall jumping.
+10. First-person camera and essential presentation.
+11. Procedural geometry foundation.
+12. Level Runtime and the Training environment.
+13. Training exercise lifecycle and objectives.
+14. Prologue route and mandatory checkpoints.
+15. Checkpoint and Respawn integration.
+16. Gameplay Session and Gameplay Flow.
+17. Speedrun timing, splits and validation.
+18. Save, Settings, Localization and presentation systems.
+19. Audio, accessibility, testing, optimization and polish.
 
-The detailed task sequence is defined in `10_IMPLEMENTATION_ROADMAP.md`.
+The current implementation phases and task status are tracked in `IMPLEMENTATION_STATUS.md`. Persistence contracts are defined in `10_SAVE_SYSTEM_SPEC.md`.
 
 Do not implement all systems simultaneously.
 
@@ -1742,13 +1772,19 @@ The following rules are mandatory:
 12. All allocated resources have an explicit lifecycle.
 13. All procedural generation uses explicit seeds.
 14. Systems communicate through defined interfaces.
-15. Future functionality must not be implemented ahead of the roadmap without authorization.
+15. Future functionality must not be implemented ahead of the scope and implementation phases without authorization.
+16. `RespawnManager` is the sole owner of the respawn lifecycle; Checkpoint owns checkpoint progress and destination data only.
+17. Achievement owns achievement definitions and unlock state; Progression must not duplicate them.
+18. Settings owns the selected language preference; Localization owns resource lookup and string resolution.
+19. Gameplay Session owns session lifecycle; Gameplay Flow owns application navigation.
+20. Statistics consumes event-driven facts and summaries; it must not poll transforms every render frame.
+21. Ghost Replay, online services, ledge grabbing, swinging and ziplines are deferred unless the approved project scope changes.
 
 ---
 
 # 25. Final Architecture Principle
 
-MIRROR'S EDGE — RUNNER PROTOCOL is a small, focused game prototype.
+Glassline is a small, focused game prototype.
 
 Its architecture should provide enough structure to support:
 

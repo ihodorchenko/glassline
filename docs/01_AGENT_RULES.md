@@ -1,6 +1,6 @@
 # AI AGENT RULES
 
-## MIRROR'S EDGE — RUNNER PROTOCOL
+## GLASSLINE — AGENT RULES
 
 **Document:** `01_AGENT_RULES.md`  
 **Version:** 1.0  
@@ -11,7 +11,7 @@
 
 # 1. Role and Responsibilities
 
-You are an AI software engineering agent responsible for implementing **MIRROR'S EDGE — RUNNER PROTOCOL**.
+You are an AI software engineering agent responsible for implementing **Glassline**, a first-person parkour speedrun game.
 
 Your role is to develop the project incrementally, following the project's documentation, architecture, technical constraints, and gameplay specifications.
 
@@ -20,7 +20,7 @@ You are not expected to redesign the project independently or introduce features
 Your responsibilities:
 
 - Understand the existing project before modifying it.
-- Follow the approved architecture and implementation roadmap.
+- Follow the approved architecture and the implementation phases recorded in `IMPLEMENTATION_STATUS.md`.
 - Implement only the requested task.
 - Write maintainable, modular TypeScript code.
 - Preserve separation between rendering, physics, gameplay, and UI.
@@ -43,8 +43,7 @@ At minimum, read:
 2. `01_AGENT_RULES.md`
 3. `02_TECHNICAL_ARCHITECTURE.md` — once available
 4. The specification relevant to the current task
-5. `10_IMPLEMENTATION_ROADMAP.md` — when available
-6. `IMPLEMENTATION_STATUS.md` — when available
+5. `IMPLEMENTATION_STATUS.md` — to understand the current implementation phase, completed work, blockers, and next tasks.
 
 Do not assume that a document exists if it has not yet been created.
 
@@ -53,10 +52,10 @@ Do not assume that a document exists if it has not yet been created.
 When multiple sources contain conflicting information, use the following priority:
 
 1. Explicit instructions in the current user request.
-2. Approved project decisions recorded in `DECISIONS.md`.
+2. Explicitly approved project decisions recorded in the current project documentation or conversation.
 3. Technical architecture and specialized specifications.
 4. Project brief.
-5. Implementation roadmap.
+5. `IMPLEMENTATION_STATUS.md` for current implementation state and sequencing.
 6. Existing code.
 
 Existing code is not automatically correct. It may contain temporary solutions, outdated assumptions, or incomplete implementations.
@@ -75,7 +74,7 @@ When implementation changes an approved technical decision or specification:
 - Describe its impact.
 - Obtain approval when the change affects architecture, scope, or gameplay design.
 - Update the relevant documentation after approval.
-- Record important architectural decisions in `DECISIONS.md`.
+- Record important architectural decisions in the relevant specification and `IMPLEMENTATION_STATUS.md`. Do not create a separate decision-log file unless requested.
 
 Do not let documentation become disconnected from the actual implementation.
 
@@ -819,23 +818,19 @@ Use clear status values:
 
 A feature becomes `VERIFIED` only after its acceptance criteria have been tested.
 
-## 14.2 DECISIONS.md
+## 14.2 Architectural Decision Records
 
-Record important technical decisions.
+The repository does not currently define a separate `DECISIONS.md` file.
 
-Each decision should include:
+When a decision materially changes architecture, project scope, or long-term maintainability:
 
-- Decision ID.
-- Date.
-- Context.
-- Problem.
-- Considered alternatives.
-- Chosen solution.
-- Consequences.
+- Explain the context and problem.
+- Record the considered alternatives.
+- State the chosen solution and its consequences.
+- Update the affected specification and `IMPLEMENTATION_STATUS.md`.
+- Ask for approval before making an unapproved architectural or scope change.
 
-Do not record every minor coding choice.
-
-Use this document for decisions that influence architecture, project scope, or long-term maintainability.
+Do not create a separate decision-log file unless the project owner requests one.
 
 ## 14.3 CHANGELOG.md
 
@@ -1036,7 +1031,7 @@ List documentation files that were updated.
 
 ## Next Step
 
-Identify the next task from the approved roadmap.
+Identify the next task from the current implementation phase and priorities in `IMPLEMENTATION_STATUS.md`.
 
 Do not automatically begin the next task.
 
@@ -1060,8 +1055,8 @@ These rules are mandatory:
 12. Never silently change project scope or architecture.
 13. Never claim unverified functionality as complete.
 14. Never overwrite unrelated user work.
-15. Do not move to the next roadmap stage without authorization.
+15. Do not move to the next implementation phase without authorization.
 
-**The project should evolve through small, verified, understandable steps.**
+**Glassline should evolve through small, verified, understandable steps.**
 
 A working and maintainable implementation is always more valuable than a large implementation that is difficult to test, understand, or extend.
