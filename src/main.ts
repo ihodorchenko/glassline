@@ -27,6 +27,10 @@ window.addEventListener("beforeunload", () => {
 
 void bootstrap();
 
+if (import.meta.env.DEV) {
+  (window as Window & { __glassline?: Application }).__glassline = application;
+}
+
 if (import.meta.hot) {
   import.meta.hot.dispose(() => {
     application.dispose();

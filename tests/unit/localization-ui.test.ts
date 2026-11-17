@@ -52,6 +52,17 @@ const REQUIRED_UI_KEYS = [
   "settings.categories.accessibility",
   "settings.categories.gameplay",
   "settings.categories.language",
+  "menu.progress",
+  "achievements.first_steps.title",
+  "achievements.first_steps.description",
+  "achievements.unlocked",
+  "tutorial.steps.move.title",
+  "content.training_movement",
+  "milestones.first_training_exercise",
+  "records.prologueRecords",
+  "records.noRuns",
+  "records.progress",
+  "records.statistics",
 ];
 
 describe("UI localization resources", () => {

@@ -571,3 +571,18 @@ body {
   background: #ffffff;
   color: #000000;
 }
+
+.gl-screen__progress {
+  color: rgba(238, 242, 244, 0.72);
+  font-size: 0.9rem;
+  letter-spacing: 0.03em;
+}
+
+.gl-results__heading {
+  margin: 12px 0 4px;
+  color: rgba(238, 242, 244, 0.9);
+  font-size: 1rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}

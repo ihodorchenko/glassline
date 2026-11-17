@@ -79,6 +79,7 @@ export class PlayerSystem implements Disposable {
 
   private previousPosition: Vector3Like;
   private currentPosition: Vector3Like;
+  private distanceSinceLastRead = 0;
 
   constructor(physics: PhysicsWorld, options: PlayerSystemOptions) {
     this.physics = physics;
@@ -200,6 +201,7 @@ export class PlayerSystem implements Disposable {
       z: translationBefore.z,
     };
     this.currentPosition = { x: nextX, y: nextY, z: nextZ };
+    this.distanceSinceLastRead += Math.hypot(movement.x, movement.z);
 
     this.body.setNextKinematicTranslation({ x: nextX, y: nextY, z: nextZ });
 
@@ -252,6 +254,15 @@ export class PlayerSystem implements Disposable {
     return this.currentPosition;
   }
 
+  /** Consumes locomotion distance accumulated since the last call (meters). */
+  consumeDistanceDelta(): number {
+    const distance = this.distanceSinceLastRead;
+
+    this.distanceSinceLastRead = 0;
+
+    return distance;
+  }
+
   getInterpolatedPosition(alpha: number): Vector3Like {
     const t = clamp(alpha, 0, 1);
 
@@ -274,6 +285,7 @@ export class PlayerSystem implements Disposable {
     this.collider.setTranslation(position);
     this.previousPosition = { ...position };
     this.currentPosition = { ...position };
+    this.distanceSinceLastRead = 0;
   }
 
   reset(): void {

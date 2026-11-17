@@ -1,4 +1,5 @@
 import { type Clock, MonotonicRunTimer, type RunTimer } from "./RunTimer";
+import type { SpeedrunRecordEntry } from "./SpeedrunRecords";
 
 export type SpeedrunRunState =
   | "idle"
@@ -91,6 +92,9 @@ export type SpeedrunListener = (event: SpeedrunEvent) => void;
 export interface SpeedrunSystemOptions {
   readonly route: SpeedrunRoute;
   readonly clock?: Clock;
+  readonly records?: {
+    addRecord(entry: SpeedrunRecordEntry): boolean;
+  } | null;
 }
 
 /**
@@ -104,6 +108,7 @@ export class SpeedrunSystem {
   private readonly route: SpeedrunRoute;
   private readonly clock: Clock;
   private readonly timer: RunTimer;
+  private readonly records: SpeedrunSystemOptions["records"];
   private readonly listeners = new Set<SpeedrunListener>();
 
   private state: SpeedrunRunState = "idle";
@@ -117,6 +122,7 @@ export class SpeedrunSystem {
   constructor(options: SpeedrunSystemOptions) {
     this.route = options.route;
     this.clock = options.clock ?? (() => performance.now());
+    this.records = options.records ?? null;
     this.timer = new MonotonicRunTimer(this.clock);
   }
 
@@ -312,6 +318,23 @@ export class SpeedrunSystem {
 
     this.state = "finished";
     this.result = result;
+    this.records?.addRecord({
+      id: `${result.sessionId}:${result.completedAt}`,
+      routeId: result.routeId,
+      routeVersion: result.routeVersion,
+      completionTimeMs: result.totalTimeMs,
+      medal: result.medal,
+      completedAt: result.completedAt,
+      splits: result.splits.map((split) => ({
+        checkpointId: split.checkpointId,
+        sectionId: split.sectionId,
+        index: split.index,
+        splitTimeMs: split.splitTimeMs,
+        totalTimeMs: split.totalTimeMs,
+      })),
+      validation: { valid: validation.valid, errors: [...validation.errors] },
+      sessionId: result.sessionId,
+    });
     this.emit({ type: "run:finished", result });
 
     return result;

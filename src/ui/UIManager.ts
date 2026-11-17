@@ -68,6 +68,44 @@ export interface HudState {
   readonly paused: boolean;
 }
 
+export interface UIAchievementEntry {
+  readonly id: string;
+  readonly title: string;
+  readonly description: string;
+  readonly unlocked: boolean;
+  readonly hidden: boolean;
+}
+
+export interface UIRecordEntry {
+  readonly timeMs: number;
+  readonly medal: string;
+  readonly completedAt: number;
+}
+
+export interface UILongTermData {
+  readonly trainingCompleted: number;
+  readonly trainingTotal: number;
+  readonly prologueCompleted: boolean;
+  readonly prologueBestMs: number | null;
+  readonly achievementsUnlocked: number;
+  readonly achievementsTotal: number;
+  readonly tutorialCompleted: number;
+  readonly tutorialTotal: number;
+  readonly milestones: number;
+  readonly records: readonly UIRecordEntry[];
+  readonly achievements: readonly UIAchievementEntry[];
+  readonly statistics: {
+    readonly totalSessions: number;
+    readonly completedSessions: number;
+    readonly totalPlayTimeSeconds: number;
+    readonly totalDistanceMeters: number;
+    readonly totalJumps: number;
+    readonly totalVaults: number;
+    readonly totalFalls: number;
+    readonly totalCheckpoints: number;
+  };
+}
+
 type ReturnContext = "main-menu" | "pause-menu";
 
 export const SETTING_LABEL_KEYS: Readonly<Record<string, string>> = {
@@ -206,6 +244,7 @@ export class UIManager {
   private hudSpeed: HTMLDivElement;
   private hudHint: HTMLDivElement;
 
+  private longTermData: UILongTermData | null = null;
   private disposed = false;
 
   constructor(options: UIManagerOptions) {
@@ -288,6 +327,14 @@ export class UIManager {
 
   getSettingsReturnContext(): ReturnContext {
     return this.settingsReturnContext;
+  }
+
+  setLongTermData(data: UILongTermData): void {
+    this.longTermData = data;
+
+    if (this.screen === "records") {
+      this.showRecords();
+    }
   }
 
   showMainMenu(): void {
@@ -464,8 +511,100 @@ export class UIManager {
 
   showRecords(): void {
     const screen = this.createScreen("records.title", "gl-screen--panel");
+    const body = element("div", "gl-results");
+    const data = this.longTermData;
 
-    screen.append(element("p", "gl-screen__text", this.localize("records.empty")));
+    if (data) {
+      const records = data.records;
+      const recordsTitle = element(
+        "h2",
+        "gl-results__heading",
+        this.localize("records.prologueRecords"),
+      );
+
+      body.append(recordsTitle);
+
+      if (records.length === 0) {
+        body.append(element("p", "gl-screen__muted", this.localize("records.noRuns")));
+      } else {
+        const list = element("ol", "gl-results__list");
+
+        for (const record of records.slice(0, 5)) {
+          list.append(
+            element(
+              "li",
+              "gl-results__item",
+              `${formatRunTime(record.timeMs)} · ${this.localize("records.medalValue", { medal: record.medal })} · ${new Date(record.completedAt).toLocaleDateString()}`,
+            ),
+          );
+        }
+
+        body.append(list);
+      }
+
+      if (data.prologueBestMs !== null) {
+        body.append(
+          element(
+            "div",
+            "gl-results__row",
+            this.localize("records.personalBest", { time: formatRunTime(data.prologueBestMs) }),
+          ),
+        );
+      }
+
+      body.append(
+        element("h2", "gl-results__heading", this.localize("records.progress")),
+        element(
+          "div",
+          "gl-results__row",
+          this.localize("menu.progress", {
+            training: `${data.trainingCompleted}/${data.trainingTotal}`,
+            prologue: data.prologueCompleted
+              ? this.localize("menu.prologueComplete")
+              : this.localize("menu.prologueIncomplete"),
+            achievements: `${data.achievementsUnlocked}/${data.achievementsTotal}`,
+          }),
+        ),
+        element(
+          "div",
+          "gl-results__row",
+          this.localize("records.tutorial", {
+            completed: data.tutorialCompleted,
+            total: data.tutorialTotal,
+          }),
+        ),
+        element(
+          "div",
+          "gl-results__row",
+          `${this.localize("records.statistics")} · ${this.localize("records.statSessions")}: ${data.statistics.totalSessions} · ${this.localize("records.statPlayTime")}: ${Math.round(data.statistics.totalPlayTimeSeconds)}s · ${this.localize("records.statDistance")}: ${Math.round(data.statistics.totalDistanceMeters)}m`,
+        ),
+        element(
+          "div",
+          "gl-results__row",
+          `${this.localize("records.statJumps")}: ${data.statistics.totalJumps} · ${this.localize("records.statVaults")}: ${data.statistics.totalVaults} · ${this.localize("records.statFalls")}: ${data.statistics.totalFalls} · ${this.localize("records.statCheckpoints")}: ${data.statistics.totalCheckpoints}`,
+        ),
+      );
+
+      body.append(element("h2", "gl-results__heading", this.localize("records.achievements")));
+
+      const unlocked = data.achievements.filter((achievement) => achievement.unlocked);
+
+      if (unlocked.length === 0) {
+        body.append(element("p", "gl-screen__muted", this.localize("records.noAchievements")));
+      } else {
+        const achievementList = element("ol", "gl-results__list");
+
+        for (const achievement of unlocked.slice(0, 6)) {
+          achievementList.append(
+            element("li", "gl-results__item", `${achievement.title} — ${achievement.description}`),
+          );
+        }
+
+        body.append(achievementList);
+      }
+    } else {
+      body.append(element("p", "gl-screen__muted", this.localize("records.empty")));
+    }
 
     const buttons = element("div", "gl-menu");
 
@@ -473,7 +612,8 @@ export class UIManager {
       this.actions.onStartPrologue(),
     );
     this.addMenuButton(buttons, this.localize("common.back"), () => this.showMainMenu());
-    screen.append(buttons);
+    body.append(buttons);
+    screen.append(body);
     this.backHandler = () => this.showMainMenu();
     this.setScreen("records", screen);
   }
@@ -719,6 +859,23 @@ export class UIManager {
     this.addMenuButton(buttons, this.localize("menu.credits"), () => this.showCredits());
 
     const footer = element("div", "gl-screen__footer");
+
+    if (this.longTermData) {
+      footer.append(
+        element(
+          "div",
+          "gl-screen__progress",
+          this.localize("menu.progress", {
+            training: `${this.longTermData.trainingCompleted}/${this.longTermData.trainingTotal}`,
+            prologue: this.longTermData.prologueCompleted
+              ? this.localize("menu.prologueComplete")
+              : this.localize("menu.prologueIncomplete"),
+            achievements: `${this.longTermData.achievementsUnlocked}/${this.longTermData.achievementsTotal}`,
+          }),
+        ),
+      );
+    }
+
     footer.append(
       element("div", "gl-menu-hint", this.localize("menu.hint")),
       element("div", "gl-screen__muted", this.localize("menu.version", { version: "0.1.0" })),

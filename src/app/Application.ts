@@ -1,9 +1,17 @@
+import { AchievementSystem } from "../achievements/AchievementSystem";
+import type { AchievementUnlockedEvent } from "../achievements/AchievementTypes";
+import { INITIAL_ACHIEVEMENTS } from "../achievements/InitialAchievements";
 import { AudioManager } from "../audio/AudioManager";
 import { CameraSystem } from "../camera/CameraSystem";
 import { type CheckpointDefinition, CheckpointSystem } from "../checkpoint/CheckpointSystem";
 import { type Disposable, disposeAll } from "../core/Disposable";
 import { GameLoop } from "../core/GameLoop";
 import { StatusOverlay } from "../diagnostics/StatusOverlay";
+import {
+  createDomainEvent,
+  type DomainEvent,
+  type DomainEventPayload,
+} from "../events/DomainEvent";
 import { GameplayFlowManager, type GameplayFlowState } from "../flow/GameplayFlowManager";
 import type { InputContext } from "../input/InputActions";
 import { InputManager } from "../input/InputManager";
@@ -20,6 +28,8 @@ import { PhysicsWorld } from "../physics/PhysicsWorld";
 import type { MovementInputSample } from "../player/MovementModel";
 import { PlayerStateSystem } from "../player/PlayerStateSystem";
 import { PlayerSystem } from "../player/PlayerSystem";
+import { PROGRESSION_CONTENT, PROGRESSION_MILESTONES } from "../progression/ProgressionContent";
+import { ProgressionSystem } from "../progression/ProgressionSystem";
 import { Renderer } from "../rendering/Renderer";
 import { RenderScene } from "../rendering/RenderScene";
 import { ResourceLoader } from "../resources/ResourceLoader";
@@ -42,12 +52,24 @@ import { readStringValue, type SettingsSnapshot } from "../settings/SettingsType
 import type { Vector3Like } from "../shared/math";
 import { createPrologueRoute } from "../speedrun/PrologueRoute";
 import { formatRunTime } from "../speedrun/RunTimer";
+import { SpeedrunRecordStore } from "../speedrun/SpeedrunRecordStore";
 import { SpeedrunSystem } from "../speedrun/SpeedrunSystem";
+import { STATISTIC_DEFINITIONS } from "../statistics/StatisticDefinitions";
+import { StatisticsSystem } from "../statistics/StatisticsSystem";
 import { Database, StorageError } from "../storage/Database";
+import {
+  AchievementRepository,
+  ProgressionRepository,
+  SpeedrunRecordRepository,
+  StatisticsRepository,
+  TutorialRepository,
+} from "../storage/repositories/LongTermRepositories";
 import { SettingsRepository } from "../storage/repositories/SettingsRepository";
 import { TRAINING_EXERCISES } from "../training/TrainingExercises";
 import { TrainingSystem } from "../training/TrainingSystem";
-import { type HudState, type UIActions, UIManager } from "../ui/UIManager";
+import { INITIAL_TUTORIAL_STEPS } from "../tutorial/InitialTutorial";
+import { TutorialSystem } from "../tutorial/TutorialSystem";
+import { type HudState, type UIActions, type UILongTermData, UIManager } from "../ui/UIManager";
 import { type ApplicationConfig, DEFAULT_APPLICATION_CONFIG } from "./ApplicationConfig";
 
 export type ApplicationState = "idle" | "initializing" | "ready" | "running" | "stopped" | "failed";
@@ -109,7 +131,23 @@ export class Application implements Disposable {
   private respawnManager: RespawnManager | null = null;
   private trainingSystem: TrainingSystem | null = null;
   private speedrunSystem: SpeedrunSystem | null = null;
+  private statisticsSystem: StatisticsSystem | null = null;
+  private achievementSystem: AchievementSystem | null = null;
+  private progressionSystem: ProgressionSystem | null = null;
+  private tutorialSystem: TutorialSystem | null = null;
+  private speedrunRecordStore: SpeedrunRecordStore | null = null;
   private currentMode: GameplayMode | null = null;
+
+  private analyticsActive = false;
+  private analyticsStartedAtMs = 0;
+  private analyticsSpeedrunActive = false;
+  private sessionDistanceMeters = 0;
+  private sessionMaxSpeed = 0;
+  private sessionCheckpointIds = new Set<string>();
+  private sessionRecoveries = 0;
+  private sessionCheckpointsAllEmitted = false;
+  private movementStartedEmitted = false;
+  private readonly longTermUnsubscribes: (() => void)[] = [];
   private lastResults: SessionResults | null = null;
 
   private storageStatus = "not initialized";
@@ -154,6 +192,7 @@ export class Application implements Disposable {
       await this.initializeStorage();
       await this.initializeSettings();
       await this.initializeLocalization();
+      await this.initializeLongTermSystems();
 
       this.initializeRendering();
 
@@ -420,6 +459,244 @@ export class Application implements Disposable {
     });
     this.resources.push(this.ui);
     this.ui.applySettings(settings.getSnapshot());
+    this.refreshLongTermPresentation();
+  }
+
+  private async initializeLongTermSystems(): Promise<void> {
+    const database = this.database;
+
+    this.statisticsSystem = new StatisticsSystem({
+      definitions: STATISTIC_DEFINITIONS,
+      persistence: database ? new StatisticsRepository(database) : null,
+    });
+    this.achievementSystem = new AchievementSystem({
+      definitions: INITIAL_ACHIEVEMENTS,
+      persistence: database ? new AchievementRepository(database) : null,
+    });
+    this.progressionSystem = new ProgressionSystem({
+      contents: PROGRESSION_CONTENT,
+      milestones: PROGRESSION_MILESTONES,
+      persistence: database ? new ProgressionRepository(database) : null,
+    });
+    this.tutorialSystem = new TutorialSystem({
+      steps: INITIAL_TUTORIAL_STEPS,
+      persistence: database ? new TutorialRepository(database) : null,
+    });
+    this.speedrunRecordStore = new SpeedrunRecordStore({
+      persistence: database ? new SpeedrunRecordRepository(database) : null,
+    });
+
+    this.resources.push(
+      this.statisticsSystem,
+      this.achievementSystem,
+      this.progressionSystem,
+      this.tutorialSystem,
+      this.speedrunRecordStore,
+    );
+
+    await Promise.all([
+      this.statisticsSystem.initialize(),
+      this.achievementSystem.initialize(),
+      this.progressionSystem.initialize(),
+      this.tutorialSystem.initialize(),
+      this.speedrunRecordStore.initialize(),
+    ]);
+
+    this.longTermUnsubscribes.push(
+      this.achievementSystem.subscribe((event) => this.handleAchievementUnlocked(event)),
+      this.tutorialSystem.subscribe((event) => this.handleTutorialEvent(event)),
+      this.progressionSystem.subscribe((event) => this.handleProgressionEvent(event)),
+    );
+  }
+
+  private publishDomainEvent(source: string, type: string, payload?: DomainEventPayload): void {
+    const session = this.sessionManager?.getActiveSession();
+    const event: DomainEvent = createDomainEvent(source, type, {
+      timestamp: Date.now(),
+      ...(session?.id === undefined ? {} : { sessionId: session.id }),
+      ...(this.currentMode === null ? {} : { mode: this.currentMode }),
+      ...(payload === undefined ? {} : { payload }),
+    });
+
+    this.processDomainEvent(event);
+  }
+
+  private processDomainEvent(event: DomainEvent): void {
+    this.statisticsSystem?.recordEvent(event);
+    this.achievementSystem?.recordEvent(event);
+    this.tutorialSystem?.recordEvent(event);
+    this.progressionSystem?.recordEvent(event);
+  }
+
+  private handleAchievementUnlocked(event: AchievementUnlockedEvent): void {
+    const title = this.localize(event.definition.titleKey);
+
+    this.ui?.showToast(this.localize("achievements.unlocked", { title }), performance.now(), 3200);
+    this.audioManager?.playUiCue("achievement");
+    this.publishDomainEvent("achievement", "achievement.unlocked", {
+      achievementId: event.achievementId,
+    });
+    this.refreshLongTermPresentation();
+  }
+
+  private handleTutorialEvent(event: {
+    readonly type: "step:completed" | "tutorial:completed";
+    readonly stepId?: string;
+    readonly completedAt: number;
+  }): void {
+    if (event.type === "step:completed" && event.stepId) {
+      this.ui?.showToast(
+        `${this.localize("tutorial.steps." + event.stepId + ".title")}`,
+        performance.now(),
+        1800,
+      );
+      this.audioManager?.playUiCue("confirm");
+      this.refreshLongTermPresentation();
+
+      return;
+    }
+
+    if (event.type === "tutorial:completed") {
+      this.ui?.showToast(
+        this.localize("achievements.tutorial_graduate.title"),
+        performance.now(),
+        2600,
+      );
+      this.audioManager?.playUiCue("exercise-complete");
+      this.publishDomainEvent("tutorial", "tutorial.completed", { value: 1 });
+      this.refreshLongTermPresentation();
+    }
+  }
+
+  private handleProgressionEvent(event: {
+    readonly type: "content-unlocked" | "milestone-reached";
+    readonly contentId?: string;
+    readonly milestoneId?: string;
+  }): void {
+    if (event.type === "milestone-reached" && event.milestoneId) {
+      const milestone = PROGRESSION_MILESTONES.find(
+        (candidate) => candidate.id === event.milestoneId,
+      );
+
+      if (milestone) {
+        this.ui?.showToast(this.localize(milestone.titleKey), performance.now(), 2600);
+        this.audioManager?.playUiCue("achievement");
+      }
+    }
+
+    if (event.type === "content-unlocked" && event.contentId) {
+      const content = PROGRESSION_CONTENT.find((candidate) => candidate.id === event.contentId);
+
+      if (content) {
+        this.ui?.showToast(this.localize(content.titleKey), performance.now(), 1800);
+      }
+    }
+
+    this.refreshLongTermPresentation();
+  }
+
+  private beginAnalytics(context: GameplaySessionContext): void {
+    this.analyticsActive = true;
+    this.analyticsStartedAtMs = Date.now();
+    this.analyticsSpeedrunActive = context.mode === "speedrun";
+    this.sessionDistanceMeters = 0;
+    this.sessionMaxSpeed = 0;
+    this.sessionCheckpointIds = new Set<string>();
+    this.sessionRecoveries = 0;
+    this.sessionCheckpointsAllEmitted = false;
+    this.movementStartedEmitted = false;
+
+    this.statisticsSystem?.startSession({
+      sessionId: context.sessionId,
+      mode: context.mode,
+      startedAt: this.analyticsStartedAtMs,
+    });
+    this.publishDomainEvent("session", "session.started", { mode: context.mode });
+  }
+
+  private finalizeAnalytics(completed: boolean): void {
+    if (!this.analyticsActive) {
+      return;
+    }
+
+    this.analyticsActive = false;
+
+    const durationSeconds = Math.max(0, (Date.now() - this.analyticsStartedAtMs) / 1000);
+
+    if (this.sessionDistanceMeters > 0) {
+      this.publishDomainEvent("movement", "movement.distance", {
+        value: this.sessionDistanceMeters,
+      });
+    }
+
+    if (this.sessionMaxSpeed > 0) {
+      this.publishDomainEvent("movement", "movement.maximum_speed", {
+        value: this.sessionMaxSpeed,
+      });
+    }
+
+    if (!completed && this.analyticsSpeedrunActive) {
+      this.publishDomainEvent("speedrun", "speedrun.invalid", { value: 1 });
+    }
+
+    this.publishDomainEvent("session", completed ? "session.completed" : "session.abandoned", {
+      durationSeconds,
+      completed,
+    });
+    this.statisticsSystem?.finalizeSession({ completed });
+    this.analyticsSpeedrunActive = false;
+    this.refreshLongTermPresentation();
+  }
+
+  private refreshLongTermPresentation(): void {
+    const ui = this.ui;
+
+    if (!ui) {
+      return;
+    }
+
+    const progression = this.progressionSystem?.getSnapshot();
+    const achievements = this.achievementSystem?.getSnapshot() ?? [];
+    const tutorial = this.tutorialSystem?.getSnapshot();
+    const lifetime = this.statisticsSystem?.getLifetime();
+    const values = lifetime?.values ?? {};
+    const records = this.speedrunRecordStore?.getRecent(10) ?? [];
+
+    const data: UILongTermData = {
+      trainingCompleted: progression?.trainingCompleted ?? 0,
+      trainingTotal: TRAINING_EXERCISES.length,
+      prologueCompleted: progression?.prologueCompleted ?? false,
+      prologueBestMs: progression?.prologueBestCompletionTime ?? null,
+      achievementsUnlocked: achievements.filter((achievement) => achievement.unlocked).length,
+      achievementsTotal: achievements.length,
+      tutorialCompleted: tutorial?.completedSteps ?? 0,
+      tutorialTotal: tutorial?.totalSteps ?? 0,
+      milestones: progression?.milestones.length ?? 0,
+      records: records.map((record) => ({
+        timeMs: record.completionTimeMs,
+        medal: record.medal,
+        completedAt: record.completedAt,
+      })),
+      achievements: achievements.map((achievement) => ({
+        id: achievement.id,
+        title: this.localize(achievement.titleKey),
+        description: this.localize(achievement.descriptionKey),
+        unlocked: achievement.unlocked,
+        hidden: achievement.hidden,
+      })),
+      statistics: {
+        totalSessions: lifetime?.totalSessions ?? 0,
+        completedSessions: lifetime?.completedSessions ?? 0,
+        totalPlayTimeSeconds: lifetime?.totalPlayTimeSeconds ?? 0,
+        totalDistanceMeters: values["general.total_distance"] ?? 0,
+        totalJumps: values["general.total_jumps"] ?? 0,
+        totalVaults: values["general.total_vaults"] ?? 0,
+        totalFalls: values["general.total_falls"] ?? 0,
+        totalCheckpoints: values["exploration.checkpoints_activated"] ?? 0,
+      },
+    };
+
+    ui.setLongTermData(data);
   }
 
   private createSessionPorts(): GameplaySessionPorts {
@@ -550,6 +827,12 @@ export class Application implements Disposable {
       },
     );
     this.sessionDisposables.push(this.respawnManager);
+    this.sessionUnsubscribes.push(
+      this.respawnManager.subscribe(() => {
+        this.sessionRecoveries += 1;
+        this.publishDomainEvent("movement", "movement.fall", { value: 1 });
+      }),
+    );
 
     if (context.mode === "training") {
       this.trainingSystem = new TrainingSystem(TRAINING_EXERCISES);
@@ -557,6 +840,7 @@ export class Application implements Disposable {
     } else if (context.mode === "speedrun") {
       this.speedrunSystem = new SpeedrunSystem({
         route: createPrologueRoute(level),
+        records: this.speedrunRecordStore,
       });
       this.speedrunSystem.prepare(context.sessionId);
       this.sessionDisposables.push(this.speedrunSystem);
@@ -596,6 +880,17 @@ export class Application implements Disposable {
         ["player:walljumped", "walljumped"],
       ];
 
+      const domainEventByMovementEvent: Partial<
+        Record<(typeof movementEvents)[number][0], string>
+      > = {
+        "player:jumped": "movement.jump",
+        "player:landed": "movement.landing",
+        "player:sliding-started": "movement.slide",
+        "player:vault-started": "movement.vault",
+        "player:wallrun-started": "movement.wall_run",
+        "player:walljumped": "movement.wall_jump",
+      };
+
       for (const [eventName, action] of movementEvents) {
         const unsubscribe = player.onMovementEvent(eventName, () => {
           training?.handleEvent({
@@ -608,6 +903,12 @@ export class Application implements Disposable {
               : never,
             timestamp: performance.now(),
           });
+
+          const domainEventType = domainEventByMovementEvent[eventName];
+
+          if (domainEventType) {
+            this.publishDomainEvent("movement", domainEventType, { value: 1 });
+          }
 
           if (eventName === "player:landed") {
             this.audioManager?.playUiCue("land");
@@ -626,6 +927,10 @@ export class Application implements Disposable {
             targetId,
             timestamp: performance.now(),
           });
+          this.publishDomainEvent("interaction", "interaction.completed", {
+            value: 1,
+            targetId,
+          });
         }),
       );
     }
@@ -633,6 +938,14 @@ export class Application implements Disposable {
     if (training) {
       this.sessionUnsubscribes.push(
         training.subscribe((event) => {
+          if (event.type === "exercise:started") {
+            this.publishDomainEvent("training", "training.attempt", {
+              value: 1,
+              exerciseId: event.exerciseId,
+              attempt: event.attempt,
+            });
+          }
+
           if (event.type === "exercise:completed") {
             const definition = training
               .getDefinitions()
@@ -645,9 +958,14 @@ export class Application implements Disposable {
               performance.now(),
             );
             this.audioManager?.playUiCue("exercise-complete");
+            this.publishDomainEvent("training", "training.exercise_completed", {
+              value: 1,
+              exerciseId: event.exerciseId,
+            });
           }
 
           if (event.type === "session:completed") {
+            this.publishDomainEvent("training", "training.session_completed", { value: 1 });
             void this.completeGameplay("training-complete");
           }
         }),
@@ -758,11 +1076,17 @@ export class Application implements Disposable {
     this.playerState?.activate();
     this.settlePlayer();
 
+    this.beginAnalytics(context);
+
     if (this.trainingSystem) {
       this.trainingSystem.startSession(context.sessionId);
     }
 
-    this.speedrunSystem?.startRun();
+    if (this.speedrunSystem) {
+      this.speedrunSystem.startRun();
+      this.publishDomainEvent("speedrun", "speedrun.attempt", { value: 1 });
+    }
+
     this.syncInteractionPresentation();
     this.syncPlayerState();
   }
@@ -858,6 +1182,20 @@ export class Application implements Disposable {
         );
         this.audioManager?.playUiCue("checkpoint");
         this.speedrunSystem?.recordCheckpoint(activation.checkpointId);
+        this.publishDomainEvent("checkpoint", "checkpoint.activated", {
+          value: 1,
+          checkpointId: activation.checkpointId,
+        });
+        this.sessionCheckpointIds.add(activation.checkpointId);
+
+        if (
+          !this.sessionCheckpointsAllEmitted &&
+          this.sessionCheckpointIds.size >= 5 &&
+          this.currentMode !== "training"
+        ) {
+          this.sessionCheckpointsAllEmitted = true;
+          this.publishDomainEvent("checkpoint", "checkpoint.prologue_all", { value: 1 });
+        }
       }
 
       return;
@@ -887,8 +1225,51 @@ export class Application implements Disposable {
     this.busy = true;
 
     try {
+      let speedrunValid: boolean | null = null;
+
       if (this.speedrunSystem && finishTriggerId) {
-        this.speedrunSystem.finishRun(finishTriggerId);
+        const speedrunResult = this.speedrunSystem.finishRun(finishTriggerId);
+        const medalRank =
+          speedrunResult.medal === "gold"
+            ? 3
+            : speedrunResult.medal === "silver"
+              ? 2
+              : speedrunResult.medal === "bronze"
+                ? 1
+                : 0;
+
+        speedrunValid = speedrunResult.validation.valid;
+        this.publishDomainEvent("speedrun", "speedrun.completed", {
+          value: 1,
+          valid: speedrunResult.validation.valid,
+          completionTimeMs: speedrunResult.totalTimeMs,
+          medal: speedrunResult.medal,
+          levelId: this.sessionManager?.getActiveSession()?.levelId ?? PROLOGUE_LEVEL_ID,
+          routeId: speedrunResult.routeId,
+          recoveries: this.sessionRecoveries,
+        });
+
+        if (speedrunResult.validation.valid && this.sessionRecoveries === 0) {
+          this.publishDomainEvent("speedrun", "speedrun.clean", { value: 1 });
+        }
+
+        if (speedrunValid && medalRank > 0) {
+          this.publishDomainEvent("speedrun", "speedrun.medal", { value: medalRank });
+        }
+
+        if (!speedrunResult.validation.valid) {
+          this.publishDomainEvent("speedrun", "speedrun.invalid", { value: 1 });
+        }
+      }
+
+      if (
+        this.currentMode === "prologue" ||
+        (this.currentMode === "speedrun" && speedrunValid === true)
+      ) {
+        this.publishDomainEvent("level", "level.completed", {
+          value: 1,
+          levelId: this.sessionManager?.getActiveSession()?.levelId ?? PROLOGUE_LEVEL_ID,
+        });
       }
 
       const result = await this.sessionManager.completeSession({ reason: source });
@@ -901,6 +1282,7 @@ export class Application implements Disposable {
       }
 
       this.lastResults = this.sessionManager.getLastResults();
+      this.finalizeAnalytics(true);
       this.flowManager?.navigate({ target: "results", reason: "complete" });
       this.audioManager?.playUiCue("finish");
       this.ui?.showResults(this.lastResults);
@@ -1018,6 +1400,8 @@ export class Application implements Disposable {
     this.busy = true;
 
     try {
+      this.finalizeAnalytics(false);
+
       const fromResults = this.flowManager?.getState() === "results";
 
       if (fromResults) {
@@ -1056,6 +1440,7 @@ export class Application implements Disposable {
         await this.sessionManager.abandonSession("return-to-menu");
       }
 
+      this.finalizeAnalytics(false);
       this.flowManager?.navigate({ target: "main-menu", reason: "return-to-menu" });
       this.lastResults = null;
       this.ui?.showMainMenu();
@@ -1150,6 +1535,7 @@ export class Application implements Disposable {
       console.warn(`[Glassline] Language "${language}" could not be applied: ${result.error}`);
     } else {
       this.ui?.refreshLocalization();
+      this.refreshLongTermPresentation();
     }
   }
 
@@ -1208,6 +1594,18 @@ export class Application implements Disposable {
       this.cameraSystem?.viewYaw ?? 0,
       fixedDeltaSeconds,
     );
+
+    if (this.analyticsActive && this.player) {
+      const movement = this.player.getMovementSnapshot();
+
+      this.sessionDistanceMeters += this.player.consumeDistanceDelta();
+      this.sessionMaxSpeed = Math.max(this.sessionMaxSpeed, movement.speed);
+
+      if (!this.movementStartedEmitted && movement.speed > 1) {
+        this.movementStartedEmitted = true;
+        this.publishDomainEvent("movement", "movement.started", { value: 1 });
+      }
+    }
 
     this.updateInteraction(frame);
 
@@ -1517,7 +1915,12 @@ export class Application implements Disposable {
 
       if (event.code === "F2" && this.flowManager?.getState() === "gameplay") {
         event.preventDefault();
-        void this.completeGameplay("debug-complete");
+        const finishTriggerId =
+          this.currentMode === "prologue" || this.currentMode === "speedrun"
+            ? "trigger_finish"
+            : undefined;
+
+        void this.completeGameplay("debug-complete", finishTriggerId);
 
         return;
       }
@@ -1581,6 +1984,12 @@ export class Application implements Disposable {
 
     this.sessionUnsubscribes.length = 0;
 
+    for (const unsubscribe of this.longTermUnsubscribes) {
+      unsubscribe();
+    }
+
+    this.longTermUnsubscribes.length = 0;
+
     disposeAll(this.sessionDisposables);
     this.sessionDisposables.length = 0;
 
@@ -1605,6 +2014,11 @@ export class Application implements Disposable {
     this.respawnManager = null;
     this.trainingSystem = null;
     this.speedrunSystem = null;
+    this.statisticsSystem = null;
+    this.achievementSystem = null;
+    this.progressionSystem = null;
+    this.tutorialSystem = null;
+    this.speedrunRecordStore = null;
     this.lastResults = null;
     this.flowManager = null;
     this.sessionManager = null;

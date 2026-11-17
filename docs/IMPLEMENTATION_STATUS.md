@@ -3,8 +3,8 @@
 **Document:** `IMPLEMENTATION_STATUS.md`  
 **Project:** Glassline  
 **Last Updated:** 2026-11-17  
-**Project Stage:** Presentation and Player Feedback Complete  
-**Status:** Phases 0–6 Complete; Phase 7 Next
+**Project Stage:** Progression and Long-Term Systems Complete  
+**Status:** Phases 0–7 Complete; Phase 8 Next
 
 ---
 
@@ -96,14 +96,14 @@ Only `Verified` means that the applicable acceptance criteria have been checked 
 | UI / UX | Defined | In Progress | In Progress | Partially Verified |
 | Audio | Defined | In Progress | In Progress | Partially Verified |
 | Persistence | Defined | In Progress | In Progress | Partially Verified |
-| Progression | Defined | Not Started | Not Started | Not Verified |
+| Progression | Defined | In Progress | In Progress | Partially Verified |
 | Accessibility | Defined | In Progress | In Progress | Partially Verified |
 | Localization | Defined | In Progress | In Progress | Partially Verified |
-| Statistics | Defined | Not Started | Not Started | Not Verified |
+| Statistics | Defined | In Progress | In Progress | Partially Verified |
 
-**Current phase:** Phases 0 (repository foundation), 1 (application runtime), 2 (first-person player), 3 (traversal and recovery), 4 (level runtime), 5 (gameplay sessions and modes), and 6 (presentation and player feedback) are complete. Phase 7 (progression and long-term systems) is the next active workstream.
+**Current phase:** Phases 0 (repository foundation), 1 (application runtime), 2 (first-person player), 3 (traversal and recovery), 4 (level runtime), 5 (gameplay sessions and modes), 6 (presentation and player feedback), and 7 (progression and long-term systems) are complete. Phase 8 (stabilization) is the next active workstream.
 
-**Implementation readiness:** The game is playable through a complete presentation layer: main menu, loading, HUD, pause menu, settings, results, credits/records placeholders, keyboard/gamepad/mouse navigation, accessibility preferences, localized English strings, and procedural audio feedback. Progression/unlocks, long-term records, final content, and richer audio remain for later phases.
+**Implementation readiness:** The game now includes persistent long-term progress: Training/Prologue completion, deterministic content unlocks, milestones, achievement evaluation/unlocking, session/lifetime statistics, tutorial progression, and local Speedrun records/personal bests, all restored through Save System repositories after reload. Stabilization, final content, and richer audio remain for later phases.
 
 ### 3.1. Documentation Reconciliation (2026-11-17)
 
@@ -150,15 +150,15 @@ The following documents form the current specification baseline.
 | 19 | `19_GAMEPLAY_SESSION_SYSTEM_SPEC.md` | Defined | In Progress |
 | 20 | `20_GAMEPLAY_FLOW_SYSTEM_SPEC.md` | Defined | In Progress |
 | 21 | `21_TRAINING_SYSTEM_SPEC.md` | Defined | In Progress |
-| 22 | `22_PROGRESSION_SYSTEM_SPEC.md` | Defined | Not Started |
+| 22 | `22_PROGRESSION_SYSTEM_SPEC.md` | Defined | In Progress |
 | 23 | `23_HUD_SYSTEM_SPEC.md` | Defined | In Progress |
 | 24 | `24_MENU_SYSTEM_SPEC.md` | Defined | In Progress |
 | 25 | `25_SETTINGS_SYSTEM_SPEC.md` | Defined | In Progress |
 | 26 | `26_ACCESSIBILITY_SYSTEM_SPEC.md` | Defined | In Progress |
 | 27 | `27_LOCALIZATION_SYSTEM_SPEC.md` | Defined | In Progress |
-| 28 | `28_TUTORIAL_SYSTEM_SPEC.md` | Defined | Not Started |
-| 29 | `29_ACHIEVEMENT_SYSTEM_SPEC.md` | Defined | Not Started |
-| 30 | `30_STATISTICS_SYSTEM_SPEC.md` | Defined | Not Started |
+| 28 | `28_TUTORIAL_SYSTEM_SPEC.md` | Defined | In Progress |
+| 29 | `29_ACHIEVEMENT_SYSTEM_SPEC.md` | Defined | In Progress |
+| 30 | `30_STATISTICS_SYSTEM_SPEC.md` | Defined | In Progress |
 
 ---
 
@@ -207,10 +207,10 @@ Systems are not completely independent. Integration should happen continuously a
 | Gameplay Flow | 20 | Coordinate application navigation and transitions | In Progress |
 | Training | 21 | Implement exercises and objective evaluation | In Progress |
 | Speedrun | 09 | Implement timing, splits, validation, and records | In Progress |
-| Progression | 22 | Implement content unlocks and milestones | Not Started |
-| Tutorial | 28 | Implement contextual guidance and learning progression | Not Started |
-| Achievement | 29 | Implement achievement definitions and unlocking | Not Started |
-| Statistics | 30 | Aggregate authoritative gameplay statistics | Not Started |
+| Progression | 22 | Implement content unlocks and milestones | In Progress |
+| Tutorial | 28 | Implement contextual guidance and learning progression | In Progress |
+| Achievement | 29 | Implement achievement definitions and unlocking | In Progress |
+| Statistics | 30 | Aggregate authoritative gameplay statistics | In Progress |
 
 ### 5.5. Presentation
 
@@ -734,6 +734,8 @@ Known limitations and deferred integration:
 
 **Goal:** Make repeated play meaningful and measurable.
 
+**Status:** Complete (2026-11-17).
+
 Systems:
 
 - Progression.
@@ -751,12 +753,72 @@ Initial features:
 - Session and lifetime statistics.
 - Persistent player progress.
 
+Implemented and verified:
+
+- Shared domain-event envelope with stable event identity, source, session/mode context, payload helpers, and deterministic deduplication across long-term systems.
+- Statistics (`StatisticsSystem`):
+  - Initial statistic catalog covering movement, training, speedrun, interaction, exploration, and progression counters.
+  - Session, mode, and lifetime scopes; sum/count/maximum/minimum/latest aggregation; finite-value validation; event-id deduplication.
+  - Session lifecycle aggregation (duration, completed sessions, longest session), recent session summaries, and immutable snapshots.
+  - Persistence through the Save System `statistics` store; reload restoration covered by tests.
+  - Lifetime statistics and recent sessions are presented in the Local Records screen.
+- Achievements (`AchievementSystem`):
+  - Eleven initial definitions across training, speedrun, movement, interaction, and progression categories with stable title/description localization keys and rarity metadata.
+  - Event, counter, threshold, milestone, and achievement-reference conditions; condition groups (`all`/`any`); prerequisites with cycle/unknown-reference validation.
+  - Event-id deduplication, idempotent unlock validation, progress computation, snapshots, and persistent records in the `achievements` store.
+  - Unlock notifications through toasts and procedural audio cues; unlock events are consumed by Progression.
+- Progression (`ProgressionSystem`):
+  - Player progression model: training completion, campaign completion/best Prologue time, content unlock state, permanent milestones, play-time/statistics summary, and consumed achievement inputs.
+  - Declarative content definitions (ten Training exercise unlocks with a prerequisite chain, Prologue, Ranked Prologue) and six milestone definitions.
+  - Deterministic unlock/milestone rule engine supporting exercise/level completion, achievement inputs, milestones, count thresholds, and Prologue completion.
+  - Event-driven idempotent updates from Training, Speedrun, Level, Session, Achievement, and Tutorial events; startup reconciliation; revisioned snapshots; persistence in the `progress` store.
+- Tutorial (`TutorialSystem`):
+  - Eight-step initial progression (start Training, move, jump, slide, vault, wall run, wall jump, interact) driven by authoritative gameplay events with restart-safe/deduped progress, completion event, and persistence in the `tutorial` store.
+- Speedrun records (`SpeedrunRecordStore`):
+  - Validated local run records, fastest-first sorting with deterministic tie-breaking, personal-best lookup, duplicate protection, recent records, and persistence in the `speedrun` store.
+  - `SpeedrunSystem` automatically records valid finished runs.
+- Presentation:
+  - Main menu shows persistent progress summary (Training, Prologue, achievements).
+  - Local Records screen now presents Prologue records/PB, progression summary, tutorial completion, lifetime statistics, and unlocked achievements.
+  - Achievement/milestone/content/tutorial notifications use the existing toast queue and audio feedback.
+- Application integration:
+  - Long-term systems initialize after Save System setup and before UI creation, using repositories when persistence is available and in-memory fallbacks otherwise.
+  - Normalized gameplay events are routed through Statistics, Achievements, Tutorial, and Progression with cascade handling for achievement/tutorial events.
+  - Session analytics track start/finish, distance, maximum speed, checkpoint count, falls/recoveries, and Speedrun attempt/completion/medal/clean/invalid events.
+  - Training exercise starts/completions, Prologue level completion, checkpoint activation, interactions, movement mechanics, and session lifecycle feed progression/achievements/statistics.
+  - Development-only QA hook (`window.__glassline`) is exposed in dev builds for diagnostics.
+
+Verification performed:
+
+- `npm run typecheck` — passes.
+- `npm run check` — Biome lint/format/import checks pass.
+- `npm test` — 238 unit/integration tests across 32 files pass, including Statistics 4, Achievements 5, Tutorial 2, Progression 5, Speedrun records 3, and a fake-IndexedDB long-term persistence reload integration test.
+- `npm run build` — production build succeeds.
+- Browser verification (fresh Edge profile, CDP):
+  - Main menu showed persistent summary (`Training 1/10`, `Prologue complete`, `Achievements 1/11`) after a page reload.
+  - Training session movement completed exercises, unlocked `first_steps`, activated a checkpoint, and recorded movement/tutorial/statistics events.
+  - Local Records screen displayed no-runs empty state, progression summary, tutorial 3/8, lifetime sessions/play-time/distance, movement counters, checkpoint count, and the unlocked achievement.
+  - Completing Prologue through the dev finish path set `Prologue complete`; after a full page reload the state remained.
+  - Statistics matched observed authoritative actions (one jump recorded as one jump, distance/checkpoints reflected gameplay, sessions/completed sessions incremented).
+  - Achievement toasts/cues and tutorial step notifications are emitted through the presentation layer.
+
 Exit criteria:
 
-- Progress is consistent after reload.
-- Repeated events do not duplicate progress.
-- Achievements unlock from authoritative conditions.
-- Statistics match authoritative gameplay events.
+- [x] Progress is consistent after reload: Save repositories restore progression, achievements, tutorial, statistics, and Speedrun records; covered by the fake-IndexedDB reload integration test and browser reload checks.
+- [x] Repeated events do not duplicate progress: Statistics/Achievements/Tutorial deduplicate event ids, Progression uses structural idempotence plus event ids, and duplicate event tests cover each system.
+- [x] Achievements unlock from authoritative conditions: evaluation consumes only validated domain events/results; unit tests cover counts, thresholds, prerequisites, compound conditions, and tutorial events.
+- [x] Statistics match authoritative gameplay events: aggregation is event-driven with explicit units/definitions; session/lifetime values and browser checks match observed gameplay.
+
+Known limitations and deferred integration:
+
+- Content unlock rules are evaluated and persisted, but the Training session/UI does not yet gate exercise selection by unlocks; Training currently runs the ten-exercise set. Applying unlocks needs the Training Selection UI/content split.
+- The initial achievement set (11) covers representative condition types but not the full long-term catalog; there is no dedicated achievements screen/notification history UI, and hidden-achievement presentation is generic.
+- Statistics presentation is limited to the Local Records summary; per-mode/query screens and speedrun statistics-summary references are not exposed.
+- Speedrun records are local-only with no delete/export/detailed-run UI; personal bests are displayed through records/progression summaries.
+- Tutorial progression is automatic event tracking; contextual in-game hints are notifications only.
+- Save schema version was not bumped because the required object stores already existed in `GlasslineSaveData`; future payload migrations still need end-to-end migration tests.
+- No online leaderboards, cloud save, accounts, multiplayer, ghost replay, or advanced progression systems (explicitly deferred).
+- Development diagnostics (`F2`, `F3`, `window.__glassline`) remain dev-only and must not ship in release UI.
 
 ### Phase 8 — Stabilization
 
@@ -856,14 +918,14 @@ Integration is tracked separately from individual system implementation.
 | Gameplay Flow → Gameplay Session | Session lifecycle requests | Integrated |
 | Training → Movement | Authoritative traversal events | Integrated |
 | Speedrun → Checkpoint | Ordered checkpoint validation | Integrated |
-| Speedrun → Save | Persistent records | Not Started |
-| Training → Save | Persistent training progress | Not Started |
+| Speedrun → Save | Persistent records | Integrated |
+| Training → Save | Persistent training progress | Integrated |
 | Settings → Save | Configuration persistence | Integrated |
 | Settings → Accessibility | Accessibility preferences | Integrated |
 | Localization → UI | Localized text and formatting | Integrated |
-| Gameplay Events → Statistics | Normalized event aggregation | Not Started |
-| Achievement → Progression | Achievement unlock notifications | Not Started |
-| Progression → Menu | Unlock and milestone snapshots | Not Started |
+| Gameplay Events → Statistics | Normalized event aggregation | Integrated |
+| Achievement → Progression | Achievement unlock notifications | Integrated |
+| Progression → Menu | Unlock and milestone snapshots | Integrated |
 | Gameplay Events → Audio | Gameplay feedback events | Integrated |
 
 An integration is complete only when both sides use the agreed contract and the interaction has been tested.

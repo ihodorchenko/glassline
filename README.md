@@ -218,7 +218,7 @@ The repository foundation (**Phase 0**) is complete: Vite + TypeScript (strict) 
 
 **Phase 6** (presentation and player feedback) is complete: player-facing DOM UI with main menu, loading, gameplay HUD, pause menu, settings, results, credits/records placeholders, and error screens; speedrun timer/splits, training objectives, interaction prompts, and checkpoint/exercise notifications; keyboard/gamepad/mouse navigation; accessibility preferences (Reduced Motion, high contrast, large text, UI scale, focus/ARIA/live regions); initial English localization; and procedural UI/gameplay audio cues. The previous development session menu and status overlay were replaced by this interface (the diagnostic overlay is now dev-only via `F3`).
 
-**Phase 7** (progression and long-term systems) is the next implementation phase.
+**Phase 7** (progression and long-term systems) is complete: normalized gameplay event routing into persistent long-term systems — session/lifetime/mode statistics, achievement definitions and evaluation, cross-mode player progression with deterministic content unlock rules and milestones, event-driven tutorial progression, and local Speedrun records/personal bests. The main menu now shows a persistent progress summary, and the Local Records screen presents records and personal bests, progression, tutorial completion, lifetime statistics, and unlocked achievements. All long-term state is stored through Save System repositories and restored after reload; duplicate events are deduplicated and achievements unlock only from authoritative events.
 
 For actual implementation, integration, and verification status, see:
 
@@ -323,16 +323,18 @@ Do not report a task as complete based on `npm run build` alone. Runtime behavio
 
 CI runs the same `npm run validate` pipeline on pushes to `main` and on pull requests (`.github/workflows/validate.yml`).
 
-### Current Runtime State (Phase 6)
+### Current Runtime State (Phase 7)
 
 Running `npm run dev` boots to the Game Glassline main menu. Use the mouse, keyboard arrows (`↑`/`↓`), or gamepad to navigate and `Enter`/`Space`/confirm to activate.
 
-- Main menu: Training, Prologue, Ranked Prologue (authoritative speedrun), Local Records (placeholder), Settings, Credits.
+- Main menu: Training, Prologue, Ranked Prologue (authoritative speedrun), Local Records, Settings, Credits; a persistent progress summary shows Training completion, Prologue completion, and achievements.
 - `Esc` pauses during gameplay; the pause menu offers Resume, Restart, Settings, and Abandon to Main Menu.
 - Settings changes apply immediately (audio/controls/camera/HUD/accessibility/gameplay/language). Unsupported browser display settings are hidden.
 - Accessibility: Reduced Motion, High Contrast, Large Text, UI Scale; keyboard-only navigation and focus visibility are supported. Reduced Motion is also honored by camera presentation.
 - Gameplay HUD: Speedrun timer/checkpoints/splits, Training exercise/objective progress, speed, interaction prompt, and checkpoint/exercise notifications.
 - Results: mode, duration, Training completion, Speedrun time/splits/medal/validity; Retry or return to Main Menu.
+- Local Records: validated Prologue records and personal best, progression/tutorial summary, lifetime statistics (sessions, play time, distance, movement, checkpoints), and unlocked achievements.
+- Long-term progress: Training exercise and Prologue completion, deterministic content unlocks and milestones, achievements, tutorial steps, and statistics persist through the Save System and survive reload. Achievement unlocks show a toast and audio cue.
 - During gameplay: click the canvas to capture the mouse (pointer lock); the first click or key press resumes the Web Audio context.
 - `WASD` move, `Space` jump, `Ctrl` crouch, `Shift` sprint.
 - `Ctrl` while running starts a slide; sliding lets the player pass under low ceilings.
@@ -341,7 +343,7 @@ Running `npm run dev` boots to the Game Glassline main menu. Use the mouse, keyb
 - Checkpoints activate automatically inside their trigger volumes; falling into the pit respawns the player at the active checkpoint (or the initial spawn).
 - `Esc` releases pointer lock and opens the pause menu.
 
-Development-only diagnostics: `F3` toggles the diagnostics overlay; in dev builds `F2` completes the current session for results-flow verification. The diagnostics overlay is not player-facing UI and is disabled by default. Authored `training_test`/`prologue_test` levels remain verification content until final Training/Prologue content.
+Development-only diagnostics: `F3` toggles the diagnostics overlay; in dev builds `F2` completes the current session for results-flow verification, and `window.__glassline` exposes the application instance for QA. The diagnostics overlay is not player-facing UI and is disabled by default. Authored `training_test`/`prologue_test` levels remain verification content until final Training/Prologue content.
 
 ---
 

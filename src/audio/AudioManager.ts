@@ -44,7 +44,8 @@ export type UiCue =
   | "checkpoint"
   | "exercise-complete"
   | "finish"
-  | "land";
+  | "land"
+  | "achievement";
 
 interface UiCueConfiguration {
   readonly frequency: number;
@@ -80,6 +81,13 @@ const UI_CUES: Readonly<Record<UiCue, UiCueConfiguration>> = {
     waveform: "triangle",
   },
   land: { frequency: 180, durationSeconds: 0.06, volume: 0.12, channel: "sfx" },
+  achievement: {
+    frequency: 1320,
+    durationSeconds: 0.22,
+    volume: 0.22,
+    channel: "sfx",
+    waveform: "triangle",
+  },
 };
 
 export interface AudioManagerOptions {
