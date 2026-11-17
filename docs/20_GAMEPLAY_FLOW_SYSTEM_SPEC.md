@@ -2,7 +2,7 @@
 
 # Gameplay Flow System Specification
 
-**Project:** Mirror's Edge-Inspired First-Person Parkour Game  
+**Project:** Glassline  
 **Document:** Gameplay Flow System  
 **Version:** 1.0  
 **Status:** Implementation Specification  
@@ -73,6 +73,8 @@ The system does not own:
 
 These responsibilities remain with the relevant systems.
 
+The Flow System must not access IndexedDB or other persistence storage directly. Persisted state is read and written through the owning systems, such as the Save System and the Progression System.
+
 ### 2.3 Related Specifications
 
 - `01_AGENT_RULES.md`
@@ -86,6 +88,11 @@ These responsibilities remain with the relevant systems.
 - `15_LEVEL_RUNTIME_SYSTEM_SPEC.md`
 - `18_PLAYER_STATE_SYSTEM_SPEC.md`
 - `19_GAMEPLAY_SESSION_SYSTEM_SPEC.md`
+- `21_TRAINING_SYSTEM_SPEC.md`
+- `22_PROGRESSION_SYSTEM_SPEC.md`
+- `23_HUD_SYSTEM_SPEC.md`
+- `24_MENU_SYSTEM_SPEC.md`
+- `25_SETTINGS_SYSTEM_SPEC.md`
 
 ---
 
@@ -190,6 +197,8 @@ Main Menu
 
 The diagram describes logical navigation, not a requirement to create a separate scene for every state.
 
+Local Leaderboard is reachable from Main Menu and Results and does not participate in the gameplay session lifecycle.
+
 ### 4.2 Initial Screens
 
 The initial implementation must support:
@@ -203,6 +212,7 @@ The initial implementation must support:
 - Pause Menu.
 - Settings.
 - Results.
+- Local Leaderboard.
 - Confirmation Dialog.
 - Error / Recovery Presentation.
 
@@ -219,6 +229,7 @@ The application should distinguish three navigation layers:
 - Training Selection.
 - Settings.
 - Results.
+- Local Leaderboard.
 
 **Gameplay Layer**
 
@@ -255,6 +266,7 @@ type GameplayFlowState =
     | "settings"
     | "completing"
     | "results"
+    | "leaderboard"
     | "confirmation"
     | "recovering"
     | "error";
@@ -490,6 +502,17 @@ The destination state must not become authoritative before required operations s
 
 Presentation animation may begin during execution, but it must not conceal an invalid application state.
 
+### 7.5 Cancellation and Stale Results
+
+A navigation transition may be cancelled or superseded by a newer navigation request.
+
+- A cancelled transition must not commit its destination state.
+- Asynchronous results that belong to a transition that is no longer current must be ignored.
+- Presentation for a cancelled transition must be stopped or allowed to finish without changing logical state.
+- Cancellation must release transition locks and temporary overlays.
+
+Only one blocking navigation transition may execute at a time.
+
 ---
 
 ## 8. Main Menu Flow
@@ -500,9 +523,10 @@ Main Menu is the primary entry point.
 
 Initial options:
 
-- Continue Training.
+- Continue.
 - Training.
 - Prologue.
+- Local Leaderboard.
 - Settings.
 - Exit / Return to Title where supported.
 
@@ -727,6 +751,8 @@ The Flow System requests a pause from Gameplay Session System.
 
 It enters `paused` only after the session confirms the transition.
 
+Pause requests are validated by the Gameplay Session and the active mode policy. A ranked Speedrun attempt may forbid pausing; its pause and focus-loss rules are owned by the Speedrun System (`09_SPEEDRUN_SYSTEM_SPEC.md`).
+
 ### 12.2 Pause Menu
 
 Initial options:
@@ -908,6 +934,7 @@ Initial options:
 
 - Retry.
 - Return to Main Menu.
+- View Local Leaderboard where supported.
 - Continue where supported.
 
 Retry must create a valid new execution or session according to the owning gameplay system.
@@ -925,6 +952,7 @@ Examples:
 - Abandon active session.
 - Restart a run.
 - Reset Training progress.
+- Clear local leaderboard records.
 - Discard unsaved settings where applicable.
 
 ### 15.2 Dialog Model
@@ -950,6 +978,7 @@ type FlowConfirmationAction =
     | "abandon_session"
     | "restart_session"
     | "reset_progress"
+    | "clear_local_records"
     | "discard_settings";
 ```
 
@@ -1023,6 +1052,7 @@ Back behavior depends on the current state.
 Examples:
 
 - Settings returns to its previous screen.
+- Local Leaderboard returns to its previous destination.
 - Confirmation closes the dialog.
 - Pause returns to gameplay only through an explicit resume operation.
 - Results returns to Main Menu or the appropriate parent screen.
@@ -1298,6 +1328,7 @@ Test:
 - Main Menu → Training Selection.
 - Main Menu → Prologue Introduction.
 - Main Menu → Settings.
+- Main Menu → Local Leaderboard.
 - Settings → Previous Destination.
 - Loading → Ready.
 - Ready → Gameplay.
@@ -1305,7 +1336,9 @@ Test:
 - Paused → Gameplay.
 - Paused → Settings.
 - Completing → Results.
+- Results → Local Leaderboard.
 - Results → Main Menu.
+- Local Leaderboard → Previous Destination.
 
 Invalid transitions must be rejected.
 
@@ -1521,6 +1554,8 @@ The implementation is accepted when:
 20. Reduced-motion settings are respected.
 21. Training and Prologue end-to-end flows work.
 22. No domain-specific gameplay logic is duplicated in the Flow System.
+23. Local Leaderboard navigation is available and returns to its previous destination.
+24. Cancelled or superseded transitions do not commit stale destinations.
 
 ---
 

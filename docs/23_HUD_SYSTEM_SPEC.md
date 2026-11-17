@@ -2,7 +2,7 @@
 
 # HUD System Specification
 
-**Project:** Mirror's Edge-Inspired First-Person Parkour Game  
+**Project:** Glassline — First-Person Parkour Game  
 **Document:** HUD System  
 **Version:** 1.0  
 **Status:** Implementation Specification  
@@ -120,7 +120,7 @@ The HUD System owns:
 - HUD presentation state.
 - Data binding to gameplay systems.
 - HUD-specific accessibility behavior.
-- HUD configuration.
+- HUD presentation configuration resolved from Settings.
 - Debug HUD mode.
 
 ### 3.2 HUD Does Not Own
@@ -140,6 +140,8 @@ The HUD System does not own:
 - Audio playback.
 - Application navigation.
 - Persistent settings storage.
+- Runner Vision route target selection.
+- Localized text resources.
 
 ### 3.3 Related Specifications
 
@@ -148,6 +150,7 @@ The HUD System does not own:
 - `07_UI_UX_SPEC.md`
 - `08_AUDIO_DESIGN_SPEC.md`
 - `09_SPEEDRUN_SYSTEM_SPEC.md`
+- `10_SAVE_SYSTEM_SPEC.md`
 - `11_INPUT_SYSTEM_SPEC.md`
 - `12_MOVEMENT_SYSTEM_SPEC.md`
 - `13_CAMERA_SYSTEM_SPEC.md`
@@ -160,6 +163,11 @@ The HUD System does not own:
 - `20_GAMEPLAY_FLOW_SYSTEM_SPEC.md`
 - `21_TRAINING_SYSTEM_SPEC.md`
 - `22_PROGRESSION_SYSTEM_SPEC.md`
+- `24_MENU_SYSTEM_SPEC.md`
+- `25_SETTINGS_SYSTEM_SPEC.md`
+- `26_ACCESSIBILITY_SYSTEM_SPEC.md`
+- `27_LOCALIZATION_SYSTEM_SPEC.md`
+- `29_ACHIEVEMENT_SYSTEM_SPEC.md`
 
 ---
 
@@ -191,7 +199,10 @@ Individual widgets:
 - `InteractionPromptWidget`
 - `TrainingObjectiveWidget`
 - `TrainingHintWidget`
+- `TutorialGuidanceWidget`
 - `SectionProgressWidget`
+- `DirectionIndicatorWidget`
+- `RunnerVisionIndicatorWidget`
 - `GameplayStatusWidget`
 - `CrosshairWidget` (optional and disabled by default)
 - `HUDNotificationWidget`
@@ -232,7 +243,9 @@ Resolves conflicts between simultaneous HUD elements.
 
 **HUDConfiguration**
 
-Stores runtime HUD configuration.
+Stores the resolved runtime HUD configuration provided by the Settings System.
+
+It does not own persisted preferences or write settings storage.
 
 **HUDAccessibilityController**
 
@@ -262,11 +275,17 @@ Examples:
 | Interaction prompt | Interaction System |
 | Training objective | Training System |
 | Training hint | Training System |
+| Tutorial guidance | Tutorial System (`28_TUTORIAL_SYSTEM_SPEC.md`) |
 | Section information | Level Runtime |
+| Direction indicator | Level Runtime (navigation hints authored per `06_LEVEL_DESIGN_SPEC.md`) |
+| Runner Vision highlight | Level Runtime (navigation hints authored per `06_LEVEL_DESIGN_SPEC.md`) |
 | Gameplay status | Gameplay Session / Player State |
-| Unlock notification | Progression System |
+| Content unlock notification | Progression System |
+| Achievement unlock notification | Achievement System |
 
 The HUD must never calculate authoritative gameplay results itself.
+
+The HUD must not select Runner Vision targets or infer route guidance; it presents highlight state derived from level-authored navigation hints. Presentation requirements for Runner Vision are defined in `07_UI_UX_SPEC.md`.
 
 ---
 
@@ -291,7 +310,7 @@ During initialization:
 
 1. Create the HUD root container.
 2. Register supported widgets.
-3. Load HUD configuration.
+3. Load the resolved HUD configuration from the Settings System.
 4. Subscribe to relevant domain events.
 5. Resolve the current gameplay context.
 6. Build the initial HUD snapshot.
@@ -448,6 +467,8 @@ interface HUDVisibilityContext {
     trainingExerciseActive: boolean;
 }
 ```
+
+The context is derived from authoritative owner snapshots and events (Gameplay Session, Player State, Respawn, Speedrun, Training, Gameplay Flow). The HUD must not maintain independent gameplay equivalents of these states; they are presentation inputs only.
 
 ### 7.2 Visibility Rules
 
@@ -1059,6 +1080,7 @@ Examples:
 - Achievement unlocked.
 - New section entered.
 - Training exercise completed.
+- Contextual tutorial guidance requested by the Tutorial System.
 - Speedrun split recorded.
 
 ### 17.2 Data Model
@@ -1090,8 +1112,11 @@ type HUDNotificationCategory =
     | "achievement"
     | "section"
     | "speedrun"
+    | "tutorial"
     | "system";
 ```
+
+Tutorial guidance presentation requests include the Tutorial System's presentation model (content, priority, dismissal and acknowledgement metadata). The HUD owns rendering, layout, animation, and visibility; it must not decide tutorial eligibility or lifecycle.
 
 ### 17.3 Notification Queue
 
@@ -1253,7 +1278,11 @@ interface HUDConfiguration {
 }
 ```
 
-Settings are persisted through Save System.
+Settings values are owned by the Settings System (`25_SETTINGS_SYSTEM_SPEC.md`) and provided to the HUD as a resolved configuration snapshot. Persistence is owned by the Save System (`10_SAVE_SYSTEM_SPEC.md`).
+
+The HUD must not maintain a second settings store, write persistence directly, or reinterpret raw user preferences outside the shared accessibility configuration.
+
+All user-facing HUD text is resolved through the Localization System (`27_LOCALIZATION_SYSTEM_SPEC.md`); widgets must not hardcode display strings.
 
 ### 20.2 UI Scale
 
@@ -1474,7 +1503,9 @@ Verify:
 - Interaction System provides prompt data.
 - Training provides objectives and hints.
 - Level Runtime provides section information.
-- Progression provides achievement unlock events.
+- Level data provides Runner Vision and direction hints.
+- Progression provides content unlock events.
+- Achievement System provides achievement unlock events.
 - Respawn System provides recovery state.
 - Gameplay Flow controls HUD visibility.
 
@@ -1589,7 +1620,10 @@ The implementation is accepted when:
 19. Essential information does not rely exclusively on color.
 20. Debug HUD is separated from production HUD.
 21. High-frequency updates do not cause unnecessary rendering work.
-22. Unit and integration tests pass.
+22. HUD settings come from the Settings System and persist through the Save System.
+23. HUD text is resolved through the Localization System.
+24. Runner Vision and direction presentation consume level-authored hints without selecting targets.
+25. Unit and integration tests pass.
 
 ---
 
@@ -1650,12 +1684,15 @@ The implementation is accepted when:
 18. Interaction prompts must come from Interaction System.
 19. Training objectives must come from Training System.
 20. Section information must come from Level Runtime.
-21. Achievement notifications must come from Progression System.
-22. Respawn presentation must not duplicate Respawn System logic.
-23. UI settings must use Save System.
-24. Accessibility behavior must be consistent with UI System.
-25. Debug information must remain separate from production presentation.
-26. HUD must not introduce unnecessary gameplay dependencies.
-27. The visual hierarchy must prioritize gameplay readability over information density.
+21. Runner Vision and direction hints must come from level-authored navigation data.
+22. Content unlock notifications must come from Progression System.
+23. Achievement notifications must come from Achievement System.
+24. Respawn presentation must not duplicate Respawn System logic.
+25. HUD settings must come from Settings System and be persisted by Save System.
+26. Accessibility behavior must follow `26_ACCESSIBILITY_SYSTEM_SPEC.md` and the effective accessibility configuration.
+27. HUD text must be resolved through Localization System.
+28. Debug information must remain separate from production presentation.
+29. HUD must not introduce unnecessary gameplay dependencies.
+30. The visual hierarchy must prioritize gameplay readability over information density.
 
 **End of Specification**

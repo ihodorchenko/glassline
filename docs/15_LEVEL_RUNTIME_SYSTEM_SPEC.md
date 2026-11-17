@@ -1,6 +1,7 @@
 # 15_LEVEL_RUNTIME_SYSTEM_SPEC.md
 
-# Level Runtime System Specification
+**Project:** Glassline  
+**Document:** Level Runtime System Specification
 
 ## 1. Purpose
 
@@ -9,9 +10,9 @@ The Level Runtime System is responsible for managing the lifecycle and runtime s
 It coordinates:
 
 - Level initialization and shutdown.
-- Level session creation and destruction.
+- Level-scoped `LevelSession` creation and destruction.
 - Section activation and deactivation.
-- Player spawn and respawn placement.
+- Spawn point resolution and initial player placement.
 - Runtime object registration.
 - Level triggers and activation volumes.
 - Transitions between level sections.
@@ -20,9 +21,11 @@ It coordinates:
 
 The system provides a stable runtime environment for Training and Prologue.
 
-It does not define level geometry, generate procedural content, implement player movement, or own gameplay progression rules.
+It does not define level geometry, generate procedural content, implement player movement, own checkpoint progress, orchestrate player recovery, time runs, or own gameplay progression rules.
 
 Those responsibilities belong to other systems.
+
+`LevelSession` is the level-scoped runtime container described in this document. It is not the Gameplay Session owned by `19_GAMEPLAY_SESSION_SYSTEM_SPEC.md`: the Gameplay Session System owns the gameplay session lifecycle and requests the Level Runtime to load or unload a level. Level Runtime never creates a gameplay session. Player recovery after a fall or failure is owned by the Respawn System and orchestrated exclusively by `RespawnManager` (`17_RESPAWN_SYSTEM_SPEC.md`); Level Runtime only resolves and validates spawn points.
 
 ## 2. Scope and Responsibilities
 
@@ -31,25 +34,29 @@ Those responsibilities belong to other systems.
 The Level Runtime System must:
 
 1. Load a level definition and its associated runtime content.
-2. Create and manage a Level Session.
-3. Initialize required gameplay dependencies.
+2. Create and manage the level-scoped `LevelSession` runtime container when requested by the Gameplay Session System.
+3. Initialize level-scoped runtime dependencies required by the level definition; gameplay system initialization is orchestrated by the Gameplay Session System (`19_GAMEPLAY_SESSION_SYSTEM_SPEC.md`).
 4. Activate and deactivate level sections.
-5. Manage player spawn points.
+5. Resolve and validate player spawn points.
 6. Register and unregister runtime objects.
 7. Coordinate level transitions.
 8. Manage section activation volumes and runtime triggers.
 9. Notify other systems about lifecycle changes.
 10. Handle loading failures and invalid runtime configurations.
 11. Release resources when a session ends.
-12. Preserve deterministic section and checkpoint ordering for supported game modes.
+12. Preserve deterministic section ordering and checkpoint runtime availability for supported game modes.
 
 ### 2.2 Non-Responsibilities
 
 The system must not:
 
 - Generate procedural geometry.
+- Select procedural seeds, presets, or generation policy (owned by Procedural Generation, `05_PROCEDURAL_GENERATION_SPEC.md`).
 - Define parkour routes.
 - Own movement physics.
+- Orchestrate player recovery or respawn placement (owned by `RespawnManager`, `17_RESPAWN_SYSTEM_SPEC.md`).
+- Own checkpoint definitions or checkpoint progress (owned by Checkpoint System, `16_CHECKPOINT_SYSTEM_SPEC.md`).
+- Create or own the Gameplay Session lifecycle (owned by Gameplay Session System, `19_GAMEPLAY_SESSION_SYSTEM_SPEC.md`).
 - Own player input.
 - Control camera presentation.
 - Implement interaction behavior.
@@ -84,7 +91,7 @@ The initial implementation must support:
   5. Finish
 - Player spawn at the beginning of Rooftop.
 - Controlled transitions between sections.
-- Five required Speedrun checkpoint locations.
+- Five checkpoint locations referenced by the Prologue route.
 - Final section completion notification.
 - Session cleanup and return to the appropriate game state.
 
@@ -99,7 +106,7 @@ It may control:
 - Section availability.
 - Trigger activation.
 - Interaction registration.
-- Checkpoint activation.
+- Checkpoint runtime availability.
 - Section-specific gameplay objects.
 - Section-specific audio and environmental states.
 
@@ -393,6 +400,8 @@ interface ILevelRuntimeManager {
 }
 ```
 
+These lifecycle operations control the level-scoped `LevelSession` only. They are invoked by the Gameplay Session System (`19_GAMEPLAY_SESSION_SYSTEM_SPEC.md`) as part of the gameplay session lifecycle; Level Runtime does not create or own a gameplay session.
+
 ### 6.3 Level Loading Options
 
 ```ts
@@ -402,6 +411,8 @@ interface LevelLoadOptions {
     preservePlayerSettings?: boolean;
 
     sessionMetadata?: Record<string, unknown>;
+
+    signal?: AbortSignal;
 }
 ```
 
@@ -462,6 +473,8 @@ Examples:
 - Restarting while another restart operation is in progress.
 
 Concurrent lifecycle operations must be serialized or rejected deterministically.
+
+Every asynchronous lifecycle operation must be identified by an operation generation and must be cancellable. `loadLevel` accepts an optional `AbortSignal`. If an operation is cancelled or superseded (for example by unload, restart, or a newer load), completion of the stale operation must not mutate the active `LevelSession`, publish lifecycle events, or register runtime objects; partially initialized resources must be rolled back through `LevelBootstrapper.rollback` and the resource adapters. Unloading while a load is in progress must cancel the pending initialization and complete cleanup deterministically.
 
 ## 7. LevelBootstrapper
 
@@ -569,7 +582,7 @@ When a section becomes active:
 - Mark the section as active.
 - Enable its runtime triggers.
 - Enable its interactable objects.
-- Activate its checkpoints when appropriate.
+- Make its checkpoint runtime objects available when appropriate; checkpoint activation and progress remain owned by the Checkpoint System (`16_CHECKPOINT_SYSTEM_SPEC.md`).
 - Enable section-specific environment behavior.
 - Notify dependent systems.
 
@@ -694,9 +707,11 @@ interface RespawnContext {
 
 ### 9.4 Spawn Resolution Priority
 
-For respawn operations:
+For resolving respawn destinations requested by the Respawn System:
 
-1. Explicit valid checkpoint spawn point.
+The active checkpoint is selected by the Checkpoint System (`16_CHECKPOINT_SYSTEM_SPEC.md`); the SpawnPointManager only resolves and validates the corresponding spawn point.
+
+1. Explicit spawn point supplied by the checkpoint destination context.
 2. Current section respawn point.
 3. Current section entry spawn point.
 4. Level initial spawn point.
@@ -708,20 +723,20 @@ For initial level loading:
 
 The system must validate that the resolved spawn belongs to the loaded level.
 
+The SpawnPointManager only resolves and validates spawn points. It does not execute the recovery lifecycle, place the player, or reset player state.
+
 ### 9.5 Spawn Safety
 
-Before placing the player:
+The SpawnPointManager validates a candidate spawn point before it is used:
 
 - Confirm the spawn point exists.
 - Confirm its section is loaded and active.
 - Confirm the spawn transform is valid.
-- Ensure the player does not spawn inside known blocking geometry.
-- Reset the player to a safe movement state through the Movement System.
-- Reset camera transient effects through the Camera System when appropriate.
+- Confirm the spawn point carries no known blocking marker in level metadata.
 
-The runtime system requests placement through a player/spawn adapter.
+The manager does not perform collision simulation (§9.1). Full collision safety of the final placement is validated by the Respawn System during recovery and by the movement/placement adapter.
 
-It must not directly manipulate the player's physics internals.
+Placement and state restoration are not performed by Level Runtime. For respawn, the Respawn System (`17_RESPAWN_SYSTEM_SPEC.md`) owns the recovery lifecycle and requests player placement and movement reset through Movement System interfaces, and camera reset through the Camera System. Level Runtime supplies the resolved, validated spawn point; it must not directly manipulate player physics or camera state.
 
 ## 10. TriggerManager
 
@@ -876,7 +891,7 @@ For a standard transition:
 5. Prepare destination section.
 6. Activate destination section.
 7. Resolve destination spawn point.
-8. Request player placement.
+8. Request controlled player placement through the Movement System adapter.
 9. Update current section ID.
 10. Deactivate the previous section when safe.
 11. Publish transition completion.
@@ -1237,11 +1252,11 @@ Listeners must not receive events from destroyed sessions.
 
 ## 16. Integration with Other Systems
 
-### 16.1 Gameplay System
+### 16.1 Gameplay Session System
 
-The Gameplay System selects the mode and requests the appropriate level.
+The Gameplay Session System selects the mode and requests the appropriate level through the Level Runtime public interface.
 
-Level Runtime initializes the requested level and reports when the session is ready.
+Level Runtime initializes the requested level and reports when the level-scoped session is ready.
 
 ### 16.2 Level Design
 
@@ -1281,24 +1296,23 @@ Level Runtime must not generate geometry itself.
 Level Runtime provides:
 
 - Initial spawn transform.
-- Respawn transform.
+- Spawn-point data for respawn destinations, resolved for the Respawn System.
 - Section activation and deactivation.
 - Movement surface registration lifecycle.
 - Level boundaries and relevant trigger signals.
 
 The Movement System owns player physics and movement state.
 
-When a player is spawned or respawned, Level Runtime requests a controlled placement and movement reset through a dedicated adapter.
+For initial spawning and section transitions, Level Runtime requests controlled placement through a dedicated movement/spawn adapter. For respawn, the Respawn System (`17_RESPAWN_SYSTEM_SPEC.md`) owns the complete recovery lifecycle and performs placement and state reset; Level Runtime only supplies the resolved, validated spawn point.
 
 ### 16.5 Camera System
 
 Level Runtime may request camera lifecycle actions through the Camera System:
 
-- Reset transient camera effects after respawn.
 - Apply appropriate camera state after a transition.
 - Restore normal camera behavior after loading or pause.
 
-Camera behavior and presentation remain owned by the Camera System.
+Camera reset after respawn is requested by the Respawn System (`17_RESPAWN_SYSTEM_SPEC.md`) as part of its recovery lifecycle. Camera behavior and presentation remain owned by the Camera System (`13_CAMERA_SYSTEM_SPEC.md`).
 
 ### 16.6 Interaction System
 
@@ -1318,7 +1332,7 @@ Inactive section objects must not remain valid interaction targets.
 
 Level Runtime exposes:
 
-- Level session start.
+- Level-scoped session start notification.
 - Section activation.
 - Section transition events.
 - Checkpoint runtime object availability.
@@ -1332,7 +1346,7 @@ Speedrun owns:
 - Checkpoint sequence validation.
 - Splits.
 - Medals.
-- Run statistics.
+- Run result construction and references to the Statistics System summary (aggregation is owned by the Statistics System, `30_STATISTICS_SYSTEM_SPEC.md`).
 - Leaderboard records.
 - Run validation.
 
@@ -1365,7 +1379,7 @@ Examples:
 - Training progress is owned by Training System.
 - Speedrun history is owned by Speedrun System.
 - User settings are owned by Settings System.
-- General progression is owned by Progress System.
+- General progression is owned by the Progression System.
 
 Level session state is transient unless a specific gameplay feature explicitly requires persistence.
 
@@ -1448,6 +1462,8 @@ Training must support:
 
 Training progress and exercise completion are not owned by Level Runtime.
 
+Loading, unloading, and level-scoped initialization are performed by Level Runtime. Starting, restarting, and completing the gameplay session, including the return to the menu, is orchestrated by the Gameplay Session System (`19_GAMEPLAY_SESSION_SYSTEM_SPEC.md`).
+
 ## 18. Prologue Session Lifecycle
 
 The Prologue uses a single logical level session.
@@ -1495,9 +1511,13 @@ The five mandatory checkpoints are associated with the appropriate sections.
 
 The exact checkpoint validation logic remains in the Speedrun System.
 
+Gameplay session start and completion are requested and owned by the Gameplay Session System (`19_GAMEPLAY_SESSION_SYSTEM_SPEC.md`); Level Runtime manages only the level-scoped session and its sections.
+
 ## 19. Pause and Resume Behavior
 
 Level Runtime must support pausing and resuming the active session.
+
+Pause and resume of the level-scoped session is applied when requested by the Gameplay Session System (`19_GAMEPLAY_SESSION_SYSTEM_SPEC.md`), which owns gameplay pause semantics. Level Runtime only suspends its own runtime operations.
 
 Pausing must:
 
@@ -1641,7 +1661,7 @@ When a session is unloaded:
 
 1. Mark session as unloading.
 2. Reject new runtime operations.
-3. Cancel pending transitions.
+3. Cancel pending loads and transitions.
 4. Disable active triggers.
 5. Deactivate sections.
 6. Unregister runtime objects.
@@ -1655,6 +1675,8 @@ When a session is unloaded:
 Cleanup must be idempotent.
 
 Calling unload more than once must not cause duplicate disposal or invalid state transitions.
+
+Engine-owned resources (geometries, materials, textures, physics colliders, audio nodes) must be disposed through the corresponding resource adapters; dropping references alone is not sufficient. Disposal failures must be aggregated and surfaced as a `RESOURCE_DISPOSAL_FAILED` runtime error without preventing the remaining resources from being released.
 
 ## 23. Debugging and Development Tools
 
@@ -1744,6 +1766,7 @@ Test:
 - Unload during transition.
 - Repeated unload.
 - Duplicate lifecycle requests.
+- Stale completion from a superseded load operation.
 - Stale events from destroyed sessions.
 
 ### 24.4 Performance Tests
@@ -1897,9 +1920,11 @@ The implementation is accepted when:
 - [ ] Section transitions validate their destinations.
 - [ ] Player placement is coordinated through an adapter.
 - [ ] Failed transitions do not corrupt the active session.
+- [ ] Cancelled or superseded asynchronous loads cannot mutate the active session or leak partially initialized resources.
 - [ ] Prologue section transitions preserve the session ID.
 - [ ] Speedrun receives the required lifecycle and section events.
 - [ ] Level Runtime does not own Speedrun timing or validation.
+- [ ] Level Runtime does not orchestrate respawn or own checkpoint progress.
 - [ ] Save System integration uses the appropriate external interfaces.
 - [ ] Session cleanup releases all owned runtime resources.
 - [ ] Repeated cleanup is safe.

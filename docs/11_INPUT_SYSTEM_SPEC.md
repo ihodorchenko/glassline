@@ -1,6 +1,7 @@
 # 11_INPUT_SYSTEM_SPEC.md
 
-# Input System Specification
+**Project:** Glassline  
+**Document:** Input System Specification
 
 ## 1. Overview
 

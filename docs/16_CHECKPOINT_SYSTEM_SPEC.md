@@ -1,12 +1,13 @@
 # 16_CHECKPOINT_SYSTEM_SPEC.md
 
-# Checkpoint System Specification
+**Project:** Glassline  
+**Document:** Checkpoint System Specification
 
 ## 1. Purpose
 
-The Checkpoint System manages checkpoint availability, activation, player progress, and respawn coordination.
+The Checkpoint System manages checkpoint availability, activation, player progress, and the checkpoint data used to determine a respawn destination.
 
-It provides a consistent mechanism for recording meaningful progress through a level and restoring the player to an appropriate location after failure or restart.
+It provides a consistent mechanism for recording meaningful progress through a level. Restoring the player after a failure or restart is a separate recovery lifecycle owned by the Respawn System (`17_RESPAWN_SYSTEM_SPEC.md`); the Checkpoint System supplies the active checkpoint and resolves its destination through the Respawn integration contract.
 
 The system must support:
 
@@ -14,13 +15,14 @@ The system must support:
 - Prologue checkpoints.
 - Speedrun checkpoint integration.
 - Checkpoint activation feedback.
-- Respawn point resolution.
+- Respawn destination resolution.
 - Checkpoint progress tracking.
 - Session-scoped checkpoint state.
 - Checkpoint reset and invalidation.
 - Integration with Level Runtime and Movement Systems.
+- Integration with the Respawn System as a destination provider, not as a recovery orchestrator.
 
-The system must work independently of the rendering engine and must not own player physics or speedrun timing.
+The system must work independently of the rendering engine and must not own player physics, the player recovery lifecycle, or speedrun timing.
 
 ## 2. Core Design Principles
 
@@ -33,6 +35,7 @@ It does not own:
 - Level geometry.
 - Section transitions.
 - Player movement physics.
+- The player recovery/respawn lifecycle.
 - Interaction detection.
 - Speedrun timing.
 - Speedrun checkpoint sequence validation.
@@ -51,7 +54,11 @@ These concepts are related but are not interchangeable.
 
 A checkpoint references a spawn point managed by Level Runtime.
 
-The Checkpoint System decides which checkpoint should be used. Level Runtime resolves and validates the actual spawn transform.
+The Checkpoint System decides which checkpoint should be used and exposes that destination. Level Runtime resolves and validates the actual spawn transform.
+
+The recovery lifecycle around that destination — request validation, control suspension, player placement, movement reset, camera reset, failure policy and completion events — is owned by the Respawn System and orchestrated exclusively by `RespawnManager` (`17_RESPAWN_SYSTEM_SPEC.md`).
+
+The Checkpoint System must not implement a second respawn coordinator, a competing `RespawnCoordinator`, or its own recovery sequence.
 
 ### 2.3 Deterministic Behavior
 
@@ -67,7 +74,8 @@ Each system owns its own state:
 
 | System | Responsibility |
 |---|---|
-| Checkpoint System | Checkpoint activation and progress state |
+| Checkpoint System | Checkpoint activation, progress state, and respawn destination resolution |
+| Respawn System | The complete player recovery lifecycle through `RespawnManager` |
 | Level Runtime | Spawn point availability and player placement coordination |
 | Speedrun System | Required checkpoint order and run validation |
 | Movement System | Physics state and movement reset |
@@ -85,14 +93,14 @@ The initial implementation must support:
 **Training**
 - Training-specific checkpoint activation.
 - Exercise restart points.
-- Respawn at the most recently activated valid checkpoint.
+- Recovery at the most recently activated valid checkpoint, executed by the Respawn System.
 - Resetting checkpoint progress when an exercise or session restarts.
 
 **Prologue**
 - Five mandatory checkpoint locations.
 - Checkpoints associated with the five Prologue sections.
 - Progress tracking throughout one Prologue session.
-- Respawn at the most recently activated valid checkpoint.
+- Recovery at the most recently activated valid checkpoint, executed by the Respawn System.
 - Integration with Speedrun checkpoint events.
 - Checkpoint progress reset when a new run begins.
 
@@ -105,7 +113,7 @@ For the initial implementation:
 - Checkpoints are activated when the player enters their valid activation area.
 - A checkpoint can be activated only when it belongs to the current level session.
 - Re-entering an already activated checkpoint must not create duplicate progress.
-- Activating a checkpoint updates the current respawn checkpoint.
+- Activating a checkpoint updates the active checkpoint used as the recovery destination.
 - Checkpoint activation is confirmed only after the referenced spawn point is validated.
 - Checkpoint progress is scoped to a LevelSession.
 - A new session starts with a clean checkpoint state.
@@ -151,7 +159,7 @@ The system consists of:
 | CheckpointRegistry | Stores registered checkpoint definitions and instances |
 | CheckpointActivator | Processes activation requests |
 | CheckpointProgressTracker | Tracks session checkpoint progress |
-| RespawnCoordinator | Coordinates player respawn |
+| CheckpointRespawnAdapter | Resolves respawn destinations for the Respawn System |
 | CheckpointValidator | Validates checkpoint configuration and requests |
 | CheckpointEvents | Publishes checkpoint lifecycle events |
 | CheckpointFeedbackProvider | Produces presentation data for UI and Audio |
@@ -175,7 +183,7 @@ CheckpointManager
      |
      +-- CheckpointValidator
      |
-     +-- RespawnCoordinator
+     +-- CheckpointRespawnAdapter
      |
      +-- CheckpointEvents
      |
@@ -185,6 +193,7 @@ CheckpointManager
 External Systems
      |
      +-- Speedrun System
+     +-- Respawn System (destination consumer)
      +-- Movement System
      +-- Interaction System
      +-- UI System
@@ -300,50 +309,40 @@ Activation history records actual activation events.
 
 It must not be treated as proof that a Speedrun run followed the required route.
 
-### 6.4 RespawnRequest
+### 6.4 Respawn Destination Contract
+
+The Checkpoint System provides destination data to the Respawn System.
+
+The recovery request model (`RespawnRequest`, `RespawnReason`), the recovery state machine, and the `RespawnResult` contract are owned by `17_RESPAWN_SYSTEM_SPEC.md` and must not be redefined here.
+
+The checkpoint-side output is a resolved destination:
 
 ```ts
-interface RespawnRequest {
+interface CheckpointRespawnDestination {
     sessionId: string;
 
-    reason: RespawnReason;
+    checkpointId: string;
 
-    preferredCheckpointId?: string;
+    sectionId: string;
 
-    fallbackSpawnPointId?: string;
+    spawnPointId: string;
 
-    resetMovementState: boolean;
+    /** Transform resolved through Level Runtime spawn resolution. */
+    position: Vector3;
 
-    resetCameraEffects: boolean;
+    rotation: Vector3;
 }
 ```
 
-```ts
-type RespawnReason =
-    | "fall"
-    | "manual-restart"
-    | "training-restart"
-    | "scripted"
-    | "recovery";
-```
+Checkpoint System resolves and returns the destination. It does not validate or execute the recovery policy. Whether recovery is allowed, how player control is suspended, how state is reset, and how the outcome is reported are Respawn System decisions.
 
-### 6.5 RespawnResult
+### 6.5 Respawn Destination Failure
 
-```ts
-interface RespawnResult {
-    success: boolean;
+If no valid destination can be resolved, the adapter returns `null` together with a structured checkpoint-side error.
 
-    checkpointId?: string;
+The Respawn System owns the failure policy — fallback spawn, run invalidation, player notification — and must not assume that a destination always exists.
 
-    spawnPointId?: string;
-
-    position?: Vector3;
-
-    rotation?: Vector3;
-
-    reason?: string;
-}
-```
+A checkpoint without a resolvable spawn point must not be reported as a valid recovery target.
 
 ## 7. CheckpointManager
 
@@ -351,7 +350,7 @@ interface RespawnResult {
 
 CheckpointManager is the public entry point for checkpoint operations.
 
-It coordinates registration, activation, progress tracking, and respawn requests.
+It coordinates registration, activation, progress tracking, and destination resolution for the Respawn System.
 
 ### 7.2 Interface
 
@@ -375,9 +374,9 @@ interface ICheckpointManager {
 
     getProgress(): CheckpointProgress | null;
 
-    requestRespawn(
-        request: RespawnRequest
-    ): Promise<RespawnResult>;
+    resolveRespawnDestination(
+        checkpointId: string | null
+    ): Promise<CheckpointRespawnDestination | null>;
 
     resetProgress(): void;
 
@@ -386,6 +385,10 @@ interface ICheckpointManager {
     disposeSession(sessionId: string): Promise<void>;
 }
 ```
+
+`resolveRespawnDestination` is read-only with respect to checkpoint progress. It returns the destination for the requested checkpoint, or for the active checkpoint when `checkpointId` is `null`.
+
+The CheckpointManager must not execute player placement, movement reset, camera reset, or recovery policy. Those operations belong to the Respawn System.
 
 ### 7.3 Lifecycle
 
@@ -606,110 +609,72 @@ When the active checkpoint becomes unavailable:
 
 The system must not silently select a checkpoint from another level session.
 
-## 11. RespawnCoordinator
+## 11. Respawn Integration
 
-### 11.1 Purpose
+### 11.1 Ownership
 
-Coordinates respawn operations across Level Runtime, Movement, and Camera Systems.
+Player recovery is owned by the Respawn System (`17_RESPAWN_SYSTEM_SPEC.md`) and orchestrated exclusively by `RespawnManager`.
 
-It does not implement player physics.
+The Checkpoint System participates as a destination provider only:
 
-### 11.2 Interface
+| Operation | Owner |
+|---|---|
+| Decide that recovery is required | Respawn System, gameplay mode, or failure detection |
+| Allow or reject recovery for a ranked run | Speedrun System, evaluated by the Respawn System |
+| Select the checkpoint and resolve its spawn point | Checkpoint System |
+| Suspend and restore player control | Respawn System through Player/Movement interfaces |
+| Place the player and reset movement state | Movement System through the Respawn System |
+| Reset transient camera effects | Camera System through the Respawn System |
+| Run failure policy and publish recovery events | Respawn System |
+
+### 11.2 Destination Adapter
+
+The Checkpoint System exposes the adapter consumed by `RespawnManager`:
 
 ```ts
-interface IRespawnCoordinator {
-    respawn(
-        request: RespawnRequest
-    ): Promise<RespawnResult>;
-
-    canRespawn(
-        sessionId: string
-    ): boolean;
-
-    cancelRespawn(): void;
-
-    isRespawning(): boolean;
+interface ICheckpointRespawnAdapter {
+    resolveRespawnDestination(
+        context: RespawnContext,
+        preferredCheckpointId?: string
+    ): Promise<RespawnDestination | null>;
 }
 ```
 
-### 11.3 Respawn Sequence
+`RespawnContext`, `RespawnDestination`, and the adapter composition are defined by `17_RESPAWN_SYSTEM_SPEC.md`. The Checkpoint System must not redefine them.
 
-1. Validate the active session.
-2. Confirm respawn is allowed.
-3. Prevent overlapping respawn operations.
-4. Resolve the preferred checkpoint.
-5. Resolve the corresponding spawn point through Level Runtime.
-6. Validate the destination.
-7. Temporarily suspend player control through the appropriate gameplay coordinator.
-8. Request player placement through the Movement/Player adapter.
-9. Reset movement state.
-10. Reset transient camera effects when requested.
-11. Restore valid player control.
-12. Publish respawn completion.
-13. Return RespawnResult.
+The adapter:
 
-The player must not be placed at an unresolved or invalid transform.
+1. Validates the session and the requested checkpoint.
+2. Selects the active checkpoint when no preference is supplied.
+3. Resolves the spawn point through Level Runtime.
+4. Validates that the destination is usable.
+5. Returns the destination or a structured failure.
 
-### 11.4 Movement Reset
+### 11.3 Destination Resolution Rules
 
-Movement System owns the actual physics state reset.
+- A destination must belong to the active LevelSession.
+- A disabled checkpoint must not resolve a destination.
+- A checkpoint without a valid spawn point must fail explicitly.
+- Destination resolution must be deterministic for the same session state.
+- Concurrent resolution requests must not mutate checkpoint progress.
 
-The Checkpoint System should request a reset through an interface:
+### 11.4 Failure Reporting
 
-```ts
-interface IPlayerRespawnAdapter {
-    placePlayer(
-        position: Vector3,
-        rotation: Vector3
-    ): Promise<void>;
+If destination resolution fails, the Checkpoint System reports a structured error and does not change checkpoint progress.
 
-    resetMovementState(): void;
+The Respawn System decides the recovery outcome, including fallback behavior and user-facing failure handling.
 
-    setPlayerControlEnabled(
-        enabled: boolean
-    ): void;
-}
-```
+Because the Checkpoint System never controls player control or player placement, a destination failure must not leave the player locked.
 
-The implementation must ensure that:
+### 11.5 Forbidden Behavior
 
-- Velocity is reset.
-- Transient movement states are cleared.
-- Grounded state is recalculated.
-- Active traversal abilities are cancelled safely.
-- The player does not retain a slide, vault, or wall-run state after respawn.
+The Checkpoint System must not:
 
-Exact physics operations remain in Movement System.
-
-### 11.5 Camera Reset
-
-Camera System should expose a dedicated respawn reset operation.
-
-```ts
-interface IRespawnCameraAdapter {
-    resetTransientEffects(): void;
-
-    applySpawnRotation(
-        rotation: Vector3
-    ): void;
-}
-```
-
-Camera bob, roll, landing offsets, and FOV transitions must return to an appropriate neutral state.
-
-Camera reset must not be implemented by directly modifying camera internals from Checkpoint System.
-
-### 11.6 Respawn Failure
-
-If respawn fails:
-
-- Restore player control when safe.
-- Release the respawn operation lock.
-- Keep the active checkpoint unchanged unless it has become invalid.
-- Report a structured failure.
-- Attempt a valid fallback spawn only when configured.
-
-The system must never leave the player permanently locked because of a failed respawn operation.
+- Implement its own respawn sequence or a competing coordinator.
+- Suspend or restore player control.
+- Place or teleport the player transform directly.
+- Reset movement or camera state itself.
+- Publish recovery lifecycle events as the authoritative source; the Respawn System owns them.
 
 ## 12. Prologue Checkpoint Configuration
 
@@ -755,7 +720,7 @@ The Finish checkpoint has special integration requirements.
 It may:
 
 - Record the final progress location.
-- Request final respawn state if applicable.
+- Provide the final recovery destination if requested.
 - Publish a final checkpoint activation event.
 - Notify Speedrun that the final checkpoint location was reached.
 
@@ -775,7 +740,7 @@ Starting a new Prologue session must create new checkpoint progress.
 
 ### 13.1 Ownership Boundary
 
-Checkpoint System owns physical checkpoint activation and respawn state.
+Checkpoint System owns physical checkpoint activation and checkpoint progress state.
 
 Speedrun System owns route progression and validation.
 
@@ -818,27 +783,23 @@ If the player activates a checkpoint out of the expected order:
 - Checkpoint System may still record the physical activation according to its configuration.
 - Speedrun System decides whether the run becomes invalid.
 - Checkpoint System must not attempt to repair or override Speedrun state.
-- Respawn behavior follows the configured gameplay policy.
+- The Respawn System applies the configured recovery policy for any subsequent recovery request.
 
 The initial implementation should keep the Prologue checkpoint layout and trigger placement aligned with the required Speedrun sequence to minimize accidental out-of-order activation.
 
 ### 13.4 Respawn During Speedrun
 
-Respawn must not silently restart the Speedrun timer.
+Recovering during a ranked run is coordinated by the Respawn System.
 
-The Speedrun System owns timer behavior.
+The Checkpoint System must not evaluate run policy, restart the timer, mark a run as failed, or apply a penalty.
 
-Before respawning, the Checkpoint System publishes a respawn request event.
+Its role is limited to:
 
-Speedrun may respond according to the current run policy.
+- Keeping the active checkpoint and progress state consistent with the current session.
+- Resolving the recovery destination when the Respawn System requests it.
+- Publishing checkpoint activation and active-checkpoint facts for observation.
 
-Possible policies include:
-
-- Continue the run with a time penalty.
-- Mark the run as failed.
-- Allow a practice respawn without a ranked result.
-
-The initial policy must be explicitly configured by Speedrun System and must not be inferred by Checkpoint System.
+Before a ranked recovery, the Respawn System requests an evaluation from the Speedrun System and applies its decision. The Speedrun System owns timer behavior and run classification (`09_SPEEDRUN_SYSTEM_SPEC.md`).
 
 ### 13.5 Route Version
 
@@ -859,7 +820,7 @@ Training checkpoints may represent:
 
 Training System owns the meaning of each checkpoint.
 
-Checkpoint System provides activation and respawn infrastructure.
+Checkpoint System provides checkpoint activation, progress, and destination resolution. Recovery execution is performed by the Respawn System.
 
 ### 14.1 Training Restart
 
@@ -872,7 +833,7 @@ A training exercise restart may specify:
 
 The Training System determines the restart policy.
 
-Checkpoint System performs the validated activation and respawn operations.
+The Respawn System executes the restart as a recovery request (`reason = "training-restart"`), using the Checkpoint System for destination resolution and activation state.
 
 ### 14.2 Training Progress
 
@@ -1045,12 +1006,10 @@ type CheckpointEvent =
     | ActiveCheckpointChangedEvent
     | CheckpointDisabledEvent
     | CheckpointInvalidatedEvent
-    | CheckpointProgressResetEvent
-    | RespawnRequestedEvent
-    | RespawnStartedEvent
-    | RespawnCompletedEvent
-    | RespawnFailedEvent;
+    | CheckpointProgressResetEvent;
 ```
+
+Recovery lifecycle events (`respawn requested`, `started`, `completed`, `failed`) are owned by the Respawn System (`17_RESPAWN_SYSTEM_SPEC.md`). The Checkpoint System must not publish a competing authoritative recovery event.
 
 ### 19.2 Active Checkpoint Changed
 
@@ -1066,43 +1025,15 @@ interface ActiveCheckpointChangedEvent {
 }
 ```
 
-### 19.3 Respawn Events
+### 19.3 Recovery Observation
 
-```ts
-interface RespawnRequestedEvent {
-    sessionId: string;
+The Checkpoint System may expose read-only observations that the Respawn System and presentation layers consume:
 
-    reason: RespawnReason;
+- The active checkpoint ID before and after recovery.
+- Checkpoint progress reset notifications.
+- Destination resolution failures.
 
-    checkpointId?: string;
-
-    timestamp: number;
-}
-```
-
-```ts
-interface RespawnCompletedEvent {
-    sessionId: string;
-
-    checkpointId: string;
-
-    spawnPointId: string;
-
-    timestamp: number;
-}
-```
-
-```ts
-interface RespawnFailedEvent {
-    sessionId: string;
-
-    checkpointId?: string;
-
-    error: CheckpointRuntimeError;
-
-    timestamp: number;
-}
-```
+These are checkpoint facts, not recovery lifecycle events.
 
 Events must be session-scoped.
 
@@ -1118,13 +1049,9 @@ type CheckpointRuntimeErrorCode =
     | "CHECKPOINT_DISABLED"
     | "INVALID_SESSION"
     | "INVALID_SPAWN_POINT"
+    | "DESTINATION_UNRESOLVABLE"
     | "CHECKPOINT_REGISTRATION_FAILED"
     | "CHECKPOINT_ACTIVATION_FAILED"
-    | "RESPAWN_NOT_ALLOWED"
-    | "RESPAWN_IN_PROGRESS"
-    | "RESPAWN_PLACEMENT_FAILED"
-    | "MOVEMENT_RESET_FAILED"
-    | "CAMERA_RESET_FAILED"
     | "CHECKPOINT_CONFIGURATION_INVALID"
     | "SESSION_DISPOSED";
 ```
@@ -1149,9 +1076,8 @@ interface CheckpointRuntimeError {
 
 - Invalid checkpoint definitions must be reported before gameplay.
 - Failed activation must not change the active checkpoint.
-- Failed respawn must release the respawn lock.
-- Failed camera reset must not corrupt checkpoint progress.
-- Failed movement reset must be treated as a serious respawn failure.
+- Failed destination resolution must not corrupt checkpoint progress.
+- A destination failure must be reported to the Respawn System, which owns the recovery failure policy.
 - Missing fallback spawn must produce an explicit failure.
 - Duplicate activation must not be treated as a fatal runtime error.
 - Cleanup must continue even when one checkpoint fails to dispose.
@@ -1167,11 +1093,11 @@ Requirements:
 - Checkpoint progress should use efficient lookup structures.
 - Activation should not allocate unnecessary objects every frame.
 - Checkpoint state must not be polled continuously when event-driven activation is available.
-- Respawn must not block the normal rendering loop.
+- Destination resolution must not block the normal rendering loop.
 - Checkpoint registration should happen during level initialization.
 - Inactive checkpoints must not perform unnecessary runtime work.
 
-Checkpoint logic should execute only when activation, invalidation, progress reset, or respawn operations occur.
+Checkpoint logic should execute only when activation, invalidation, progress reset, or destination resolution occurs.
 
 ## 22. Debugging and Development Tools
 
@@ -1186,8 +1112,8 @@ It should display:
 - Activation history.
 - Checkpoint state.
 - Referenced spawn point.
-- Respawn operation state.
-- Last activation or respawn error.
+- Resolved destination state.
+- Last activation or destination error.
 
 ### 22.1 Debug Actions
 
@@ -1197,7 +1123,7 @@ Development builds may support:
 - Disable checkpoint.
 - Re-enable checkpoint.
 - Set active checkpoint.
-- Request respawn.
+- Resolve a checkpoint destination.
 - Reset checkpoint progress.
 - List registered checkpoints.
 - Validate checkpoint configuration.
@@ -1223,9 +1149,10 @@ Test:
 - Checkpoint invalidation.
 - Progress history ordering.
 - Progress reset.
-- Respawn fallback selection.
+- Destination resolution for the active checkpoint.
+- Destination fallback selection.
 - Invalid session rejection.
-- Respawn operation locking.
+- Concurrent destination resolution.
 
 ### 23.2 Integration Tests
 
@@ -1235,10 +1162,10 @@ Test:
 2. Register Training checkpoints.
 3. Activate a checkpoint.
 4. Verify progress.
-5. Request respawn.
-6. Verify spawn resolution.
-7. Verify movement reset.
-8. Verify camera reset.
+5. Resolve a respawn destination through `ICheckpointRespawnAdapter`.
+6. Verify the destination maps to the expected Level Runtime spawn point.
+7. Verify that the Respawn System receives the destination and performs recovery.
+8. Verify that checkpoint progress survives a normal respawn.
 9. Dispose the session.
 10. Verify checkpoint state is cleared.
 
@@ -1269,13 +1196,11 @@ Test:
 - Activation during session disposal.
 - Activation from an invalid actor.
 - Duplicate activation requests.
-- Respawn during another respawn.
-- Respawn after session disposal.
-- Movement placement failure.
-- Movement reset failure.
-- Camera reset failure.
-- Invalid fallback spawn.
-- Checkpoint invalidation during respawn.
+- Destination resolution for a disabled checkpoint.
+- Destination resolution after session disposal.
+- Unresolvable spawn point.
+- Concurrent destination resolution requests.
+- Checkpoint invalidation during destination resolution.
 - Old session event delivery.
 
 ### 23.4 Performance Tests
@@ -1297,7 +1222,7 @@ Implement:
 - CheckpointDefinition.
 - CheckpointRuntime.
 - CheckpointProgress.
-- Activation and respawn models.
+- Checkpoint activation and destination models.
 - Runtime error models.
 
 **Deliverable:** Type-safe checkpoint contracts.
@@ -1325,17 +1250,18 @@ Implement:
 
 **Deliverable:** Reliable session-scoped checkpoint activation.
 
-### Phase 4 — Respawn Coordination
+### Phase 4 — Respawn Destination Integration
 
 Implement:
 
-- RespawnCoordinator.
-- Spawn resolution integration.
-- Movement adapter.
-- Camera adapter.
-- Respawn failure recovery.
+- `ICheckpointRespawnAdapter`.
+- Destination resolution through Level Runtime spawn points.
+- Destination validation and structured failures.
+- Session-scoped destination consistency.
 
-**Deliverable:** Safe and deterministic player respawn.
+**Deliverable:** Deterministic respawn destination resolution consumed by the Respawn System.
+
+The recovery lifecycle itself is implemented in `17_RESPAWN_SYSTEM_SPEC.md` and must not be duplicated here.
 
 ### Phase 5 — Training Integration
 
@@ -1397,14 +1323,15 @@ The implementation is accepted when:
 - [ ] Active checkpoint selection follows the documented rules.
 - [ ] Checkpoint progress is session-scoped.
 - [ ] A new session starts with clean checkpoint progress.
-- [ ] Respawn uses Level Runtime spawn resolution.
-- [ ] Respawn resets movement state through the Movement System.
-- [ ] Camera effects reset through the Camera System.
-- [ ] Failed respawn operations release their locks.
+- [ ] The active checkpoint resolves a deterministic respawn destination.
+- [ ] Destination resolution uses Level Runtime spawn resolution.
+- [ ] Destination failures are reported to the Respawn System without corrupting progress.
+- [ ] The Checkpoint System exposes no competing respawn lifecycle manager.
 - [ ] Training checkpoints work correctly.
 - [ ] All five Prologue checkpoints are registered and validated.
 - [ ] Prologue checkpoint activation events reach Speedrun.
 - [ ] Checkpoint System does not own Speedrun sequence validation.
+- [ ] Checkpoint System does not own recovery policy or execution.
 - [ ] UI and Audio receive checkpoint feedback events.
 - [ ] Save System is accessed only through appropriate interfaces.
 - [ ] Session disposal releases all checkpoint resources.
@@ -1419,8 +1346,8 @@ The Checkpoint System is complete for the initial implementation when:
 3. Automatic, interaction-based, and scripted activation paths are supported.
 4. Activation progress is tracked correctly.
 5. Active respawn checkpoint selection is deterministic.
-6. Respawn coordination works with Level Runtime.
-7. Movement and Camera integrations use dedicated adapters.
+6. Destination resolution integrates with Level Runtime spawn points.
+7. Recovery execution is delegated to `RespawnManager` through the adapter.
 8. Training checkpoints work.
 9. All five Prologue checkpoints work.
 10. Speedrun receives checkpoint activation events without duplicated sequence logic.
@@ -1444,14 +1371,16 @@ The implementation agent must follow these constraints:
 8. Keep checkpoint progress session-scoped in the initial implementation.
 9. Keep checkpoint IDs stable and explicit.
 10. Validate spawn point availability before committing activation.
-11. Keep activation and respawn operations deterministic.
+11. Keep activation and destination resolution deterministic.
 12. Make duplicate activation safe.
-13. Make respawn operations resistant to concurrency and cancellation.
+13. Make destination resolution resistant to concurrency and cancellation.
 14. Use typed, session-scoped events.
-15. Keep movement and camera integration behind adapters.
-16. Do not assume a specific rendering or physics engine.
-17. Do not implement future features unless explicitly requested.
-18. Follow `01_AGENT_RULES.md` and the architecture in `02_TECHNICAL_ARCHITECTURE.md`.
-19. Respect ownership boundaries defined in `09_SPEEDRUN_SYSTEM_SPEC.md`, `10_SAVE_SYSTEM_SPEC.md`, `12_MOVEMENT_SYSTEM_SPEC.md`, `13_CAMERA_SYSTEM_SPEC.md`, `14_INTERACTION_SYSTEM_SPEC.md`, and `15_LEVEL_RUNTIME_SYSTEM_SPEC.md`.
+15. Keep Level Runtime spawn resolution behind the destination adapter.
+16. Do not implement or duplicate the respawn lifecycle; `RespawnManager` in `17_RESPAWN_SYSTEM_SPEC.md` is the sole orchestrator.
+17. Do not publish authoritative recovery lifecycle events.
+18. Do not assume a specific rendering or physics engine.
+19. Do not implement future features unless explicitly requested.
+20. Follow `01_AGENT_RULES.md` and the architecture in `02_TECHNICAL_ARCHITECTURE.md`.
+21. Respect ownership boundaries defined in `09_SPEEDRUN_SYSTEM_SPEC.md`, `10_SAVE_SYSTEM_SPEC.md`, `12_MOVEMENT_SYSTEM_SPEC.md`, `13_CAMERA_SYSTEM_SPEC.md`, `14_INTERACTION_SYSTEM_SPEC.md`, `15_LEVEL_RUNTIME_SYSTEM_SPEC.md`, and `17_RESPAWN_SYSTEM_SPEC.md`.
 
-The Checkpoint System must provide reliable progress recording and respawn coordination without becoming a second Level Runtime, Movement, or Speedrun system.
+The Checkpoint System must provide reliable progress recording and respawn destination data without becoming a second Level Runtime, Movement, Respawn, or Speedrun system.

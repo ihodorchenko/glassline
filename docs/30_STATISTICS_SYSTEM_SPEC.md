@@ -141,12 +141,11 @@ It does not own the gameplay rules that produce those facts.
 | Mode-specific aggregates | Statistics System |
 | Historical statistics | Statistics System |
 | Statistics snapshots | Statistics System |
-| Statistics persistence semantics | Statistics System |
+| Statistics payload schema and reset scopes | Statistics System |
 | Persistence infrastructure | Save System |
 | Movement action validation | Movement System |
 | Training results | Training System |
-| Speedrun timing and validation | Speedrun System |
-| Speedrun personal best | Speedrun System |
+| Speedrun timer, validation, run result construction, and official personal bests | Speedrun System |
 | Checkpoint progress | Checkpoint System |
 | Achievement conditions | Achievement System |
 | Progression milestones | Progression System |
@@ -156,7 +155,7 @@ It does not own the gameplay rules that produce those facts.
 
 ### 3.2 Relationship with Achievement System
 
-Achievement System consumes statistics when an achievement condition requires an aggregate value.
+Achievement System consumes statistics when an achievement condition requires an aggregate value (`29_ACHIEVEMENT_SYSTEM_SPEC.md`).
 
 Examples:
 
@@ -170,7 +169,7 @@ Statistics System must not know which achievements depend on its values.
 
 ### 3.3 Relationship with Progression System
 
-Progression System may consume statistics snapshots or statistic threshold events.
+Progression System may consume statistics snapshots or statistic threshold events (`22_PROGRESSION_SYSTEM_SPEC.md`).
 
 Examples:
 
@@ -184,7 +183,7 @@ Statistics System only provides the underlying facts.
 
 ### 3.4 Relationship with Speedrun System
 
-Speedrun System is authoritative for:
+Speedrun System is authoritative for (`09_SPEEDRUN_SYSTEM_SPEC.md`):
 
 - Official run time.
 - Split times.
@@ -198,9 +197,11 @@ Statistics System may store aggregate summaries of valid and invalid attempts.
 
 It must never become an alternative Speedrun timer or validation system.
 
+Conversely, the Speedrun System consumes the finalized session-scoped statistics summary for the run (section 13.4). It must not maintain a second collector for those values. Statistics System does not produce, rank, or persist the official run record; it supplies aggregate facts only.
+
 ### 3.5 Relationship with Training System
 
-Training System is authoritative for:
+Training System is authoritative for (`21_TRAINING_SYSTEM_SPEC.md`):
 
 - Exercise definitions.
 - Exercise attempts.
@@ -212,6 +213,16 @@ Training System is authoritative for:
 Statistics System may aggregate these results.
 
 It must not calculate Training scores or decide whether an exercise was mastered.
+
+### 3.6 Relationship with Save System
+
+Statistics System owns aggregation semantics, statistic definitions, snapshot structure, and reset scopes.
+
+Save System owns persistence infrastructure, database schema versioning, repositories, transactions, backup, and import/export (`10_SAVE_SYSTEM_SPEC.md`).
+
+Statistics System persists data only through its Save repository. It must not access IndexedDB directly and must not introduce a competing save format or database name.
+
+Save System must not recalculate, reinterpret, or mutate statistics aggregates.
 
 ---
 
@@ -275,6 +286,8 @@ Statistics processing must be event-driven.
 
 The initial implementation must not poll gameplay systems every frame.
 
+Snapshots are consumed by Menu/HUD presentation, Achievement evaluation, Progression milestones, and Speedrun run-result construction. Persistence is delegated to the Save System, which stores and returns statistics records without deriving or reinterpreting gameplay facts.
+
 ---
 
 ## 5. Core Components
@@ -313,6 +326,10 @@ interface IStatisticsManager {
     getSessionStatistics(
         sessionId: string
     ): SessionStatistics | undefined;
+
+    finalizeSession(
+        sessionId: string
+    ): Promise<SessionStatistics>;
 
     getModeStatistics(
         mode: GameplayMode
@@ -623,6 +640,8 @@ Invalid combinations must be rejected.
 interface SessionStatistics {
     sessionId: string;
 
+    summaryId: string;
+
     mode: GameplayMode;
 
     startedAt: number;
@@ -640,6 +659,8 @@ interface SessionStatistics {
 `durationSeconds` is an aggregate session duration.
 
 It must not be used as an official Speedrun time.
+
+A finalized session summary is identified by `summaryId`. Consumers such as the Speedrun System reference this identifier instead of copying aggregate values into their own records.
 
 ### 6.8 ModeStatistics
 
@@ -680,6 +701,8 @@ interface LifetimeStatistics {
     totalWallRuns: number;
 
     totalWallJumps: number;
+
+    totalFalls: number;
 
     totalInteractions: number;
 
@@ -746,6 +769,7 @@ The initial implementation should use a focused catalog.
 | `movement.total_wall_runs` | Successful wall-runs | Sum |
 | `movement.total_wall_jumps` | Successful wall-jumps | Sum |
 | `movement.total_landings` | Completed landings | Sum |
+| `movement.total_falls` | Falls reported by the authoritative gameplay source | Sum |
 | `movement.maximum_speed` | Highest valid reported speed | Maximum |
 | `movement.total_sprint_time` | Time spent sprinting | Sum |
 | `movement.total_air_time` | Time spent airborne | Sum |
@@ -776,11 +800,13 @@ Repeated completion of the same exercise must follow Training's event semantics.
 | `speedrun.completed_runs` | Valid completed runs | Sum |
 | `speedrun.failed_runs` | Failed or invalid attempts | Sum |
 | `speedrun.total_medals` | Awarded medals | Sum |
-| `speedrun.personal_best_improvements` | Personal best improvements | Sum |
+| `speedrun.personal_best_improvements` | Personal best improvement events reported by the Speedrun System | Sum |
 
 Statistics System may additionally retain a limited history of run summaries.
 
 It must not calculate personal bests or medal results.
+
+These are aggregate historical counters. Run-result statistics are not separate statistics: they are the same aggregate keys evaluated in the run's statistics session scope (section 13.4). Total time, section times, checkpoint completion, run validity, medals, and personal bests are owned by the Speedrun System and are never derived here.
 
 ### 7.5 Interaction Statistics
 
@@ -838,6 +864,8 @@ interface StatisticsEvent {
 ```
 
 The envelope must preserve the identity and semantics of the original source event.
+
+Session-scoped statistics require a valid `sessionId`. Events for subordinate contexts (Training exercise attempts, Speedrun attempts) must preserve `attemptId` so that they correlate with the correct attempt and are not counted twice. Events with stale, ended, or missing session context must be rejected.
 
 ### 8.2 Processing Pipeline
 
@@ -949,6 +977,8 @@ The system must not create a new session for every Training exercise or Speedrun
 
 Training attempts and Speedrun attempts are subordinate contexts.
 
+A ranked run establishes a fresh statistics session scope at run start (see `09_SPEEDRUN_SYSTEM_SPEC.md`); the finalized summary of that session is what the Speedrun run result consumes.
+
 ### 9.3 Session Completion
 
 When Gameplay Session reports completion:
@@ -960,6 +990,8 @@ When Gameplay Session reports completion:
 5. Update mode aggregates.
 6. Commit lifetime session counters.
 7. Persist finalized data.
+
+A consumer such as the Speedrun System may request session finalization when its own completion sequence needs the finalized summary. Such a request finalizes the same session aggregate exactly once; a later Gameplay Session completion reuses the already finalized summary rather than creating a second one.
 
 ### 9.4 Session Abandonment
 
@@ -1183,6 +1215,8 @@ This record is a historical summary.
 
 It is not a replacement for the Speedrun System's authoritative run record.
 
+Values such as `valid`, `medal`, and `durationMilliseconds` are copied from the authoritative Speedrun result. Statistics System must not compute, promote, or validate them.
+
 ### 13.2 Personal Best
 
 Statistics System may count personal best improvements.
@@ -1198,6 +1232,37 @@ Invalid runs may contribute to attempt counts.
 They must not contribute to completed valid run counts or medal totals.
 
 The exact classification must follow Speedrun event semantics.
+
+### 13.4 Run Result Consumption
+
+The Speedrun System constructs the official run result and record. For the aggregate gameplay facts that belong to Statistics, it consumes the finalized session-scoped statistics summary instead of running a second collector.
+
+When a run finishes:
+
+1. The Speedrun System requests finalization of its session statistics scope and receives the finalized session summary from Statistics System.
+2. Statistics System finalizes the session aggregate (once) and returns the summary identified by `summaryId`.
+3. The Speedrun System builds the run result from its own timer, splits, checkpoint, validation, and medal data plus the provided summary values.
+4. The run record stores `statisticsSummaryId` (see `09_SPEEDRUN_SYSTEM_SPEC.md`); it must not store a duplicate copy of the aggregate statistics summary.
+
+The finalization request uses `IStatisticsManager.finalizeSession(sessionId)` and returns the finalized `SessionStatistics`; the returned `summaryId` is the value the run record stores as `statisticsSummaryId`.
+
+The summary covers the statistics session scope established at run start. Run-result statistics defined in `09_SPEEDRUN_SYSTEM_SPEC.md` map to Statistics aggregate keys as follows:
+
+| Run result statistic (Speedrun, 09) | Statistics source |
+|---|---|
+| Total Time | Not a statistic; Speedrun timer value |
+| Section Times | Not a statistic; Speedrun split value |
+| Checkpoints | Not a statistic; Checkpoint/Speedrun progress value |
+| Jump Count | `movement.total_jumps` (session scope) |
+| Slide Count | `movement.total_slides` (session scope) |
+| Wall Runs | `movement.total_wall_runs` (session scope) |
+| Wall Jumps | `movement.total_wall_jumps` (session scope) |
+| Landings | `movement.total_landings` (session scope) |
+| Falls | `movement.total_falls` (session scope) |
+| Distance | `general.total_distance` (session scope) |
+| Run Version | Not a statistic; Speedrun/route metadata |
+
+This mapping identifies where values come from; it does not transfer ownership of run-result semantics to Statistics System. The Speedrun System may project the generic aggregate values into its typed run-result view; the canonical aggregate definitions remain in Statistics System. Statistics System does not validate the run, order checkpoints, calculate medals, or persist the official run record. The Speedrun System must not attach a duplicate statistics summary to its record or recompute these values independently.
 
 ---
 
@@ -1247,6 +1312,10 @@ interface IStatisticsRepository {
 
     loadRecentSessions(): Promise<SessionStatistics[]>;
 
+    loadSessionSummary(
+        summaryId: string
+    ): Promise<SessionStatistics | undefined>;
+
     saveLifetime(
         statistics: LifetimeStatistics
     ): Promise<void>;
@@ -1272,6 +1341,7 @@ Persist:
 - Lifetime aggregates.
 - Mode aggregates.
 - Recent session summaries.
+- Finalized session summaries referenced by other domain records (for example by a Speedrun run record's `statisticsSummaryId`) for as long as the reference exists.
 - Relevant deduplication metadata.
 - Schema version.
 
@@ -1282,6 +1352,9 @@ Do not persist:
 - Pending UI notifications.
 - Active event-processing objects.
 - Unbounded raw event logs.
+- Duplicate copies of session summary values inside the Speedrun run record; the run record references `statisticsSummaryId` instead.
+
+Persistence goes through the Save System (section 3.6). Statistics System must not define its own database name, database version, or IndexedDB schema.
 
 ### 15.2 Storage Strategy
 
@@ -1324,7 +1397,7 @@ It must be separate from:
 - Save System schema version.
 - Statistic definition version.
 
-Migrations must preserve valid aggregates.
+The Save System owns the storage schema for statistics records; Statistics System owns the statistics payload schema version and its migrations. Migrations must preserve valid aggregates and are coordinated with Save System migration infrastructure.
 
 Unknown statistic IDs must not crash loading.
 
@@ -1355,6 +1428,8 @@ Resetting statistics must not delete:
 
 Those records belong to their respective systems.
 
+A statistics reset must not leave dangling `statisticsSummaryId` references in other domains' records. Session summaries referenced by another domain record are preserved, or the reset is coordinated with the owning system so that references are updated or removed together.
+
 ### 15.6 Reset Concurrency
 
 A reset operation must invalidate pending writes based on an older statistics revision.
@@ -1377,6 +1452,10 @@ interface IStatisticsQueryService {
 
     getSession(
         sessionId: string
+    ): SessionStatistics | undefined;
+
+    getSessionSummary(
+        summaryId: string
     ): SessionStatistics | undefined;
 
     getMode(
@@ -1404,6 +1483,8 @@ interface IStatisticsQueryService {
 Snapshots must represent a consistent statistics revision.
 
 A consumer should never receive a mixture of values from incompatible revisions.
+
+Finalized session summaries remain available through the query service and by `summaryId`. Summaries referenced by another domain record are retained until that reference is removed (section 15.1). Consumers must treat snapshots and summaries as read-only views.
 
 ### 16.2 Immutability
 
@@ -1451,6 +1532,8 @@ interface StatisticsUpdatedEvent {
 ```typescript
 interface SessionStatisticsFinalizedEvent {
     sessionId: string;
+
+    summaryId: string;
 
     mode: GameplayMode;
 
@@ -1548,7 +1631,7 @@ Already completed milestones should normally remain completed unless the owning 
 
 Statistics System exposes read-only snapshots.
 
-Menu System may display a detailed statistics screen.
+Menu System may display a detailed statistics screen (`24_MENU_SYSTEM_SPEC.md`).
 
 Suggested sections:
 
@@ -1559,7 +1642,7 @@ Suggested sections:
 - Exploration.
 - Interactions.
 
-The HUD System may display selected session statistics where useful.
+The HUD System may display selected session statistics where useful (`23_HUD_SYSTEM_SPEC.md`).
 
 Statistics System does not own visual presentation.
 
@@ -1679,7 +1762,7 @@ Requirements:
 - No per-frame persistence.
 - No full-history scans for common queries.
 - Indexed statistic definitions.
-- Bounded session history.
+- Bounded recent-session history; summaries referenced by other domain records are retained (section 15.1).
 - Bounded event deduplication state.
 - Cached snapshots where useful.
 - Asynchronous persistence.
@@ -1918,9 +2001,11 @@ Test:
 - Speedrun attempt aggregation.
 - Speedrun completion.
 - Medal counting.
+- Finalized session statistics summary consumed for a Speedrun run result.
 - Interaction counting.
 - Checkpoint counting.
 - Session finalization.
+- Session summary retrieval by `summaryId` after reload.
 - Save System persistence.
 - Achievement threshold integration.
 - Progression milestone integration.
@@ -1979,6 +2064,9 @@ The Statistics System is considered complete when:
 - [ ] Session finalization is implemented.
 - [ ] Failed and abandoned sessions are distinguished.
 - [ ] Snapshots are immutable and consistent.
+- [ ] Finalized session summaries feed Speedrun run results.
+- [ ] Speedrun records reference `statisticsSummaryId` without duplicating summary values.
+- [ ] Speedrun results do not run a second statistics collector.
 - [ ] Persistence uses Save System.
 - [ ] Reset is scope-aware.
 - [ ] Stale writes cannot restore reset data.
@@ -2020,5 +2108,7 @@ The implementation agent must follow these constraints:
 22. Expose immutable snapshots to consumers.
 23. Keep aggregate processing independent of rendering and frame rate.
 24. Preserve compatibility with future analytics and platform integrations without implementing them prematurely.
+25. Do not duplicate facts owned by the Speedrun System (run time, splits, checkpoint sequence, validity, medals, official personal bests) in statistics records.
+26. Do not persist a duplicate copy of a finalized session statistics summary in another domain's record; reference its `summaryId` instead.
 
 **Statistics System is responsible for collecting and aggregating what happened during gameplay. It must never decide whether those events constitute valid gameplay achievements, progression milestones, Training results, or Speedrun records.**

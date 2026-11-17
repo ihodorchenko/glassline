@@ -1,10 +1,11 @@
 # 13_CAMERA_SYSTEM_SPEC.md
 
-# Camera System Specification
+**Project:** Glassline  
+**Document:** Camera System Specification
 
 ## 1. Purpose
 
-This document defines the first-person Camera System for the Mirror's Edge-inspired parkour game.
+This document defines the first-person Camera System for Glassline, a first-person parkour game inspired by the original *Mirror's Edge* (2008).
 
 The Camera System is responsible for:
 
@@ -88,7 +89,7 @@ The initial Camera System must support:
 
 - First-person camera.
 - Mouse look.
-- Gamepad look input.
+- Gamepad look input when a controller is available; keyboard and mouse remain the required initial control path (`03_GAMEPLAY_SPEC.md` §5.1).
 - Horizontal and vertical rotation.
 - Configurable look sensitivity.
 - Vertical look limits.
@@ -188,6 +189,7 @@ The Camera System must not:
 - Resolve collisions.
 - Determine whether the player is grounded.
 - Trigger parkour actions.
+- Make gameplay decisions, such as selecting respawn destinations, checkpoint state, or run state.
 - Own input device handling.
 - Own gameplay state transitions.
 
@@ -287,17 +289,18 @@ However:
 
 ### 6.4 Sensitivity
 
-Mouse sensitivity should be configurable.
+Look sensitivity is user-configurable.
 
-Recommended initial settings:
+The canonical user settings are owned by the Input System and stored by the Settings System:
 
-| Parameter | Default |
-|---|---:|
-| Horizontal sensitivity | 1.0 |
-| Vertical sensitivity | 1.0 |
-| Gamepad look sensitivity | Configurable |
-| Mouse smoothing | Disabled by default |
-| Invert Y | Disabled |
+- `controls.mouse_sensitivity`
+- `controls.invert_mouse_y`
+- `controls.gamepad_sensitivity`
+- `controls.invert_gamepad_y`
+
+The Camera System must not define separate editable `camera.look_sensitivity` settings.
+
+Internally, the camera may expose separate horizontal and vertical multipliers, but they are implementation details derived from the canonical Input configuration, not independent user settings.
 
 The actual sensitivity scale depends on the Input System implementation.
 
@@ -361,6 +364,8 @@ When pointer lock is lost:
 ---
 
 ## 8. Gamepad Look
+
+Gamepad look is an optional control path for the initial release; the Camera System must accept it when gamepad input is available, but must not require a controller (`03_GAMEPLAY_SPEC.md` §5.1).
 
 ### 8.1 Input Source
 
@@ -475,15 +480,12 @@ Reduced-motion settings should disable or reduce dynamic FOV changes.
 
 Camera height should reflect the physical player posture.
 
-The Movement System provides:
+The Movement System exposes:
 
-- Standing state.
-- Crouching state.
-- Sliding state.
-- Vaulting state.
-- Wall-running state.
+- The canonical movement state (`IDLE`, `RUNNING`, `SPRINTING`, `JUMPING`, `FALLING`, `LANDING`, `SLIDING`, `VAULTING`, `WALLRUN`, `WALLJUMP`).
+- The crouch stance and the current collider height.
 
-The Camera System translates these into camera height.
+The Camera System translates these into camera height. The Camera System does not decide the player's posture, collision clearance, or movement transitions.
 
 ### 10.2 Standing Height
 
@@ -538,6 +540,8 @@ Never leave the camera permanently at crouched or sliding height after an invali
 ### 11.1 Overview
 
 Movement effects are visual feedback derived from Movement System state.
+
+Where an effect corresponds to a canonical gameplay event (`player:jumped`, `player:landed`, `player:sliding-started`, `player:sliding-ended`, `player:vault-started`, `player:wallrun-started`, `player:wallrun-ended`, `player:walljumped` — see `03_GAMEPLAY_SPEC.md` §18), the Camera System consumes that event instead of independently inferring the action from velocity.
 
 The initial implementation should support:
 
@@ -777,15 +781,16 @@ The player must be able to configure individual effects as well.
 Required settings:
 
 - Base FOV.
-- Horizontal sensitivity.
-- Vertical sensitivity.
-- Invert Y.
+- Effective look sensitivity (derived from Input System settings).
+- Invert Y (Input System setting consumed by camera look).
 - Dynamic FOV.
 - Camera bob.
 - Camera roll.
 - Landing camera effect.
 - Camera smoothing.
-- Reduced-motion preset.
+- Reduced-motion preset (shared accessibility preference).
+
+The canonical values and setting IDs are owned by the Settings System (`25_SETTINGS_SYSTEM_SPEC.md`); the Camera System consumes them through the Settings application layer and does not maintain a second settings registry. Look sensitivity must be applied in exactly one layer (see §16).
 
 ### 14.3 Reduced Motion Behavior
 
@@ -799,6 +804,8 @@ Reduced Motion should:
 - Preserve camera height changes required for gameplay readability.
 
 Reduced Motion must not disable gameplay mechanics.
+
+The Reduced Motion policy is coordinated by the Accessibility System (`26_ACCESSIBILITY_SYSTEM_SPEC.md`); the user preference itself is owned by the Settings System (`25_SETTINGS_SYSTEM_SPEC.md`). The Camera System applies the effective accessibility configuration and must not maintain a competing reduced-motion state.
 
 ### 14.4 FOV Range
 
@@ -822,11 +829,11 @@ The first playable version should not depend on strong camera movement to commun
 
 ## 15. Camera Settings and Persistence
 
-Camera settings belong to the Settings domain defined in `10_SAVE_SYSTEM_SPEC.md`.
+Camera settings are owned by the Settings System (`25_SETTINGS_SYSTEM_SPEC.md`), for example `camera.field_of_view`, `camera.bob_intensity`, `camera.motion_intensity`, and the shared Reduced Motion preference (`accessibility.reduced_motion`). Look sensitivity is owned by the Input System (`controls.mouse_sensitivity`, `controls.gamepad_sensitivity`, invert-Y settings). The Camera System consumes the effective configuration through the Settings application layer; it must not maintain an independent settings store or access IndexedDB directly.
 
-The Camera System should expose a configuration interface rather than accessing IndexedDB directly.
+Shared accessibility preferences (including Reduced Motion) are coordinated by the Accessibility System (`26_ACCESSIBILITY_SYSTEM_SPEC.md`) and take precedence over user motion intensity.
 
-Conceptual model:
+The following model describes the camera's applied configuration, not a second persistence schema:
 
 ```ts
 interface CameraSettings {
@@ -856,7 +863,7 @@ interface CameraSettings {
 }
 ```
 
-The model may be extended as additional settings are introduced.
+The model may be extended as additional settings are introduced, provided each field has a corresponding Settings definition. Sensitivity and invert-Y values are read from the canonical Settings/Input integration described in §16; they are not separately editable Camera-owned settings.
 
 Requirements:
 
@@ -864,7 +871,7 @@ Requirements:
 - Settings changes must not reset player orientation.
 - Invalid values must be clamped to supported ranges.
 - Defaults must be available if saved settings are missing.
-- Persistence must be handled by Save System repositories.
+- Settings persistence is owned by the Settings System, which uses Save System (`10_SAVE_SYSTEM_SPEC.md`) infrastructure; the Camera System must not persist settings or access IndexedDB directly.
 
 ---
 
@@ -929,6 +936,8 @@ The Camera System must not query movement internals directly.
 
 Use a stable movement data interface or event subscription.
 
+Movement effects are derived from Movement System output and, where relevant, from the effective player state snapshot provided by the Player State System (`18_PLAYER_STATE_SYSTEM_SPEC.md`). The Camera System may use the player state to suspend or restore effects during respawn, pause, or disabled control; it must not duplicate player lifecycle state or make gameplay decisions.
+
 ### 17.1 Synchronization
 
 The camera should follow the latest valid player transform.
@@ -964,9 +973,9 @@ Whether the player can still look around while a menu is open is determined by t
 
 On initialization:
 
-1. Read default camera settings.
-2. Apply saved settings.
-3. Initialize camera rig.
+1. Read the effective camera configuration from the Settings System.
+2. Initialize camera rig.
+3. Apply that configuration.
 4. Set base FOV.
 5. Initialize yaw and pitch.
 6. Subscribe to movement data.
@@ -1001,7 +1010,7 @@ After respawn:
 - Restore valid camera height.
 - Reset roll to neutral.
 - Restore valid FOV.
-- Preserve orientation only if explicitly requested by the respawn configuration.
+- Preserve orientation only if explicitly requested by the Respawn System (`17_RESPAWN_SYSTEM_SPEC.md`).
 
 ### 19.5 Scene Transition
 
@@ -1183,7 +1192,7 @@ Implement:
 - Yaw and pitch.
 - Pitch limits.
 - Mouse look.
-- Gamepad look.
+- Gamepad look (optional control path).
 - Base FOV.
 
 Acceptance criteria:
@@ -1273,7 +1282,7 @@ The Camera System is considered complete for the initial implementation when:
 - [ ] First-person camera rig is implemented.
 - [ ] Camera position follows the player correctly.
 - [ ] Mouse look works.
-- [ ] Gamepad look works.
+- [ ] Gamepad look works when a controller is available.
 - [ ] Yaw and pitch are handled correctly.
 - [ ] Pitch limits are configurable.
 - [ ] Sensitivity settings work.
@@ -1288,7 +1297,7 @@ The Camera System is considered complete for the initial implementation when:
 - [ ] Wall-run roll works.
 - [ ] Effects return to neutral.
 - [ ] Reduced Motion works.
-- [ ] Settings are persisted through Save System.
+- [ ] Camera settings are applied from the Settings System and persisted by the Settings System through Save System infrastructure.
 - [ ] Pause and respawn behavior is correct.
 - [ ] Camera does not modify movement physics.
 - [ ] Camera remains stable across frame rates.
@@ -1314,7 +1323,7 @@ The implementation agent must follow these constraints:
 11. Camera effects must never accumulate indefinitely.
 12. Reduced Motion must be supported from the initial implementation.
 13. UI must remain stable and must not accidentally inherit gameplay camera effects.
-14. Camera settings must use the Save System rather than accessing IndexedDB directly.
+14. Camera settings must be read from the Settings System, which persists them through Save System infrastructure; the Camera System must not access IndexedDB directly.
 15. The same Camera System must be used in Training and Prologue.
 16. Avoid excessive head bob, shake, roll, and FOV distortion.
 17. Prioritize spatial readability and player comfort over cinematic effects.

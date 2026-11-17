@@ -1,4 +1,4 @@
-# GLASSLINE — PROJECT BRIEF
+# Glassline — Project Brief
 
 **Document:** `00_PROJECT_BRIEF.md`  
 **Project:** Glassline  
@@ -469,6 +469,8 @@ The following features are outside the initial release scope:
 - User-generated levels.
 - Advanced procedural campaigns.
 - Ledge grabbing.
+- Ledge climbing and hanging.
+- Dedicated balance traversal.
 - Swinging and ziplines.
 - Advanced traversal variants beyond the initial movement scope.
 - Remote analytics.

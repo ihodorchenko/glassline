@@ -1,6 +1,7 @@
 # 09_SPEEDRUN_SYSTEM_SPEC.md
 
-# Speedrun System Specification
+**Project:** Glassline  
+**Document:** Speedrun System Specification
 
 ## 1. Overview
 
@@ -20,6 +21,25 @@ The system must allow players to:
 - Replay levels to improve their performance.
 
 The system must be deterministic enough to provide meaningful time comparisons across multiple attempts.
+
+### Ownership
+
+| Responsibility | Owner |
+|---|---|
+| Run lifecycle, run state, and attempt identity | Speedrun System |
+| Monotonic run timing | Speedrun System |
+| Required checkpoint sequence and route validation | Speedrun System |
+| Section splits and personal bests | Speedrun System |
+| Medal evaluation and run result construction | Speedrun System |
+| Run record semantics and leaderboard ordering | Speedrun System |
+| Checkpoint activation, progress, and destination data | Checkpoint System (`16_CHECKPOINT_SYSTEM_SPEC.md`) |
+| Player recovery lifecycle | Respawn System (`17_RESPAWN_SYSTEM_SPEC.md`) |
+| Aggregated gameplay statistics | Statistics System (`30_STATISTICS_SYSTEM_SPEC.md`) |
+| Persistence infrastructure, schema, and repositories | Save System (`10_SAVE_SYSTEM_SPEC.md`) |
+| Gameplay session lifecycle and pause coordination | Gameplay Session System (`19_GAMEPLAY_SESSION_SYSTEM_SPEC.md`) |
+| HUD and Results presentation | HUD / Menu / UI |
+
+The Speedrun System owns run validity and record semantics. It must not implement checkpoint detection, statistics aggregation, player recovery, or direct persistence.
 
 ### Design Philosophy
 
@@ -85,7 +105,7 @@ Every speedrun follows a clearly defined lifecycle.
 
 ## 3.1 Run States
 
-The RunManager must support the following states:
+The run lifecycle coordinator supports the following states:
 
 | State | Description |
 |---|---|
@@ -93,12 +113,16 @@ The RunManager must support the following states:
 | Preparing | Loading route and initializing systems |
 | Ready | Waiting for player confirmation |
 | Running | Timer is active |
-| Checkpoint | Processing checkpoint passage |
-| Finished | Run completed successfully |
-| Failed | Run invalidated |
+| Finished | Run reached the finish trigger and is being finalized |
+| Invalidated | Completed run failed validation and is not eligible for records |
 | Abandoned | Player manually exits the run |
+| Failed | The run could not continue because of a system or session failure |
 
 State transitions must be explicit.
+
+`Invalidated` is a validation outcome, not a system failure. `Failed` indicates that the run could not be completed normally.
+
+Checkpoint passage is an event within `Running`, not a separate run state. Recovery during a run is coordinated by the Respawn System (`17_RESPAWN_SYSTEM_SPEC.md`) and may affect the final classification without creating a separate run state.
 
 ### State Flow
 
@@ -115,41 +139,36 @@ Ready
   v
 Running
   |
-  +---- Checkpoint 1
-  |
-  +---- Checkpoint 2
-  |
-  +---- Checkpoint 3
-  |
-  +---- Checkpoint 4
-  |
-  +---- Checkpoint 5
+  +---- Checkpoint 1 ... Checkpoint 5 (events)
   |
   v
 Finished
   |
-  v
-Results
+  +---- validation passes --> Results (valid)
+  |
+  +---- validation fails  --> Invalidated
 ```
 
-Failure and abandonment can occur during an active run.
+Abandonment and system failure can occur during an active run.
 
-A failed or abandoned run must never be saved as a valid leaderboard entry.
+A failed, abandoned, or invalidated run must never be saved as a valid leaderboard entry.
 
 ## 3.2 Starting a Run
 
 Starting a run must:
 
-1. Load the selected route definition.
-2. Validate route configuration.
-3. Initialize the player at the start position.
-4. Reset movement-related temporary state.
-5. Reset checkpoint progress.
-6. Reset run statistics.
-7. Reset section split data.
-8. Initialize the timer.
-9. Prepare the HUD.
+1. Load and validate the selected route definition.
+2. Obtain a valid start position from Level Runtime spawn resolution.
+3. Request the gameplay session start through the Gameplay Session System.
+4. Request checkpoint progress reset through the Checkpoint System.
+5. Request transient movement state reset through the owning player interfaces.
+6. Establish a fresh statistics session scope through the Statistics System.
+7. Reset section split data owned by the Speedrun System.
+8. Initialize the timer without starting it.
+9. Request HUD preparation.
 10. Enter the Ready state.
+
+The Speedrun System must not directly place the player, mutate checkpoint state, reset movement physics, or manipulate level objects. It coordinates these operations through the owning systems' public interfaces.
 
 The timer must not start during loading or preparation.
 
@@ -180,11 +199,11 @@ On completion:
 
 1. Stop the timer.
 2. Finalize section splits.
-3. Calculate statistics.
+3. Request the finalized statistics summary from the Statistics System.
 4. Evaluate medals.
 5. Validate the run.
 6. Update personal records.
-7. Save the leaderboard entry.
+7. Persist the leaderboard entry through the Save System.
 8. Display the results screen.
 
 ---
@@ -266,19 +285,26 @@ The implementation must prevent:
 - Accidental timer resets.
 - Multiple independent timer instances for one run.
 
-## 4.4 Pause Behavior
+## 4.4 Pause, Focus Loss, and Application Lifecycle
 
-The initial competitive implementation should not support pausing an official run.
+An official ranked run must not support a gameplay pause that stops the run timer.
 
-If the application loses focus or the player switches tabs:
+The Gameplay Session System may still suspend simulation on application focus loss or system interruption (`19_GAMEPLAY_SESSION_SYSTEM_SPEC.md` §10). The two decisions are separate:
 
-- The timer continues.
-- The run remains active.
-- The event is recorded in run metadata if needed.
+- The session owns whether simulation and input are suspended.
+- The Speedrun System owns whether an active ranked run continues, is invalidated, or is abandoned.
 
-This avoids creating a pause-based advantage.
+Required behavior for a ranked run:
 
-A future practice mode may introduce pause functionality without affecting official competitive records.
+- The run remains active during a focus-loss interruption.
+- The monotonic run timer continues to measure real elapsed time.
+- The run must not be silently restarted, reset, or converted into a new attempt.
+- The session coordinator must not pause or resume the ranked timer against Speedrun policy.
+- If the application cannot restore a consistent simulation state, the run may be classified by an explicit Speedrun policy; it must not silently continue in an undefined simulation state.
+
+Practice and unranked attempts may pause the timer according to their session policy. A paused practice attempt cannot produce an official record.
+
+A future practice mode may introduce additional pause functionality without affecting official competitive records.
 
 ---
 
@@ -344,37 +370,49 @@ Records from incompatible versions must not be mixed without explicit migration 
 
 ---
 
-# 6. Checkpoint System
+# 6. Checkpoint and Route Progression
 
-## 6.1 Purpose
+## 6.1 Ownership Boundary
 
-Checkpoints provide:
+The Speedrun System owns the required checkpoint sequence for a route and the validation of that sequence.
 
-- Progress tracking.
-- Section timing.
-- Route validation.
-- Recovery opportunities in training.
-- Protection against skipping mandatory sections.
+The Checkpoint System (`16_CHECKPOINT_SYSTEM_SPEC.md`) owns checkpoint runtime behavior: registration, activation, progress, and recovery destination data.
+
+Level Design (`06_LEVEL_DESIGN_SPEC.md`) owns the authored checkpoint positions, triggers, and sections.
+
+These are not competing authorities:
+
+| Fact | Owner |
+|---|---|
+| Checkpoint physical location and trigger volume | Level content / Level Design |
+| Checkpoint activation and progress state | Checkpoint System |
+| Required checkpoint order for the route | Speedrun System |
+| Whether a run followed the route | Speedrun System |
+| Recovery destination transform | Checkpoint System + Level Runtime |
+
+The Speedrun System must not implement its own checkpoint activation detection, and the Checkpoint System must not implement route validation.
+
+Checkpoints provide progress tracking, section timing, route validation evidence, recovery opportunities in Training and Prologue, and protection against skipping mandatory sections.
 
 The Prologue requires five mandatory checkpoints.
 
-## 6.2 Checkpoint Definition
+## 6.2 Route Checkpoint Definition
+
+The route definition references checkpoints by stable ID and declares the required sequence. It does not duplicate physical checkpoint data.
 
 ```typescript
-interface CheckpointDefinition {
-    id: string;
+interface RouteCheckpointReference {
+    checkpointId: string;
 
     index: number;
-
-    position: Vector3;
-
-    trigger: TriggerDefinition;
 
     sectionId: string;
 
     mandatory: boolean;
 }
 ```
+
+The physical definition (trigger volume, spawn point reference, display name) is owned by the level content and the Checkpoint System.
 
 ## 6.3 Sequential Validation
 
@@ -384,61 +422,84 @@ Example:
 
 ```text
 Expected: CP1
-Player enters CP1
+Checkpoint System reports CP1 activation
 Result: Accepted
 
 Expected: CP2
-Player enters CP3
-Result: Rejected
+Checkpoint System reports CP3 activation
+Result: Rejected for route validation
 
 Expected: CP2
-Player enters CP2
+Checkpoint System reports CP2 activation
 Result: Accepted
 ```
 
 The player cannot skip mandatory checkpoints.
 
-The CheckpointManager maintains the expected checkpoint index.
+The Speedrun System maintains the expected checkpoint index for validation purposes. The Checkpoint System records actual activations independently and must not be asked to infer the expected order.
 
 ## 6.4 Checkpoint Events
 
+The Speedrun System consumes checkpoint activation facts published by the Checkpoint System.
+
+The canonical event payload is defined in `16_CHECKPOINT_SYSTEM_SPEC.md` §13.2. The fields the Speedrun System consumes for route validation are:
+
 ```typescript
-interface CheckpointEvent {
+interface CheckpointActivatedFact {
+    sessionId: string;
+
+    levelId: string;
+
     checkpointId: string;
+
+    sectionId: string;
 
     timestamp: number;
 
-    elapsedTime: number;
-
-    sectionId: string;
+    activationIndex: number;
 }
 ```
 
-Each accepted checkpoint generates one event.
+The Speedrun System correlates each accepted activation with the active run and derives the split time from the monotonic timer. The event timestamp is used for correlation, not as the authoritative split time.
 
-Duplicate trigger events must be ignored.
+Each accepted checkpoint contributes exactly one route-validation record.
+
+Duplicate trigger events must be ignored. The Speedrun System owns deduplication for route validation; the Checkpoint System owns activation deduplication.
 
 ## 6.5 Checkpoint Feedback
 
-When a checkpoint is activated:
+Checkpoint activation feedback (visual confirmation, audio cue, HUD notification) is owned by the Checkpoint System and presentation layers.
 
-- Show a visual confirmation.
-- Play a short audio cue.
-- Update the HUD.
-- Record the checkpoint timestamp.
-- Update the current section split.
+The Speedrun System provides only the values it owns:
+
+- The current section split.
+- The comparison against the personal best split.
+- The checkpoint progress used for run validation.
 
 Feedback must be immediate and must not interrupt movement.
 
-## 6.6 Recovery
+## 6.6 Recovery During a Run
 
-Training mode may support checkpoint recovery.
+Checkpoint recovery is part of the initial release.
 
-The player can restart from the latest checkpoint.
+The recovery lifecycle is owned by the Respawn System (`17_RESPAWN_SYSTEM_SPEC.md`) and orchestrated by `RespawnManager`.
 
-In an official Prologue run, checkpoint recovery must not be silently allowed.
+When a recovery is requested during a ranked run:
 
-If a recovery mechanic is introduced later, it must have explicit competitive rules and must invalidate or separately classify the run where appropriate.
+1. The Respawn System requests an evaluation from the Speedrun System before recovery.
+2. The Speedrun System decides how the run is affected.
+3. The Respawn System executes the allowed recovery.
+
+Possible Speedrun policies:
+
+- Continue the run with the timer unchanged.
+- Apply an explicit time penalty where a mode defines one.
+- Invalidate the run.
+- Classify the attempt as unranked practice.
+
+The initial policy must be explicitly configured by the Speedrun System and must not be inferred by the Checkpoint or Respawn Systems.
+
+A recovery must never silently restart the timer or the run.
 
 ---
 
@@ -515,17 +576,33 @@ It does not represent an actual completed run and must never appear as a real le
 
 # 8. Run Statistics
 
-Statistics provide additional context beyond the final completion time.
+## 8.1 Ownership
 
-## 8.1 Initial Statistics
+Aggregation of gameplay facts is owned by the Statistics System (`30_STATISTICS_SYSTEM_SPEC.md`).
 
-Track the following values:
+The Speedrun System does not independently collect movement counters, distance, or speed. It consumes a session-scoped statistics summary when a run finishes.
+
+The Statistics System owns event-driven collection, deduplication, aggregation, and session correlation.
+
+The Speedrun System owns the run result model and associates the statistics summary with the completed run.
+
+## 8.2 Result Data
+
+The Speedrun System owns:
+
+| Value | Description |
+|---|---|
+| Total Time | Complete run duration measured by the monotonic timer |
+| Section Times | Split durations derived from checkpoint events |
+| Checkpoints | Completed mandatory checkpoint count |
+| Run Version | Route and game version metadata |
+| Validation Status | Result of route validation |
+| Medal | Medal derived from completion time and route thresholds |
+
+The Statistics System provides the remaining gameplay counters as a typed summary:
 
 | Statistic | Description |
 |---|---|
-| Total Time | Complete run duration |
-| Section Times | Individual section durations |
-| Checkpoints | Successfully completed checkpoints |
 | Jump Count | Number of jumps |
 | Slide Count | Number of slides |
 | Wall Runs | Number of wall-run actions |
@@ -533,37 +610,22 @@ Track the following values:
 | Landings | Number of registered landings |
 | Falls | Number of falls or route failures |
 | Distance | Total player movement distance |
-| Run Version | Route and game version |
 
 Not every statistic needs to be displayed on the results screen.
 
-## 8.2 Statistics Collection
+## 8.3 Completion Sequence
 
-Statistics must be collected through gameplay events rather than repeatedly scanning player state.
+When a run finishes:
 
-Recommended events:
+1. The finish trigger is accepted.
+2. The timer is stopped.
+3. The Speedrun System requests the finalized session statistics summary from the Statistics System.
+4. The Speedrun System builds the run result from its own timing data and the provided summary.
+5. Route validation is applied.
+6. The validated result is persisted through the Save System records contract.
+7. Results presentation consumes the authoritative result.
 
-```typescript
-interface RunStatistics {
-    jumpCount: number;
-
-    slideCount: number;
-
-    wallRunCount: number;
-
-    wallJumpCount: number;
-
-    landingCount: number;
-
-    fallCount: number;
-
-    distanceTravelled: number;
-}
-```
-
-Avoid excessive allocations during gameplay.
-
-Statistics collection must not affect physics performance.
+The Speedrun System must not sample player transforms or recompute statistics independently.
 
 ---
 
@@ -694,11 +756,11 @@ The presentation should be celebratory but consistent with the minimalistic visu
 
 ## 11.1 Storage
 
-Use IndexedDB for persistent leaderboard storage.
+Run records are persisted through the Save System (`10_SAVE_SYSTEM_SPEC.md`) using its repository interfaces.
 
-Do not use localStorage as the primary storage mechanism for run history.
+The Speedrun System owns record semantics, sorting rules, and validity. The Save System owns the database, schema versioning, migrations, and transactions.
 
-IndexedDB provides structured storage and better support for future expansion.
+The Speedrun System must not access IndexedDB directly or define a competing physical database schema.
 
 ## 11.2 Data Model
 
@@ -718,41 +780,33 @@ interface LeaderboardEntry {
 
     splits: SectionSplit[];
 
-    statistics: RunStatistics;
+    statisticsSummaryId: string;
 
     validation: RunValidationResult;
 }
 ```
 
-## 11.3 Database Structure
+The statistics summary is referenced by ID and stored through the Statistics System's persistence contract; the run record must not maintain a duplicate copy of aggregated gameplay statistics.
 
-Database name:
+## 11.3 Logical Storage
 
-```text
-MirrorEdgeSpeedrun
-```
+The physical database, object stores, schema version, and migrations are owned by the Save System.
 
-Object stores:
+Logical collections required by the Speedrun System:
 
 ```text
-runs
-personalRecords
-settings
+runs              -> validated and invalid completed run records
+personalRecords   -> best results per route and compatible route version
 ```
 
-Recommended indexes:
-
-### runs
+Required lookup keys for run records:
 
 - routeId
 - completionTime
 - completedAt
 - routeVersion
 
-### personalRecords
-
-- routeId
-- routeVersion
+The Save System database name and schema are defined in `10_SAVE_SYSTEM_SPEC.md` (`GlasslineSaveData`). This document must not define a second database name or schema.
 
 ## 11.4 Leaderboard Sorting
 
@@ -801,6 +855,8 @@ Provide the ability to:
 - Delete individual records.
 - Clear local records.
 - Export records to JSON.
+
+All record operations must be performed through Save System repository interfaces.
 
 Importing records must not automatically mark them as verified.
 
@@ -882,7 +938,7 @@ The recorded time must be derived from the monotonic timer.
 
 Do not accept a manually supplied completion time from the results UI.
 
-For the initial version, the run manager is the authoritative source of timing data.
+For the initial version, the Speedrun System is the authoritative source of timing data.
 
 ## 12.6 Future Improvements
 
@@ -927,7 +983,7 @@ CHECKPOINT 04 / 05
 
 ## 13.2 Visual Principles
 
-The interface should follow the established Mirror's Edge-inspired visual direction:
+The interface should follow the established Glassline visual direction (`04_ASSET_BIBLE.md`, `07_UI_UX_SPEC.md`):
 
 - Minimalist typography.
 - Strong contrast.
@@ -1066,7 +1122,9 @@ The Speedrun System should be divided into independent modules.
 
 ## 16.1 Core Modules
 
-### RunManager
+The Speedrun System is composed of focused components. Component names are illustrative; `02_TECHNICAL_ARCHITECTURE.md` does not require a specific class named `RunManager`.
+
+### Run Controller
 
 Responsible for:
 
@@ -1074,7 +1132,6 @@ Responsible for:
 - State transitions.
 - Starting and finishing runs.
 - Coordinating subsystems.
-- Run validation.
 - Producing completed run results.
 
 ### RunTimer
@@ -1086,23 +1143,25 @@ Responsible for:
 - Measuring elapsed time.
 - Providing current elapsed time.
 
-### CheckpointManager
+### Checkpoint Integration
 
 Responsible for:
 
-- Checkpoint registration.
-- Sequential validation.
-- Checkpoint events.
-- Progress tracking.
+- Consuming checkpoint activation facts from the Checkpoint System.
+- Maintaining the expected checkpoint index for route validation.
+- Deriving checkpoint split timestamps.
+- Publishing checkpoint-progress facts for the HUD.
 
-### RunStatistics
+The Speedrun System must not perform checkpoint detection, activation, or progress storage.
+
+### Statistics Summary Consumer
 
 Responsible for:
 
-- Collecting gameplay statistics.
-- Counting movement events.
-- Measuring distance.
-- Producing statistics snapshots.
+- Requesting the finalized session statistics summary from the Statistics System.
+- Attaching the summary to the run result.
+
+The Speedrun System must not collect movement statistics independently.
 
 ### RouteDefinition
 
@@ -1110,7 +1169,7 @@ Responsible for:
 
 - Route metadata.
 - Section configuration.
-- Checkpoint configuration.
+- Checkpoint sequence configuration.
 - Medal thresholds.
 - Route versioning.
 
@@ -1118,8 +1177,8 @@ Responsible for:
 
 Responsible for:
 
-- Saving completed runs.
-- Retrieving run history.
+- Saving completed runs through Save System repositories.
+- Retrieving run history through Save System repositories.
 - Sorting records.
 - Updating personal records.
 - Managing local leaderboard data.
@@ -1135,23 +1194,27 @@ Responsible for:
 
 ### GhostRecorder
 
-Reserved for future implementation.
+Reserved for future implementation and not part of the initial release.
 
 ## 16.2 Dependency Overview
 
 ```text
-              RunManager
+            Run Controller
                   |
        +----------+----------+
        |          |          |
        v          v          v
     RunTimer  Checkpoint  Statistics
+              Integration  Summary
                   |
                   v
              RunValidator
                   |
                   v
           LeaderboardManager
+                  |
+                  v
+      Save System repositories
                   |
                   v
               IndexedDB
@@ -1162,6 +1225,8 @@ RouteDefinition provides configuration to the relevant modules.
 HUD and Results UI consume state and completed run data.
 
 They must not directly modify timer or checkpoint state.
+
+The Speedrun System never talks to IndexedDB directly; persistence is accessed through Save System repositories.
 
 ## 16.3 Event-Driven Integration
 
@@ -1191,15 +1256,15 @@ The Speedrun System must not negatively affect gameplay performance.
 
 Requirements:
 
-- No database writes every frame.
+- No persistence writes every frame.
 - No expensive validation during active movement.
 - No unnecessary allocations in the update loop.
 - No dependence on rendered frame rate.
-- No blocking database operations.
+- No blocking persistence operations.
 - No timer drift caused by UI rendering.
 - No loss of completed results during ordinary UI transitions.
 
-Database operations should happen asynchronously.
+Persistence operations should happen asynchronously through the Save System.
 
 A completed run should be validated before being persisted as an official leaderboard entry.
 
@@ -1233,14 +1298,16 @@ All stored records must include:
 - Statistics.
 - Validation status.
 
-## 18.3 Database Failure
+## 18.3 Persistence Failure
 
-If IndexedDB is unavailable:
+If persistence is unavailable:
 
 - The current run must still function.
 - The player must still see the result.
 - The game must report that local persistence failed.
 - The result should remain available in memory while the application session continues.
+
+The Save System owns the failure classification and recovery policy (`10_SAVE_SYSTEM_SPEC.md`).
 
 Do not silently claim that a record has been saved.
 
@@ -1290,7 +1357,7 @@ Implementation must follow this order.
 ## Phase 1 — Core Timing
 
 - Implement RunTimer.
-- Implement RunManager.
+- Implement the run lifecycle controller.
 - Implement run states.
 - Implement start and finish transitions.
 - Connect timer to the Prologue.
@@ -1304,29 +1371,28 @@ Acceptance criteria:
 
 ## Phase 2 — Checkpoints
 
-- Implement CheckpointManager.
-- Define five Prologue checkpoints.
-- Add sequential validation.
-- Add checkpoint feedback.
+- Integrate with the Checkpoint System.
+- Define five Prologue checkpoint references in the route.
+- Add sequential route validation.
+- Add checkpoint split recording.
 - Implement section boundaries.
 
 Acceptance criteria:
 
 - All checkpoints are detected.
 - Skipping mandatory checkpoints is rejected.
-- Duplicate events are ignored.
+- Duplicate route events are ignored.
 - Checkpoint timestamps are recorded correctly.
 
 ## Phase 3 — Statistics and Splits
 
-- Implement RunStatistics.
-- Track movement events.
+- Integrate with the Statistics System summary.
 - Calculate section times.
 - Implement split comparisons.
 
 Acceptance criteria:
 
-- Statistics are collected correctly.
+- Statistics are provided by the Statistics System, not collected by Speedrun.
 - Section durations sum to the total run duration within timing precision.
 - Personal best comparisons work correctly.
 
@@ -1346,7 +1412,7 @@ Acceptance criteria:
 
 ## Phase 5 — Local Leaderboard
 
-- Implement IndexedDB.
+- Integrate with Save System repositories.
 - Implement LeaderboardManager.
 - Store completed runs.
 - Maintain personal records.
@@ -1438,17 +1504,18 @@ The initial Speedrun System is considered complete when:
 - [ ] Five mandatory checkpoints work.
 - [ ] Checkpoints are validated sequentially.
 - [ ] Five section splits are recorded.
-- [ ] Gameplay statistics are collected.
+- [ ] Gameplay statistics summary is consumed from the Statistics System.
 - [ ] Medal thresholds are configurable.
 - [ ] Results screen displays accurate information.
 - [ ] Personal records are maintained.
-- [ ] Local leaderboard uses IndexedDB.
+- [ ] Local leaderboard persists through the Save System.
 - [ ] Run validation works.
 - [ ] Invalid runs cannot enter the official leaderboard.
 - [ ] Records persist across application reloads.
 - [ ] Retry functionality works without restarting the application.
 - [ ] Ghost Replay remains outside the initial implementation.
 - [ ] The system does not introduce measurable gameplay performance degradation.
+- [ ] The system exposes no competing checkpoint detector, statistics collector, or persistence layer.
 
 ---
 
@@ -1461,7 +1528,7 @@ The implementation agent must follow these constraints:
 3. Do not implement Ghost Replay in the initial release.
 4. Do not use frame count as a timing mechanism.
 5. Do not use Date.now() for elapsed run time.
-6. Do not couple gameplay movement logic to IndexedDB.
+6. Do not couple gameplay movement logic to persistence or leaderboard logic.
 7. Do not allow the HUD to modify authoritative run state.
 8. Do not accept incomplete checkpoint sequences.
 9. Do not save invalid runs as official leaderboard records.
@@ -1469,5 +1536,9 @@ The implementation agent must follow these constraints:
 11. Keep route definitions data-driven.
 12. Preserve route versioning for future level changes.
 13. Keep the system modular and extensible.
+14. Do not re-implement checkpoint activation, statistics aggregation, or the respawn lifecycle inside the Speedrun System.
+15. Access persistence only through Save System repositories; never write to IndexedDB from Speedrun modules.
+16. `RespawnManager` from `17_RESPAWN_SYSTEM_SPEC.md` is the only recovery orchestrator; Speedrun only decides how recovery affects run validity.
+17. Statistics for results are provided by the Statistics System; Speedrun must not sample player transforms or recount movement events.
 
 **Primary objective:** Build a reliable, replayable time-trial system that makes improving movement execution and route mastery the central motivation for repeatedly playing the Prologue.

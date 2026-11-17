@@ -1,6 +1,6 @@
 # 08_AUDIO_DESIGN_SPEC.md
 
-**Project:** MIRROR'S EDGE — RUNNER PROTOCOL  
+**Project:** Glassline  
 **Document:** Audio Design Specification  
 **Version:** 1.0  
 **Status:** Design Specification
@@ -61,15 +61,15 @@ Examples:
 - Landing sounds communicate impact intensity.
 - Sliding sounds communicate contact with the ground.
 - Wallrun sounds communicate sustained contact with a wall.
+- Walljump sounds communicate a strong push away from the wall.
 - Metal impacts communicate contact with metal structures.
-- Zipline sounds communicate movement along a cable.
 - UI sounds confirm interactions and state changes.
 
 Sound must reinforce gameplay rather than obscure important information.
 
 ## 2.2 Minimalist Presentation
 
-The project follows a minimalist visual identity inspired by Mirror's Edge.
+Glassline follows a minimalist visual identity inspired by the original *Mirror's Edge* (2008). It is not a remake of Mirror's Edge and must not use its proprietary assets.
 
 Audio should follow the same direction:
 
@@ -120,7 +120,7 @@ Gameplay events drive audio, never the opposite.
 src/audio/
   AudioManager.ts
   AudioContextManager.ts
-  AudioSettings.ts
+  AudioSettingsAdapter.ts
 
   core/
     AudioBus.ts
@@ -139,7 +139,6 @@ src/audio/
     WindSynth.ts
     UiSynth.ts
     RadioSynth.ts
-    ZiplineSynth.ts
 
   spatial/
     AudioListenerController.ts
@@ -167,6 +166,8 @@ src/audio/
 
 This is a proposed structure. Implement modules incrementally and avoid creating empty classes without a concrete purpose.
 
+`AudioSettingsAdapter.ts` applies values owned by the Settings System. It must not define, persist, or expose a competing settings model.
+
 ## 3.2 Main Components
 
 ### AudioManager
@@ -179,7 +180,7 @@ Responsibilities:
 - Initialize the audio context.
 - Manage audio buses.
 - Receive and dispatch audio events.
-- Manage master volume and mute state.
+- Apply master volume and mute state supplied by the Settings System.
 - Coordinate global audio lifecycle.
 - Dispose audio resources during shutdown.
 
@@ -245,11 +246,10 @@ Responsibilities:
 - Footstep scheduling.
 - Landing sounds.
 - Movement sounds.
+- Jump and walljump sounds.
 - Slide sounds.
 - Vault sounds.
 - Wallrun sounds.
-- Climbing sounds.
-- Balance and zipline sounds.
 
 It consumes player state and typed gameplay events.
 
@@ -319,7 +319,7 @@ When gameplay is paused:
 - Stop gameplay-specific continuous sounds.
 - Pause or reduce environmental activity according to the desired presentation.
 - Prevent footstep scheduling.
-- Stop zipline and wallrun loops.
+- Stop sliding and wallrun loops.
 - Keep UI audio available if the context is running.
 
 When gameplay resumes:
@@ -412,7 +412,6 @@ Use them for:
 - Mechanical resonances.
 - Metal impacts.
 - UI feedback.
-- Zipline tension.
 - Radio tones.
 - Low-frequency impact body.
 
@@ -494,8 +493,6 @@ Do not produce footsteps when:
 - Player is airborne.
 - Player is sliding.
 - Player is wallrunning.
-- Player is climbing.
-- Player is attached to a zipline.
 - Player is in a state where normal ground contact is not occurring.
 
 ### Surface Dependence
@@ -507,9 +504,9 @@ Required initial surface categories:
 - Concrete.
 - Metal.
 - Rubber.
-- Asphalt.
 - Glass.
-- Generic fallback.
+- Asphalt.
+- Generic fallback (used only when no valid SurfaceType is available; not a SurfaceRegistry type).
 
 Each surface preset may define:
 
@@ -637,52 +634,17 @@ Possible components:
 - Brief movement transient.
 - Stronger low-frequency component than a normal jump.
 
-## 6.8 Ledge Grab and Climbing
+## 6.8 Ledge Grab and Climbing (Deferred)
 
-Use restrained contact sounds.
+Ledge grabbing, hanging, and climbing are outside the initial Glassline release scope (`03_GAMEPLAY_SPEC.md` §13). Do not define ledge-grab or climbing audio events, and do not implement climbing sound states in `PlayerAudioController`.
 
-Possible components:
+## 6.9 Balancing (Deferred)
 
-- Hand contact transient.
-- Metal or concrete friction.
-- Pull-up movement noise.
-- Landing or foot contact when returning to a platform.
+Dedicated balance traversal is a deferred mechanic (`03_GAMEPLAY_SPEC.md` §13). A narrow platform is ordinary walkable geometry: it uses the normal footstep system and must not receive balance-specific audio behavior or a dedicated balance audio state.
 
-Use the detected surface category when available.
+## 6.10 Ziplines and Swinging (Deferred)
 
-Avoid adding detailed hand sounds for every animation frame.
-
-## 6.9 Balancing
-
-Balancing audio should remain subtle.
-
-Possible elements:
-
-- Light foot adjustments.
-- Occasional contact noise.
-- Wind ambience.
-
-Do not generate continuous loud friction noise while the player stands on a narrow beam.
-
-## 6.10 Zipline
-
-Zipline is a distinctive continuous sound.
-
-Possible synthesis:
-
-- Filtered noise for cable friction.
-- A narrow tonal component for cable resonance.
-- Subtle modulation based on speed.
-- Short metallic contact sounds when attaching or detaching.
-
-Parameters:
-
-- Movement speed.
-- Cable tension approximation.
-- Distance travelled.
-- Attachment and release events.
-
-Do not attempt full physical cable simulation for audio.
+Ziplines and swinging are outside the initial release scope (`00_PROJECT_BRIEF.md` §6, `03_GAMEPLAY_SPEC.md` §13). Do not implement zipline attachment, loop, tension, or release sounds, and do not include a zipline synthesizer module.
 
 ## 6.11 Metal Impacts
 
@@ -764,6 +726,9 @@ Required events:
 - Menu selection.
 - Button confirmation.
 - Back or cancel.
+- Interaction prompt available.
+- Interaction confirmed.
+- Interaction unavailable or failed.
 - Checkpoint reached.
 - Exercise completed.
 - Run started.
@@ -787,19 +752,20 @@ The audio system must integrate with the existing SurfaceRegistry.
 
 Physics or gameplay code should provide a stable surface identifier.
 
-Example:
+The canonical surface identifiers are defined by the SurfaceRegistry (`02_TECHNICAL_ARCHITECTURE.md` §9.6):
 
 ```ts
 type SurfaceType =
   | "concrete"
   | "metal"
   | "rubber"
-  | "asphalt"
   | "glass"
-  | "default";
+  | "asphalt";
 ```
 
 The audio system maps this identifier to a sound preset.
+
+If no valid SurfaceType is available, the audio layer may use an internal fallback preset. The fallback is not a SurfaceRegistry type and must not become a second classification system.
 
 Do not create a separate surface classification system inside the audio module.
 
@@ -848,7 +814,6 @@ Potential sources:
 - Distant mechanical events.
 - Static ambience emitters.
 - Radio emitters in the world.
-- Optional zipline attachment points.
 
 Player-local sounds may remain non-spatial.
 
@@ -890,51 +855,34 @@ Do not create arbitrary distance attenuation logic separately for every sound so
 
 ## 9.1 Event-Driven Design
 
-Gameplay systems should publish typed events.
+Gameplay systems publish typed events. Audio systems subscribe to relevant events and must not independently infer every action from player velocity.
 
-Audio systems subscribe to relevant events.
-
-Example event contracts:
+Player movement events are defined by the gameplay specification. The initial audio integration consumes the events from `03_GAMEPLAY_SPEC.md` §18:
 
 ```ts
-interface PlayerJumpedEvent {
-  readonly playerId: string;
-  readonly speed: number;
-}
-
-interface PlayerLandedEvent {
-  readonly playerId: string;
-  readonly impactVelocity: number;
-  readonly surface: SurfaceType;
-}
-
-interface PlayerFootstepEvent {
-  readonly playerId: string;
-  readonly speed: number;
-  readonly surface: SurfaceType;
-}
-
-interface PlayerParkourEvent {
-  readonly playerId: string;
-  readonly action:
-    | "slide-start"
-    | "slide-end"
-    | "vault"
-    | "wallrun-start"
-    | "wallrun-end"
-    | "walljump"
-    | "ledge-grab"
-    | "climb"
-    | "balance-start"
-    | "balance-end"
-    | "zipline-start"
-    | "zipline-end";
-  readonly speed?: number;
-  readonly surface?: SurfaceType;
-}
+type GameplayEvent =
+  | { type: "player:jumped"; speed: number }
+  | { type: "player:landed"; impactSpeed: number }
+  | { type: "player:sliding-started"; speed: number }
+  | { type: "player:sliding-ended" }
+  | { type: "player:vault-started"; vaultType: string }
+  | { type: "player:wallrun-started"; side: "left" | "right" }
+  | { type: "player:wallrun-ended" }
+  | { type: "player:walljumped" };
 ```
 
-These are illustrative contracts. Reuse or extend the project's existing typed event system rather than introducing duplicate event infrastructure.
+Audio resolves presentation-only data from authoritative state instead of duplicating gameplay events. For example, the surface category used by landing and footstep presets is read from the SurfaceRegistry (`02_TECHNICAL_ARCHITECTURE.md` §9.6), not carried as a second gameplay event. Footsteps are scheduled by `FootstepController` from grounded movement state and speed, not by a separate footstep gameplay event.
+
+Other audio triggers consume existing domain events rather than introducing audio-specific gameplay events:
+
+| Source | Audio use |
+|---|---|
+| Interaction events (`14_INTERACTION_SYSTEM_SPEC.md` §18) | Interaction prompt, confirmation, and failure feedback |
+| Checkpoint activation (`16_CHECKPOINT_SYSTEM_SPEC.md` §13.2) | Checkpoint feedback |
+| Speedrun events (`09_SPEEDRUN_SYSTEM_SPEC.md` §16.3) | Run start, finish, failure, and result feedback |
+| UI notifications (`07_UI_UX_SPEC.md` §15) | Menu and interface feedback |
+
+These are integration contracts, not new event types. Reuse the project's existing typed event system rather than introducing duplicate event infrastructure.
 
 ## 9.2 Event Rules
 
@@ -954,7 +902,6 @@ Examples:
 - Wind intensity.
 - Slide loop intensity.
 - Wallrun loop intensity.
-- Zipline loop intensity.
 
 Use a controlled update interface.
 
@@ -976,7 +923,7 @@ Recommended initial buses:
 | Environment | Wind and city ambience |
 | Player | Player-related audio |
 | Movement | Footsteps and movement loops |
-| Parkour | Jump, landing, vault, wallrun, climbing |
+| Parkour | Jump, landing, vault, wallrun, walljump |
 | UI | Interface sounds |
 | Radio | Radio communication |
 
@@ -984,19 +931,19 @@ The final bus hierarchy may be simplified if separate buses do not provide usefu
 
 ## 10.2 Volume Settings
 
-Provide settings for:
+User-facing volume settings are owned by the Settings System (`25_SETTINGS_SYSTEM_SPEC.md` §7.1) and persisted through the Save System (`10_SAVE_SYSTEM_SPEC.md`). The audio system applies the resolved values at runtime; it must not define, persist, or expose a competing settings model.
 
-- Master volume.
-- Environment volume.
-- Player/SFX volume.
-- UI volume.
-- Radio volume.
+Initial settings consumed by audio:
 
-A separate music volume is unnecessary until a music system is actually introduced.
+- `audio.master_volume`.
+- `audio.sfx_volume`.
+- `audio.ui_volume`.
+- `audio.music_volume` (reserved by the Settings System; the initial release has no music content).
+- `audio.muted`.
 
-Volume values should be normalized between 0 and 1.
+Bus gains for environment, radio, movement, and parkour are internal mixing trims derived from these settings; they are not separate user preferences.
 
-Validate persisted values before applying them.
+Volume values are normalized between 0 and 1. Validate values received from the Settings System before applying them, and never write settings back from the audio system.
 
 ## 10.3 Ducking
 
@@ -1080,19 +1027,20 @@ Do not introduce complexity without a measurable benefit.
 
 # 12. Accessibility and User Experience
 
-Provide:
+Accessibility policy is owned by the Accessibility System (`26_ACCESSIBILITY_SYSTEM_SPEC.md`), and accessibility preferences are stored by the Settings System (`25_SETTINGS_SYSTEM_SPEC.md`). The audio system applies the resolved configuration; it must not maintain its own accessibility settings or persistence.
 
-- Master mute.
-- Independent volume controls.
-- Sensible default volume levels.
-- No excessively loud sudden transients.
-- Consistent audio feedback.
-- Visual alternatives for important audio cues.
+Audio must:
+
+- Support master mute and the volume controls resolved by the Settings System.
+- Use sensible default levels and avoid excessively loud sudden transients.
+- Keep audio feedback consistent.
+- Never become the only channel for critical gameplay information; HUD and Accessibility provide visual and textual alternatives (`26_ACCESSIBILITY_SYSTEM_SPEC.md` §14.5).
 
 The following must never be communicated exclusively through sound:
 
 - Checkpoint completion.
 - Exercise completion.
+- Run completion.
 - Invalid run state.
 - Personal best.
 - Critical gameplay instructions.
@@ -1212,10 +1160,6 @@ Acceptance criteria:
 - Vaulting.
 - Wallrun.
 - Walljump.
-- Ledge grab.
-- Climbing.
-- Balancing.
-- Zipline.
 
 Acceptance criteria:
 
@@ -1239,6 +1183,7 @@ Acceptance criteria:
 ## Phase 6 — UI and Radio
 
 - UI feedback.
+- Interaction feedback.
 - Checkpoint and completion sounds.
 - Radio static and signal.
 - Optional synthetic speech.
@@ -1316,7 +1261,7 @@ If a required gameplay event or surface classification does not exist yet, do no
 
 Audio should make movement feel physical, readable, and responsive.
 
-The player should hear the difference between running on concrete, landing on metal, sliding across a surface, and moving along a cable.
+The player should hear the difference between running on concrete, landing on metal, sliding across a surface, and vaulting over an obstacle.
 
 However, sound must remain restrained.
 

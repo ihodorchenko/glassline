@@ -1,6 +1,6 @@
 # 04_ASSET_BIBLE.md
 
-**Project:** MIRROR'S EDGE — RUNNER PROTOCOL  
+**Project:** Glassline  
 **Document:** Asset Bible  
 **Version:** 1.0  
 **Status:** Design Specification  
@@ -10,13 +10,13 @@
 
 ## 1. Purpose
 
-This document defines the visual identity and procedural asset standards for **MIRROR'S EDGE — RUNNER PROTOCOL**.
+This document defines the visual identity and procedural asset standards for **Glassline**.
 
 It describes how the game world should look, how its environment is constructed, and how procedural assets must be generated and managed.
 
 The goal is to establish a consistent visual language that supports fast first-person movement, readable parkour routes, and experimentation with Three.js rendering techniques.
 
-This is an original project inspired by the visual direction of the first *Mirror's Edge*. It must not reproduce the original game's levels, proprietary assets, textures, models, or exact environmental layouts.
+This is an original project inspired by the visual direction of the original *Mirror's Edge* (2008). Glassline is not a remake of Mirror's Edge, and it must not reproduce the original game's levels, proprietary assets, textures, models, or exact environmental layouts.
 
 The project should capture a similar design philosophy:
 
@@ -81,8 +81,6 @@ Tertiary details should never obscure important gameplay information.
 
 ### 2.3 Reference Mood
 
-<escape> </escape>
-
 The intended atmosphere combines:
 
 - Bright daylight.
@@ -113,6 +111,8 @@ The following colors establish the initial visual identity.
 | Runner Red | `#D52E36` | Gameplay accents and route markers |
 | Sky | `#A7B9C4` | Initial sky color |
 | Asphalt | `#62686B` | Rooftops and ground surfaces |
+
+The canonical palette values are defined in `02_TECHNICAL_ARCHITECTURE.md` §8.4: Pure White, Concrete, Steel, Dark Metal, Runner Red, and Sky. Light Gray and Asphalt are derived working values for secondary surfaces and rooftops; they must stay within the same restrained neutral range and must not replace the canonical six.
 
 These are baseline colors, not mandatory values for every object.
 
@@ -182,6 +182,18 @@ Suggested initial material definitions:
 | Glass | Muted blue-gray | Controlled transparency |
 | Rubber | Dark, matte | Non-metallic, high roughness |
 | Asphalt | Dark gray | Rough, subtle surface variation |
+
+Visual materials are not the same thing as physics surface types. The SurfaceRegistry defines the canonical surface identifiers `concrete`, `metal`, `rubber`, `glass`, and `asphalt` (`02_TECHNICAL_ARCHITECTURE.md` §9.6). Materials map to those identifiers through explicit level metadata; audio, friction, and landing response must use the registered surface type, not the visual material or mesh name.
+
+Suggested mapping:
+
+| SurfaceType | Materials |
+|---|---|
+| `concrete` | White Concrete, Rough Concrete, Painted Concrete |
+| `metal` | Brushed Metal, Dark Steel, Red Painted Metal |
+| `rubber` | Rubber |
+| `glass` | Glass |
+| `asphalt` | Asphalt |
 
 Initial material parameters should be tuned visually rather than treated as physically measured material properties.
 
@@ -459,11 +471,10 @@ Required module families:
 
 - Straight wall.
 - Corner wall.
-- Low wall.
+- Low wall (usable as a vault obstacle when marked by level metadata).
 - Tall wall.
 - Wall with opening.
-- Wall with ledge.
-- Wall with climbable edge.
+- Continuous wall segment suitable for wallrun and walljump contact.
 
 **Floors and Platforms**
 
@@ -562,6 +573,8 @@ The initial gameplay implementation may use simplified collision shapes.
 
 Do not create complex physics meshes for every stair step unless required by gameplay.
 
+Ladders are decorative industrial structures in the initial release. Their presence does not imply a climbing mechanic (`03_GAMEPLAY_SPEC.md` §13, `05_PROCEDURAL_GENERATION_SPEC.md` §3.5).
+
 ### 7.6 Construction Scaffolding
 
 Scaffolding is a major visual and gameplay element in the Prologue.
@@ -600,9 +613,10 @@ Required modules:
 - Elevated platform.
 - Support beam.
 - Bridge railing.
-- Narrow balance beam.
 
 These objects should support predictable player movement and collision.
+
+Narrow walkways remain ordinary walkable geometry; do not add balance-specific assets or metadata for them.
 
 ### 7.8 Signs and Navigation
 
@@ -619,6 +633,8 @@ Elements include:
 - Minimal environmental text.
 
 Use a consistent typography and graphic language.
+
+Typography may use the project's UI font resources. Fonts and development dependencies are not game assets (`00_PROJECT_BRIEF.md` §2.3).
 
 Do not use large decorative text everywhere.
 
@@ -887,7 +903,7 @@ Examples:
 | Concrete platform | Box |
 | Large wall | Box |
 | Pipe | Cylinder or simplified proxy |
-| Narrow beam | Box |
+| Narrow walkway | Box |
 | Scaffolding | Simplified boxes |
 | Decorative panel | None |
 | Small bolts | None |
@@ -895,16 +911,20 @@ Examples:
 
 ### 10.3 Gameplay Metadata
 
-Objects that support parkour should expose explicit gameplay metadata.
+Objects and trigger volumes that participate in gameplay should expose explicit gameplay metadata.
 
 Examples:
 
-- Vaultable.
-- Wallrun surface.
-- Climbable ledge.
-- Balance surface.
-- Zipline anchor.
-- Landing platform.
+- `walkable` — ordinary traversable surface.
+- `landingSurface` — surface intended for a controlled landing.
+- `vaultObstacle` — object the Vault System may traverse.
+- `wallrunSurface` — wall segment valid for wallrun contact.
+- `walljumpSurface` — wall segment valid for walljump contact.
+- `checkpoint` — checkpoint trigger volume.
+- `finishTrigger` — Prologue finish trigger.
+- `hazard` / `killVolume` — failure or kill volume.
+
+Ledge, balance, and zipline metadata are deferred and must not be added in the initial release (`03_GAMEPLAY_SPEC.md` §13).
 
 Do not infer all gameplay behavior from visual material or mesh names.
 
@@ -1228,11 +1248,13 @@ The following is the minimum useful asset set for the first playable environment
 - Parapets.
 - Pipes.
 - Ventilation units.
-- Narrow balance beam.
 - Metal railings.
 - Industrial stairs.
-- Ledge and climbable wall.
-- Zipline anchors and cable.
+- Vault obstacles for the vaulting exercise.
+- Wallrun surfaces with a safe exit.
+- Low overhead obstacles for the sliding exercise.
+- Landing platforms.
+- Interaction targets for the interaction exercise.
 - Directional signs.
 - Checkpoint markers.
 
@@ -1246,11 +1268,13 @@ The following is the minimum useful asset set for the first playable environment
 - Metal walkways.
 - Narrow bridges.
 - Safety railings.
-- Vertical ladders.
+- Vertical ladders (decorative industrial geometry).
 - Large landing platforms.
 - Skyline background.
 - Checkpoint markers.
 - Finish marker.
+
+The initial asset set must not contain dedicated assets or gameplay metadata for deferred traversal mechanics (ledge grabbing, climbing, balance traversal, ziplines, swinging). Geometry that resembles a ledge, narrow beam, ladder, or cable is non-interactive environment art (`05_PROCEDURAL_GENERATION_SPEC.md` §3.5).
 
 The asset set should be expanded only when a level section requires it.
 
@@ -1316,7 +1340,7 @@ Recommended order:
 3. Basic rooftop structures.
 4. Pipes and ventilation.
 5. Railings and stairs.
-6. Ledge and wallrun surfaces.
+6. Wallrun surfaces and vault obstacles.
 7. Scaffolding modules.
 8. Building facade generation.
 9. Rooftop generation.

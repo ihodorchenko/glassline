@@ -1,6 +1,6 @@
 # AI AGENT RULES
 
-## GLASSLINE — AGENT RULES
+## Glassline — Agent Rules
 
 **Document:** `01_AGENT_RULES.md`  
 **Version:** 1.0  
@@ -631,7 +631,7 @@ For example:
 - Audio reacts to gameplay events.
 - HUD reads published player and run information.
 - Statistics collect relevant gameplay events.
-- Checkpoint management communicates with the run manager.
+- The Checkpoint System publishes activation facts consumed by the Speedrun System.
 
 ## 11.1 Event rules
 
@@ -675,7 +675,7 @@ Examples:
 
 - Player controller and physics.
 - Parkour state transitions.
-- Checkpoint manager and run manager.
+- Checkpoint System and Speedrun System.
 - Run completion and result persistence.
 - Settings persistence and application startup.
 

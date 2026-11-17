@@ -2,7 +2,7 @@
 
 # Training System Specification
 
-**Project:** Mirror's Edge-Inspired First-Person Parkour Game  
+**Project:** Glassline  
 **Document:** Training System  
 **Version:** 1.0  
 **Status:** Implementation Specification  
@@ -87,7 +87,7 @@ Training must not create a separate movement implementation.
 The Training System owns:
 
 - Training exercise definitions.
-- Exercise sequence and progression.
+- Exercise sequence and content ordering.
 - Exercise lifecycle.
 - Exercise objectives.
 - Exercise completion conditions.
@@ -99,7 +99,7 @@ The Training System owns:
 - Training session progress.
 - Exercise restart requests.
 - Training result generation.
-- Training-specific tutorial triggers.
+- Training context events published for contextual tutorial eligibility.
 
 ### 3.2 Non-responsibilities
 
@@ -117,6 +117,8 @@ The Training System does not own:
 - Persistent storage infrastructure.
 - Main application navigation.
 - HUD rendering.
+- Persistent content unlock state and unlock rules.
+- Contextual mechanic tutorials and tutorial history.
 
 These responsibilities belong to their respective systems.
 
@@ -140,6 +142,10 @@ These responsibilities belong to their respective systems.
 - `18_PLAYER_STATE_SYSTEM_SPEC.md`
 - `19_GAMEPLAY_SESSION_SYSTEM_SPEC.md`
 - `20_GAMEPLAY_FLOW_SYSTEM_SPEC.md`
+- `22_PROGRESSION_SYSTEM_SPEC.md`
+- `28_TUTORIAL_SYSTEM_SPEC.md`
+- `29_ACHIEVEMENT_SYSTEM_SPEC.md`
+- `30_STATISTICS_SYSTEM_SPEC.md`
 
 ---
 
@@ -213,7 +219,7 @@ Training
     |       +-- Basic Jump
     |       +-- Jump Distance
     |
-    +-- Sliding
+    +-- Crouching and Sliding
     |       |
     |       +-- Crouch
     |       +-- Slide Under Obstacle
@@ -251,6 +257,8 @@ type TrainingExerciseStatus =
 ```
 
 A locked exercise must have an explicit prerequisite.
+
+Exercise availability is derived from the Progression System's content unlock state (`22_PROGRESSION_SYSTEM_SPEC.md`). The Training System must not maintain an independent unlock authority.
 
 The system must not create progression deadlocks where an exercise becomes permanently inaccessible.
 
@@ -991,7 +999,7 @@ interface TrainingResult {
 
 An exercise may be marked as mastered when the player reaches its configured mastery threshold.
 
-Mastery must not be required to unlock the next mandatory exercise unless explicitly specified by the Training design.
+Mastery must not be required to unlock the next mandatory exercise unless the Progression System's content configuration explicitly specifies it.
 
 ### 11.6 Medals
 
@@ -1008,9 +1016,13 @@ Training medals are independent from Speedrun medals.
 
 Do not reuse Speedrun scoring or validation rules.
 
+Training results must never be submitted to the Prologue speedrun leaderboard or treated as ranked run results (`09_SPEEDRUN_SYSTEM_SPEC.md`).
+
 ---
 
-## 12. Training Progression
+## 12. Training Progress Records
+
+Training owns the authoritative records of exercise completion, mastery, scores, and attempts. Persistent content unlock state and unlock rules are owned by the Progression System; Training reports results through authoritative events and consumes unlock state from Progression snapshots.
 
 ### 12.1 Progress Model
 
@@ -1019,8 +1031,6 @@ interface TrainingProgress {
     completedExerciseIds: string[];
 
     masteredExerciseIds: string[];
-
-    unlockedExerciseIds: string[];
 
     exerciseRecords: Record<string, TrainingExerciseRecord>;
 }
@@ -1046,13 +1056,11 @@ interface TrainingExerciseRecord {
 }
 ```
 
-### 12.3 Unlock Rules
+### 12.3 Unlock Coordination
 
-The initial progression should be mostly sequential.
+Persistent unlock rules and unlock state are owned by the Progression System (`22_PROGRESSION_SYSTEM_SPEC.md`). Training publishes exercise completion and mastery results; it must not independently unlock content or persist its own unlock state.
 
-Completing a mandatory exercise unlocks the next exercise or section.
-
-Optional exercises may be available independently.
+The initial content unlock order should remain mostly sequential and must not create progression deadlocks.
 
 The player must be able to replay unlocked exercises.
 
@@ -1097,7 +1105,7 @@ When restarting:
 2. Generate a new attempt ID.
 3. Clear active objectives.
 4. Cancel exercise-specific timers.
-5. Request recovery through Respawn System.
+5. Request recovery through `RespawnManager` (`17_RESPAWN_SYSTEM_SPEC.md`) with reason `training-restart`.
 6. Resolve the configured spawn point.
 7. Reset transient movement state through Movement System.
 8. Reset camera effects through Camera System.
@@ -1212,11 +1220,12 @@ The following information should be persisted:
 
 - Completed exercises.
 - Mastered exercises.
-- Unlocked exercises.
 - Best scores.
 - Best times.
 - Attempt counts.
 - Last played timestamps.
+
+Unlock state is owned and persisted by the Progression System, not by Training.
 
 ### 16.3 Save Timing
 
@@ -1224,7 +1233,6 @@ Save progress after:
 
 - Successful exercise completion.
 - Mastery improvement.
-- Unlock progression.
 - Relevant Training session completion.
 
 Temporary attempt state does not need to be persisted in the initial implementation.
@@ -1337,7 +1345,7 @@ Training may define exercise-specific checkpoints and request a progress reset a
 
 Respawn performs player recovery and placement.
 
-Training requests exercise restart through Respawn.
+Training requests exercise restart through `RespawnManager` with the `training-restart` reason.
 
 ### 17.10 Player State System
 
@@ -1352,6 +1360,24 @@ Save System persists Training progress.
 ### 17.12 Audio System
 
 Audio System presents Training-related sound feedback.
+
+### 17.13 Progression, Achievement, and Statistics Systems
+
+Training publishes authoritative exercise result events, for example `training_exercise_completed` and `training_exercise_mastered`.
+
+- The Progression System consumes them to update persistent progression and content unlock state (`22_PROGRESSION_SYSTEM_SPEC.md`).
+- The Achievement System consumes them for achievement evaluation (`29_ACHIEVEMENT_SYSTEM_SPEC.md`).
+- The Statistics System consumes them for aggregate statistics (`30_STATISTICS_SYSTEM_SPEC.md`).
+
+Training must not write progression, achievement, or statistics records directly, and must not persist duplicate copies of their state.
+
+### 17.14 Tutorial System
+
+The Tutorial System owns contextual mechanic explanations and their trigger and eligibility logic (`28_TUTORIAL_SYSTEM_SPEC.md`).
+
+Training owns exercise instructions and objective-specific hints. Training must not duplicate contextual tutorial content or tutorial hint logic.
+
+Training may publish context events such as exercise started, exercise completed, or mechanic introduced that the Tutorial System evaluates. It must not directly trigger tutorial presentation.
 
 ---
 
@@ -1472,17 +1498,18 @@ Test:
 - Out-of-order events.
 - Stale attempt events.
 
-### 20.3 Progression Tests
+### 20.3 Progression Reporting Tests
 
 Test:
 
-- Exercise unlock.
-- Section unlock.
+- Completion event publication.
+- Mastery event publication.
 - Replay completed exercise.
 - Mastery update.
 - Best score update.
 - Best time update.
 - Optional exercise behavior.
+- Exercise availability derived from Progression unlock state.
 - Invalid prerequisite configuration.
 
 ### 20.4 Evaluation Tests
@@ -1537,7 +1564,7 @@ Running and Sprinting
 Jumping
     |
     v
-Sliding
+Crouching and Sliding
     |
     v
 Vaulting
@@ -1631,7 +1658,7 @@ Implement:
 - Input binding labels.
 - Completion feedback.
 
-### Phase 6: Evaluation and Progression
+### Phase 6: Evaluation and Results
 
 Implement:
 
@@ -1639,7 +1666,7 @@ Implement:
 - Scoring.
 - Medals.
 - Mastery.
-- Unlock rules.
+- Progression event publication.
 - Best result tracking.
 
 ### Phase 7: Persistence and Integration
@@ -1655,6 +1682,10 @@ Integrate:
 - Respawn.
 - Player State.
 - Save System.
+- Progression.
+- Achievement.
+- Statistics.
+- Tutorial.
 - UI and Audio.
 
 ### Phase 8: Validation
@@ -1689,7 +1720,7 @@ The implementation is accepted when:
 13. Hints use current input bindings.
 14. Exercise completion is deterministic.
 15. Failure conditions are explicit.
-16. Progression unlocks are consistent.
+16. Unlock state is owned by the Progression System and consistent with Training completion events.
 17. Completed exercises can be replayed.
 18. Training progress can be persisted.
 19. Persistence failures do not interrupt active gameplay.
@@ -1697,6 +1728,8 @@ The implementation is accepted when:
 21. Training does not duplicate Speedrun scoring.
 22. All session-scoped subscriptions are released correctly.
 23. Full Training integration tests pass.
+24. Training results are published as authoritative events and not written directly into Progression, Achievement, or Statistics state.
+25. Training instructions and hints remain separate from Tutorial System contextual explanations.
 
 ---
 
@@ -1715,7 +1748,7 @@ The implementation is accepted when:
 - [ ] Input binding labels integrated.
 - [ ] Exercise evaluation implemented.
 - [ ] Mastery and medals implemented.
-- [ ] Progression rules implemented.
+- [ ] Progression event reporting implemented.
 - [ ] Training progress persistence integrated.
 - [ ] Gameplay Session integration complete.
 - [ ] Gameplay Flow integration complete.
@@ -1723,6 +1756,8 @@ The implementation is accepted when:
 - [ ] Interaction integration complete.
 - [ ] Checkpoint integration complete.
 - [ ] Respawn integration complete.
+- [ ] Progression, Achievement, and Statistics integration complete.
+- [ ] Tutorial boundary respected; no duplicated contextual hint logic.
 - [ ] UI integration complete.
 - [ ] Audio integration complete.
 - [ ] Unit tests pass.

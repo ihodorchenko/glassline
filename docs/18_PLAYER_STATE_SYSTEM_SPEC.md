@@ -2,7 +2,7 @@
 
 # Player State System Specification
 
-**Project:** Mirror's Edge-Inspired First-Person Parkour Game  
+**Project:** Glassline — First-Person Parkour Game  
 **Document:** 18 — Player State System  
 **Status:** Implementation Specification  
 **Priority:** Core Gameplay Infrastructure
@@ -672,15 +672,13 @@ If recovery fails:
 - Allow Respawn System to execute its failure policy.
 - Transition to a valid disabled or unavailable state when appropriate.
 
-### 9.4 Legacy Checkpoint Integration
+### 9.4 Checkpoint Integration
 
-`16_CHECKPOINT_SYSTEM_SPEC.md` mentions a `RespawnCoordinator`.
+`RespawnManager` from `17_RESPAWN_SYSTEM_SPEC.md` is the sole owner and orchestrator of the full respawn lifecycle.
 
-For the integrated architecture, `RespawnManager` from document 17 is the canonical owner of the full respawn lifecycle.
+`16_CHECKPOINT_SYSTEM_SPEC.md` defines the Checkpoint System as a destination provider only: it owns checkpoint activation and progress and exposes the active recovery destination through the Respawn integration adapter.
 
-Any legacy checkpoint-level coordinator must be treated as a thin adapter or removed during integration.
-
-Checkpoint System may resolve checkpoint information and provide destination data, but must not own the recovery orchestration.
+There is no separate checkpoint-level respawn coordinator in the integrated architecture. A checkpoint subsystem must not own recovery orchestration, player placement, or recovery lifecycle state.
 
 ---
 

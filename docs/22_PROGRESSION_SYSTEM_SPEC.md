@@ -2,9 +2,9 @@
 
 # Progression System Specification
 
-**Project:** Mirror's Edge-Inspired First-Person Parkour Game  
+**Project:** Glassline — First-Person Parkour Game  
 **Document:** Progression System  
-**Version:** 1.0  
+**Version:** 2.0  
 **Status:** Implementation Specification  
 **Priority:** Core Gameplay System
 
@@ -14,7 +14,7 @@
 
 The Progression System manages the player's long-term progress across gameplay modes and experiences.
 
-It provides a unified representation of completed content, unlocked content, achievements, milestones, and persistent progression records.
+It provides a unified representation of completed content, unlocked content, progression milestones, and persistent progression records.
 
 The system connects individual gameplay results into a coherent progression model.
 
@@ -25,9 +25,10 @@ It answers questions such as:
 - Has the player completed the Prologue?
 - Which content is currently unlocked?
 - Which milestones have been reached?
-- Which achievements have been earned?
 - What progress should be presented in the Main Menu?
 - Which progression requirements must be satisfied before entering specific content?
+
+Achievements are a separate domain owned by the Achievement System (`29_ACHIEVEMENT_SYSTEM_SPEC.md`). Progression may consume achievement events as inputs to milestones and unlock rules, but it must not maintain achievement definitions, evaluation, progress, or unlock state.
 
 The initial implementation focuses on Training and Prologue progression.
 
@@ -41,7 +42,7 @@ The architecture must allow future gameplay modes and additional content without
 
 Progression must represent actual gameplay accomplishments.
 
-Unlocks and achievements must be based on authoritative gameplay events and validated results.
+Unlocks and milestones must be based on authoritative gameplay events and validated results.
 
 Opening a screen, entering a level, or starting a session must not automatically count as completion.
 
@@ -101,15 +102,13 @@ The Progression System owns:
 - Completed content records.
 - Content unlock state.
 - Progression milestones.
-- Achievement definitions.
-- Achievement evaluation.
-- Achievement completion records.
 - Cross-mode progression rules.
 - Progression summaries.
 - Progression event processing.
 - Progression queries for UI and Gameplay Flow.
 - Progression data migration coordination.
 - Idempotent progression updates.
+- Consumption of achievement events as progression inputs.
 
 ### 3.2 Non-responsibilities
 
@@ -126,6 +125,10 @@ The Progression System does not own:
 - Player movement.
 - UI navigation.
 - Save storage implementation.
+- Achievement definitions.
+- Achievement evaluation.
+- Achievement progress or unlock state.
+- Achievement history and persistence semantics.
 - Online leaderboards.
 - Multiplayer ranking.
 
@@ -141,6 +144,7 @@ The Progression System does not own:
 - `19_GAMEPLAY_SESSION_SYSTEM_SPEC.md`
 - `20_GAMEPLAY_FLOW_SYSTEM_SPEC.md`
 - `21_TRAINING_SYSTEM_SPEC.md`
+- `29_ACHIEVEMENT_SYSTEM_SPEC.md`
 
 ---
 
@@ -157,8 +161,6 @@ The initial implementation should contain:
 - `ProgressionRuleEngine`
 - `ProgressionUnlockResolver`
 - `ProgressionMilestoneEvaluator`
-- `AchievementManager`
-- `AchievementEvaluator`
 - `ProgressionSnapshotProvider`
 - `ProgressionValidator`
 - `ProgressionEvents`
@@ -192,14 +194,6 @@ Determines which content is available based on current progression.
 **ProgressionMilestoneEvaluator**
 
 Evaluates major player accomplishments.
-
-**AchievementManager**
-
-Owns achievement state and completion records.
-
-**AchievementEvaluator**
-
-Evaluates achievement requirements against progression events and accumulated records.
 
 **ProgressionSnapshotProvider**
 
@@ -235,8 +229,6 @@ interface PlayerProgression {
 
     milestones: ProgressionMilestone[];
 
-    achievements: AchievementProgression;
-
     statistics: ProgressionStatistics;
 }
 ```
@@ -249,7 +241,7 @@ Temporary gameplay session state must not be stored here.
 
 Training remains the owner of exercise-specific records.
 
-Progression stores the cross-mode summary needed for unlocks and achievements.
+Progression stores the cross-mode summary needed for unlocks and milestones.
 
 ```ts
 interface TrainingProgression {
@@ -341,8 +333,6 @@ interface ProgressionStatistics {
 
     totalCompletedLevels: number;
 
-    totalAchievements: number;
-
     totalPlayTime: number;
 
     firstSessionAt?: number;
@@ -387,9 +377,10 @@ type ProgressionContentType =
     | "training_exercise"
     | "level"
     | "game_mode"
-    | "challenge"
-    | "achievement_reward";
+    | "challenge";
 ```
+
+Content unlocked in response to an achievement is expressed as an unlock rule over the consumed `achievement_unlocked` event. It is not a separate achievement-owned content type.
 
 ### 6.3 Initial Content
 
@@ -525,134 +516,58 @@ This information supports UI explanations.
 
 ---
 
-## 8. Achievement System
+## 8. Achievement Integration Boundary
 
-### 8.1 Purpose
+### 8.1 Ownership
 
-Achievements recognize meaningful gameplay accomplishments.
+Achievements are owned by the Achievement System (`29_ACHIEVEMENT_SYSTEM_SPEC.md`).
 
-They are separate from exercise completion and progression unlocks.
+The Progression System does not define achievements, evaluate achievement conditions, track achievement progress, or store achievement unlock state.
 
-An achievement may unlock a cosmetic or additional content item in a future version, but the initial implementation does not require rewards.
+### 8.2 Consumed Achievement Events
 
-### 8.2 AchievementDefinition
+Progression may consume semantic achievement events published by the Achievement System:
 
 ```ts
-interface AchievementDefinition {
-    id: string;
+interface AchievementUnlockedEvent {
+    achievementId: string;
 
-    title: string;
+    category: string;
 
-    description: string;
+    unlockedAt: number;
 
-    category: AchievementCategory;
-
-    hidden: boolean;
-
-    conditions: AchievementCondition[];
-
-    rewardContentIds?: string[];
+    sourceEventId?: string;
 }
 ```
 
-### 8.3 Achievement Categories
+Such events may contribute to:
 
-```ts
-type AchievementCategory =
-    | "training"
-    | "campaign"
-    | "movement"
-    | "speedrun"
-    | "exploration"
-    | "special";
-```
+- Milestone conditions.
+- Content unlock rules.
+- Cross-mode progression summaries.
 
-### 8.4 Achievement Status
+They must not be transformed into a second authoritative achievement state.
 
-```ts
-type AchievementStatus =
-    | "locked"
-    | "unlocked";
-```
+### 8.3 What Progression Must Not Do
 
-The initial implementation does not need a multi-stage achievement lifecycle.
+- Must not maintain an achievement definition registry.
+- Must not maintain achievement progress, unlocked IDs, or unlock timestamps.
+- Must not evaluate achievement conditions.
+- Must not infer achievements from raw gameplay events; it receives achievement facts from the Achievement System.
+- Must not persist achievement unlock records.
+- Must not run achievement notifications.
 
-### 8.5 AchievementProgression
+### 8.4 Presentation
 
-```ts
-interface AchievementProgression {
-    unlockedAchievementIds: string[];
+Achievement presentation and notification data are provided by the Achievement System to HUD and Menu consumers (`29_ACHIEVEMENT_SYSTEM_SPEC.md` §13).
 
-    unlockedAt: Record<string, number>;
-}
-```
+Progression may expose only its own milestone and unlock data; it must not become an alternative achievement UI data source.
 
-### 8.6 Initial Achievements
+### 8.5 Circular Dependencies
 
-The initial achievement set should include:
+Progression may publish milestone events consumed by the Achievement System.
 
-**First Steps**
-
-Complete the first Training exercise.
-
-**Learning the Basics**
-
-Complete all mandatory introductory Training exercises.
-
-**Parkour Foundations**
-
-Complete all mandatory movement Training sections.
-
-**Perfect Execution**
-
-Master a configured Training exercise.
-
-**First Run**
-
-Complete the Prologue for the first time.
-
-**No Hesitation**
-
-Complete the Prologue without abandoning the session.
-
-**Speed Is Everything**
-
-Complete a validated Speedrun.
-
-**Gold Standard**
-
-Earn a Gold medal in a supported Training exercise.
-
-These are initial examples. Exact thresholds must be configurable.
-
-### 8.7 Hidden Achievements
-
-Hidden achievements should not reveal their descriptions before unlocking.
-
-The UI may show a generic hidden achievement entry.
-
-### 8.8 Achievement Evaluation
-
-Achievement evaluation must use authoritative progression records and validated source events.
-
-For example:
-
-- Training achievements use confirmed Training results.
-- Campaign achievements use confirmed campaign completion.
-- Speedrun achievements use validated Speedrun results.
-
-The Progression System must never infer a Gold medal from elapsed time independently of Training or Speedrun.
-
-### 8.9 Achievement Notifications
-
-When an achievement unlocks:
-
-1. Commit the achievement state.
-2. Publish an achievement-unlocked event.
-3. Allow UI to display a notification.
-4. Allow Audio to provide feedback.
-
-Notifications must not block gameplay.
+An achievement must not require a progression milestone that itself requires that same achievement. Such dependency chains must be rejected during validation (`29_ACHIEVEMENT_SYSTEM_SPEC.md` §12).
 
 ---
 
@@ -670,7 +585,9 @@ Examples:
 - `level_completed`
 - `prologue_completed`
 - `speedrun_completed`
-- `achievement_condition_updated`
+- `achievement_unlocked`
+
+`achievement_unlocked` is published by the Achievement System and consumed by Progression as an input. Progression must not emit it.
 
 Only supported authoritative events may change progression.
 
@@ -735,7 +652,7 @@ Progression Update
 Unlock Evaluation
         |
         v
-Achievement Evaluation
+Milestone Evaluation
         |
         v
 Persist Updated State
@@ -825,8 +742,6 @@ interface ProgressionSnapshot {
 
     unlockedContentIds: string[];
 
-    unlockedAchievementIds: string[];
-
     milestoneIds: string[];
 
     statistics: ProgressionStatistics;
@@ -844,10 +759,6 @@ interface IProgressionManager {
     getContentStatus(
         contentId: string
     ): ContentUnlockStatus;
-
-    getAchievementStatus(
-        achievementId: string
-    ): AchievementStatus;
 
     getUnmetRequirements(
         contentId: string
@@ -869,8 +780,9 @@ The following systems may consume progression snapshots:
 - Training Selection.
 - Prologue Introduction.
 - Results.
-- Achievement UI.
 - Future content selection screens.
+
+Achievement UI consumes the Achievement System snapshot, not the Progression snapshot.
 
 UI must not calculate unlock rules independently.
 
@@ -921,7 +833,7 @@ Do not copy the entire Training result object into Progression.
 
 Replaying an already completed exercise may improve its Training record.
 
-It must not create duplicate completion milestones or duplicate achievements.
+It must not create duplicate completion milestones.
 
 ### 12.4 Section Completion
 
@@ -993,11 +905,11 @@ Progression consumes validated run results.
 
 ### 14.2 Accepted Results
 
-Only a result accepted by Speedrun validation may contribute to Speedrun-related achievements or milestones.
+Only a result accepted by Speedrun validation may contribute to speedrun-related milestones.
 
 ### 14.3 Invalid Runs
 
-Invalid runs must not unlock achievements that explicitly require a validated run.
+Invalid runs must not contribute to milestones or unlocks that require a validated run.
 
 The Progression System must not attempt to independently validate checkpoint order or route integrity.
 
@@ -1050,9 +962,10 @@ Persist after meaningful progression changes:
 - Exercise mastery.
 - Section completion.
 - Prologue completion.
-- Achievement unlock.
 - Content unlock.
 - Milestone unlock.
+
+Achievement persistence is owned by the Achievement System and is not written by Progression.
 
 Avoid writing the full progression record for every transient gameplay event.
 
@@ -1103,12 +1016,11 @@ After confirmation:
 
 1. Create a new initial progression state.
 2. Clear progression unlock records.
-3. Clear achievement unlock records.
-4. Clear progression milestones.
-5. Reset Training progress through Training System.
-6. Coordinate reset of other domain-owned records where required.
-7. Persist the resulting state.
-8. Publish a progression reset event.
+3. Clear progression milestones.
+4. Reset Training progress through Training System.
+5. Coordinate reset of other domain-owned records where required, including achievement state through the Achievement System.
+6. Persist the resulting state.
+7. Publish a progression reset event.
 
 ### 16.3 Ownership Boundaries
 
@@ -1134,7 +1046,6 @@ Main Menu may display:
 - Prologue completion status.
 - Available modes.
 - Recent milestone.
-- Achievement notification.
 
 ### 17.2 Training Selection
 
@@ -1158,14 +1069,9 @@ Training completion must not be presented as mandatory if Prologue remains acces
 
 ### 17.4 Achievement Presentation
 
-Achievement UI may display:
+Achievement presentation is owned by the Achievement System and rendered by HUD/Menu (`29_ACHIEVEMENT_SYSTEM_SPEC.md` §13).
 
-- Achievement title.
-- Description.
-- Category.
-- Locked/unlocked state.
-- Unlock timestamp.
-- Hidden status.
+Progression must not provide achievement definitions, unlock state, or achievement notification data to the UI.
 
 ### 17.5 Notifications
 
@@ -1188,15 +1094,14 @@ The UI layer owns notification visuals.
 Validate:
 
 - Unique content IDs.
-- Unique achievement IDs.
 - Unique milestone IDs.
 - Valid condition references.
 - Valid unlock dependencies.
 - No circular unlock dependencies.
-- Valid achievement rewards.
 - Valid timestamps.
 - Non-negative statistics.
 - Valid referenced exercise and level IDs.
+- Valid achievement event references consumed from the Achievement System.
 
 ### 18.2 Invalid Definitions
 
@@ -1221,8 +1126,8 @@ The system must support:
 - Stable IDs.
 - ID migration aliases where necessary.
 - Retired content records.
-- Unknown achievement preservation.
 - Safe handling of missing optional content.
+- Safe handling of references to achievements that are disabled or removed by the Achievement System.
 
 Do not discard unknown progression records during a normal load.
 
@@ -1235,7 +1140,6 @@ Requirements:
 - Event-driven updates.
 - No per-frame progression evaluation.
 - Efficient content lookup.
-- Efficient achievement lookup.
 - Idempotent event processing.
 - Immutable snapshots.
 - Bounded event history.
@@ -1259,7 +1163,6 @@ Test:
 - Campaign summary.
 - Unlock records.
 - Milestone records.
-- Achievement records.
 
 ### 20.2 Unlock Tests
 
@@ -1288,17 +1191,15 @@ Test:
 - Stale session event.
 - Persistence failure.
 
-### 20.4 Achievement Tests
+### 20.4 Achievement Boundary Tests
 
 Test:
 
-- First exercise completion.
-- All mandatory exercises completed.
-- Exercise mastery.
-- Prologue completion.
-- Validated Speedrun completion.
-- Hidden achievement behavior.
-- Duplicate achievement unlock.
+- `achievement_unlocked` events are accepted from the Achievement System and rejected from other sources.
+- Achievement events contribute to milestones and unlock rules without creating duplicate achievement state.
+- Progression persistence contains no achievement definitions or unlock state.
+- Circular milestone/achievement dependencies are rejected.
+- Achievement reset is delegated to the Achievement System and is not performed by Progression.
 
 ### 20.5 Persistence Tests
 
@@ -1341,7 +1242,10 @@ Complete Training Exercises
 Unlock Training Sections
     |
     v
-Earn Training Achievements
+Achievement System Unlocks a Training Achievement
+    |
+    v
+Progression Consumes the Achievement Event
     |
     v
 Complete Prologue
@@ -1353,7 +1257,7 @@ Record Campaign Milestone
 Complete Validated Speedrun
     |
     v
-Unlock Speedrun Achievement
+Record Speedrun Milestone
 ```
 
 ---
@@ -1370,7 +1274,6 @@ Implement:
 - ContentUnlockProgression.
 - ProgressionMilestone.
 - ProgressionStatistics.
-- AchievementProgression.
 - ProgressionSnapshot.
 
 ### Phase 2: Repository Integration
@@ -1405,15 +1308,17 @@ Implement:
 - Unmet requirement queries.
 - Startup reconciliation.
 
-### Phase 5: Achievements and Milestones
+### Phase 5: Milestones and Achievement Integration
 
 Implement:
 
-- Achievement definitions.
-- Achievement evaluator.
+- Milestone definitions.
 - Milestone evaluator.
-- Unlock notifications.
-- Achievement snapshots.
+- Milestone notifications.
+- Achievement event consumption from the Achievement System.
+- Progression snapshot updates driven by achievement events.
+
+Achievement definitions, evaluation, progress, unlock state, and achievement notifications are implemented by `29_ACHIEVEMENT_SYSTEM_SPEC.md`.
 
 ### Phase 6: Gameplay Integration
 
@@ -1442,7 +1347,7 @@ Run:
 - Unit tests.
 - Event processing tests.
 - Unlock tests.
-- Achievement tests.
+- Achievement boundary tests.
 - Persistence tests.
 - End-to-end progression tests.
 
@@ -1460,8 +1365,8 @@ The implementation is accepted when:
 6. Unlock rules are data-driven.
 7. Unlock evaluation is deterministic.
 8. Repeated evaluation does not duplicate unlock records.
-9. Achievement definitions are data-driven.
-10. Achievement evaluation uses validated events.
+9. Achievement state is not defined, evaluated, or persisted by Progression.
+10. Progression consumes achievement events from the Achievement System.
 11. Duplicate source events are ignored.
 12. Invalid events cannot change progression.
 13. Progression snapshots are immutable.
@@ -1489,10 +1394,9 @@ The implementation is accepted when:
 - [ ] Unlock rule engine implemented.
 - [ ] Unlock resolver implemented.
 - [ ] Milestone evaluator implemented.
-- [ ] Achievement manager implemented.
-- [ ] Achievement evaluator implemented.
+- [ ] Achievement event consumption implemented.
 - [ ] Initial content definitions authored.
-- [ ] Initial achievement definitions authored.
+- [ ] Achievement definitions are owned by the Achievement System and are not duplicated here.
 - [ ] Training integration complete.
 - [ ] Prologue integration complete.
 - [ ] Speedrun integration complete.
@@ -1522,18 +1426,19 @@ The implementation is accepted when:
 8. Progression changes must originate from validated domain events.
 9. Event processing must be idempotent.
 10. Unlock rules must be deterministic and data-driven.
-11. Achievement evaluation must use authoritative results.
+11. Achievement definitions, evaluation, progress, and unlock state belong to the Achievement System.
 12. UI must not implement unlock logic.
 13. Progression snapshots must be immutable.
 14. Session-scoped state must not leak into persistent progression.
 15. Replaying content must not erase previous accomplishments.
 16. Abandoned sessions must not count as successful completion.
-17. Invalid Speedrun results must not unlock validated-run achievements.
+17. Invalid Speedrun results must not contribute to validated-run milestones or unlocks.
 18. Domain-owned records must be reset through their owning systems.
 19. Persistence failures must be recoverable.
 20. Schema migrations must preserve valid historical progression.
 21. Unknown optional content must not invalidate the entire progression record.
 22. The initial implementation must avoid unnecessary XP, currency, skill-tree, and quest-system abstractions.
 23. Future progression features must extend the existing event and rule architecture without violating domain ownership.
+24. Progression must not maintain a second authoritative achievement registry, progress model, or unlock record.
 
 **End of Specification**

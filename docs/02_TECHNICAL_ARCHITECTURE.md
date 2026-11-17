@@ -1291,7 +1291,8 @@ The initial statistic categories include:
 - Slide count.
 - Vault count.
 - Fall count.
-- Checkpoint splits.
+
+Run timing, section splits, checkpoint sequence, and personal bests are owned by the Speedrun System, not by Statistics. The Speedrun System consumes the finalized session statistics summary for the remaining gameplay counters (`09_SPEEDRUN_SYSTEM_SPEC.md`, `30_STATISTICS_SYSTEM_SPEC.md`).
 
 Statistics should be collected through gameplay events and reliable state information.
 
@@ -1313,9 +1314,11 @@ Responsibilities:
 
 - AudioContext initialization.
 - Audio state.
-- Volume settings.
+- Applying Settings-owned volume and mute values to runtime buses.
 - Sound generation coordination.
 - Audio cleanup.
+
+Audio does not own user settings. The Settings System owns the configuration values; the Audio System applies them at runtime.
 
 Audio must respect browser autoplay restrictions.
 
@@ -1342,12 +1345,16 @@ Examples:
 | Event | Audio behavior |
 |---|---|
 | Footstep | Surface-dependent impact |
+| Jump | Short movement impulse |
 | Landing | Low-frequency impact |
 | Sliding | Filtered friction noise |
+| Vault | Short traversal impulse |
 | Wallrun | Movement-related surface sound |
+| Walljump | Outward movement impulse |
+| Interaction | Prompt and confirmation signals |
+| Checkpoint | Checkpoint confirmation signal |
 | UI interaction | Short synthesized signal |
 | Sprint | Stronger movement ambience |
-| UI interaction | Short synthesized signal |
 
 Do not use downloaded sound files.
 
@@ -1417,30 +1424,29 @@ Responsibilities:
 
 ## 17.2 RunRepository
 
-Stores completed run results.
+Stores completed run results through the Speedrun record contract.
 
-Example conceptual model:
+The Speedrun System owns the run result model, validation, and record semantics (`09_SPEEDRUN_SYSTEM_SPEC.md`). The Save System owns the repository, schema, and transactions.
+
+Example conceptual reference:
 
 ```ts
-interface RunRecord {
+interface RunRecordReference {
   id: string;
-  levelId: string;
-  timestamp: number;
+  routeId: string;
+  routeVersion: number;
+  completedAt: number;
   elapsedTimeMs: number;
 
-  averageSpeed: number;
-  maxSpeed: number;
-  distance: number;
-
-  jumps: number;
-  wallruns: number;
-  slides: number;
-  falls: number;
+  /** Reference to the finalized Statistics summary. */
+  statisticsSummaryId: string;
 
   checkpointSplits: number[];
-  valid: boolean;
+  validationStatus: string;
 }
 ```
+
+The aggregate gameplay counters (jumps, wallruns, slides, falls, distance, speed) are owned by the Statistics System and referenced by ID; the run record must not duplicate them.
 
 Only valid Prologue runs should be included in the leaderboard.
 
@@ -1498,9 +1504,9 @@ STATE MACHINE
   ▼
 LANDING EVENT
   │
-  ├── AUDIO MANAGER
-  ├── RUN STATISTICS
-  ├── CAMERA CONTROLLER
+  ├── AUDIO SYSTEM
+  ├── STATISTICS
+  ├── CAMERA
   └── HUD
 ```
 
@@ -1510,15 +1516,14 @@ LANDING EVENT
 LEVEL TRIGGER
   │
   ▼
-CHECKPOINT MANAGER
+CHECKPOINT SYSTEM
   │
   ▼
-CHECKPOINT VALIDATION
+CHECKPOINT ACTIVATION FACT
   │
-  ├── RUN MANAGER
-  ├── RUN TIMER / SPLITS
-  ├── RUN STATISTICS
-  └── HUD
+  ├── SPEEDRUN (route sequence validation, splits)
+  ├── HUD (checkpoint feedback)
+  └── AUDIO (checkpoint feedback)
 ```
 
 ## 18.3 Example: Run completed
@@ -1527,10 +1532,10 @@ CHECKPOINT VALIDATION
 FINISH TRIGGER
   │
   ▼
-RUN MANAGER
+SPEEDRUN SYSTEM
   │
   ▼
-RUN VALIDATION
+RUN VALIDATION + STATISTICS SUMMARY
   │
   ├── INVALID RUN
   │
@@ -1540,7 +1545,7 @@ RUN VALIDATION
     BUILD RESULT
         │
         ▼
-    RUN REPOSITORY
+    SAVE SYSTEM (run repository)
         │
         ▼
     RESULTS SCREEN
@@ -1778,7 +1783,7 @@ The following rules are mandatory:
 18. Settings owns the selected language preference; Localization owns resource lookup and string resolution.
 19. Gameplay Session owns session lifecycle; Gameplay Flow owns application navigation.
 20. Statistics consumes event-driven facts and summaries; it must not poll transforms every render frame.
-21. Ghost Replay, online services, ledge grabbing, swinging and ziplines are deferred unless the approved project scope changes.
+21. Ghost Replay, online services, ledge grabbing, ledge climbing, dedicated balance traversal, swinging and ziplines are deferred unless the approved project scope changes.
 
 ---
 

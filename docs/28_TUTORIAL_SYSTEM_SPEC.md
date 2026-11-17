@@ -36,6 +36,8 @@ Tutorials explain what the player can do and why it may be useful.
 
 They do not evaluate whether the player performed an action correctly.
 
+They must not change gameplay rules, mechanics, physics, timing, or other authoritative gameplay outcomes.
+
 The distinction is important:
 
 - Tutorial System explains a mechanic.
@@ -130,6 +132,7 @@ It does not own the presentation layer or the gameplay mechanics being explained
 | Menu navigation | Gameplay Flow |
 | Language resources | Localization System |
 | Accessibility preferences | Settings System |
+| Tutorial and assistance preferences | Settings System |
 | Accessibility policy | Accessibility System |
 | Level triggers | Level Runtime |
 | Gameplay session lifecycle | Gameplay Session System |
@@ -178,6 +181,12 @@ The Tutorial System owns the meaning of persisted data, including:
 - Player familiarity records.
 
 The Tutorial System must not access IndexedDB directly.
+
+### 3.4 Settings Boundary
+
+Tutorial visibility and assistance preferences are owned by the Settings System (`25_SETTINGS_SYSTEM_SPEC.md`).
+
+The Tutorial System consumes effective values such as `gameplay.show_tutorial_hints` and `gameplay.contextual_assistance` from the Settings System. It must not maintain its own preference store or persist duplicate copies of those settings.
 
 ---
 
@@ -949,6 +958,8 @@ The Tutorial System must never freeze physics directly.
 
 The initial implementation should include a small, focused set of tutorials.
 
+The set should stay consistent with the canonical ten Training exercises (`21_TRAINING_SYSTEM_SPEC.md`). Mechanics that are only combinations of earlier ones are explained contextually through their component tutorials rather than by a separate blocking tutorial.
+
 The exact wording belongs to Localization resources.
 
 Suggested identifiers:
@@ -971,7 +982,7 @@ Not all tutorials must be enabled in every mode.
 
 ### 10.1 Training
 
-Training may introduce contextual tutorials before or during an exercise.
+Training may provide context in which contextual tutorials become eligible before or during an exercise.
 
 However:
 

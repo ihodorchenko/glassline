@@ -1,6 +1,7 @@
 # 17_RESPAWN_SYSTEM_SPEC.md
 
-# Respawn System Specification
+**Project:** Glassline  
+**Document:** Respawn System Specification
 
 ## 1. Purpose
 

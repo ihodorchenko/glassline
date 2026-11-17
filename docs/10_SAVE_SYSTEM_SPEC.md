@@ -1,6 +1,7 @@
 # 10_SAVE_SYSTEM_SPEC.md
 
-# Save System Specification
+**Project:** Glassline  
+**Document:** Save System Specification
 
 ## 1. Overview
 
@@ -16,6 +17,9 @@ The system must support:
 - Training progress.
 - Speedrun records.
 - Personal bests.
+- Player statistics.
+- Achievement history.
+- Tutorial history.
 - Unlocked content.
 - Data versioning.
 - Data migration.
@@ -63,9 +67,13 @@ localStorage may be used only for small bootstrap information if absolutely nece
 
 ## 2.2 Database Name
 
+The single canonical database for all persisted game data:
+
 ```text
-MirrorEdgeSaveData
+GlasslineSaveData
 ```
+
+This database name and its version (see 2.3) are owned exclusively by this specification. Every persistent domain — settings, progression, training, speedrun, statistics, achievements, tutorial history, metadata, and backups — lives in this database. Other documents must reference this name and must not declare a separate database name or version.
 
 ## 2.3 Database Version
 
@@ -88,14 +96,17 @@ Initial database structure:
 
 | Object Store | Responsibility |
 |---|---|
-| settings | Player and game settings |
-| progress | General gameplay progression |
-| training | Training exercise progress |
-| speedrun | Speedrun records and history |
-| metadata | Save metadata and migration information |
-| backups | Local backup snapshots |
+| settings | Player and game settings (owned by the Settings System) |
+| progress | Gameplay progression records (owned by the Progression System) |
+| training | Training exercise progress (owned by the Training System) |
+| speedrun | Speedrun records, personal records, and run history (owned by the Speedrun System) |
+| statistics | Aggregated statistics, mode aggregates, session summaries, and deduplication metadata (owned by the Statistics System) |
+| achievements | Achievement history and unlock state (owned by the Achievement System) |
+| tutorial | Tutorial history records (owned by the Tutorial System) |
+| metadata | Save metadata and migration information (owned by the Save System) |
+| backups | Local backup snapshots (owned by the Save System) |
 
-Each store must have a clearly defined owner.
+Each store must have exactly one owning system. The owning system defines the meaning of the stored payload; the Save System defines the store layout, indexes, versioning, and transaction boundaries.
 
 Specialized systems must access their own data through repository interfaces rather than manipulating IndexedDB directly.
 
@@ -104,13 +115,11 @@ Specialized systems must access their own data through repository interfaces rat
 ```text
              Game Systems
                   |
-       +----------+----------+
-       |          |          |
-       v          v          v
-   Settings    Progress   Speedrun
-   Manager     Manager    Manager
-       |          |          |
-       +----------+----------+
+                  v
+   Domain Systems and Repositories
+   (Settings, Progression, Training,
+    Speedrun, Statistics, Achievement,
+    Tutorial)
                   |
                   v
               SaveService
@@ -191,7 +200,7 @@ Contains:
 - Run history.
 - Route version information.
 
-The Speedrun System owns the interpretation and validation of these records.
+The Speedrun System owns the interpretation, validation, personal-best comparison, and ranking semantics of these records.
 
 The Save System only provides persistence infrastructure.
 
@@ -206,6 +215,45 @@ Contains:
 - Application version.
 - Migration history.
 - Data integrity information.
+
+## 3.6 Statistics
+
+Contains aggregated statistics owned by the Statistics System (`30_STATISTICS_SYSTEM_SPEC.md`).
+
+Examples:
+
+- Lifetime aggregates.
+- Mode aggregates.
+- Recent session summaries.
+- Statistics deduplication metadata.
+- Statistics schema version.
+
+The Statistics System defines aggregation, reset scopes, and snapshot semantics. The Save System only provides versioned persistence and transactionality.
+
+## 3.7 Achievements
+
+Contains achievement history and unlock state owned by the Achievement System (`29_ACHIEVEMENT_SYSTEM_SPEC.md`).
+
+Examples:
+
+- Unlocked achievements.
+- Achievement progress snapshots.
+- Unlock timestamps.
+- Achievement schema version.
+
+The Achievement System owns definitions, evaluation, and unlock state. The Save System must not evaluate achievement conditions.
+
+## 3.8 Tutorial History
+
+Contains tutorial history records owned by the Tutorial System (`28_TUTORIAL_SYSTEM_SPEC.md`).
+
+Examples:
+
+- Completed and skipped tutorials.
+- Tutorial repeat and cooldown history.
+- Tutorial schema version.
+
+The Tutorial System owns history semantics, repetition policy, and completion meaning. The Save System only persists the records and their schema version.
 
 ---
 
@@ -225,7 +273,7 @@ interface GameSaveData {
 
     applicationVersion: string;
 
-    settings: GameSettings;
+    settings: PersistedSettingsPayload;
 
     progress: GameProgress;
 
@@ -235,9 +283,11 @@ interface GameSaveData {
 }
 ```
 
-Speedrun records are stored separately to avoid unnecessarily loading the entire run history when initializing the game.
+Speedrun history, statistics, achievement history, and tutorial history are stored separately from the startup root record to avoid loading large histories during initialization. They are accessed through their owning systems' repositories.
 
 The root save structure describes the logical contents of the save system, not necessarily one physical IndexedDB record.
+
+The interfaces in this document describe the persisted representation only. The owning domain systems define their payload schemas and rules; the Save System stores, versions, and validates the envelope.
 
 ## 4.2 Save Metadata
 
@@ -275,172 +325,34 @@ The save identifier must remain stable across ordinary save operations.
 
 # 5. Settings Persistence
 
-## 5.1 Settings Model
+The Settings System owns the canonical settings schema, default values, validation constraints, merge semantics, and runtime application (`25_SETTINGS_SYSTEM_SPEC.md`).
+
+The Save System persists the committed settings payload through `SettingsRepository`. It must not define an independent settings model, default set, or clamping rules. The structures below are illustrative of the persisted payload only; where they differ from the Settings System specification, the Settings System is authoritative.
+
+## 5.1 Settings Payload (Illustrative)
+
+The persisted settings payload is the committed `SettingsConfiguration` defined by `25_SETTINGS_SYSTEM_SPEC.md` §5.1.
 
 ```typescript
-interface GameSettings {
-    audio: AudioSettings;
+interface PersistedSettingsPayload {
+    schemaVersion: number;
 
-    controls: ControlsSettings;
+    revision: number;
 
-    graphics: GraphicsSettings;
+    committedAt: number;
 
-    camera: CameraSettings;
-
-    interface: InterfaceSettings;
-
-    accessibility: AccessibilitySettings;
+    /** Canonical SettingsConfiguration serialized by the Settings System. */
+    values: Record<string, unknown>;
 }
 ```
 
-### Audio Settings
-
-```typescript
-interface AudioSettings {
-    masterVolume: number;
-
-    musicVolume: number;
-
-    effectsVolume: number;
-
-    ambientVolume: number;
-
-    muted: boolean;
-}
-```
-
-Volume values are normalized between 0 and 1.
-
-### Controls Settings
-
-```typescript
-interface ControlsSettings {
-    mouseSensitivity: number;
-
-    invertY: boolean;
-
-    keyBindings: Record<string, string>;
-
-    mouseBindings: Record<string, string>;
-}
-```
-
-### Graphics Settings
-
-```typescript
-interface GraphicsSettings {
-    quality: "low" | "medium" | "high";
-
-    resolutionScale: number;
-
-    antialiasing: boolean;
-
-    shadows: boolean;
-
-    vsync: boolean;
-}
-```
-
-### Camera Settings
-
-```typescript
-interface CameraSettings {
-    fieldOfView: number;
-
-    cameraSensitivity: number;
-
-    cameraShake: boolean;
-
-    headBob: boolean;
-}
-```
-
-### Interface Settings
-
-```typescript
-interface InterfaceSettings {
-    showHUD: boolean;
-
-    showSpeedometer: boolean;
-
-    showTimer: boolean;
-
-    showCheckpointMarkers: boolean;
-}
-```
-
-### Accessibility Settings
-
-```typescript
-interface AccessibilitySettings {
-    reducedMotion: boolean;
-
-    highContrast: boolean;
-
-    colorblindMode: "none" | "protanopia" | "deuteranopia" | "tritanopia";
-}
-```
-
-These settings are initial examples. Their final values and supported options must match actual game features.
+The Save System treats the committed values as an opaque, versioned payload. The canonical setting IDs, value types, categories, and defaults are defined by `25_SETTINGS_SYSTEM_SPEC.md` §5 and §7 and must not be duplicated in this document.
 
 ## 5.2 Default Settings
 
-The game must provide a complete default settings configuration.
+Default values are defined by the Settings System (`25_SETTINGS_SYSTEM_SPEC.md`). The Save System must not maintain or apply an independent default configuration.
 
-```typescript
-const DEFAULT_SETTINGS: GameSettings = {
-    audio: {
-        masterVolume: 1,
-        musicVolume: 0.8,
-        effectsVolume: 1,
-        ambientVolume: 0.7,
-        muted: false
-    },
-
-    controls: {
-        mouseSensitivity: 1,
-        invertY: false,
-        keyBindings: {},
-        mouseBindings: {}
-    },
-
-    graphics: {
-        quality: "high",
-        resolutionScale: 1,
-        antialiasing: true,
-        shadows: true,
-        vsync: true
-    },
-
-    camera: {
-        fieldOfView: 90,
-        cameraSensitivity: 1,
-        cameraShake: true,
-        headBob: true
-    },
-
-    interface: {
-        showHUD: true,
-        showSpeedometer: true,
-        showTimer: true,
-        showCheckpointMarkers: true
-    },
-
-    accessibility: {
-        reducedMotion: false,
-        highContrast: false,
-        colorblindMode: "none"
-    }
-};
-```
-
-Default settings must be merged with loaded settings.
-
-Missing fields must receive defaults.
-
-Invalid values must be clamped or replaced with defaults according to the field's validation rules.
-
-Do not replace the entire settings object because one optional field is missing.
+When a persisted payload is incomplete or invalid, the Save System reports the problem to the Settings System; the Settings System decides how to merge defaults or repair values. The Save System must not silently rewrite the payload.
 
 ## 5.3 Settings Save Behavior
 
@@ -452,9 +364,9 @@ Use debounced persistence.
 
 Recommended behavior:
 
-1. Update settings immediately in memory.
-2. Update the relevant game subsystem.
-3. Schedule a persistent save.
+1. The Settings System updates the value immediately in memory.
+2. The Settings System applies the value to the relevant runtime systems.
+3. The Save System schedules a persistent save.
 4. Combine rapid consecutive modifications.
 5. Save after a short inactivity period.
 
@@ -464,7 +376,7 @@ Recommended debounce interval:
 const SETTINGS_SAVE_DEBOUNCE = 500;
 ```
 
-Save settings immediately when leaving the settings screen if a write is pending.
+Flush pending settings writes when the Settings System requests it (for example when leaving the settings screen).
 
 The application must also attempt to persist dirty settings during an orderly shutdown or page lifecycle transition.
 
@@ -493,6 +405,8 @@ interface GameProgress {
 ```
 
 ## 6.2 Progress Rules
+
+The Tutorial, Training, Level Runtime, and Progression Systems decide when a completion or unlock event is confirmed. The Save System persists the confirmed result.
 
 Progress is updated only when a relevant gameplay event is confirmed.
 
@@ -524,6 +438,8 @@ Completing the same tutorial twice must not create duplicate entries.
 
 Unlocked content must remain unlocked unless the game explicitly supports progression reset.
 
+Unlock and progression rules are owned by the Progression System (`22_PROGRESSION_SYSTEM_SPEC.md`); this section describes only the persistence guarantees.
+
 ---
 
 # 7. Training Persistence
@@ -554,9 +470,11 @@ interface TrainingExerciseRecord {
 
 ## 7.2 Rules
 
-- Every completed exercise updates its record.
-- Attempts are counted independently.
-- Best times only improve.
+Training result semantics, mastery, and scoring are owned by the Training System (`21_TRAINING_SYSTEM_SPEC.md`). The repository applies the following persistence rules:
+
+- Every completed exercise updates its stored record.
+- Attempt counts are supplied by the Training System.
+- The stored best time is replaced only when the Training System reports an improvement.
 - Incomplete attempts do not overwrite completion records.
 - Training data is separate from official Prologue speedrun records.
 
@@ -583,6 +501,8 @@ It is responsible for:
 - Data export and import.
 
 It must not contain gameplay rules.
+
+It must not depend on gameplay objects, rendering objects, or UI components. Domain-specific validation and interpretation are delegated to the owning systems.
 
 ## 8.2 Interface
 
@@ -673,6 +593,8 @@ If persistent storage is unavailable, the game must still be able to start using
 
 The user must receive a clear indication that changes may not persist.
 
+Large histories (speedrun, statistics, achievement, and tutorial records) are loaded by their owning systems after startup, only when required. They are not part of the startup root record.
+
 ---
 
 # 9. Save Scheduling
@@ -687,6 +609,9 @@ Different data domains have different persistence requirements.
 | Gameplay Progress | On confirmed event |
 | Training Results | On exercise completion |
 | Speedrun Results | On validated run completion |
+| Statistics | Batched on session finalization and meaningful revisions |
+| Achievement History | On confirmed unlock or progress change |
+| Tutorial History | On confirmed tutorial event |
 | Metadata | Updated with successful saves |
 | Backups | On explicit request and selected milestones |
 
@@ -736,7 +661,7 @@ Operations involving multiple related records should use IndexedDB transactions.
 
 Examples:
 
-- Saving a completed run and updating the personal best.
+- Saving a completed run together with the personal-record update supplied by the Speedrun System.
 - Creating a backup snapshot.
 - Importing multiple data domains.
 - Applying a migration.
@@ -751,7 +676,7 @@ If an operation fails, related writes must roll back together.
 
 The game will evolve during development.
 
-Settings, progress structures, and leaderboard formats may change.
+Settings, progress structures, and speedrun record formats may change.
 
 Existing player data must not become unusable after an application update.
 
@@ -766,6 +691,8 @@ const SAVE_SCHEMA_VERSION = 1;
 ```
 
 Every serialized domain must either include a schema version or be governed by an explicitly versioned parent record.
+
+Domains with independently versioned payloads (for example Statistics, Achievement history, and Tutorial history) register their schema versions and migrations through the Save migration infrastructure. The Save System must not reinterpret or migrate a domain payload without the owning system's migration definition.
 
 ## 10.3 Migration Interface
 
@@ -800,11 +727,12 @@ A migration from version 1 to version 3 must not skip version 2 unless a specifi
 1. Never mutate the original data before a migration succeeds.
 2. Validate input before transformation.
 3. Preserve unrelated data.
-4. Supply defaults for newly introduced fields.
+4. Supply defaults for newly introduced fields according to the owning system's migration definition.
 5. Record successful migration history.
 6. Make migrations deterministic.
 7. Avoid depending on current gameplay state.
 8. Do not silently discard unsupported data.
+9. Never delete data solely because its schema version is unsupported or newer than expected; preserve it and report the incompatibility.
 
 ## 10.5 Migration Failure
 
@@ -836,7 +764,7 @@ Backups protect against:
 
 ```typescript
 interface SaveBackup {
-    format: "mirror-edge-save";
+    format: "glassline-save";
 
     formatVersion: number;
 
@@ -847,20 +775,26 @@ interface SaveBackup {
     databaseVersion: number;
 
     saveData: {
-        settings: GameSettings;
+        settings: PersistedSettingsPayload;
 
         progress: GameProgress;
 
         training: TrainingProgress;
 
         speedrun: unknown;
+
+        statistics: unknown;
+
+        achievements: unknown;
+
+        tutorial: unknown;
     };
 
     checksum: string;
 }
 ```
 
-The speedrun payload must use the actual versioned Speedrun data model rather than remaining `unknown` in the final implementation.
+The `settings`, `progress`, `training`, `speedrun`, `statistics`, `achievements`, and `tutorial` payloads must use the actual versioned models owned by their respective systems in the final implementation; the field references above are illustrative.
 
 ## 11.3 Backup Policy
 
@@ -896,6 +830,8 @@ Validation includes:
 - Valid checksums.
 - Domain-specific validation.
 
+Semantic validation of a domain payload is delegated to its owning system. The Save System validates the envelope, format, checksum, required fields, types, and cross-domain references.
+
 A checksum detects accidental corruption but does not prove authenticity.
 
 Do not treat imported backup data as trusted.
@@ -911,7 +847,7 @@ The player should be able to export their local save data as JSON.
 Suggested filename:
 
 ```text
-mirror-edge-save-YYYY-MM-DD.json
+glassline-save-YYYY-MM-DD.json
 ```
 
 The export must include:
@@ -920,6 +856,9 @@ The export must include:
 - Gameplay progress.
 - Training progress.
 - Speedrun records.
+- Statistics.
+- Achievement history.
+- Tutorial history.
 - Metadata.
 - Export format version.
 
@@ -969,6 +908,8 @@ Verify Imported Data
 Refresh Game State
 ```
 
+Semantic domain validation is delegated to the owning systems. The Save System validates the import envelope, schema, types, version compatibility, and cross-domain references; a domain payload rejected by its owner must not be persisted as valid.
+
 ## 12.3 Import Modes
 
 Initial implementation supports:
@@ -990,19 +931,18 @@ If import fails:
 
 ## 12.5 Imported Speedrun Records
 
-Imported speedrun records must be treated as external data.
+Imported speedrun records must be treated as external, untrusted data.
 
 They must not automatically receive verified status.
 
-The game must:
+The Save System validates the structural envelope and preserves import metadata. Run validity, route compatibility, checkpoint order, and record acceptance are decided by the Speedrun System (`09_SPEEDRUN_SYSTEM_SPEC.md`), which owns validation and personal-best semantics.
 
-- Validate the record structure.
-- Validate route compatibility.
-- Validate checkpoint sequences where available.
+The Save System must:
+
+- Persist imported records with an explicit untrusted/import provenance marker until the Speedrun System accepts or rejects them.
 - Preserve original import metadata.
 - Distinguish imported records from locally generated records.
-
-Imported records must not silently overwrite a better trusted personal record.
+- Never silently overwrite a trusted personal record; personal-best comparison and replacement are Speedrun responsibilities.
 
 ---
 
@@ -1086,6 +1026,8 @@ The game should:
 - Allow manual export.
 - Optionally request persistent storage through the browser Storage API.
 
+Run-history retention policy is owned by the Speedrun System. The Save System must not silently discard stored records merely to save space; any pruning must follow an explicit, documented policy.
+
 Requesting persistent storage does not guarantee approval.
 
 ## 14.4 Private Browsing
@@ -1121,6 +1063,8 @@ Validate:
 - Version compatibility.
 - Cross-domain references.
 
+Semantic validation of domain values is delegated to the owning system. For example, the Speedrun System validates run validity, route compatibility, checkpoint order, medal evaluation, and personal-best semantics; the Save System validates structure, types, ranges, and referential integrity.
+
 Examples:
 
 - Volume must be between 0 and 1.
@@ -1144,7 +1088,7 @@ The initial Save System does not provide cryptographic protection against local 
 
 Because data is stored on the player's device, a technically capable user can modify it.
 
-The local leaderboard should therefore be described as a personal progression system rather than a secure competitive ranking service.
+Persistence must therefore not be treated as proof of record authenticity. How local Speedrun records and leaderboard limitations are presented is defined by the Speedrun System and the UI specifications (`09_SPEEDRUN_SYSTEM_SPEC.md`).
 
 ---
 
@@ -1169,6 +1113,8 @@ Large backup creation and export should preferably happen outside active gamepla
 
 # 17. UI Integration
 
+UI screens are owned by the Menu and HUD specifications (`23_HUD_SYSTEM_SPEC.md`, `24_MENU_SYSTEM_SPEC.md`, `25_SETTINGS_SYSTEM_SPEC.md`). This section defines only the save status and data-management contracts the Save System exposes to those screens; it does not grant the Save System ownership of UI behavior.
+
 ## 17.1 Save Status
 
 The player does not need a permanent save notification.
@@ -1190,14 +1136,14 @@ Possible states:
 The Settings screen should:
 
 - Load stored settings.
-- Display defaults for missing fields.
+- Display missing values using the Settings System's canonical defaults.
 - Update values immediately.
 - Save automatically.
 - Indicate save failures when necessary.
 
 ## 17.3 Data Management Screen
 
-Provide a dedicated section in Settings.
+The Settings screen should provide a dedicated section backed by the Save System.
 
 Suggested actions:
 
@@ -1226,6 +1172,9 @@ The confirmation must clearly explain what will be removed:
 - Training records.
 - Speedrun history.
 - Personal bests.
+- Statistics.
+- Achievement history.
+- Tutorial history.
 
 The operation must not happen accidentally.
 
@@ -1237,7 +1186,11 @@ Before deletion, create a backup or allow the player to export their current dat
 
 The system must distinguish between resetting progression and resetting all data.
 
+The scope and semantics of each reset are defined by the owning domain systems (Progression, Speedrun, Statistics, Achievement, Tutorial). The Save System executes the coordinated deletion and persistence; it must not invent or duplicate domain reset rules.
+
 ## 18.1 Reset Progress
+
+Coordinated by the Progression System (`22_PROGRESSION_SYSTEM_SPEC.md`).
 
 Resets:
 
@@ -1253,6 +1206,8 @@ Preserves:
 - Speedrun history, unless explicitly selected.
 
 ## 18.2 Reset Speedrun Records
+
+Coordinated by the Speedrun System (`09_SPEEDRUN_SYSTEM_SPEC.md`).
 
 Resets:
 
@@ -1281,7 +1236,7 @@ The operation must be transactional where possible.
 
 ## 19.1 Speedrun System
 
-The Speedrun System owns run validation and record semantics.
+The Speedrun System owns run validation, run record semantics, and personal-best decisions (`09_SPEEDRUN_SYSTEM_SPEC.md`).
 
 The Save System provides persistent storage.
 
@@ -1294,11 +1249,11 @@ Integration requirements:
 - Support run history retrieval.
 - Support personal best retrieval.
 
-The Save System must not independently determine whether a speedrun is valid.
+The Save System must not independently determine whether a speedrun is valid, compare run times, or decide whether a personal best was improved.
 
 ## 19.2 Training System
 
-Training owns exercise completion logic.
+Training owns exercise completion, evaluation, and result semantics (`21_TRAINING_SYSTEM_SPEC.md`).
 
 The Save System persists training records.
 
@@ -1306,7 +1261,7 @@ Training must not write directly to IndexedDB.
 
 ## 19.3 Settings System
 
-Settings owns configuration semantics.
+Settings owns configuration semantics (`25_SETTINGS_SYSTEM_SPEC.md`).
 
 The Save System persists settings.
 
@@ -1319,6 +1274,15 @@ UI components consume application state.
 They must not access repositories directly.
 
 The UI must not determine whether a save transaction succeeded without receiving the actual result.
+
+## 19.5 Statistics, Achievement, Tutorial, and Progression Systems
+
+For every persisted domain, the owning system defines the payload schema and semantics, and the Save System provides the repository, versioning, and transaction boundaries.
+
+- Statistics persistence follows `30_STATISTICS_SYSTEM_SPEC.md`.
+- Achievement persistence follows `29_ACHIEVEMENT_SYSTEM_SPEC.md`.
+- Tutorial history persistence follows `28_TUTORIAL_SYSTEM_SPEC.md`.
+- Progression persistence follows `22_PROGRESSION_SYSTEM_SPEC.md`.
 
 ---
 
@@ -1337,6 +1301,9 @@ src/
         ProgressRepository.ts
         TrainingRepository.ts
         SpeedrunRepository.ts
+        StatisticsRepository.ts
+        AchievementRepository.ts
+        TutorialHistoryRepository.ts
         MetadataRepository.ts
         BackupRepository.ts
 
@@ -1370,10 +1337,12 @@ src/
       TrainingProgressManager.ts
 
     speedrun/
-      LeaderboardManager.ts
+      SpeedrunRepository.ts
 ```
 
 This is a suggested structure.
+
+Repository names are indicative. The canonical repository interfaces belong to the owning system specifications (for example `ISettingsRepository` in `25_SETTINGS_SYSTEM_SPEC.md`, `IProgressionRepository` in `22_PROGRESSION_SYSTEM_SPEC.md`, `IStatisticsRepository` in `30_STATISTICS_SYSTEM_SPEC.md`, `IAchievementRepository` in `29_ACHIEVEMENT_SYSTEM_SPEC.md`, `ITutorialHistoryRepository` in `28_TUTORIAL_SYSTEM_SPEC.md`) and to `02_TECHNICAL_ARCHITECTURE.md`.
 
 Adapt it to the existing project architecture instead of duplicating existing systems.
 
@@ -1393,10 +1362,9 @@ Adapt it to the existing project architecture instead of duplicating existing sy
 
 ## 21.2 Settings Tests
 
-- Load default settings.
-- Load existing settings.
-- Merge partial settings.
-- Validate numeric ranges.
+- Load an existing settings payload.
+- Request canonical defaults from the Settings System when the payload is missing.
+- Report an invalid payload to the Settings System without silently rewriting it.
 - Debounced saving.
 - Multiple rapid modifications.
 - Persistence across reloads.
@@ -1452,6 +1420,14 @@ Adapt it to the existing project architecture instead of duplicating existing sy
 - Storage unavailable at startup.
 - Multiple rapid save requests.
 
+## 21.9 Domain Persistence Tests
+
+- Statistics aggregates survive reload through their repository.
+- Achievement history survives reload through its repository.
+- Tutorial history survives reload through its repository.
+- Domain payloads are stored unchanged and are not reinterpreted by the Save System.
+- A domain schema version upgrade is handled in coordination with the owning system.
+
 ---
 
 # 22. Implementation Phases
@@ -1478,8 +1454,7 @@ Acceptance criteria:
 
 Implement:
 
-- Settings data model.
-- Default configuration.
+- Settings payload integration (schema owned by the Settings System).
 - SettingsRepository.
 - SettingsManager integration.
 - Debounced persistence.
@@ -1487,16 +1462,17 @@ Implement:
 Acceptance criteria:
 
 - Settings survive application reload.
-- Missing fields receive defaults.
-- Invalid values are corrected.
+- A missing settings payload is reported so that the Settings System can apply its canonical defaults.
+- An invalid payload is reported to the Settings System and is not silently rewritten.
 - Rapid changes do not cause excessive writes.
 
-## Phase 3 — Progress and Training
+## Phase 3 — Progress, Training, and Domain Repositories
 
 Implement:
 
 - ProgressRepository.
 - TrainingRepository.
+- Repository interfaces for Statistics, Achievement history, and Tutorial history (payload schemas owned by those systems).
 - ProgressManager integration.
 - TrainingProgressManager integration.
 
@@ -1504,6 +1480,7 @@ Acceptance criteria:
 
 - Progress persists.
 - Training results persist.
+- Domain payloads persist unchanged through their owning repositories.
 - Duplicate events do not corrupt records.
 - Domain resets work independently.
 
@@ -1512,8 +1489,8 @@ Acceptance criteria:
 Implement:
 
 - SpeedrunRepository.
-- LeaderboardManager integration.
-- Personal best persistence.
+- Speedrun record contract integration (reference semantics owned by `09_SPEEDRUN_SYSTEM_SPEC.md`).
+- Personal-record persistence supplied by the Speedrun System.
 - Run history persistence.
 
 Acceptance criteria:
@@ -1589,6 +1566,9 @@ The Save System is complete when:
 - [ ] Training progress persists.
 - [ ] Speedrun records persist.
 - [ ] Personal bests persist.
+- [ ] Statistics aggregates persist through Save repositories.
+- [ ] Achievement history persists through Save repositories.
+- [ ] Tutorial history persists through Save repositories.
 - [ ] Repository interfaces isolate database access.
 - [ ] Save operations are asynchronous.
 - [ ] Concurrent writes are handled safely.
@@ -1626,5 +1606,7 @@ The implementation agent must follow these rules:
 16. The system must never silently discard existing valid data.
 17. The initial implementation must remain fully offline.
 18. Cloud synchronization is explicitly outside the current scope.
+19. The database name and version defined in this specification are canonical; no other system may declare a separate save database.
+20. Domain rules (settings semantics, progression, training results, run validity and personal bests, achievements, statistics aggregation, tutorial history) remain owned by their respective systems; the Save System must not duplicate them.
 
 **Primary objective:** Provide a dependable, versioned persistence layer that protects player progress and settings while remaining independent of gameplay systems and ready for future expansion.

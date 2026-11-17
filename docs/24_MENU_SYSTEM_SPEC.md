@@ -2,7 +2,7 @@
 
 # Menu System Specification
 
-**Project:** Mirror's Edge-Inspired First-Person Parkour Game  
+**Project:** Glassline — First-Person Parkour Game  
 **Document:** Menu System  
 **Version:** 1.0  
 **Status:** Implementation Specification  
@@ -29,6 +29,7 @@ It covers:
 - Pause Menu.
 - Settings.
 - Results.
+- Local Records / Leaderboard.
 - Confirmation Dialogs.
 - Error and Recovery Screens.
 - Optional Progression and Achievement screens.
@@ -56,7 +57,7 @@ The main characteristics are:
 - Minimal decorative elements.
 - Restrained transitions.
 
-The visual identity should evoke the clean, high-contrast interface language of the first Mirror's Edge without reproducing its proprietary assets or exact layouts.
+The Glassline visual identity should evoke the clean, high-contrast interface language of the original *Mirror's Edge* (2008) without reproducing its proprietary assets or exact layouts.
 
 ### 2.2 Functional Clarity
 
@@ -147,6 +148,10 @@ The Menu System does not own:
 - `21_TRAINING_SYSTEM_SPEC.md`
 - `22_PROGRESSION_SYSTEM_SPEC.md`
 - `23_HUD_SYSTEM_SPEC.md`
+- `25_SETTINGS_SYSTEM_SPEC.md`
+- `26_ACCESSIBILITY_SYSTEM_SPEC.md`
+- `27_LOCALIZATION_SYSTEM_SPEC.md`
+- `29_ACHIEVEMENT_SYSTEM_SPEC.md`
 
 ---
 
@@ -179,6 +184,7 @@ Screen implementations:
 - `PauseMenuScreen`
 - `SettingsScreen`
 - `ResultsScreen`
+- `LocalRecordsScreen`
 - `ConfirmationDialog`
 - `ErrorScreen`
 
@@ -277,6 +283,9 @@ type MenuNavigationRequest =
     }
     | {
         type: "open_results";
+    }
+    | {
+        type: "open_local_records";
     }
     | {
         type: "return_to_main_menu";
@@ -424,9 +433,10 @@ Initial actions:
 1. Continue.
 2. Training.
 3. Prologue.
-4. Settings.
-5. Credits.
-6. Exit, where supported.
+4. Local Records.
+5. Settings.
+6. Credits.
+7. Exit, where supported.
 
 Optional information:
 
@@ -474,6 +484,14 @@ Exit behavior depends on the runtime platform.
 For browser builds, the application must not assume it can close its own browser tab.
 
 If exiting is unsupported, hide the action or provide an appropriate alternative.
+
+### 7.9 Local Records
+
+Opens the local leaderboard presentation defined in §15.8.
+
+The Menu System displays validated records provided by the Speedrun record contract and must not read or write persistence storage directly.
+
+If no records exist, provide a direct action to start the Prologue.
 
 ---
 
@@ -786,11 +804,11 @@ Input context and session state must be restored by their owning systems.
 
 ### 13.5 Restart
 
-Restart requires an explicit restart request.
+Restart is owned by Gameplay Session System (`19_GAMEPLAY_SESSION_SYSTEM_SPEC.md`).
 
-The operation may use Respawn System for checkpoint-based or full-level recovery, depending on the mode's restart policy.
+The Menu System sends an explicit restart request through Gameplay Flow and reacts to the authoritative result.
 
-The Menu System must not directly reposition the player.
+Respawn System owns the recovery lifecycle where the restart policy requires recovery; the Menu System must not directly reposition the player or reset session state.
 
 ### 13.6 Settings
 
@@ -835,6 +853,7 @@ Initial categories:
 5. HUD.
 6. Accessibility.
 7. Gameplay.
+8. Language.
 
 Categories may be combined into fewer sections if the initial amount of settings does not justify separate navigation.
 
@@ -842,17 +861,20 @@ Categories may be combined into fewer sections if the initial amount of settings
 
 Settings UI is a presentation and editing layer.
 
-The underlying systems own setting semantics and runtime application.
+The Settings System (`25_SETTINGS_SYSTEM_SPEC.md`) owns stored setting values and their validation. The underlying systems own runtime application.
 
-| Category | Owning system |
+| Category | Runtime application owner |
 |---|---|
 | Audio | Audio System |
 | Controls | Input System |
 | Camera | Camera System |
-| Display | Rendering / Technical Architecture |
+| Display | Rendering layer |
 | HUD | HUD System |
-| Accessibility | UI / Accessibility configuration |
+| Accessibility | Accessibility System (policy) / Camera, HUD, UI (application) |
 | Gameplay | Relevant gameplay systems |
+| Language | Localization System (resources and resolution) |
+
+The selected language is a Settings preference (`general.language`); Localization System resolves and applies the corresponding resources (`27_LOCALIZATION_SYSTEM_SPEC.md`).
 
 Save System owns persistence infrastructure.
 
@@ -910,6 +932,7 @@ Initial settings:
 
 - HUD Enabled.
 - Show Speed Indicator.
+- Show Speedrun Timer.
 - Show Section Progress.
 - Show Training Objectives.
 - Show Training Hints.
@@ -923,12 +946,13 @@ The HUD System owns runtime behavior.
 Initial settings:
 
 - Reduced Motion.
-- UI Scale.
 - High Contrast Mode.
 - Color-independent status indicators.
 - Optional camera motion reduction.
 
-Accessibility settings must be consistent across menus and HUD.
+UI scale belongs to the shared HUD settings (`hud.ui_scale`).
+
+Accessibility settings must be consistent across menus and HUD; the Accessibility System (`26_ACCESSIBILITY_SYSTEM_SPEC.md`) coordinates their application.
 
 ### 14.10 Gameplay Settings
 
@@ -1079,6 +1103,7 @@ Possible actions:
 - Continue.
 - Return to Main Menu.
 - Open detailed splits.
+- Open local leaderboard.
 - Replay Training exercise.
 - Start another exercise.
 
@@ -1095,6 +1120,16 @@ Do not display an invalid run as a successful medal result.
 Results are persisted by their owning systems.
 
 Menu System must not independently save duplicate result records.
+
+### 15.8 Local Leaderboard
+
+The Local Records screen presents validated Prologue records supplied by the Speedrun System.
+
+Record ordering, grouping, and validity are defined by the Speedrun record contract (`09_SPEEDRUN_SYSTEM_SPEC.md` §11).
+
+Persistence is owned by the Save System (`10_SAVE_SYSTEM_SPEC.md`); the Menu System must not access IndexedDB directly or maintain a duplicate record store.
+
+Clearing records is a destructive action that requires confirmation and is executed by the owning record and persistence systems, not by the screen.
 
 ---
 
@@ -1230,7 +1265,7 @@ May display:
 - Achievement categories.
 - Unlock timestamps.
 
-Achievement evaluation remains owned by Progression System.
+The Achievement System (`29_ACHIEVEMENT_SYSTEM_SPEC.md`) owns achievement definitions, evaluation, and unlock state and supplies the authoritative snapshot. Progression System does not own achievement state.
 
 ### 18.3 Initial Implementation
 
@@ -1466,9 +1501,9 @@ Audio feedback is supplementary.
 
 Save System owns persistence infrastructure.
 
-Settings owners define their own setting schemas.
+The Settings System owns stored setting values and their validation.
 
-Progression System owns progression semantics.
+Progression System owns progression semantics; Achievement System owns achievement definitions and unlock state.
 
 Menu System owns none of these storage models.
 
@@ -1477,8 +1512,11 @@ Menu System owns none of these storage models.
 - Settings changes are persisted through Save System.
 - Progression summaries are loaded through Progression interfaces.
 - Training records come from Training System.
-- Speedrun results come from Speedrun System.
+- Speedrun results and local leaderboard records come from the Speedrun record contract.
+- Local leaderboard persistence is provided by Save System.
+- Achievement state comes from Achievement System.
 - Active session information comes from Gameplay Session.
+- User-facing labels and messages are resolved through Localization System.
 
 ### 24.3 Storage Failure
 
@@ -1524,6 +1562,7 @@ Test:
 - Pause.
 - Settings.
 - Results.
+- Local Records.
 - Confirmation Dialogs.
 - Error Screens.
 
@@ -1533,6 +1572,7 @@ Test:
 
 - Main Menu to Training.
 - Main Menu to Prologue.
+- Main Menu to Local Records.
 - Training Selection to exercise start.
 - Prologue Introduction to Prologue.
 - Gameplay to Pause.
@@ -1541,6 +1581,7 @@ Test:
 - Settings back to Pause.
 - Results to Retry.
 - Results to Main Menu.
+- Results to Local Records.
 - Dialog cancellation.
 - Dialog confirmation.
 
@@ -1624,6 +1665,7 @@ Implement:
 - MainMenuScreen.
 - TrainingSelectionScreen.
 - PrologueIntroductionScreen.
+- LocalRecordsScreen.
 
 ### Phase 3: Gameplay Screens
 
@@ -1702,7 +1744,7 @@ The implementation is accepted when:
 1. All required screens are registered and accessible through Gameplay Flow.
 2. Menu System does not own application navigation state.
 3. Screens generate explicit navigation requests.
-4. Main Menu provides access to Training and Prologue.
+4. Main Menu provides access to Training, Prologue, and Local Records.
 5. Training Selection displays authoritative exercise status.
 6. Prologue Introduction displays authoritative completion information.
 7. Pause Menu does not directly freeze or restart gameplay.
@@ -1720,7 +1762,10 @@ The implementation is accepted when:
 19. Screen transitions can be interrupted safely.
 20. Stale asynchronous callbacks cannot affect new screens.
 21. No domain business logic is duplicated in the Menu System.
-22. Unit and integration tests pass.
+22. Local leaderboard data comes from the Speedrun record contract and persistence from Save System.
+23. Menu screens do not access IndexedDB directly.
+24. User-facing text is resolved through Localization System.
+25. Unit and integration tests pass.
 
 ---
 
@@ -1739,16 +1784,19 @@ The implementation is accepted when:
 - [ ] Pause Menu implemented.
 - [ ] Settings Screen implemented.
 - [ ] Results Screen implemented.
+- [ ] Local Records Screen implemented.
 - [ ] Confirmation Dialogs implemented.
 - [ ] Error Screen implemented.
 - [ ] Gameplay Flow integration complete.
 - [ ] Gameplay Session integration complete.
 - [ ] Training integration complete.
 - [ ] Progression integration complete.
+- [ ] Achievement integration complete.
 - [ ] Speedrun integration complete.
 - [ ] Input integration complete.
 - [ ] Save integration complete.
 - [ ] Audio integration complete.
+- [ ] Localization integration complete.
 - [ ] Responsive layouts implemented.
 - [ ] Accessibility behavior implemented.
 - [ ] Transition interruption handled.
@@ -1768,8 +1816,8 @@ The implementation is accepted when:
 3. Gameplay Session owns session lifecycle.
 4. Level Runtime owns level loading and runtime lifecycle.
 5. Training owns exercise definitions and results.
-6. Speedrun owns run results and validation.
-7. Progression owns unlocks and achievements.
+6. Speedrun owns run results, validation, and the record contract.
+7. Progression owns content unlocks and milestones; Achievement System owns achievement definitions and unlock state.
 8. Save System owns persistence infrastructure.
 9. Input System owns device input and abstract actions.
 10. Audio System owns audio playback.

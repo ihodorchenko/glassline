@@ -1,10 +1,10 @@
-# GLASSLINE — IMPLEMENTATION STATUS
+# Glassline — Implementation Status
 
 **Document:** `IMPLEMENTATION_STATUS.md`  
 **Project:** Glassline  
-**Last Updated:** 2026-11-16  
+**Last Updated:** 2026-11-17  
 **Project Stage:** Pre-Implementation  
-**Status:** Specification Baseline Established
+**Status:** Specification Baseline Reconciled; Implementation Not Started
 
 ---
 
@@ -101,9 +101,22 @@ Only `Verified` means that the applicable acceptance criteria have been checked 
 | Localization | Defined | Not Started | Not Started | Not Verified |
 | Statistics | Defined | Not Started | Not Started | Not Verified |
 
-**Current phase:** Documentation baseline and implementation preparation.
+**Current phase:** Documentation baseline reconciled; repository initialization is the next step.
 
-**Implementation readiness:** The project has a broad system specification. Repository configuration, cross-document validation, and initial runtime implementation must be checked before gameplay implementation begins.
+**Implementation readiness:** The project has a reconciled system specification and no known cross-document ownership conflicts. Repository configuration (`package.json`) and the source tree are still empty and must be established before gameplay implementation begins. Phase 0 below is the next active workstream.
+
+### 3.1. Documentation Reconciliation (2026-11-17)
+
+The specification set was reviewed and reconciled. The following ownership conflicts were resolved and must be observed during implementation:
+
+- **Respawn ownership:** `RespawnManager` is the sole recovery orchestrator. The Checkpoint System is a destination provider only; no `RespawnCoordinator` exists or may be introduced.
+- **Progression and achievements:** Achievement owns achievement definitions, evaluation, progress, unlock state, and achievement persistence. Progression owns content unlocks and milestones and may consume achievement events only.
+- **Settings and language:** The selected language is the Settings-owned preference `general.language`. Localization owns resources, resolution, formatting, and runtime language application.
+- **Statistics and Speedrun:** Statistics owns event-driven aggregation. Speedrun owns timing, validation, splits, results, and the record contract, and consumes the Statistics summary.
+- **Persistence:** Save owns the database (`GlasslineSaveData`), schema, migrations, and repositories. Other systems must not define competing storage, and the old `MirrorEdge*` database names are obsolete.
+- **Level design and gameplay ownership:** Level content authors triggers, spawn points, and metadata. Checkpoint activation, route validation, run timing, recovery, and progression remain with their owning systems.
+- **Training scope:** Ten canonical exercises are defined in `21_TRAINING_SYSTEM_SPEC.md`; `06_LEVEL_DESIGN_SPEC.md` provides their environments. Ledge grabbing, climbing, balancing, and ziplines remain deferred.
+- **Consistency cleanup:** Terminal section numbering in `03_GAMEPLAY_SPEC.md`, duplicated movement tuning values, duplicated Runner Vision rules, duplicated reduced-motion settings, and the stale legacy project name were removed. The project name is written **Glassline** everywhere.
 
 ---
 
@@ -514,6 +527,8 @@ Exit criteria:
 | Online Accounts | Progression | Deferred |
 | Advanced Procedural Campaign | Procedural Generation | Deferred |
 | Ledge Grabbing | Movement | Deferred |
+| Ledge Climbing and Hanging | Movement | Deferred |
+| Dedicated Balance Traversal | Movement | Deferred |
 | Swinging and Ziplines | Movement | Deferred |
 | Advanced Traversal Variants | Movement | Deferred |
 | Advanced Audio Occlusion | Audio | Deferred |
@@ -607,9 +622,9 @@ Every system must pass all applicable quality gates before being marked `Verifie
 
 ---
 
-## 10. Known Architectural Review Items
+## 10. Architectural Ownership Resolutions
 
-These items must be resolved before implementing the affected contracts.
+These ownership boundaries were resolved during the 2026-11-17 documentation reconciliation. They are now reflected in the system specifications and must be preserved during implementation. Any implementation that contradicts them is a specification deviation.
 
 ### 10.1. Respawn Ownership
 
@@ -675,9 +690,7 @@ Level Runtime must not become a second procedural generation system.
 
 ### 10.7. Specification Consistency
 
-Before implementation, validate public interfaces and shared data models across documents.
-
-In particular:
+The cross-document review of public interfaces and shared data models was completed on 2026-11-17 for:
 
 - Checkpoint destination resolution.
 - Respawn request ownership.
@@ -687,6 +700,10 @@ In particular:
 - Training objective event correlation.
 - Achievement and Progression event contracts.
 - Statistics aggregation and unique-value semantics.
+- Settings and Localization language ownership.
+- Save persistence ownership and database naming.
+
+Shared data models must still be validated against the actual codebase as each system is implemented. If implementation reveals a contract gap, update the owning specification first and record the deviation here.
 
 ---
 

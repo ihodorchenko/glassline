@@ -1,16 +1,16 @@
 # 07_UI_UX_SPEC.md
 
-**Project:** MIRROR'S EDGE — RUNNER PROTOCOL  
+**Project:** Glassline — First-Person Parkour Game  
 **Document:** UI/UX Specification  
 **Version:** 1.0  
 **Status:** Design Specification  
-**Applies to:** Main Menu, HUD, Training UI, Results, Leaderboard, Settings, Navigation
+**Applies to:** Main Menu, HUD, Runner Vision, Training UI, Pause, Results, Leaderboard, Settings, Navigation
 
 ---
 
 ## 1. Purpose
 
-This document defines the user interface and user experience requirements for MIRROR'S EDGE — RUNNER PROTOCOL.
+This document defines the user interface and user experience requirements for Glassline.
 
 It describes:
 
@@ -32,6 +32,10 @@ It describes:
 The interface should reinforce the project's visual identity while remaining lightweight and readable.
 
 The game is a first-person movement experience. The interface must not distract from movement, obscure important environmental details, or introduce unnecessary interaction complexity.
+
+The interface is a presentation layer. HUD and menu screens render authoritative snapshots and events provided by their owning systems and emit explicit user commands. The UI does not own or mutate gameplay, physics, session, timer, checkpoint, progression, achievement, or persistence state.
+
+Setting values are owned by the Settings System, translated text is resolved by the Localization System, and accessibility policy is coordinated by the Accessibility System; the UI consumes their authoritative state and applies it to its own presentation.
 
 ---
 
@@ -106,7 +110,7 @@ Mobile and touch controls are outside the initial scope.
 
 ### 3.1 General Direction
 
-The interface is inspired by the clean, high-contrast visual language of Mirror's Edge.
+The Glassline interface is inspired by the clean, high-contrast visual language of the original *Mirror's Edge* (2008) without reproducing its proprietary assets or exact layouts.
 
 It should feel:
 
@@ -288,6 +292,8 @@ Use the actual application state architecture where available.
 
 Do not allow the UI to become an independent source of gameplay truth.
 
+UI state is a presentation projection of the Gameplay Flow state. Application navigation remains owned by Gameplay Flow (`20_GAMEPLAY_FLOW_SYSTEM_SPEC.md`); the UI must not introduce a competing navigation, session, or gameplay state machine.
+
 ### 4.4 Communication
 
 UI should communicate with game systems through explicit interfaces or typed events.
@@ -305,6 +311,8 @@ Examples:
 - Return to menu requested.
 
 Avoid direct manipulation of internal player physics state from UI components.
+
+User-facing text is resolved through the Localization System (`27_LOCALIZATION_SYSTEM_SPEC.md`); UI components must not hardcode user-facing strings.
 
 ### 4.5 Lifecycle
 
@@ -335,11 +343,15 @@ It should provide direct access to the main game modes and local records.
 
 Required options:
 
-1. Start Run.
+1. Continue, when a resumable session exists.
 2. Training.
-3. Local Records.
-4. Settings.
-5. Exit.
+3. Prologue.
+4. Local Records.
+5. Settings.
+6. Credits.
+7. Exit, where supported.
+
+The exact menu content and action semantics are owned by `24_MENU_SYSTEM_SPEC.md` §7. This document defines the presentation of that content.
 
 In a browser, Exit may be replaced with a suitable action such as returning to the initial screen or displaying a short exit message.
 
@@ -359,27 +371,35 @@ Avoid a large opaque panel covering the entire screen.
 
 ### 5.4 Main Menu Actions
 
-**Start Run**
+**Continue**
 
-- Starts a new Prologue run.
-- Loads the Prologue level if necessary.
-- Initializes run state.
-- Presents the start sequence.
+- Requests resumption of the resumable session through Gameplay Flow.
+- Is hidden or disabled when no resumable session exists.
 
 **Training**
 
-- Opens the Training environment.
-- Restores training progress if available.
+- Requests the Training destination through Gameplay Flow.
+- Displays Training progress from authoritative Training and Progression snapshots.
 - Allows access to completed exercises.
+
+**Prologue**
+
+- Requests a new Prologue session through Gameplay Flow.
+- Opens the Prologue introduction presentation defined in `24_MENU_SYSTEM_SPEC.md`.
+- Gameplay Session owns run initialization; Level Runtime owns level loading.
 
 **Local Records**
 
-- Opens the local leaderboard.
-- Displays saved valid runs.
+- Opens the local leaderboard presentation.
+- Displays validated records provided by the Speedrun record contract.
 
 **Settings**
 
 - Opens the settings screen.
+
+**Credits**
+
+- Opens the credits presentation.
 
 **Exit**
 
@@ -448,6 +468,8 @@ Optional contextual elements:
 - Temporary checkpoint notifications.
 - Training instructions.
 - Temporary gameplay warnings.
+
+Widget ownership, data sources, and lifecycle are defined in `23_HUD_SYSTEM_SPEC.md`; this section defines presentation requirements only. The HUD displays authoritative snapshots and events and must not render independently calculated gameplay results.
 
 ### 7.3 HUD Layout
 
@@ -556,9 +578,9 @@ Examples:
 | Training | Training HUD |
 | Prologue introduction | Minimal |
 | Active run | Full gameplay HUD |
-| Paused | Gameplay HUD dimmed or hidden |
+| Paused | Suspended or hidden |
 | Results | Hidden |
-| Respawn | Temporarily simplified |
+| Respawning | Temporarily suppressed |
 
 ---
 
@@ -566,13 +588,15 @@ Examples:
 
 ### 8.1 Purpose
 
-Runner Vision helps the player understand the intended route.
+Runner Vision presents navigational hints authored by level design. It helps the player understand the intended route while complementing environmental navigation.
 
-It should complement environmental navigation.
+Route guidance rules, highlight priorities, and target selection are defined in `06_LEVEL_DESIGN_SPEC.md` §25. Visual treatment is defined in `04_ASSET_BIBLE.md` §7.9. This section defines presentation requirements only.
 
-It must not replace level design or become a permanent glowing path through the environment.
+The presentation must remain subordinate to the environment; Runner Vision must not become a permanent glowing path through the level.
 
 ### 8.2 Visual Elements
+
+Presentation follows `04_ASSET_BIBLE.md` §7.9.
 
 Possible indicators:
 
@@ -588,7 +612,7 @@ Runner Vision may be:
 
 - Always available in the initial prototype.
 - Triggered by a dedicated input.
-- Configurable in Settings.
+- Controlled by a Settings preference.
 
 Choose one consistent interaction model during implementation.
 
@@ -596,14 +620,9 @@ If activated by input, it must not conflict with core movement controls.
 
 ### 8.4 Highlight Priority
 
-Prioritize:
+Highlight selection and priority are owned by level design (`06_LEVEL_DESIGN_SPEC.md` §25.2).
 
-1. Immediate next traversal target.
-2. Required route transition.
-3. Checkpoint.
-4. Finish.
-
-Avoid highlighting unrelated objects.
+The UI presents the resulting highlight state and must not independently decide which object or route element to highlight.
 
 ### 8.5 Visual Behavior
 
@@ -624,6 +643,8 @@ Allow the player to adjust:
 - Runner Vision intensity.
 - Highlight color.
 - Whether the system is always available or manually activated, if both modes are supported.
+
+These are Settings preferences; their effective presentation is applied by the UI and HUD systems.
 
 Important route information must remain available through environmental design.
 
@@ -698,8 +719,9 @@ After successful exercise completion:
 
 - Show a short success message.
 - Play a subtle confirmation sound.
-- Update progress.
-- Unlock the next exercise.
+- Display the updated progress supplied by Training and Progression.
+
+The UI must not unlock exercises or alter Training progress itself; those operations are owned by the Training and Progression systems.
 
 Do not pause gameplay for a long animation.
 
@@ -736,35 +758,33 @@ Required options:
 
 When paused:
 
-- Stop active gameplay progression.
-- Pause the run timer.
-- Suspend or pause relevant gameplay systems.
-- Release pointer lock.
 - Display the pause UI.
+- Release pointer lock through the Input System.
+- Request the pause transition through Gameplay Flow.
 
-Resume should restore the gameplay state.
+Gameplay Session owns pausing and resuming session behavior. The Speedrun System owns run timer pause policy (`09_SPEEDRUN_SYSTEM_SPEC.md`). The UI must not freeze physics or stop the gameplay loop directly.
+
+Resume must restore the presentation from authoritative session state.
 
 ### 10.4 Restart
 
 Restart must:
 
 - Ask for confirmation if accidental activation is likely.
-- Reset the player to the starting position.
-- Reset checkpoints.
-- Reset run statistics.
-- Reset the timer.
-- Restore the initial run state.
+- Request a session restart through Gameplay Flow.
+- Let Gameplay Session create a clean run state and let Respawn System own any recovery lifecycle required by the restart policy.
+
+The UI must not reposition the player, reset checkpoints, reset run statistics, or reset the timer directly.
 
 ### 10.5 Main Menu
 
 Leaving the run must:
 
-- Stop the timer.
-- Clean up active level state.
-- Release gameplay resources.
-- Return to the main menu.
+- Request session abandonment through Gameplay Flow.
+- Let Gameplay Session and Level Runtime stop the run and release level resources.
+- Return to the main menu presentation.
 
-Do not save an incomplete run as a valid leaderboard record.
+The UI must not save an incomplete run; persistence remains with the owning systems.
 
 ---
 
@@ -790,6 +810,8 @@ Display:
 - Slide count.
 - Fall count.
 - Checkpoint split times.
+
+All values are provided by authoritative result snapshots: the Speedrun System supplies timing, splits, personal-best status, and validation; the Statistics System supplies aggregated movement facts. The UI must not calculate, reconstruct, or modify these values.
 
 ### 11.3 Example Layout
 
@@ -823,11 +845,13 @@ The values are illustrative.
 
 ### 11.4 Personal Best
 
-If the completed run is a new personal best:
+If the authoritative result reports a new personal best:
 
 - Highlight the new record.
 - Display a short confirmation.
-- Update the local record store.
+- Display the new-record state supplied by the Speedrun System.
+
+Record persistence is owned by the Speedrun record contract and the Save System; the UI must not write to the record store.
 
 If the run is not a new personal best:
 
@@ -836,11 +860,11 @@ If the run is not a new personal best:
 
 ### 11.5 Retry
 
-Retry should immediately restart the Prologue with a clean run state.
+Retry should request a restart through Gameplay Flow; Gameplay Session owns creation of a clean run state.
 
 ### 11.6 Main Menu
 
-Return to the main menu and release the current level resources.
+Request return to the main menu through Gameplay Flow; session teardown and level resource release belong to Gameplay Session and Level Runtime.
 
 ### 11.7 Invalid Run
 
@@ -848,7 +872,7 @@ If the run is invalid:
 
 - Show the completion time if useful.
 - Clearly identify that the result is invalid.
-- Do not save it to the valid leaderboard.
+- Display only the validation status supplied by the Speedrun System; do not present it as a valid leaderboard record.
 - Explain the reason where possible.
 - Offer Retry and Main Menu.
 
@@ -858,7 +882,7 @@ If the run is invalid:
 
 ### 12.1 Purpose
 
-The local leaderboard stores valid Prologue runs.
+The local leaderboard presents validated Prologue runs recorded by the Speedrun System.
 
 It provides a persistent personal history across browser reloads.
 
@@ -866,15 +890,13 @@ Online leaderboards are outside the initial scope.
 
 ### 12.2 Storage
 
-Use IndexedDB.
+Leaderboard records are produced by the Speedrun record contract (`09_SPEEDRUN_SYSTEM_SPEC.md` §11) and persisted through the Save System (`10_SAVE_SYSTEM_SPEC.md`).
 
-The storage implementation should follow the persistence architecture in `02_TECHNICAL_ARCHITECTURE.md`.
-
-Do not use localStorage as the primary record database.
+The UI must not access IndexedDB directly, maintain a duplicate record store, or use localStorage as a record source.
 
 ### 12.3 Record Model
 
-Illustrative model:
+Illustrative display fields, mapped from the authoritative Speedrun record contract (`09_SPEEDRUN_SYSTEM_SPEC.md` §11.2):
 
 ```ts
 interface RunRecord {
@@ -894,16 +916,13 @@ interface RunRecord {
 }
 ```
 
-Use the project's established persistence model.
+The UI must not compute, validate, or persist these values itself.
 
 ### 12.4 Sorting
 
-Sort valid records by:
+Sorting, grouping, and tie-breaking are owned by the Speedrun record contract (`09_SPEEDRUN_SYSTEM_SPEC.md` §11.4).
 
-1. Lowest completion time.
-2. Earliest completion timestamp for equal times.
-
-The primary personal best is the valid record with the lowest duration.
+The leaderboard displays records in the order supplied by the owning system and must not re-sort or re-group them independently.
 
 ### 12.5 Display
 
@@ -933,13 +952,15 @@ The player should be able to:
 - View records.
 - Clear local records after confirmation.
 
+Record deletion is executed by the owning record and persistence systems; the UI only requests the operation and reports the authoritative result.
+
 Do not silently delete records.
 
 ### 12.8 Record Validation
 
-Only valid completed Prologue runs may be stored.
+Record validity is determined by the Speedrun validation contract (`09_SPEEDRUN_SYSTEM_SPEC.md` §12).
 
-Training results, incomplete runs, and invalid runs must not enter the leaderboard.
+Training results, incomplete runs, and invalid runs must not be stored or presented as valid leaderboard records.
 
 ---
 
@@ -949,7 +970,9 @@ Training results, incomplete runs, and invalid runs must not enter the leaderboa
 
 Settings provides control over input and presentation preferences.
 
-Settings should persist between sessions.
+The Settings System (`25_SETTINGS_SYSTEM_SPEC.md`) owns setting values, validation, categories, and semantics. The Settings screen is a presentation and editing layer; it must request changes through the Settings interface and must not maintain a second settings store or access IndexedDB directly.
+
+Setting values persist between sessions through the Save System (`10_SAVE_SYSTEM_SPEC.md`).
 
 ### 13.2 Initial Settings Categories
 
@@ -960,12 +983,24 @@ Settings should persist between sessions.
 - Key bindings.
 - Reset controls.
 
+**Camera**
+
+- Field of view.
+- Camera bob intensity.
+- Camera motion intensity.
+- Look sensitivity.
+
 **Display**
 
 - Resolution or browser rendering scale, where supported.
 - Fullscreen.
-- UI scale.
 - Graphics quality.
+
+**HUD**
+
+- HUD enabled.
+- Widget visibility.
+- UI scale.
 
 **Gameplay**
 
@@ -988,11 +1023,21 @@ Settings should persist between sessions.
 - Ambient volume.
 - UI volume.
 
+**Language**
+
+- Display language.
+
+The selected language is a Settings preference (`general.language`); the Localization System resolves and applies the corresponding resources (`27_LOCALIZATION_SYSTEM_SPEC.md`).
+
+Each category's values are owned and applied by the corresponding system as defined in `25_SETTINGS_SYSTEM_SPEC.md`.
+
 The exact set of settings may be reduced for the initial implementation.
 
 ### 13.3 Settings Persistence
 
-Use the project's settings persistence layer.
+Setting values are owned by the Settings System and persisted by the Save System.
+
+The Settings screen must not write to IndexedDB or implement its own persistence layer.
 
 Settings should be loaded before gameplay begins.
 
@@ -1000,7 +1045,7 @@ Invalid or missing settings must fall back to safe defaults.
 
 ### 13.4 Settings Validation
 
-Validate values.
+Validation is owned by the Settings System; the screen displays validation errors and must not silently accept invalid values.
 
 Examples:
 
@@ -1011,7 +1056,7 @@ Examples:
 
 ### 13.5 Reset to Defaults
 
-Provide a reset action.
+Provide a reset action that requests restore-to-defaults through the Settings System.
 
 Require confirmation if the operation changes multiple settings.
 
@@ -1146,7 +1191,7 @@ Prefer CSS transforms and opacity where appropriate.
 
 ### 16.4 Reduced Motion
 
-Respect the reduced-motion setting.
+Respect the effective reduced-motion configuration coordinated by the Accessibility System (`26_ACCESSIBILITY_SYSTEM_SPEC.md`); the preference is owned by the Settings System.
 
 When enabled:
 
@@ -1208,6 +1253,8 @@ The game may display a recommended minimum viewport message if gameplay becomes 
 
 ## 18. Accessibility Requirements
 
+Accessibility preferences are stored by the Settings System and coordinated by the Accessibility System (`26_ACCESSIBILITY_SYSTEM_SPEC.md`). The UI presents the effective settings and applies them to its own presentation; it does not own accessibility preferences or replace domain behavior.
+
 Support the following where practical:
 
 - High-contrast text.
@@ -1219,6 +1266,8 @@ Support the following where practical:
 - Adjustable mouse sensitivity.
 - Clear error and success messages.
 - Color-independent gameplay indicators.
+
+Camera motion, bob, and FOV effects are applied by the Camera System; movement physics remain unchanged by accessibility settings.
 
 Avoid flashing effects and excessive screen shake.
 
@@ -1375,7 +1424,7 @@ Implement the UI incrementally.
 ### Phase 6 — Settings and Polish
 
 22. Implement settings categories.
-23. Add persistence.
+23. Integrate persistence through the Settings System and Save System.
 24. Add pause menu.
 25. Add responsive behavior.
 26. Add accessibility options.
@@ -1411,17 +1460,17 @@ Do not implement all screens before their underlying game systems exist.
 
 ### Results and Leaderboard
 
-- Run statistics are correct.
-- Personal best is calculated correctly.
-- Valid runs are persisted.
+- Run statistics are displayed from authoritative snapshots.
+- Personal best status is displayed from the authoritative Speedrun result.
+- Valid runs are persisted by the owning systems.
 - Invalid runs are excluded.
 - Records survive reload.
 
 ### Settings
 
 - Required settings are available.
-- Values persist.
-- Changes are validated.
+- Values persist through the Settings System and Save System.
+- Changes are validated by the Settings System.
 - Reset works.
 
 ### Quality
@@ -1450,8 +1499,9 @@ When implementing the UI:
 10. Implement proper event and DOM cleanup.
 11. Keep accessibility in scope.
 12. Do not add online services or external dependencies without approval.
-13. Verify persistence and reload behavior.
+13. Verify persistence and reload behavior through the owning systems, not through direct UI storage access.
 14. Do not modify unrelated gameplay systems.
+15. Resolve user-facing strings through the Localization System and setting values through the Settings System.
 
 If the underlying game system is not implemented yet, create only the UI structure needed for the current vertical slice. Do not simulate successful gameplay behavior with fake data in production code.
 

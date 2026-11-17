@@ -2,9 +2,9 @@
 
 # Localization System Specification
 
-**Project:** Mirror's Edge-Inspired First-Person Parkour Game  
+**Project:** Glassline — First-Person Parkour Game  
 **Document:** Localization System  
-**Version:** 1.0  
+**Version:** 2.0  
 **Status:** Implementation Specification  
 **Priority:** Core System
 
@@ -124,6 +124,7 @@ The Localization System does not own:
 - Input event processing.
 - HUD layout.
 - Font asset creation.
+- The selected language preference.
 - Persistent settings storage.
 - Save data migration.
 - General-purpose content management.
@@ -313,13 +314,13 @@ Automatic detection must not override an existing saved user preference.
 
 ### 6.1 Canonical Setting
 
-The selected language is stored through Settings System.
+The selected language is stored and owned by the Settings System.
 
 Canonical setting:
 
 `general.language`
 
-The setting should be added to the Settings System definition registry.
+The setting is defined in `25_SETTINGS_SYSTEM_SPEC.md` §7.8 and must be registered in the Settings System definition registry.
 
 Suggested type:
 
@@ -327,24 +328,28 @@ Suggested type:
 type LanguageSetting = string;
 ```
 
-The value must reference a registered language identifier.
+The value must reference a language identifier registered with the Localization System.
 
 ### 6.2 Ownership
 
-- Settings System owns the selected language preference.
-- Localization System resolves and applies that preference.
+- Settings System owns the selected language preference and its persistence contract.
+- Localization System owns language definitions, translation resources, resolution, formatting, and runtime language application.
+- Localization System does not store a competing language preference.
 - Menu System presents the language selector.
 
 ### 6.3 Language Change
 
 When the language changes:
 
-1. Settings System validates the selected language.
-2. Localization System loads or retrieves its resources.
-3. Required resources are validated.
-4. The active language is updated.
-5. Visible localized components are refreshed.
-6. A language change event is published.
+1. Settings System validates that the value's type and shape are valid.
+2. Localization System validates that the identifier refers to a registered, supported language with available mandatory resources.
+3. Localization System loads or retrieves its resources.
+4. Required resources are validated.
+5. The active language is updated.
+6. Visible localized components are refreshed.
+7. A language change event is published.
+
+Settings must not mark a language change as successfully applied until the Localization System has confirmed that the language can be activated.
 
 ### 6.4 Failure Handling
 

@@ -1,10 +1,11 @@
 # 14_INTERACTION_SYSTEM_SPEC.md
 
-# Interaction System Specification
+**Project:** Glassline  
+**Document:** Interaction System Specification
 
 ## 1. Purpose
 
-This document defines the Interaction System for the Mirror's Edge-inspired first-person parkour game.
+This document defines the Interaction System for Glassline, a first-person parkour game inspired by the original *Mirror's Edge* (2008).
 
 The Interaction System provides a unified way for the player to interact with objects, environmental elements, triggers, and gameplay features.
 

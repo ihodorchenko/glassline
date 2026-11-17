@@ -2,7 +2,7 @@
 
 # Accessibility System Specification
 
-**Project:** Mirror's Edge-Inspired First-Person Parkour Game  
+**Project:** Glassline — First-Person Parkour Game  
 **Document:** Accessibility System  
 **Version:** 1.0  
 **Status:** Implementation Specification  
@@ -118,14 +118,16 @@ The Accessibility System does not own:
 
 | Responsibility | Owner |
 |---|---|
-| Accessibility preferences | Settings System |
+| Accessibility preferences (stored values) | Settings System |
 | Accessibility coordination | Accessibility System |
 | Settings persistence | Save System |
 | Accessibility UI | Menu System |
 | Camera motion implementation | Camera System |
 | Input behavior | Input System |
 | HUD presentation | HUD System |
+| Movement behavior and movement feedback data | Movement System |
 | Text and UI rendering | UI layer |
+| Localized text resources | Localization System |
 | Audio alternatives | Audio System |
 | Gameplay assistance | Training / Gameplay systems |
 | Platform capabilities | Platform layer |
@@ -137,12 +139,14 @@ The Accessibility System does not own:
 - `08_AUDIO_DESIGN_SPEC.md`
 - `10_SAVE_SYSTEM_SPEC.md`
 - `11_INPUT_SYSTEM_SPEC.md`
+- `12_MOVEMENT_SYSTEM_SPEC.md`
 - `13_CAMERA_SYSTEM_SPEC.md`
 - `14_INTERACTION_SYSTEM_SPEC.md`
 - `21_TRAINING_SYSTEM_SPEC.md`
 - `23_HUD_SYSTEM_SPEC.md`
 - `24_MENU_SYSTEM_SPEC.md`
 - `25_SETTINGS_SYSTEM_SPEC.md`
+- `27_LOCALIZATION_SYSTEM_SPEC.md`
 
 ---
 
@@ -1066,11 +1070,20 @@ Initial canonical IDs:
 
 ### 20.2 Ownership
 
-Settings System owns stored preferences.
+Settings System owns stored preferences and their validation.
 
-Accessibility System resolves effective configuration.
+Accessibility System resolves the effective configuration, coordinates policy, and publishes a revisioned snapshot. It does not store preferences or apply domain behavior.
 
-Consumer systems apply their own behavior.
+Consumer systems apply the resolved configuration to their own presentation domain:
+
+- Camera System: FOV, bob, roll, landing effects, and other camera motion.
+- HUD System: widget animation, contrast, text size, and UI scale.
+- Movement System: movement physics remain unchanged; it only provides authoritative movement data for presentation.
+- Menu / UI layer: menu transitions, focus behavior, dialogs, and text readability.
+- Input System: labels, focus behavior, remapping, sensitivity, and inversion.
+- Audio System: feedback cues and their visual alternatives.
+
+A consumer must not reinterpret raw preferences or maintain a second copy of the effective configuration.
 
 ### 20.3 Preview Support
 

@@ -2,9 +2,9 @@
 
 # Settings System Specification
 
-**Project:** Mirror's Edge-Inspired First-Person Parkour Game  
+**Project:** Glassline — First-Person Parkour Game  
 **Document:** Settings System  
-**Version:** 1.0  
+**Version:** 2.0  
 **Status:** Implementation Specification  
 **Priority:** Core System
 
@@ -27,6 +27,7 @@ It supports:
 - HUD settings.
 - Accessibility settings.
 - Gameplay assistance settings.
+- Localization settings, including the selected language (`general.language`).
 - Default configurations.
 - Runtime configuration updates.
 - Temporary settings previews.
@@ -106,6 +107,7 @@ The Settings System owns:
 - Migration coordination.
 - Persistence coordination.
 - Runtime application orchestration.
+- The canonical selected-language preference (`general.language`).
 
 ### 3.2 Non-responsibilities
 
@@ -121,12 +123,14 @@ The Settings System does not own:
 - IndexedDB implementation.
 - Gameplay rules.
 - Application navigation.
+- Translation resources, translation resolution, and localized string formatting.
 
 ### 3.3 Ownership Table
 
 | Responsibility | Owner |
 |---|---|
 | Setting definitions and values | Settings System |
+| Selected language preference (`general.language`) | Settings System |
 | Settings UI | Menu System |
 | Input behavior | Input System |
 | Audio behavior | Audio System |
@@ -134,6 +138,8 @@ The Settings System does not own:
 | HUD behavior | HUD System |
 | Display application | Rendering / Platform layer |
 | Accessibility presentation | UI / Accessibility layer |
+| Translation resources and resolution | Localization System |
+| Language selector presentation | Menu System |
 | Persistence infrastructure | Save System |
 | Configuration serialization | Settings System through Save System |
 
@@ -148,6 +154,8 @@ The Settings System does not own:
 - `20_GAMEPLAY_FLOW_SYSTEM_SPEC.md`
 - `23_HUD_SYSTEM_SPEC.md`
 - `24_MENU_SYSTEM_SPEC.md`
+- `26_ACCESSIBILITY_SYSTEM_SPEC.md`
+- `27_LOCALIZATION_SYSTEM_SPEC.md`
 
 ---
 
@@ -285,6 +293,7 @@ interface SettingDefinition<T extends SettingValue = SettingValue> {
 
 ```ts
 type SettingCategory =
+    | "general"
     | "audio"
     | "controls"
     | "camera"
@@ -293,6 +302,8 @@ type SettingCategory =
     | "accessibility"
     | "gameplay";
 ```
+
+The `general` category holds application-wide preferences that are not owned by a single domain-specific adapter, including `general.language`.
 
 ### 5.5 Setting Types
 
@@ -454,14 +465,14 @@ Settings System may coordinate their persistence, but must not introduce a compe
 | `camera.field_of_view` | Number | 75 | 60–100 |
 | `camera.bob_intensity` | Number | 1.0 | 0.0–1.5 |
 | `camera.motion_intensity` | Number | 1.0 | 0.0–1.5 |
-| `camera.look_sensitivity` | Number | 1.0 | 0.1–5.0 |
-| `camera.reduced_motion` | Boolean | false | — |
 
 Camera System applies camera-specific parameters.
 
-If look sensitivity is shared with Input System, one canonical setting must be chosen.
+Look sensitivity is owned by the Input System as `controls.mouse_sensitivity` and `controls.gamepad_sensitivity`. The Camera System consumes the effective look input and must not maintain a second editable sensitivity setting.
 
-Do not maintain two independently editable sensitivity values that control the same input path.
+Reduced motion is a shared accessibility preference, not a camera setting. Its canonical ID is `accessibility.reduced_motion` (§7.6).
+
+Do not maintain two independently editable settings that control the same input path.
 
 ### 7.4 Display Settings
 
@@ -519,6 +530,27 @@ Checkpoint feedback visibility is consumed by HUD System.
 
 These settings must not modify authoritative checkpoint or exercise completion behavior.
 
+### 7.8 Localization Settings
+
+| ID | Type | Default | Notes |
+|---|---|---|---|
+| `general.language` | String | `en` | Must reference a registered language identifier |
+
+The Settings System owns the stored preference. It validates that the value is a registered language identifier supplied by the Localization System.
+
+The Localization System owns resource loading, translation resolution, formatting, and runtime language application (`27_LOCALIZATION_SYSTEM_SPEC.md`).
+
+The Menu System presents the language selector.
+
+Changing the language:
+
+- Must not restart the gameplay session.
+- Must not reset the level, checkpoints, or Speedrun timer.
+- Must not reset Training progress.
+- Must be applied through the Localization System's language-change flow.
+
+If the requested language resources are unavailable, the previously active language remains in effect and the failure is reported.
+
 ---
 
 ## 8. Canonical Setting Ownership
@@ -535,6 +567,7 @@ For example:
 - Camera field of view belongs to Camera configuration.
 - UI scale belongs to shared UI configuration.
 - Reduced Motion belongs to shared Accessibility configuration.
+- Selected language (`general.language`) belongs to General/Localization configuration; the Localization System consumes it and does not store a competing preference.
 
 Other systems may consume the value without creating duplicates.
 
@@ -788,6 +821,8 @@ interface ISettingsApplicationAdapter {
 
 The exact adapter boundaries may be more granular than one adapter per category.
 
+The `general` category (including `general.language`) is applied through the Localization integration (`27_LOCALIZATION_SYSTEM_SPEC.md`); it is not owned by one of the domain-specific adapters below.
+
 ### 11.3 Application Order
 
 When several settings change together, apply them in a deterministic order.
@@ -795,14 +830,17 @@ When several settings change together, apply them in a deterministic order.
 Recommended order:
 
 1. Platform and display configuration.
-2. Input configuration.
-3. Audio configuration.
-4. Camera configuration.
-5. Accessibility configuration.
-6. HUD configuration.
-7. Gameplay assistance configuration.
+2. Localization configuration and resource availability.
+3. Input configuration.
+4. Audio configuration.
+5. Camera configuration.
+6. Accessibility configuration.
+7. HUD configuration.
+8. Gameplay assistance configuration.
 
 The actual order must respect dependency relationships.
+
+Localization must be applied before presentation layers refresh visible strings, so that a language change does not briefly render mixed-language UI.
 
 ### 11.4 Application Failure
 
@@ -913,6 +951,7 @@ The repository implementation must delegate to Save System.
 - Save after successful configuration commits.
 - Avoid unnecessary writes when values have not changed.
 - Preserve valid values when an unrelated setting fails validation.
+- Persist the selected language as part of the committed configuration; do not store a separate language copy outside Settings.
 - Use schema versioning.
 
 ### 13.4 Save Failure
@@ -1406,6 +1445,9 @@ Test:
 - UI scale.
 - Accessibility settings.
 - Gameplay assistance settings.
+- Selected language change applied through the Localization System.
+- Language preference persists across reload and is restored on startup.
+- Invalid or unregistered language identifier is rejected without breaking the UI.
 
 ### 24.8 User Flow Tests
 
@@ -1551,9 +1593,13 @@ The implementation is accepted when:
 20. Audio settings are applied through Audio System.
 21. Camera settings are applied through Camera System.
 22. HUD settings are applied through HUD System.
-23. Settings UI contains no duplicated business logic.
-24. Schema migration preserves valid settings.
-25. Unit and integration tests pass.
+23. The selected language is stored as `general.language` by Settings System.
+24. Language change is applied through the Localization System.
+25. A language change does not restart the session or reset gameplay state.
+26. Localization System does not maintain a competing language preference.
+27. Settings UI contains no duplicated business logic.
+28. Schema migration preserves valid settings.
+29. Unit and integration tests pass.
 
 ---
 
@@ -1581,6 +1627,7 @@ The implementation is accepted when:
 - [ ] Camera settings integrated.
 - [ ] Display settings integrated where supported.
 - [ ] HUD settings integrated.
+- [ ] Localization settings integrated.
 - [ ] Accessibility settings integrated.
 - [ ] Gameplay assistance settings integrated.
 - [ ] Reset operations implemented.
@@ -1614,12 +1661,14 @@ The implementation is accepted when:
 16. Audio System remains authoritative for playback and mixing.
 17. Camera System remains authoritative for camera behavior.
 18. HUD System remains authoritative for HUD presentation.
-19. Accessibility preferences must be shared across relevant systems.
-20. Platform-specific settings must respect actual capabilities.
-21. Unsupported settings must not be presented as functional controls.
-22. Configuration snapshots must be immutable.
-23. Runtime changes must be deterministic.
-24. Settings must not modify gameplay state unless explicitly defined by a gameplay setting.
-25. The initial implementation must avoid unnecessary configuration frameworks and dynamic plugin systems.
+19. Localization System remains authoritative for translation resources, resolution, and formatting.
+20. Selected language preference is owned by Settings System as `general.language`; Localization must not maintain a competing preference.
+21. Accessibility preferences must be shared across relevant systems.
+22. Platform-specific settings must respect actual capabilities.
+23. Unsupported settings must not be presented as functional controls.
+24. Configuration snapshots must be immutable.
+25. Runtime changes must be deterministic.
+26. Settings must not modify gameplay state unless explicitly defined by a gameplay setting.
+27. The initial implementation must avoid unnecessary configuration frameworks and dynamic plugin systems.
 
 **End of Specification**

@@ -1,4 +1,4 @@
-# GLASSLINE — AGENT GUIDE
+# Glassline — Agent Guide
 
 > Mandatory entry point for AI agents working on the Glassline project.
 
@@ -273,6 +273,21 @@ Use Save System interfaces instead of allowing arbitrary gameplay systems to cre
 
 Do not persist high-frequency gameplay data every frame.
 
+The Save System owns the database (`GlasslineSaveData`), schema versioning, migrations, and repositories. Domain systems own the meaning and rules of their saved data. Do not introduce a second database or duplicate a domain rule inside persistence.
+
+### 5.9. Cross-System Ownership Invariants
+
+The following ownership boundaries are resolved and must not be re-litigated during implementation:
+
+- **Respawn:** `RespawnManager` (`17_RESPAWN_SYSTEM_SPEC.md`) is the sole recovery orchestrator. Checkpoint provides the active checkpoint and respawn destination only. No `RespawnCoordinator` may be introduced.
+- **Achievements and progression:** the Achievement System (`29_ACHIEVEMENT_SYSTEM_SPEC.md`) owns achievement definitions, evaluation, progress, unlock state, and achievement persistence. Progression (`22_PROGRESSION_SYSTEM_SPEC.md`) owns content unlocks and milestones and may consume achievement events. Progression must not maintain a duplicate achievement registry or unlock record.
+- **Settings and localization:** the Settings System (`25_SETTINGS_SYSTEM_SPEC.md`) owns the selected language preference `general.language`. The Localization System (`27_LOCALIZATION_SYSTEM_SPEC.md`) owns language definitions, translation resources, resolution, formatting, and runtime language application. Localization must not persist a competing language preference.
+- **Speedrun and statistics:** the Speedrun System (`09_SPEEDRUN_SYSTEM_SPEC.md`) owns timing, route validation, splits, results, and the run record contract. The Statistics System (`30_STATISTICS_SYSTEM_SPEC.md`) owns event-driven aggregation of gameplay facts. Speedrun consumes the finalized statistics summary; it must not run a second collector. Statistics must not own run timing, validation, or personal bests.
+- **Presentation:** HUD (`23_HUD_SYSTEM_SPEC.md`) and Menu (`24_MENU_SYSTEM_SPEC.md`) present authoritative state and issue user commands. They must not calculate gameplay results or mutate gameplay, physics, session, run, checkpoint, or persistence state.
+- **Level design:** level content (`06_LEVEL_DESIGN_SPEC.md`) authors geometry, triggers, spawn points, and gameplay metadata. Checkpoint activation, route validation, recovery, run timing, and progression remain with their owning systems.
+
+If an implementation task appears to require violating one of these boundaries, stop and reconcile the specifications first. Do not duplicate ownership to make a feature easier.
+
 ---
 
 ## 6. Initial Release Scope
@@ -311,6 +326,8 @@ Do not implement these as part of the initial scope unless explicitly requested:
 - Online accounts.
 - Advanced procedural campaigns.
 - Ledge grabbing.
+- Ledge climbing and hanging.
+- Dedicated balance traversal.
 - Swinging and ziplines.
 - Advanced traversal variants outside the initial movement scope.
 - Remote analytics.

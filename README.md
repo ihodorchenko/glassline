@@ -1,4 +1,4 @@
-# GLASSLINE
+# Glassline
 
 **A first-person parkour game focused on movement, momentum, and mastery.**
 
@@ -202,7 +202,9 @@ Prefer a working and verified gameplay foundation over broad but incomplete impl
 
 Glassline currently has a structured specification covering its intended architecture, gameplay systems, and initial release scope.
 
-The presence of a specification does not mean that its system has been implemented.
+The specification baseline was reconciled on 2026-11-17: cross-document ownership conflicts were resolved, deferred mechanics were removed from active contracts, and duplicated rules were consolidated. No known contradictory instructions remain in the documentation set.
+
+The presence of a specification does not mean that its system has been implemented. The repository currently contains documentation only; `package.json` and the source tree are not initialized.
 
 For actual implementation, integration, and verification status, see:
 
@@ -326,6 +328,8 @@ The following features must not block the initial release:
 - Online accounts.
 - Advanced procedural campaigns.
 - Ledge grabbing.
+- Ledge climbing and hanging.
+- Dedicated balance traversal.
 - Swinging and ziplines.
 - Advanced traversal variants outside the initial movement scope.
 - Remote analytics.

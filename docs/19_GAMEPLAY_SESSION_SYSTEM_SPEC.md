@@ -2,7 +2,7 @@
 
 # Gameplay Session System Specification
 
-**Project:** Mirror's Edge-Inspired First-Person Parkour Game  
+**Project:** Glassline  
 **Document:** Gameplay Session System  
 **Version:** 1.0  
 **Status:** Implementation Specification  
@@ -72,6 +72,7 @@ The system must not own:
 - Interaction detection and execution.
 - Save storage implementation.
 - UI rendering.
+- Application navigation between screens.
 - Audio playback.
 
 These responsibilities remain with their respective systems.
@@ -93,6 +94,7 @@ This specification builds on:
 - `16_CHECKPOINT_SYSTEM_SPEC.md`
 - `17_RESPAWN_SYSTEM_SPEC.md`
 - `18_PLAYER_STATE_SYSTEM_SPEC.md`
+- `20_GAMEPLAY_FLOW_SYSTEM_SPEC.md`
 
 ---
 
@@ -131,6 +133,7 @@ For example:
 - Speedrun System owns timing and route validation.
 - Input System owns input contexts.
 - Save System owns persistence infrastructure.
+- Gameplay Flow owns application navigation between screens.
 
 ### 3.5 Deterministic Transitions
 
@@ -481,7 +484,7 @@ Restart must:
 - Cancel active interactions.
 - Cancel pending respawn operations.
 - Reset player transient state.
-- Reset or restore checkpoint progress according to mode rules.
+- Reset session-scoped checkpoint progress.
 - Resolve the correct spawn point.
 - Reset camera presentation.
 - Reinitialize gameplay input.
@@ -844,6 +847,7 @@ The Level Runtime System:
 - Registers runtime objects.
 - Resolves initial spawn points.
 - Activates the initial section.
+- Restarts the Level Session when the restart policy allows a controlled restart.
 - Releases level resources during teardown.
 
 The Gameplay Session System waits for Level Runtime results.
@@ -981,6 +985,8 @@ The UI System presents:
 The session coordinator emits events and state snapshots.
 
 UI must not become the authority for gameplay session state.
+
+Navigation between application screens is owned by Gameplay Flow (`20_GAMEPLAY_FLOW_SYSTEM_SPEC.md`); the session only publishes lifecycle state and completion.
 
 ### 8.13 Audio System
 
@@ -1146,7 +1152,7 @@ Application focus loss must be treated as a session interruption.
 
 The Input System is responsible for clearing device state and preventing stuck actions.
 
-The session coordinator determines whether the session should enter `paused`.
+The session coordinator determines whether the session should enter `paused` in modes that permit pausing. In a ranked Speedrun attempt, pause and focus-loss behavior are defined by `09_SPEEDRUN_SYSTEM_SPEC.md`; the session must not pause or resume the ranked timer implicitly or override that policy.
 
 The system must not assume that browser focus loss always means the player explicitly requested a pause.
 
@@ -1158,11 +1164,13 @@ The system must not assume that browser focus loss always means the player expli
 
 ```ts
 type SessionRestartReason =
-    | "player_request"
-    | "training_restart"
-    | "level_restart"
-    | "system_recovery";
+    | "player-request"
+    | "training-restart"
+    | "level-restart"
+    | "system-recovery";
 ```
+
+Session restart reasons use the same kebab-case convention as the Respawn System's `RespawnReason` values (`17_RESPAWN_SYSTEM_SPEC.md`). `training-restart` as a session restart means restarting the whole Training session; restarting a single exercise is a recovery operation with the same reason and is executed by `RespawnManager`.
 
 ### 11.2 Restart Request
 
@@ -1170,14 +1178,11 @@ type SessionRestartReason =
 interface RestartSessionRequest {
     reason: SessionRestartReason;
 
-    checkpointPolicy:
-        | "preserve"
-        | "reset"
-        | "initial";
-
     startPointId?: string;
 }
 ```
+
+A session restart invalidates the previous execution generation and resets session-scoped checkpoint progress. Checkpoint-preserving recovery is a respawn operation executed by `RespawnManager` (`17_RESPAWN_SYSTEM_SPEC.md`); it must not be requested as a session restart.
 
 ### 11.3 Restart Behavior
 
@@ -1185,15 +1190,17 @@ The restart policy depends on the gameplay mode.
 
 **Training:**
 
-- Restart the current exercise or training area.
-- Preserve unrelated Training progress.
+- Restart the Training session from its configured start state.
+- Preserve persistent Training progress records.
 - Restore the appropriate initial player state.
+
+Restarting a single Training exercise is a recovery operation requested through `RespawnManager` with reason `training-restart`; it preserves the Training session and does not create a new execution generation.
 
 **Prologue:**
 
-- Restart the Prologue according to the selected checkpoint policy.
+- Restart the Prologue from the initial or requested spawn point.
+- Reset session-scoped checkpoint progress.
 - Reset temporary section-specific state.
-- Restore the initial or requested spawn point.
 
 **Speedrun:**
 
@@ -1219,6 +1226,15 @@ Before restarting:
 The operation must be atomic from the player's perspective.
 
 The player must never be left in an active but partially reset state.
+
+### 11.5 Restart Versus Respawn
+
+Restart and respawn are distinct operations and must not be conflated:
+
+- Respawn restores the player and preserves the active session and checkpoint progress. It is executed by the Respawn System through `RespawnManager` (`17_RESPAWN_SYSTEM_SPEC.md`).
+- Restart creates a new execution generation and resets session-scoped progress. It is coordinated with Level Runtime, while player recovery remains delegated to the Respawn System.
+
+The Gameplay Session System must not implement either recovery lifecycle itself.
 
 ---
 
@@ -1692,8 +1708,8 @@ Test:
 - Restart Training.
 - Restart Prologue.
 - Restart from a selected spawn point.
-- Preserve checkpoint progress.
-- Reset checkpoint progress.
+- Reset session-scoped checkpoint progress.
+- Reject restart requests that attempt to preserve checkpoint progress.
 - Restart during active interaction.
 - Restart during respawn.
 - Restart during loading.
@@ -1890,6 +1906,8 @@ The implementation is accepted when:
 20. Stale asynchronous results cannot modify a newer session.
 21. Session events are correctly scoped and ordered.
 22. No gameplay subsystem depends on UI state to determine session validity.
+23. Application navigation between screens remains owned by Gameplay Flow.
+24. Restart and respawn remain distinct operations owned by their respective systems.
 
 ---
 

@@ -169,24 +169,20 @@ Achievement System may consume Progression milestone events.
 
 Neither system should duplicate the other's authoritative state.
 
-### 3.3 Required Architecture Amendment
+### 3.3 Consistency with the Progression Specification
 
-Document `22_PROGRESSION_SYSTEM_SPEC.md` currently includes achievement progression and achievement examples in its scope.
+`22_PROGRESSION_SYSTEM_SPEC.md` defines cross-mode progression, milestones, and content unlock rules. It does not define or maintain achievement state.
 
-For consistency with this specification, apply the following ownership clarification:
+The ownership split is:
 
-- Achievement definitions move to Achievement System.
-- Achievement criteria move to Achievement System.
-- Achievement progress and unlock state move to Achievement System.
-- Achievement history moves to Achievement System.
-- Achievement-specific persistence semantics move to Achievement System.
-- Progression System retains cross-mode progression, milestones, unlock rules, and progression statistics.
-- Progression System may reference achievements as inputs to progression rules.
-- Progression System must not maintain a second authoritative achievement completion record.
+- Achievement System owns achievement definitions, criteria, progress, unlock state, history, and achievement persistence semantics.
+- Progression System owns cross-mode progression, milestones, unlock rules, and progression statistics.
+- Progression System may consume achievement events as inputs to milestones and unlock rules.
+- Progression System must not maintain a second authoritative achievement registry, progress model, or unlock record.
 
-The achievement examples previously listed in the Progression specification should be treated as Achievement System definitions.
+This section previously recorded a required amendment to the Progression specification. The amendment has been applied to `22_PROGRESSION_SYSTEM_SPEC.md`; the two specifications are now consistent.
 
-This is an ownership refinement, not a requirement to duplicate or migrate the same runtime implementation into two systems.
+This is an ownership boundary, not a requirement to duplicate or migrate the same runtime implementation into two systems.
 
 ---
 

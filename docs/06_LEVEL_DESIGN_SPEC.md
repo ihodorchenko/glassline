@@ -1,8 +1,8 @@
 # 06_LEVEL_DESIGN_SPEC.md
 
-**Project:** MIRROR'S EDGE — RUNNER PROTOCOL  
+**Project:** Glassline  
 **Document:** Level Design Specification  
-**Version:** 1.0  
+**Version:** 2.0  
 **Status:** Design Specification  
 **Applies to:** Training Level, Prologue Level, Level Geometry, Route Design, Checkpoints, Gameplay Validation
 
@@ -21,6 +21,8 @@ Both levels use procedural environment assets, but their gameplay layouts are in
 
 Procedural generation must support level construction without compromising route readability, traversal precision, or player progression.
 
+This document defines level composition, environment requirements, geometry, navigation affordances, and spatial organization. It does not own exercise objectives or evaluation — those belong to `21_TRAINING_SYSTEM_SPEC.md`. It does not own run timing or route validation — those belong to `09_SPEEDRUN_SYSTEM_SPEC.md`. It does not own checkpoint activation, progress, or recovery lifecycle — those belong to `16_CHECKPOINT_SYSTEM_SPEC.md` and `17_RESPAWN_SYSTEM_SPEC.md`.
+
 This document describes the intended gameplay experience and level construction requirements. Exact coordinates, obstacle dimensions, and route geometry may be tuned during implementation and playtesting.
 
 ---
@@ -38,9 +40,7 @@ Each gameplay structure should have a purpose:
 - Provide a running surface.
 - Create a jump opportunity.
 - Require a vault or slide.
-- Enable wallrunning.
-- Provide a climbing route.
-- Create a balancing challenge.
+- Enable wallrunning or walljumping.
 - Connect different elevation levels.
 - Guide the player toward the next section.
 
@@ -64,7 +64,7 @@ The route should remain understandable even when Runner Vision is reduced or dis
 
 Similar obstacles must behave consistently.
 
-A ledge that can be climbed in one location should not unexpectedly fail in another location because of slightly different collision geometry.
+A vaultable obstacle that works in one location should not unexpectedly fail in another location because of slightly different collision geometry.
 
 Gameplay surfaces must expose explicit metadata and use consistent detection rules.
 
@@ -143,12 +143,12 @@ Examples:
 - `landingSurface`
 - `vaultObstacle`
 - `wallrunSurface`
-- `climbableLedge`
-- `balanceSurface`
-- `ziplineAnchor`
+- `walljumpSurface`
 - `checkpoint`
 - `finishTrigger`
 - `hazard`
+- `killVolume`
+- `outOfBounds`
 
 These identifiers are illustrative. The implementation should use the project's established typed gameplay metadata system.
 
@@ -167,24 +167,25 @@ src/
     │   ├── LevelBase.ts
     │   ├── LevelConfig.ts
     │   ├── LevelBounds.ts
-    │   ├── CheckpointDefinition.ts
-    │   ├── RouteDefinition.ts
+    │   ├── AuthoredCheckpoint.ts
+    │   ├── AuthoredRoute.ts
     │   └── LevelValidation.ts
     │
     ├── training/
     │   ├── TrainingLevel.ts
     │   ├── TrainingLayout.ts
     │   ├── TrainingConfig.ts
-    │   ├── TrainingProgress.ts
     │   └── exercises/
-    │       ├── MovementExercise.ts
+    │       ├── MovementBasicsExercise.ts
+    │       ├── RunningSprintingExercise.ts
     │       ├── JumpingExercise.ts
-    │       ├── SlidingExercise.ts
+    │       ├── CrouchingSlidingExercise.ts
     │       ├── VaultingExercise.ts
-    │       ├── WallrunExercise.ts
-    │       ├── ClimbingExercise.ts
-    │       ├── BalanceZiplineExercise.ts
-    │       └── FinalRunExercise.ts
+    │       ├── WallRunningExercise.ts
+    │       ├── WallJumpingExercise.ts
+    │       ├── LandingMomentumExercise.ts
+    │       ├── InteractionExercise.ts
+    │       └── CombinedTraversalExercise.ts
     │
     └── prologue/
         ├── PrologueLevel.ts
@@ -205,18 +206,20 @@ Do not create every file before implementation requires it.
 
 ### 4.2 Level Lifecycle
 
-A level should support:
+A level must support:
 
-1. Load configuration.
-2. Generate or instantiate environment assets.
+1. Load authored level configuration.
+2. Generate or instantiate environment assets through procedural generators.
 3. Register collision geometry.
 4. Register gameplay metadata.
-5. Initialize checkpoints and triggers.
-6. Place the player at the spawn point.
-7. Activate gameplay.
-8. Handle completion or failure.
-9. Unload the environment.
-10. Release owned resources.
+5. Provide checkpoint definitions, spawn points, trigger volumes, and kill/boundary volumes to the owning systems.
+6. Request initial player spawn through Level Runtime and the Gameplay Session.
+7. Activate authored gameplay content (environment and triggers).
+8. Expose completion, checkpoint, and failure signals to the owning systems.
+9. Deactivate content.
+10. Unload the environment and release owned resources.
+
+The level owns authored content and its geometry. It does not own run timing, checkpoint progress, player recovery, session identity, or persistence.
 
 Level initialization must not start the run timer before the player is ready to begin the actual run.
 
@@ -230,12 +233,14 @@ Illustrative example:
 interface LevelConfig {
   id: string;
   seed: number;
-  spawnPosition: Vector3Data;
+  spawnPointId: string;
   bounds: LevelBounds;
-  checkpoints: CheckpointDefinition[];
-  route: RouteDefinition;
+  checkpointIds: string[];
+  routeId: string;
 }
 ```
+
+The level configuration references owning-system identifiers. It must not embed authoritative checkpoint progress, route validation state, or run timing data.
 
 Use the actual project types and coordinate conventions.
 
@@ -249,20 +254,21 @@ Do not store arbitrary gameplay behavior in untyped configuration objects.
 
 ### 5.1 Purpose
 
-Training is a dedicated environment for learning the movement system.
+Training is a dedicated environment for learning and validating the movement system.
 
 It is not a speedrun level and must not contribute to the Prologue leaderboard.
 
-The player learns mechanics through practical exercises rather than text-only instructions.
+The Training System (`21_TRAINING_SYSTEM_SPEC.md`) owns exercise definitions, objectives, evaluation, instructions, hints, completion, and exercise progression. This document defines only the physical environment and spatial layout required to support those exercises.
 
-Each exercise should:
+Each exercise environment must:
 
-1. Explain the required action.
-2. Show a clear visual target.
-3. Wait for player input.
-4. Detect actual gameplay behavior.
-5. Confirm successful execution.
-6. Unlock the next exercise or area.
+1. Make the required action visually obvious.
+2. Provide a clear approach, target, and exit.
+3. Expose the gameplay metadata needed for authoritative evaluation.
+4. Support safe recovery through the Respawn System.
+5. Avoid requiring precision beyond the intended instruction.
+
+Entering an exercise zone does not complete an exercise. Completion is evaluated by the Training System from gameplay events.
 
 ### 5.2 Environment
 
@@ -282,7 +288,7 @@ The environment should feel like a purpose-built training facility rather than a
 
 ### 5.3 Spatial Organization
 
-Use a sequence of distinct training areas.
+Use a sequence of ten exercise zones corresponding to the canonical exercise set defined in `21_TRAINING_SYSTEM_SPEC.md` §8.
 
 Recommended structure:
 
@@ -290,28 +296,34 @@ Recommended structure:
 Training Spawn
       |
       v
-01 Movement
+01 Movement Basics
       |
       v
-02 Jumping
+02 Running and Sprinting
       |
       v
-03 Sliding
+03 Jumping
       |
       v
-04 Vaulting
+04 Crouching and Sliding
       |
       v
-05 Wallrun
+05 Vaulting
       |
       v
-06 Climbing
+06 Wall Running
       |
       v
-07 Balance and Zipline
+07 Wall Jumping
       |
       v
-08 Final Run
+08 Landing and Momentum
+      |
+      v
+09 Interaction
+      |
+      v
+10 Combined Traversal
       |
       v
 Training Complete
@@ -321,25 +333,26 @@ The areas may be arranged linearly, around a central rooftop, or across connecte
 
 The exact layout should prioritize clarity and short transitions between exercises.
 
-### 5.4 Exercise Progression
+The physical order should follow the instructional order, but the Training System owns availability and unlock rules.
 
-Exercises should unlock sequentially.
+### 5.4 Environment Support for Progression
 
-The player may revisit completed exercises.
-
-Progress should be stored locally if the project persistence system supports it.
-
-Training completion is independent of Prologue completion.
+- Each exercise must have a defined start marker and restart spawn point.
+- Exercise restart is requested by the Training System and executed by the Respawn System (`17_RESPAWN_SYSTEM_SPEC.md`); level geometry must not execute recovery itself.
+- Training progress persistence is owned by the Training and Progression Systems through the Save System; level objects must not persist progress.
+- Training completion is independent of Prologue completion.
 
 ---
 
-## 6. Training Exercise 01 — Movement
+## 6. Exercise Environments 01–02 — Movement Basics, Running and Sprinting
 
-<escape> </escape>
+These environments support canonical exercises 1 and 2 (`21_TRAINING_SYSTEM_SPEC.md` §8.1–8.2).
 
-**Objective:** Learn basic movement, acceleration, sprinting, and camera control.
+### 6.1 Purpose
 
-### Environment
+Introduce locomotion, directional control, running, and sprinting in a hazard-free environment.
+
+### 6.2 Movement Basics Environment
 
 A wide, unobstructed rooftop lane.
 
@@ -347,49 +360,60 @@ Required elements:
 
 - Starting marker.
 - Long straight running surface.
-- Directional markers.
-- Optional gentle turns.
-- Finish marker.
+- Directional movement area with simple, low-risk obstacles for left/right/backward movement.
+- Target zone and finish marker.
 
-Avoid obstacles during the initial movement demonstration.
+Avoid hazards during the introductory movement area.
 
-### Instructions
+### 6.3 Running and Sprinting Environment
 
-Teach:
+A longer straight lane for controlled acceleration and sprinting.
 
-- WASD movement.
-- Mouse camera control.
-- Walking.
-- Running.
-- Sprinting.
-- Releasing movement.
-- Direction changes.
+Required elements:
 
-### Validation
+- Clear start gate.
+- Straight running lane with a stable flat surface.
+- Visually marked sprint corridor.
+- Finish zone.
 
-The exercise should detect:
+Avoid obstacles that require jumping or sliding.
 
-- Player movement in the requested direction.
-- Reaching a minimum distance.
-- Sprint input.
-- A change in movement speed.
-- Camera input, if practical to validate without making it a progression blocker.
+### 6.4 Geometry Requirements
 
-Do not require the player to achieve an exact speed.
+- The lane must be wide enough to change direction safely.
+- The surface must be continuous and free of unintended collision edges.
+- Start and finish zones must be unambiguous.
+- Distance must be sufficient for the player to reach and maintain sprint speed with the calibrated movement parameters.
 
-Use reasonable tolerances.
+Exact lengths are starting values to be tuned through playtesting.
 
-### Completion
+### 6.5 Evaluation Support
 
-Complete after the player demonstrates basic movement and reaches the exercise endpoint.
+The environment must expose:
+
+- Start and finish zone triggers.
+- Walkable surface metadata.
+- Reference points or measurement zones where the Training System requires them.
+
+The Training System consumes movement metrics from the Movement System. Level scripts must not calculate authoritative speed or completion independently.
+
+### 6.6 Recovery
+
+No failure conditions are expected in these exercises.
+
+If the player leaves the intended area, an out-of-bounds recovery volume must return the player to the exercise start through the Respawn System.
 
 ---
 
-## 7. Training Exercise 02 — Jumping
+## 7. Exercise Environment 03 — Jumping
 
-**Objective:** Learn jumping, air control, and landing.
+This environment supports canonical exercise 3 (`21_TRAINING_SYSTEM_SPEC.md` §8.3).
 
-### Environment
+### 7.1 Purpose
+
+Provide a readable sequence of jumps that teaches takeoff, air control, and landing.
+
+### 7.2 Environment
 
 A sequence of platforms with increasing gaps.
 
@@ -400,137 +424,149 @@ Suggested progression:
 3. Elevated landing platform.
 4. Directional jump.
 
-### Instructions
+### 7.3 Required Elements
 
-Teach:
+- Clear takeoff surfaces.
+- Distinct target landing zones.
+- A visible route between platforms.
+- A safe recovery area below the platforms.
 
-- Jump input.
-- Taking off while moving.
-- Preserving horizontal momentum.
-- Air direction adjustment.
-- Landing on a target surface.
+### 7.4 Geometry Requirements
 
-### Validation
+- Gaps must be derived from the calibrated jump trajectory, gravity, and movement speed — not from visual estimation.
+- Landing platforms must be wider than the theoretical minimum capsule footprint.
+- Elevation changes must be reachable with the intended jump parameters.
+- Do not require blind jumps where the landing surface is not visible.
+- Platform edges must have stable, predictable collision.
 
-Detect:
+### 7.5 Evaluation Support
 
-- Jump state entered.
-- Player left the ground.
-- Player reached the intended landing region.
-- Landing completed successfully.
+The environment must expose:
 
-A jump input alone is not sufficient.
+- Jump takeoff region.
+- Target landing zone.
+- Surface metadata for landing detection.
 
-### Failure Handling
+The Training System evaluates takeoff, airborne state, and landing through Movement System events. A jump input alone must not complete the exercise.
 
-If the player falls:
+### 7.6 Recovery
 
-- Reset to a safe nearby spawn.
-- Preserve exercise progress.
-- Allow immediate retry.
+If the player falls, an out-of-bounds or kill volume returns the player to a safe nearby spawn through the Respawn System.
 
-### Completion
-
-Complete after the player performs the required jump and lands in the target area.
+Exercise progress must be preserved and immediate retry must be possible.
 
 ---
 
-## 8. Training Exercise 03 — Sliding
+## 8. Exercise Environment 04 — Crouching and Sliding
 
-**Objective:** Learn sliding under low obstacles while preserving momentum.
+This environment supports canonical exercise 4 (`21_TRAINING_SYSTEM_SPEC.md` §8.4).
 
-### Environment
+### 8.1 Purpose
 
-A straight running lane with low overhead obstacles.
+Teach low-profile movement: entering crouch, moving through a low-clearance area, and performing a momentum-based slide.
 
-Required elements:
+### 8.2 Environment
 
-- Run-up area.
-- Slide entry zone.
+Two connected sub-areas:
+
+1. A crouch area with a low but clearly visible ceiling opening. It should not require momentum.
+2. A slide lane with a run-up, a low overhead obstacle, and an exit.
+
+### 8.3 Required Elements
+
+- Crouch passage with a visible entrance.
+- Open run-up area before the slide obstacle.
 - Low clearance obstacle.
-- Exit area.
+- Exit area after the obstacle.
 
-### Instructions
-
-Teach:
-
-- Building sufficient speed.
-- Holding the slide input.
-- Maintaining movement during the slide.
-- Returning to normal movement.
-
-### Validation
-
-Detect:
-
-- Minimum entry speed.
-- Transition into `SLIDING`.
-- Successful traversal beneath the obstacle.
-- Exit without collision failure.
-
-The exercise must verify the actual slide state, not just the Ctrl key input.
-
-### Geometry Requirements
+### 8.4 Geometry Requirements
 
 Obstacle clearance must account for:
 
 - Player standing capsule.
-- Player sliding capsule.
+- Player crouching and sliding capsule.
 - Collision margins.
 - Camera placement.
 
-The slide passage must be physically possible.
+The crouch passage must be physically passable in the crouch state without requiring a slide. The slide passage must be physically possible at a reachable entry speed.
 
-### Completion
+The low obstacle must visibly communicate that the player has to go low; avoid geometry that only becomes passable through an undocumented collision exception.
 
-Complete after the player successfully passes through the slide section.
+### 8.5 Evaluation Support
+
+The environment must expose:
+
+- Crouch passage entry and exit zones.
+- Slide obstacle metadata.
+- Landing space beyond the obstacle.
+
+The Training System validates the actual crouch and slide execution from Movement System events. Input alone must not count as completion.
+
+### 8.6 Recovery
+
+If the player becomes blocked or falls, recovery returns the player to the exercise start through the Respawn System.
 
 ---
 
-## 9. Training Exercise 04 — Vaulting
+## 9. Exercise Environment 05 — Vaulting
 
-**Objective:** Learn standard vaulting and speed vaulting.
+This environment supports canonical exercise 5 (`21_TRAINING_SYSTEM_SPEC.md` §8.5).
 
-### Environment
+### 9.1 Purpose
 
-A sequence of obstacles:
+Teach contextual vaulting over obstacles while preserving forward momentum.
+
+### 9.2 Environment
+
+A sequence of vaultable obstacles:
 
 - Low wall.
 - Medium-height obstacle.
 - Wider obstacle suitable for a speed vault.
 
-### Instructions
+### 9.3 Required Elements
 
-Teach:
+- Straight approach lane before each obstacle.
+- Valid vault obstacle with a readable top edge.
+- Safe landing area beyond the obstacle.
+- Visible continuation of the route.
 
-- Approaching an obstacle.
-- Maintaining forward movement.
-- Triggering a vault.
-- Maintaining momentum.
-- Choosing an appropriate approach angle.
+### 9.4 Geometry Requirements
 
-### Validation
+Vault obstacles must:
 
-Detect:
+- Have a supported height range compatible with the Movement System's vault detection.
+- Provide a valid approach surface at running speed.
+- Provide unobstructed space on the landing side.
+- Expose the correct `vaultObstacle` metadata.
+- Have predictable collision geometry.
 
-- Valid vault target.
-- Transition into `VAULTING`.
-- Successful obstacle traversal.
-- Exit on the intended side.
+The landing area must be wide enough to absorb variations in approach speed and angle.
 
-Do not mark the exercise complete if the player simply jumps over the obstacle without performing the vault mechanic.
+### 9.5 Evaluation Support
 
-### Completion
+The environment must expose:
 
-Complete after the required vault types have been demonstrated.
+- Vault obstacle definitions.
+- Before and after zones around each obstacle.
+
+The Training System validates the vault lifecycle through Movement System events. Jumping over the obstacle without vaulting must not complete the exercise.
+
+### 9.6 Recovery
+
+If the player falls or becomes blocked, recovery returns the player to the exercise start through the Respawn System.
 
 ---
 
-## 10. Training Exercise 05 — Wallrun
+## 10. Exercise Environment 06 — Wall Running
 
-**Objective:** Learn horizontal wallrunning and walljumping.
+This environment supports canonical exercise 6 (`21_TRAINING_SYSTEM_SPEC.md` §8.6).
 
-### Environment
+### 10.1 Purpose
+
+Teach approach angle, speed threshold, wall contact, and controlled wallrun traversal.
+
+### 10.2 Environment
 
 A clear wallrun corridor.
 
@@ -538,150 +574,159 @@ Required elements:
 
 - Running approach.
 - Continuous wall surface.
-- Safe landing area.
+- Safe landing area or exit platform.
 - Optional second wall for wall-to-wall practice.
 
-### Instructions
-
-Teach:
-
-- Approaching the wall at an appropriate angle.
-- Maintaining sufficient speed.
-- Initiating wallrun.
-- Controlling movement.
-- Jumping away from the wall.
-
-### Validation
-
-Detect:
-
-- Valid wall contact.
-- Transition into `WALLRUN`.
-- Minimum wallrun duration or distance.
-- Successful walljump.
-- Safe landing.
-
-The wallrun must not be counted if the player merely falls beside the wall.
-
-### Geometry Requirements
+### 10.3 Geometry Requirements
 
 Wallrun surfaces must:
 
-- Have consistent collision.
-- Be sufficiently long.
+- Have consistent, flat collision.
+- Be long enough to sustain the intended wallrun duration.
 - Provide a safe exit.
-- Expose explicit wallrun metadata.
+- Expose explicit `wallrunSurface` metadata.
+- Avoid interruptions such as gaps, protrusions, or decorative colliders on the run surface.
+- Use consistent surface normals.
 
-### Completion
+The approach lane must allow the player to reach the wall at a viable angle and speed.
 
-Complete after a valid wallrun and walljump sequence.
+### 10.4 Evaluation Support
+
+The environment must expose:
+
+- Wallrun surface definitions.
+- Entry and exit zones.
+- Landing detection surfaces.
+
+The Training System validates wall contact and wallrun duration through Movement System events. The environment must not implement its own wall detection.
+
+### 10.5 Recovery
+
+If the player falls or loses contact, recovery returns the player to the exercise start through the Respawn System.
 
 ---
 
-## 11. Training Exercise 06 — Climbing
+## 11. Exercise Environment 07 — Wall Jumping
 
-**Objective:** Learn ledge grabbing, edge movement, and climbing.
+This environment supports canonical exercise 7 (`21_TRAINING_SYSTEM_SPEC.md` §8.7).
 
-### Environment
+### 11.1 Purpose
 
-A vertical wall with several climbable ledges.
+Teach deliberate departure from a wall and landing on a designated platform.
+
+### 11.2 Environment
+
+A wallrun surface with a dedicated landing platform placed to the side or ahead.
 
 Required elements:
 
-- Reachable ledge.
-- Stable hanging position.
-- Optional horizontal ledge section.
-- Climbable exit platform.
+- Wallrun approach.
+- Valid wall surface.
+- Visible target platform.
+- Safe recovery area below.
 
-### Instructions
+### 11.3 Geometry Requirements
 
-Teach:
+- The wall must be long enough to establish a wallrun before the jump.
+- The target platform must be reachable using the wall-jump trajectory from the intended wallrun exit region.
+- The target platform must be visible before the player commits to the jump.
+- The wall and platform must expose `wallrunSurface` and `landingSurface` metadata.
 
-- Approaching a ledge.
-- Triggering a grab.
-- Maintaining a stable hanging position.
-- Moving along the edge if supported.
-- Pulling up onto the platform.
+The landing platform must be wider than the theoretical minimum footprint to tolerate timing variation.
 
-### Validation
+### 11.4 Evaluation Support
 
-Detect:
+The environment must expose:
 
-- Transition into `CLIMBING` or the appropriate hanging state.
-- Stable ledge attachment.
-- Successful climb completion.
-- Arrival on the target platform.
+- Wallrun surface.
+- Wall-jump exit region reference.
+- Target landing zone.
 
-### Failure Handling
+The Training System distinguishes a wall jump from an ordinary jump through Movement System events. The level must not infer the mechanic from animation.
 
-If the player falls, reset to a safe starting point.
+### 11.5 Recovery
 
-Avoid allowing the player to remain indefinitely attached to invalid geometry.
-
-### Completion
-
-Complete after the player successfully climbs onto the target platform.
+If the player misses the platform, recovery returns the player to the exercise start through the Respawn System.
 
 ---
 
-## 12. Training Exercise 07 — Balance and Zipline
+## 12. Exercise Environment 08 — Landing and Momentum
 
-**Objective:** Learn balance control and zipline traversal.
+This environment supports canonical exercise 8 (`21_TRAINING_SYSTEM_SPEC.md` §8.8).
 
-This exercise contains two connected sub-exercises.
+### 12.1 Purpose
 
-### 12.1 Balance
+Teach controlled landing and preservation of horizontal momentum through a short sequence.
 
-Environment:
+### 12.2 Environment
 
-- Narrow beam.
-- Elevated platform.
-- Safe landing surface.
+Two connected sub-areas:
 
-Teach:
+1. A landing area: an elevated platform with designated landing target zones at a lower level.
+2. A momentum lane: a sequence of low obstacles that can be traversed without stopping.
 
-- Controlled movement.
-- Small direction corrections.
-- Maintaining balance.
-- Reaching the end of the beam.
+### 12.3 Required Elements for Landing
 
-Validation should verify that the player traversed the designated balance surface using the balancing mechanic.
+- Takeoff platform.
+- Distinct target landing zones.
+- Safe area beyond the target zones.
+- Visible height and distance.
 
-The implementation may use simplified balance physics rather than a complex simulation.
+### 12.4 Required Elements for Momentum
 
-### 12.2 Zipline
+- Approach lane.
+- Low hurdles or vaultable obstacles.
+- Continuous exit lane.
+- Optional measured speed reference points.
 
-Environment:
+### 12.5 Geometry Requirements
 
-- Start platform.
-- Zipline anchor.
-- Cable.
-- Landing platform.
+- Landing zones must be wide enough to tolerate normal trajectory variation.
+- The drop must not force a permanently stuck state.
+- Momentum obstacles must be low-risk: a failed attempt must not immediately invalidate the whole exercise.
+- Surfaces must be continuous and expose `landingSurface` metadata.
 
-Teach:
+### 12.6 Evaluation Support
 
-- Activating the zipline.
-- Entering the traversal state.
-- Maintaining the ride.
-- Disembarking or reaching the endpoint.
+The environment must expose:
 
-Validation should verify:
+- Landing target zones.
+- Takeoff region.
+- Obstacle metadata for the momentum lane.
+- Speed or distance reference zones where the Training System requires them.
 
-- Correct zipline activation.
-- Transition into `ZIPLINE`.
-- Successful arrival at the destination.
+The Training System evaluates landing quality and momentum preservation using Movement System metrics. The level must not calculate authoritative speed.
 
-### Completion
+### 12.7 Recovery
 
-Complete when both sub-exercises are successfully finished.
+A missed landing returns the player to the landing start through the Respawn System.
+
+The momentum lane should keep recovery local so the exercise can be retried without restarting Training.
 
 ---
 
-## 13. Training Exercise 08 — Final Run
+## 13. Exercise Environments 09–10 — Interaction and Combined Traversal
 
-**Objective:** Combine previously learned mechanics into one short traversal sequence.
+These environments support canonical exercises 9 and 10 (`21_TRAINING_SYSTEM_SPEC.md` §8.9–8.10).
 
-### Environment
+### 13.1 Purpose
+
+Exercise 9 teaches contextual interaction. Exercise 10 combines the previously learned mechanics into one continuous traversal sequence.
+
+### 13.2 Interaction Environment
+
+A compact area containing a valid interaction target.
+
+Required elements:
+
+- A visible interaction object such as a training terminal.
+- A position from which the prompt is readable.
+- Clear space around the object.
+- A distinct completion zone after the interaction.
+
+The Interaction System owns target detection, selection, prompt data, and interaction execution. The level provides the interactable object and its interaction definition; it must not implement detection logic.
+
+### 13.3 Combined Traversal Environment
 
 A compact route containing:
 
@@ -690,12 +735,12 @@ A compact route containing:
 3. Sliding.
 4. Vaulting.
 5. Wallrunning.
-6. Climbing.
-7. Balancing or zipline traversal.
+6. Walljumping.
+7. Landing.
 
 The exact order may be adjusted to produce a coherent route.
 
-### Requirements
+Requirements:
 
 - No instructional pause between every mechanic.
 - Minimal text.
@@ -703,22 +748,30 @@ The exact order may be adjusted to produce a coherent route.
 - Reasonable recovery after failure.
 - A visible final marker.
 
-### Validation
+### 13.4 Geometry Requirements
 
-Track required mechanics through actual gameplay events.
+- Every traversal obstacle on the combined route must reuse the same gameplay metadata and collision conventions as the individual exercises.
+- The route must not require a mechanic that has no corresponding canonical exercise.
+- Spacing must allow continuous movement rather than stop-and-restart attempts between every obstacle.
+- Recovery points must keep retries short.
 
-The player must complete the sequence in the intended order.
+### 13.5 Evaluation Support
 
-Optional mechanics should not be counted unless they are explicitly part of the exercise.
+The environment must expose:
 
-### Completion
+- Interaction target and completion zone.
+- Required traversal obstacles with their metadata.
+- Start and finish zones for the combined route.
 
-After successful traversal:
+The Training System evaluates the required mechanics from gameplay events. Level scripts must not mark an exercise complete merely because the player entered a zone.
 
-- Display a completion message.
-- Mark Training as completed.
-- Return to the Training hub or show the main menu.
-- Do not create a Prologue leaderboard entry.
+### 13.6 Recovery
+
+A fall on the combined route returns the player to the most recent safe recovery point through the Respawn System.
+
+Recovery must preserve the exercise state and allow immediate retry.
+
+After successful traversal, the Training System marks the exercise complete and decides the next presentation. The level must not create a Prologue leaderboard entry.
 
 ---
 
@@ -945,7 +998,7 @@ Place a checkpoint after the wallrun exit, before entering the Construction sect
 
 **Environment:** Temporary construction structures between buildings.
 
-**Gameplay purpose:** Introduce vertical traversal and combine climbing with wall movement.
+**Gameplay purpose:** Introduce vertical traversal and combine wall movement with short platforming.
 
 ### 18.1 Visual Elements
 
@@ -953,7 +1006,6 @@ Place a checkpoint after the wallrun exit, before entering the Construction sect
 - Exposed steel beams.
 - Temporary platforms.
 - Safety railings.
-- Ladders.
 - Vertical support structures.
 - Concrete building surfaces.
 
@@ -964,10 +1016,11 @@ Recommended sequence:
 1. Enter the scaffold structure.
 2. Navigate a narrow platform.
 3. Jump to a higher platform.
-4. Perform a wallrun or walljump transition.
-5. Grab a ledge.
-6. Move or climb to the upper platform.
-7. Exit the scaffold structure.
+4. Perform a wallrun along a supported scaffold surface.
+5. Use a walljump to reach the upper platform.
+6. Continue toward the exit.
+
+Only the mechanics in the initial movement set may be required here.
 
 ### 18.3 Design Requirements
 
@@ -979,7 +1032,7 @@ Avoid requiring blind jumps where the destination is not visible.
 
 Scaffolding must have predictable collision geometry.
 
-Climbable ledges must have sufficient clearance.
+Wallrun and walljump surfaces must expose correct metadata and provide a safe landing area.
 
 ### 18.4 Checkpoint
 
@@ -993,7 +1046,7 @@ This should provide a stable recovery point before the Skybridge section.
 
 **Environment:** Elevated connection between buildings.
 
-**Gameplay purpose:** Create a visual and traversal transition with a major jump and balance challenge.
+**Gameplay purpose:** Create a visual and traversal transition with a major jump and a momentum-driven approach.
 
 ### 19.1 Visual Elements
 
@@ -1012,7 +1065,7 @@ Recommended sequence:
 2. Build speed.
 3. Perform a larger jump between structures.
 4. Land on a narrow or elevated platform.
-5. Traverse a short balance section.
+5. Maintain momentum through a short sequence of low obstacles.
 6. Continue toward the finish rooftop.
 
 ### 19.3 Design Requirements
@@ -1027,13 +1080,13 @@ Landing geometry must account for:
 - Air control.
 - Landing detection.
 
-The balance section should challenge movement control without requiring pixel-perfect input.
+The momentum sequence should challenge movement control without requiring pixel-perfect input.
 
 The section should provide a clear view of the finish area.
 
 ### 19.4 Checkpoint
 
-Place a checkpoint after the major jump and balance section.
+Place a checkpoint after the major jump and momentum sequence.
 
 The player should not have to repeat the entire Skybridge after a failure near the finish.
 
@@ -1061,27 +1114,25 @@ The player should be able to recognize the finish area without confusing it with
 
 ### 20.3 Finish Validation
 
-A run is complete only when:
+The level provides a single unambiguous finish trigger.
 
-- All mandatory checkpoints have been activated in order.
-- The player enters the valid finish trigger.
-- The player is in a valid gameplay state.
-- The run has not been invalidated.
-- The timer is active.
+Run completion is determined by the Speedrun System (`09_SPEEDRUN_SYSTEM_SPEC.md`). The level must not decide completion itself.
+
+The authored finish area must make it impossible to reach the finish trigger before the intended route under normal traversal, and the trigger must not overlap unrelated geometry.
 
 Do not complete the run merely because the player touches an arbitrary object near the finish.
 
 ### 20.4 Results
 
-After completion:
+After completion, the owning systems perform the result sequence:
 
-- Stop the timer.
-- Calculate final time.
-- Calculate run statistics.
-- Validate the route.
-- Compare against the local personal best.
-- Save a valid record.
-- Display the results screen.
+- The Speedrun System stops the timer and builds the run result.
+- The Statistics System supplies the finalized session statistics summary.
+- The Speedrun System validates the route and compares records.
+- The Save System persists the validated record.
+- The Results screen displays authoritative result data.
+
+The level's only responsibility is the authored finish trigger and the surrounding presentation.
 
 ---
 
@@ -1104,95 +1155,106 @@ It should contain:
 
 The route definition is independent of visual geometry.
 
-### 21.2 Checkpoint Data
+### 21.2 Checkpoint Authoring Data
 
-Illustrative definition:
+Level design authors checkpoint trigger volumes and spawn point references.
+
+Runtime checkpoint models are owned by the Checkpoint System (`16_CHECKPOINT_SYSTEM_SPEC.md`). The required route sequence is owned by the Speedrun System (`09_SPEEDRUN_SYSTEM_SPEC.md`).
+
+Illustrative authored definition:
 
 ```ts
-interface CheckpointDefinition {
+interface AuthoredCheckpoint {
   id: string;
-  order: number;
-  position: Vector3Data;
-  rotation?: Vector3Data;
-  triggerSize: Vector3Data;
-  respawnPosition: Vector3Data;
+  sectionId: string;
+  trigger: TriggerDefinition;
+  spawnPointId: string;
+  displayName: string;
 }
 ```
 
-Use the actual project coordinate types.
+The level must not duplicate runtime progress fields, activation history, or route-order validation state.
+
+Use the actual project coordinate and trigger types.
 
 ### 21.3 Checkpoint Activation
 
-A checkpoint is activated when the player enters its trigger volume.
+Checkpoint activation is owned by the Checkpoint System.
 
-The system must:
+The level's responsibilities are limited to:
 
-1. Verify the checkpoint is the expected next checkpoint.
-2. Register activation.
-3. Record split time.
-4. Update current route progress.
-5. Emit the appropriate gameplay event.
+1. Authoring a trigger volume in traversable space.
+2. Authoring a valid spawn point reference resolved by Level Runtime.
+3. Placing the checkpoint where following the route naturally crosses it.
+4. Emitting a spatial activation signal through the trigger mechanism.
 
-Touching a checkpoint out of order must not silently validate the route.
+Level scripts must not implement activation rules, duplicate-activation handling, split timing, or route progress.
+
+The consequence of activation — checkpoint progress, split time, route validation — is handled by the owning systems.
 
 ### 21.4 Checkpoint Order
 
-The required order is fixed.
+The required order is fixed by the route definition owned by the Speedrun System.
 
 The initial Prologue should not contain optional shortcuts that bypass mandatory checkpoints.
 
+Authored checkpoint placement must match the required sequence to avoid accidental out-of-order activation.
+
 If alternative routes are introduced later, they must have explicit validation rules.
 
-### 21.5 Respawn
+### 21.5 Recovery
 
-If a player falls or enters an invalid region:
+If a player falls or enters a kill or out-of-bounds region:
 
-- Stop uncontrolled movement.
-- Restore the player at the most recent valid recovery point.
-- Reset transient movement states.
-- Preserve the run's invalidation status where appropriate.
-- Allow the player to continue if the design permits.
+- Level-authored boundaries and volumes detect the failure condition.
+- A recovery request is issued to the Respawn System (`17_RESPAWN_SYSTEM_SPEC.md`).
+- `RespawnManager` orchestrates the complete recovery lifecycle.
+- The Checkpoint System supplies the recovery destination.
+- Movement and Camera Systems reset their transient state through their owning interfaces.
 
-The exact penalty policy must be coordinated with the speedrun system.
+Level scripts must not place the player, reset movement state, or execute a custom recovery sequence.
 
-Do not assume every fall should invalidate the run.
+Whether a fall invalidates the run is a Speedrun policy, evaluated by the Respawn System before recovery. Do not assume every fall should invalidate the run.
 
 ---
 
 ## 22. Route Validation
 
+Route validation is owned by the Speedrun System (`09_SPEEDRUN_SYSTEM_SPEC.md`). This section defines what the authored level must provide so that validation is possible and fair.
+
 ### 22.1 Validation Requirements
 
-The run validator must determine whether the player completed the intended route.
+The level must provide:
 
-It should verify:
+- Authored checkpoint triggers in the required order.
+- A single unambiguous finish trigger.
+- Section boundaries aligned with the five Prologue sections.
+- Valid spawn points for every checkpoint.
+- Out-of-bounds and kill volumes that prevent accidental level escape.
 
-- Checkpoints were activated in order.
-- Required sections were completed.
-- The finish trigger was reached.
-- No invalid route transition occurred.
-- The player did not bypass mandatory traversal requirements.
+The Speedrun System determines whether an activated checkpoint sequence constitutes a valid run.
 
 ### 22.2 Invalid Conditions
 
-Potential invalid conditions include:
+The level design must avoid accidental invalid conditions such as:
 
-- Skipping a mandatory checkpoint.
-- Reaching the finish before all required checkpoints.
-- Entering a prohibited out-of-bounds region.
-- Using an invalid teleport or debug action in a recorded run.
-- Violating an explicitly enforced route rule.
+- A checkpoint that can be reached without following the intended route.
+- A finish trigger reachable before all required checkpoints in normal traversal.
+- Out-of-bounds regions that are reachable through normal play.
+- Trigger volumes that overlap or activate unintentionally.
 
-Do not invalidate a run merely because the player uses a different movement technique unless the route specification requires a specific action.
+The level must not encode its own invalidation rules. The Speedrun System owns route validation policy.
 
 ### 22.3 Recovery and Validity
 
-Define whether falling:
+Whether falling:
 
 - Adds a time penalty.
-- Requires a checkpoint respawn.
+- Requires a checkpoint recovery.
 - Invalidates the run.
 - Allows continued play without a penalty.
+
+is a Speedrun System policy coordinated through the Respawn System.
 
 For the initial prototype, the simplest consistent policy is preferable.
 
@@ -1206,13 +1268,13 @@ The policy must be visible to the player and consistently applied.
 
 All level geometry must account for the player capsule and movement states.
 
-Baseline player dimensions from `03_GAMEPLAY_SPEC.md`:
+Baseline player dimensions are owned by `12_MOVEMENT_SYSTEM_SPEC.md` §5.3:
 
-- Capsule radius: approximately 0.35 m.
-- Standing height: approximately 1.75 m.
+- Capsule radius: approximately 0.30 m.
+- Standing capsule height: approximately 1.75 m.
 - Camera eye height: approximately 1.60 m.
 
-These are provisional prototype values.
+These are provisional prototype values and must be read from the Movement System's tuning configuration rather than duplicated in level content.
 
 ### 23.1 Standing Clearance
 
@@ -1284,37 +1346,36 @@ Wallrun surfaces must:
 - Avoid unexpected interruptions.
 - Use consistent collision normals.
 
-### 24.4 Climbing Ledges
+### 24.4 Wall-Jump Surfaces
 
-Climbable ledges must:
+Wall-jump surfaces must:
 
-- Have a clearly defined top edge.
-- Provide enough room for player attachment.
-- Have a reachable approach.
-- Have sufficient clearance above the ledge.
+- Support a valid wallrun approach.
+- Provide a visible landing target.
+- Have a safe recovery area.
 - Lead to a valid standing surface.
+- Expose explicit wallrun and landing metadata.
 
-### 24.5 Balance Surfaces
+### 24.5 Landing Surfaces
 
-Balance surfaces should provide:
+Landing surfaces should provide:
 
-- A clear start.
-- A continuous traversal surface.
-- A visible endpoint.
+- A clear approach direction.
+- A continuous, stable collision surface.
+- A visible landing zone.
 - A safe recovery area.
 
-### 24.6 Zipline
+### 24.6 Checkpoint and Finish Triggers
 
-A zipline route must define:
+Checkpoint and finish triggers must:
 
-- Start anchor.
-- End anchor.
-- Cable path.
-- Activation region.
-- Traversal direction.
-- Exit behavior.
+- Be placed in traversable, non-colliding space.
+- Have an unambiguous activation volume.
+- Be readable in the environment.
+- Reference a valid spawn point managed by Level Runtime.
+- Never rely on visual geometry alone for activation.
 
-The initial implementation may use a straight or parameterized curve without physical rope simulation.
+Checkpoint activation, progress, and recovery destination data are owned by the Checkpoint System (`16_CHECKPOINT_SYSTEM_SPEC.md`). The level provides the authored trigger and spawn point references only.
 
 ---
 
@@ -1345,18 +1406,18 @@ The environment should remain understandable without relying entirely on HUD gui
 
 ### 25.2 Runner Vision Rules
 
-Runner Vision should highlight the next relevant route opportunity.
+Runner Vision presentation is owned by the UI layer (`07_UI_UX_SPEC.md` §8).
 
-It must not highlight every object simultaneously.
+The level's responsibility is to author navigation data that Runner Vision can consume:
 
-Prioritize:
+- Mark the intended next traversal target.
+- Mark route transitions and section entries.
+- Mark checkpoints and the finish.
+- Avoid ambiguous or competing highlight targets in the same sightline.
 
-1. Immediate next traversal target.
-2. Important route transition.
-3. Checkpoint or finish.
-4. Optional contextual hints.
+The level must not implement Runner Vision rendering or highlight-selection logic.
 
-The system should avoid rapidly switching between nearby objects.
+Presentation rules — highlight priority, switching behavior, intensity, and accessibility — are defined in `07_UI_UX_SPEC.md`.
 
 ### 25.3 Checkpoint Presentation
 
@@ -1410,14 +1471,17 @@ Use checkpoints to keep retries short.
 
 ### 26.3 Accessibility
 
-Where practical, support:
+Level design should preserve comprehension for players using supported accessibility settings.
 
-- Adjustable mouse sensitivity.
-- Reduced camera motion.
-- Reduced head bob.
-- Reduced FOV changes.
-- Runner Vision intensity.
-- Alternative control bindings.
+Where practical:
+
+- Keep the route understandable when camera effects are reduced.
+- Keep critical route information available without color alone.
+- Provide sufficient contrast for navigation markings.
+- Avoid geometry that requires intense screen motion to read.
+- Keep checkpoints and the finish readable without effects.
+
+Accessibility preferences are stored by the Settings System (`25_SETTINGS_SYSTEM_SPEC.md`) and applied by the owning systems. Level design must not implement or store accessibility settings.
 
 Avoid making camera effects essential for gameplay comprehension.
 
@@ -1467,11 +1531,11 @@ Changing the level seed may alter permitted procedural details, but must not inv
 
 Verify:
 
-- All eight exercises can be entered.
-- Exercises unlock in the correct order.
-- Each exercise detects the required mechanic.
+- All ten exercises have an authored environment that can be entered.
+- Exercise environments expose the required start, target, and finish zones.
+- The Training System can evaluate each exercise from gameplay events without level-side authority.
 - Invalid attempts do not grant completion.
-- Falling allows recovery.
+- Falling or leaving bounds allows recovery through the Respawn System.
 - Completed exercises remain accessible.
 - Training does not create Prologue records.
 
@@ -1482,7 +1546,7 @@ Verify:
 - Player spawns correctly.
 - All five sections are connected.
 - Required checkpoints activate in order.
-- Respawn locations are valid.
+- Recovery destinations are valid.
 - The finish trigger works.
 - Route validation rejects invalid completion.
 - Valid runs produce results.
@@ -1498,10 +1562,8 @@ Test important transitions:
 - Approach to vault.
 - Sprint to wallrun.
 - Wallrun to walljump.
-- Fall to respawn.
-- Ledge grab to climb.
-- Balance to normal movement.
-- Zipline to landing.
+- Walljump to landing.
+- Fall to recovery.
 
 ### 28.4 Geometry Tests
 
@@ -1511,7 +1573,7 @@ Verify:
 - No invisible barriers.
 - No player spawn overlap.
 - No impossible jumps.
-- No unreachable ledges.
+- No unreachable platforms.
 - No blocked sliding passages.
 - No invalid checkpoint placement.
 
@@ -1542,38 +1604,41 @@ Implement the levels in the following order.
 1. Create the Training level shell.
 2. Add spawn and level bounds.
 3. Build a simple rooftop environment.
-4. Implement the Movement exercise.
-5. Add exercise progression and validation.
+4. Implement the Movement Basics and Running/Sprinting environments.
+5. Add exercise start points and recovery volumes.
 
 ### Phase 2 — Training Mechanics
 
-6. Add Jumping.
-7. Add Sliding.
-8. Add Vaulting.
-9. Add Wallrun.
-10. Add Climbing.
-11. Add Balance and Zipline.
-12. Add Final Run.
+6. Add the Jumping environment.
+7. Add the Crouching and Sliding environment.
+8. Add the Vaulting environment.
+9. Add the Wall Running environment.
+10. Add the Wall Jumping environment.
+11. Add the Landing and Momentum environment.
+12. Add the Interaction environment.
+13. Add the Combined Traversal environment.
+
+Exercise objectives and evaluation are implemented in `21_TRAINING_SYSTEM_SPEC.md`; this phase delivers the environments and the metadata they expose.
 
 ### Phase 3 — Prologue Foundation
 
-13. Create the Prologue level shell.
-14. Define the authored route.
-15. Build the Rooftop section.
-16. Add checkpoint handling.
-17. Build the Industrial section.
-18. Build the Construction section.
-19. Build the Skybridge section.
-20. Build the Finish section.
+14. Create the Prologue level shell.
+15. Define the authored route.
+16. Build the Rooftop section.
+17. Add checkpoint trigger and spawn point authoring.
+18. Build the Industrial section.
+19. Build the Construction section.
+20. Build the Skybridge section.
+21. Build the Finish section.
 
 ### Phase 4 — Integration
 
-21. Integrate route validation.
-22. Integrate speedrun timer.
-23. Integrate results and statistics.
-24. Add environmental navigation.
-25. Add introductory presentation.
-26. Tune traversal difficulty.
+22. Integrate route validation through the Speedrun System.
+23. Integrate speedrun timer and splits.
+24. Integrate results and statistics.
+25. Add environmental navigation and Runner Vision navigation data.
+26. Add introductory presentation.
+27. Tune traversal difficulty.
 
 Do not implement all level geometry before the player controller and core parkour mechanics are sufficiently stable.
 
@@ -1583,11 +1648,11 @@ Do not implement all level geometry before the player controller and core parkou
 
 ### Training
 
-- Eight exercises are implemented.
-- Each exercise has a clear objective.
+- Ten exercise environments are implemented.
+- Each environment supports the objective defined by the Training System.
 - Required mechanics are validated through actual gameplay behavior.
-- Exercises unlock correctly.
-- Failures can be recovered from.
+- Exercise availability and completion are owned by the Training System.
+- Failures can be recovered from through the Respawn System.
 - Training completion is tracked separately.
 - Training does not affect the Prologue leaderboard.
 
@@ -1596,7 +1661,7 @@ Do not implement all level geometry before the player controller and core parkou
 - Five sections are implemented.
 - The route is continuous.
 - All mandatory checkpoints work.
-- Respawn behavior is predictable.
+- Recovery behavior is predictable.
 - The finish trigger validates the route.
 - Invalid completion is rejected.
 - Valid runs produce results.
@@ -1638,10 +1703,15 @@ When implementing levels:
 6. Validate actual player movement rather than theoretical geometry alone.
 7. Keep checkpoint and route validation separate from visual presentation.
 8. Do not create decorative collision geometry unnecessarily.
-9. Add tests for checkpoint order and exercise completion.
+9. Add tests for checkpoint placement, spawn resolution, and exercise environment reachability.
 10. Playtest every new traversal sequence.
 11. Do not modify unrelated systems.
 12. Document any changes to route requirements or difficulty.
+13. Do not implement checkpoint activation, progress, or recovery logic in level scripts.
+14. Do not implement route validation or run timing in level scripts.
+15. Do not implement player placement or movement reset in level scripts; use the Respawn System.
+16. Do not require mechanics outside the initial movement set — no ledge grabbing, climbing, balancing, or ziplines.
+17. Expose authored data (triggers, spawn points, gameplay metadata) to the owning systems rather than embedding behavior in level content.
 
 If a planned obstacle is not reliably achievable with the current movement system, adjust the obstacle or report the required gameplay change. Do not hide the problem with arbitrary collision exceptions.
 

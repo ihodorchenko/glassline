@@ -1,10 +1,11 @@
 # 12_MOVEMENT_SYSTEM_SPEC.md
 
-# Movement System Specification
+**Project:** Glassline  
+**Document:** Movement System Specification
 
 ## 1. Purpose
 
-This document defines the player movement system for the Mirror's Edge-inspired first-person parkour game.
+This document defines the player movement system for Glassline, a first-person parkour game inspired by the original *Mirror's Edge* (2008).
 
 The Movement System is responsible for:
 
@@ -334,76 +335,71 @@ Wall-run parameters should be adjustable independently from general movement phy
 
 ### 7.1 States
 
-The initial implementation must support the following states:
+The initial implementation must use the canonical movement state set defined in `02_TECHNICAL_ARCHITECTURE.md` §10.4:
 
 | State | Description |
 |---|---|
-| Grounded | Player is standing on a surface |
-| Walking | Player is moving at walking speed |
-| Running | Player is moving at normal running speed |
-| Sprinting | Player is sprinting |
-| Crouching | Player is moving or stationary in a crouched posture |
-| Sliding | Player is performing a slide |
-| Jumping | Player is ascending after a jump |
-| Falling | Player is descending without ground contact |
-| Landing | Player has just contacted the ground |
-| Vaulting | Player is traversing an obstacle |
-| WallRunning | Player is running along a suitable wall |
-| WallJumping | Player has jumped away from a wall |
+| IDLE | Player is grounded and not moving |
+| RUNNING | Player is moving on the ground; walking and running speeds are locomotion bands within this state |
+| SPRINTING | Player is sprinting |
+| JUMPING | Player is ascending after a jump |
+| FALLING | Player is descending without ground contact |
+| LANDING | Player has just contacted the ground |
+| SLIDING | Player is performing a slide |
+| VAULTING | Player is traversing an obstacle |
+| WALLRUN | Player is running along a suitable wall |
+| WALLJUMP | Player has jumped away from a wall |
 
-`Grounded`, `Walking`, and `Running` may be represented as separate states or as a grounded state with locomotion sub-states.
+Walking is a speed band of `RUNNING`, not a separate top-level state.
+
+Crouching is a posture modifier, not a separate canonical state: it changes the collider height and stance and may be active while `IDLE`/`RUNNING` or as an entry condition for `SLIDING`. It must not duplicate Player State lifecycle state (`18_PLAYER_STATE_SYSTEM_SPEC.md`) or the state machines of other systems.
 
 The implementation must avoid unnecessary state duplication.
 
 ### 7.2 State Transitions
 
 ```text
-                 +----------------+
-                 |    Grounded    |
-                 +----------------+
-                    |    |    |
-           Jump     |    |    | Crouch
-                    |    |    v
-                    |    |  +----------+
-                    |    |  | Crouching|
-                    |    |  +----------+
-                    |    |       |
-                    |    |       | Sprint + Speed
-                    |    |       v
-                    |    |  +----------+
-                    |    |  | Sliding  |
-                    |    |  +----------+
-                    |    |
-                    v    |
-               +----------+
-               | Jumping  |
-               +----------+
-                    |
-                    | Apex
-                    v
-               +----------+
-               | Falling  |
-               +----------+
-                    |
-                    | Ground contact
-                    v
-               +----------+
-               | Landing  |
-               +----------+
-                    |
-                    v
-               +----------+
-               | Grounded |
-               +----------+
+              +--------------------+
+              |   IDLE / RUNNING   |
+              +--------------------+
+                 |           |
+        Jump     |           | Crouch stance + speed
+                 |           v
+                 |      +----------+
+                 |      | SLIDING  |
+                 |      +----------+
+                 |
+                 v
+            +----------+
+            | JUMPING  |
+            +----------+
+                 |
+                 | Apex
+                 v
+            +----------+
+            | FALLING  |
+            +----------+
+                 |
+                 | Ground contact
+                 v
+            +----------+
+            | LANDING  |
+            +----------+
+                 |
+                 v
+              +--------------------+
+              |   IDLE / RUNNING   |
+              +--------------------+
 
 Additional transitions:
 
-Grounded -> Vaulting
-Falling -> WallRunning
-WallRunning -> WallJumping
-WallRunning -> Falling
-WallJumping -> Falling
-Sliding -> Jumping
+RUNNING -> SPRINTING
+RUNNING -> VAULTING
+FALLING -> WALLRUN
+WALLRUN -> WALLJUMP
+WALLRUN -> FALLING
+WALLJUMP -> FALLING
+SLIDING -> JUMPING
 ```
 
 ### 7.3 State Transition Rules
@@ -533,9 +529,7 @@ All velocity and acceleration calculations must use `deltaTime`.
 
 Avoid direct per-frame position changes that assume a fixed frame rate.
 
-For collision-critical movement, use a fixed physics timestep or a deterministic movement substep.
-
-The rendering loop may run independently from the physics update.
+For collision-critical movement, use the fixed physics timestep defined in §8.6. The rendering loop may run independently from the physics update.
 
 ### 8.6 Fixed Timestep
 
@@ -754,14 +748,13 @@ Air acceleration should be lower than ground acceleration.
 
 ### 11.7 Jump Events
 
-The system should emit:
+The system must publish the canonical gameplay event defined in `03_GAMEPLAY_SPEC.md` §18:
 
-- `jumpStarted`
-- `jumpApexReached`
-- `jumpCancelled`
-- `landingStarted`
+- `player:jumped` with the player's speed.
 
-These events are consumed by Camera, Audio, and Gameplay systems.
+Additional jump-lifecycle signals (apex reached, jump cancelled) may remain internal to the Movement System's interface and must not create a competing public event model.
+
+The canonical events are consumed by Camera, Audio, HUD, Statistics, and Training validation.
 
 ---
 
@@ -769,7 +762,7 @@ These events are consumed by Camera, Audio, and Gameplay systems.
 
 ### 12.1 Crouch Behavior
 
-Crouching changes the player's collider and camera height.
+Crouching changes the player's collider and stance. Camera height is derived and applied by the Camera System (`13_CAMERA_SYSTEM_SPEC.md`); Movement does not animate the camera.
 
 It must support:
 
@@ -791,9 +784,7 @@ If there is insufficient clearance:
 
 ### 12.3 Camera Height
 
-Camera height should interpolate smoothly.
-
-The camera must not move independently of the collider in a way that creates misleading spatial perception.
+The Movement System exposes the current crouch stance and collider height. Camera height interpolation is owned by the Camera System (`13_CAMERA_SYSTEM_SPEC.md`); the camera must not move independently of the collider in a way that creates misleading spatial perception.
 
 ### 12.4 Crouch Input
 
@@ -863,10 +854,10 @@ A slide jump should:
 
 ### 13.6 Slide Events
 
-Emit:
+Emit the canonical gameplay events from `03_GAMEPLAY_SPEC.md` §18:
 
-- `slideStarted`
-- `slideEnded`
+- `player:sliding-started` with the player's speed.
+- `player:sliding-ended`.
 
 Camera and Audio systems may use these events to trigger corresponding feedback.
 
@@ -912,12 +903,24 @@ Vault detection should use a combination of:
 
 A single forward raycast is not sufficient.
 
-### 14.4 Vault Execution
+### 14.4 Vault Types and Execution
+
+The initial implementation distinguishes two vault profiles, as required by `03_GAMEPLAY_SPEC.md` §10.4:
+
+| Type | Requirements | Behavior |
+|---|---|---|
+| Standard Vault | Valid obstacle, moderate approach speed | Controlled traversal, moderate momentum preservation |
+| Speed Vault | Higher approach speed and sufficient clearance | Faster traversal, greater momentum preservation |
+
+Profiles are configured in `MovementTuning` (for example minimum approach speed, trajectory duration, and momentum retention per type). The selection rule must be explicit and deterministic: when the conditions for a speed vault are not met but the obstacle is valid, the standard vault is used.
+
+The chosen type is reported in the canonical `player:vault-started` event.
 
 The initial implementation may use a controlled movement trajectory.
 
 The trajectory should be generated from:
 
+- Vault profile.
 - Entry position.
 - Obstacle dimensions.
 - Exit position.
@@ -960,11 +963,11 @@ If the destination becomes invalid before execution:
 
 ### 14.7 Vault Events
 
-Emit:
+Emit the canonical gameplay event from `03_GAMEPLAY_SPEC.md` §18:
 
-- `vaultStarted`
-- `vaultCompleted`
-- `vaultCancelled`
+- `player:vault-started` with the vault type.
+
+Vault completion and cancellation are internal lifecycle states of the movement action and must not be published as a competing public event model.
 
 ---
 
@@ -1057,11 +1060,12 @@ The transition should preserve as much valid velocity as possible.
 
 ### 15.8 Wall Run Events
 
-Emit:
+Emit the canonical gameplay events from `03_GAMEPLAY_SPEC.md` §18:
 
-- `wallRunStarted`
-- `wallRunEnded`
-- `wallRunSideChanged`
+- `player:wallrun-started` with the wall side.
+- `player:wallrun-ended`.
+
+A wall-side change while the wall run remains active is internal to the movement state and must not create a separate public event.
 
 ---
 
@@ -1111,6 +1115,14 @@ A short cooldown should prevent repeated wall jumps from a single contact.
 
 The cooldown must not prevent legitimate jumps from a different wall.
 
+### 16.6 Wall Jump Events
+
+Emit the canonical gameplay event from `03_GAMEPLAY_SPEC.md` §18:
+
+- `player:walljumped`.
+
+Camera, Audio, and Training systems consume this event instead of inferring the wall jump from velocity.
+
 ---
 
 ## 17. Landing
@@ -1149,13 +1161,11 @@ The initial version does not require a complex damage or stumble system.
 
 ### 17.4 Landing Events
 
-Emit:
+Emit the canonical gameplay event from `03_GAMEPLAY_SPEC.md` §18:
 
-- `landingStarted`
-- `landingCompleted`
-- `hardLanding`
+- `player:landed` with the impact speed.
 
-Include impact velocity and surface information where available.
+Include surface information where available. Hard-landing classification is an internal Movement distinction used for feedback intensity; it is not a separate public event.
 
 ---
 
@@ -1198,7 +1208,7 @@ The Movement System must not directly control camera animation.
 
 It exposes state and movement metrics.
 
-The Camera System is responsible for visual response.
+The Camera System is responsible for visual response. Where a response corresponds to a canonical gameplay event (`03_GAMEPLAY_SPEC.md` §18), the Camera System consumes that event rather than independently inferring the action from velocity.
 
 ### 19.1 Exposed Data
 
@@ -1552,9 +1562,7 @@ Recovery behavior should prioritize:
 3. Preserving valid momentum where possible.
 4. Returning to a safe movement state.
 
-A fall-below-level recovery mechanism may request a checkpoint respawn from the gameplay system.
-
-The Movement System must not own save or checkpoint persistence.
+A fall-below-level detection may report the condition to the gameplay layer; the recovery lifecycle is owned and orchestrated by the Respawn System (`RespawnManager`, `17_RESPAWN_SYSTEM_SPEC.md`). The Movement System must not execute respawn, own checkpoint progress, or own save and checkpoint persistence.
 
 ---
 
@@ -1593,6 +1601,7 @@ Test:
 - Wall jumping.
 - Collision with corners.
 - Movement at different frame rates.
+- Canonical gameplay events (`player:jumped`, `player:landed`, `player:sliding-started`, `player:sliding-ended`, `player:vault-started`, `player:wallrun-started`, `player:wallrun-ended`, `player:walljumped`) are published with the required payload.
 
 ### 31.3 Regression Tests
 
@@ -1765,7 +1774,7 @@ The Movement System is considered complete for the initial implementation when:
 - [ ] Collision response is stable.
 - [ ] Movement is frame-rate independent.
 - [ ] Camera integration is available.
-- [ ] Audio events are exposed.
+- [ ] Canonical movement events from `03_GAMEPLAY_SPEC.md` §18 are exposed.
 - [ ] Training Mode can validate movement actions.
 - [ ] Speedrun Mode uses the same movement implementation.
 - [ ] Debug visualization is available.

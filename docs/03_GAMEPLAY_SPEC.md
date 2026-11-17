@@ -1,6 +1,6 @@
 # GAMEPLAY SPECIFICATION
 
-## GLASSLINE
+## Glassline
 
 **Document:** `03_GAMEPLAY_SPEC.md`  
 **Version:** 1.1  
@@ -91,7 +91,7 @@ SLIDE
   ↓
 JUMP
   ↓
-WALL_RUNNING
+WALLRUN
   ↓
 WALLJUMP
   ↓
@@ -168,18 +168,9 @@ There is no requirement for a full third-person character model.
 
 ## 4.3 Initial player dimensions
 
-Starting values:
+Initial collider and camera dimensions are owned by `12_MOVEMENT_SYSTEM_SPEC.md` §5.3 (player collider, capsule dimensions, eye heights, ground detection).
 
-| Parameter | Initial value |
-|---|---:|
-| Capsule radius | 0.35 m |
-| Capsule total height | 1.75 m |
-| Camera height | 1.60 m |
-| Approximate eye height | 1.60 m |
-
-These values are initial calibration parameters.
-
-The collider dimensions and camera position must be adjusted together.
+This document does not duplicate those values. The collider dimensions and camera position must be calibrated together.
 
 During sliding, the physical representation must become lower without allowing the collider to intersect the ground.
 
@@ -224,15 +215,9 @@ For example:
 - Jump pressed while approaching a vault obstacle.
 - Context interaction pressed just before entering a valid interaction range.
 
-Initial input buffer:
-
-```ts
-const INPUT_BUFFER_DURATION = 0.15;
-```
-
-The value is configurable.
-
 Buffered actions must be discarded when their conditions are no longer valid.
+
+Per-action buffer durations are owned by the consuming systems. The initial jump and coyote-time values are defined in `12_MOVEMENT_SYSTEM_SPEC.md` §6.2; interaction timing is defined in `14_INTERACTION_SYSTEM_SPEC.md`.
 
 ## 5.4 Mouse look
 
@@ -262,33 +247,28 @@ All parkour mechanics should use the same movement model where possible.
 
 ## 6.1 Movement states
 
-Basic locomotion:
+The canonical movement state set is defined in `02_TECHNICAL_ARCHITECTURE.md` §10.4 and `12_MOVEMENT_SYSTEM_SPEC.md` §7.1:
 
 - IDLE
-- WALKING
 - RUNNING
 - SPRINTING
-- AIRBORNE
+- JUMPING
+- FALLING
+- LANDING
+- SLIDING
+- VAULTING
+- WALLRUN
+- WALLJUMP
 
-These are locomotion conditions, not necessarily separate top-level states in every implementation.
+Walking is a locomotion band within `RUNNING`. Crouching is a posture modifier, not a separate canonical movement state.
+
+`18_PLAYER_STATE_SYSTEM_SPEC.md` defines the aggregated player lifecycle state; it is not duplicated here.
 
 ## 6.2 Initial movement parameters
 
-<text id="speed-params" weight="semibold">Initial tuning values</text>
+Initial tuning values are owned by `12_MOVEMENT_SYSTEM_SPEC.md` §6.1.
 
-| Parameter | Initial value |
-|---|---:|
-| Walking speed | 3.0 m/s |
-| Running speed | 6.0 m/s |
-| Sprint speed | 9.0 m/s |
-| Ground acceleration | 12.0 m/s² |
-| Ground deceleration | 10.0 m/s² |
-| Air control factor | 0.35 |
-| Maximum air speed adjustment | Configurable |
-
-These are starting values for prototyping.
-
-They are not exact values from the original game.
+This document does not duplicate speed, acceleration, friction, or air-control numbers. They must be centralized in the Movement System's tuning configuration and adjusted through playtesting.
 
 ## 6.3 Acceleration
 
@@ -368,14 +348,9 @@ Jumping should not activate during an incompatible state.
 
 ## 7.3 Initial parameters
 
-| Parameter | Initial value |
-|---|---:|
-| Jump vertical velocity | 6.5 m/s |
-| Gravity | 19.0 m/s² |
-| Coyote time | 0.10 s |
-| Jump input buffer | 0.15 s |
+Initial jump, gravity, coyote-time, and input-buffer values are owned by `12_MOVEMENT_SYSTEM_SPEC.md` §6.2.
 
-These values are initial tuning parameters.
+This document does not duplicate them.
 
 ## 7.4 Behavior
 
@@ -470,22 +445,13 @@ Sliding requires:
 - Sufficient movement speed.
 - No incompatible active state.
 
-Initial minimum speed:
-
-```ts
-const MIN_SLIDE_SPEED = 4.5;
-```
+The initial minimum entry speed is owned by `12_MOVEMENT_SYSTEM_SPEC.md` §6.3.
 
 ## 9.3 Initial parameters
 
-| Parameter | Initial value |
-|---|---:|
-| Minimum entry speed | 4.5 m/s |
-| Initial duration | 0.8 s |
-| Minimum duration | 0.4 s |
-| Maximum duration | 1.2 s |
-| Friction | Configurable |
-| Exit speed threshold | Configurable |
+Initial slide speed, friction, duration, and exit thresholds are owned by `12_MOVEMENT_SYSTEM_SPEC.md` §6.3.
+
+This document does not duplicate them.
 
 ## 9.4 Behavior
 
@@ -621,11 +587,7 @@ Wallrunning requires:
 - A suitable wall orientation.
 - A valid direction of travel.
 
-Initial minimum speed:
-
-```ts
-const MIN_WALL_RUNNING_SPEED = 5.0;
-```
+The initial minimum entry speed is owned by `12_MOVEMENT_SYSTEM_SPEC.md` §6.4.
 
 ## 11.3 Wall detection
 
@@ -641,13 +603,9 @@ Do not activate wallrunning on arbitrary surfaces.
 
 ## 11.4 Initial parameters
 
-| Parameter | Initial value |
-|---|---:|
-| Minimum entry speed | 5.0 m/s |
-| Maximum duration | 1.2 s |
-| Gravity reduction | Configurable |
-| Wall attraction | Configurable |
-| Exit impulse | Configurable |
+Initial wallrun duration, gravity multiplier, angle limits, and exit-impulse values are owned by `12_MOVEMENT_SYSTEM_SPEC.md` §6.4.
+
+This document does not duplicate them.
 
 ## 11.5 Behavior
 
@@ -714,7 +672,7 @@ The wall normal must influence the resulting trajectory.
 ## 12.4 State transition
 
 ```text
-WALL_RUNNING
+WALLRUN
    │
    ▼
 WALLJUMP
@@ -749,7 +707,7 @@ If these mechanics are introduced in a later milestone, each requires its own sy
 
 ---
 
-# 17. Player State Machine
+# 14. Player State Machine
 
 ## 17.1 Purpose
 
@@ -761,29 +719,29 @@ It prevents incompatible mechanics from running simultaneously.
 
 ```ts
 type MovementState =
-  | "GROUNDED"
-  | "WALKING"
+  | "IDLE"
   | "RUNNING"
   | "SPRINTING"
-  | "CROUCHING"
-  | "SLIDING"
   | "JUMPING"
   | "FALLING"
   | "LANDING"
+  | "SLIDING"
   | "VAULTING"
-  | "WALL_RUNNING"
-  | "WALL_JUMPING";
+  | "WALLRUN"
+  | "WALLJUMP";
 ```
 
-This list is a high-level summary. `12_MOVEMENT_SYSTEM_SPEC.md` is authoritative for movement states and transitions. `18_PLAYER_STATE_SYSTEM_SPEC.md` defines the aggregate player lifecycle state; do not duplicate that lifecycle state machine here.
+This set matches `02_TECHNICAL_ARCHITECTURE.md` §10.4. `12_MOVEMENT_SYSTEM_SPEC.md` §7 is authoritative for movement states and transitions.
+
+Walking is a speed band within `RUNNING`. Crouching is a posture modifier, not a separate canonical movement state.
+
+`18_PLAYER_STATE_SYSTEM_SPEC.md` defines the aggregate player lifecycle state; do not duplicate that lifecycle state machine here.
 
 ## 17.3 Transition examples
 
 ```text
-GROUNDED
- └── movement input → RUNNING
-
-RUNNING
+IDLE / RUNNING
+ ├── movement input → RUNNING
  ├── sprint input → SPRINTING
  ├── jump → JUMPING
  ├── slide → SLIDING
@@ -796,12 +754,12 @@ SPRINTING
  └── leave ground → FALLING
 
 JUMPING
- ├── wall contact → WALL_RUNNING
+ ├── wall contact → WALLRUN
  ├── valid vault context → VAULTING
  └── ground contact → LANDING
 
 FALLING
- ├── valid wallrun → WALL_RUNNING
+ ├── valid wallrun → WALLRUN
  └── ground contact → LANDING
 
 SLIDING
@@ -809,11 +767,10 @@ SLIDING
  ├── vault → VAULTING
  └── duration expired → RUNNING / IDLE
 
-WALL_RUNNING
- ├── jump → JUMPING
+WALLRUN
+ ├── jump → WALLJUMP
  ├── contact lost → FALLING
  └── ground contact → LANDING
-
 ```
 
 These transitions are conceptual.
@@ -828,7 +785,7 @@ For example:
 
 - SLIDING controls the lowered capsule and slide friction.
 - VAULTING controls the validated vault traversal.
-- WALL_JUMPING controls the wall departure impulse.
+- WALLJUMP controls the wall departure impulse.
 
 Do not allow multiple systems to write conflicting velocity values during the same simulation step.
 
@@ -846,7 +803,7 @@ Transitions should not leave behind active timers, constraints, or temporary phy
 
 ---
 
-# 18. Mechanic Priority and Conflict Resolution
+# 15. Mechanic Priority and Conflict Resolution
 
 Some mechanics may become valid simultaneously.
 
@@ -854,14 +811,18 @@ The system must resolve conflicts deterministically.
 
 Suggested priority:
 
-1. Forced recovery / invalid movement prevention.
-2. Active traversal state continuation.
-3. Landing.
-4. Wallrun.
-5. Vault.
-6. Slide.
-7. Jump.
-8. Ordinary movement.
+1. Forced recovery / invalid movement prevention (cross-system: Respawn).
+2. Collision resolution.
+3. Landing safety.
+4. Vault.
+5. Wallrun.
+6. Walljump.
+7. Slide.
+8. Jump.
+9. Ground locomotion.
+10. Falling.
+
+This mirrors `12_MOVEMENT_SYSTEM_SPEC.md` §7.4, which is authoritative for movement-internal priority. The first item is a cross-system safety rule owned by the Respawn System.
 
 This is a starting priority order.
 
@@ -871,7 +832,7 @@ Deferred mechanics are excluded from this priority list. A valid action should n
 
 ---
 
-# 19. Camera Specification
+# 16. Camera Specification
 
 The camera is first-person and directly connected to player movement state.
 
@@ -946,7 +907,7 @@ Provide options to reduce:
 
 ---
 
-# 20. First-Person Hands
+# 17. First-Person Hands
 
 The player may have simple procedural hands.
 
@@ -969,7 +930,7 @@ Do not create a full character rig for the initial prototype.
 
 ---
 
-# 21. Gameplay Feedback and Events
+# 18. Gameplay Feedback and Events
 
 Important gameplay actions must publish events.
 
@@ -1001,7 +962,7 @@ Do not make these systems independently infer every movement action from player 
 
 ---
 
-# 22. Training Mechanic Validation
+# 19. Training Mechanic Validation
 
 Training exercises must verify actual player actions.
 
@@ -1037,7 +998,7 @@ Detailed exercise layout and progression are defined in `21_TRAINING_SYSTEM_SPEC
 
 ---
 
-# 23. Prologue Gameplay Validation
+# 20. Prologue Gameplay Validation
 
 The Prologue must use the same player controller and parkour mechanics as Training.
 
@@ -1058,7 +1019,7 @@ Detailed route design is defined in `06_LEVEL_DESIGN_SPEC.md`.
 
 ---
 
-# 24. Mechanic Implementation Priority
+# 21. Mechanic Implementation Priority
 
 Implement mechanics in this order:
 
@@ -1078,7 +1039,7 @@ Each mechanic must be integrated with the state machine and tested before moving
 
 ---
 
-# 25. Gameplay Acceptance Criteria
+# 22. Gameplay Acceptance Criteria
 
 ## 25.1 Core movement
 
@@ -1134,7 +1095,7 @@ Each mechanic must be integrated with the state machine and tested before moving
 
 ---
 
-# 26. Final Gameplay Principle
+# 23. Final Gameplay Principle
 
 The movement system should feel like one connected experience.
 
