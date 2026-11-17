@@ -1,7 +1,7 @@
 import { DEFAULT_GAME_LOOP_CONFIG, type GameLoopConfig } from "../core/GameLoop";
 import { DEFAULT_PHYSICS_OPTIONS, type PhysicsWorldOptions } from "../physics/PhysicsConfig";
-import type { RenderSceneOptions } from "../rendering/RenderScene";
 import type { RendererOptions } from "../rendering/Renderer";
+import type { RenderSceneOptions } from "../rendering/RenderScene";
 import type { DatabaseOptions } from "../storage/Database";
 import { DATABASE_NAME, DATABASE_VERSION } from "../storage/SaveSchema";
 

@@ -67,10 +67,7 @@ function validateConfig(config: GameLoopConfig): void {
     );
   }
 
-  if (
-    !Number.isInteger(config.maxPhysicsStepsPerFrame) ||
-    config.maxPhysicsStepsPerFrame < 1
-  ) {
+  if (!Number.isInteger(config.maxPhysicsStepsPerFrame) || config.maxPhysicsStepsPerFrame < 1) {
     throw new RangeError(
       `Invalid maxPhysicsStepsPerFrame: ${config.maxPhysicsStepsPerFrame}. Expected a positive integer.`,
     );

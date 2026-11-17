@@ -23,7 +23,10 @@ function rawInput(overrides: Partial<RawInputState> = {}): RawInputState {
   };
 }
 
-function makeGamepad(axes: readonly number[], pressedIndices: readonly number[] = []): GamepadSnapshot {
+function makeGamepad(
+  axes: readonly number[],
+  pressedIndices: readonly number[] = [],
+): GamepadSnapshot {
   const buttons: GamepadButtonSnapshot[] = Array.from({ length: 16 }, (_unused, index) => ({
     pressed: pressedIndices.includes(index),
     value: pressedIndices.includes(index) ? 1 : 0,
@@ -59,9 +62,7 @@ describe("InputActionResolver", () => {
   });
 
   it("maps Sprint, Interact and Restart keys", () => {
-    const resolved = resolve(
-      rawInput({ heldKeys: new Set(["ShiftLeft", "KeyE", "KeyR"]) }),
-    );
+    const resolved = resolve(rawInput({ heldKeys: new Set(["ShiftLeft", "KeyE", "KeyR"]) }));
 
     expect(resolved.actionValues.get("Sprint")).toBe(1);
     expect(resolved.actionValues.get("Interact")).toBe(1);

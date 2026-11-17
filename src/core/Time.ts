@@ -11,7 +11,10 @@ export const monotonicTime: TimeSource = {
  * Measures a synchronous operation with the provided clock.
  * Used for startup diagnostics, never for gameplay timing.
  */
-export function measure<T>(time: TimeSource, operation: () => T): { result: T; durationMs: number } {
+export function measure<T>(
+  time: TimeSource,
+  operation: () => T,
+): { result: T; durationMs: number } {
   const startedAt = time.now();
   const result = operation();
 

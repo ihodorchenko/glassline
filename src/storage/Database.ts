@@ -1,9 +1,5 @@
 import type { Disposable } from "../core/Disposable";
-import {
-  SAVE_MIGRATIONS,
-  type ObjectStoreName,
-  type SaveMigration,
-} from "./SaveSchema";
+import { type ObjectStoreName, SAVE_MIGRATIONS, type SaveMigration } from "./SaveSchema";
 
 export type StorageErrorCode =
   | "UNAVAILABLE"
@@ -181,7 +177,11 @@ export class Database implements Disposable {
         clearTimeout(timeoutId);
         settled = true;
         reject(
-          new StorageError("OPEN_FAILED", `Could not request IndexedDB "${this.options.name}".`, error),
+          new StorageError(
+            "OPEN_FAILED",
+            `Could not request IndexedDB "${this.options.name}".`,
+            error,
+          ),
         );
         return;
       }
@@ -260,9 +260,7 @@ export class Database implements Disposable {
     return new Promise<T>((resolve, reject) => {
       request.onsuccess = () => resolve(request.result);
       request.onerror = () =>
-        reject(
-          new StorageError("REQUEST_FAILED", "IndexedDB request failed.", request.error),
-        );
+        reject(new StorageError("REQUEST_FAILED", "IndexedDB request failed.", request.error));
     });
   }
 
@@ -271,11 +269,19 @@ export class Database implements Disposable {
       transaction.oncomplete = () => resolve();
       transaction.onerror = () =>
         reject(
-          new StorageError("TRANSACTION_FAILED", "IndexedDB transaction failed.", transaction.error),
+          new StorageError(
+            "TRANSACTION_FAILED",
+            "IndexedDB transaction failed.",
+            transaction.error,
+          ),
         );
       transaction.onabort = () =>
         reject(
-          new StorageError("TRANSACTION_FAILED", "IndexedDB transaction was aborted.", transaction.error),
+          new StorageError(
+            "TRANSACTION_FAILED",
+            "IndexedDB transaction was aborted.",
+            transaction.error,
+          ),
         );
     });
   }

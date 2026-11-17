@@ -3,8 +3,8 @@ import "fake-indexeddb/auto";
 import { afterEach, describe, expect, it } from "vitest";
 
 import { Database } from "../../src/storage/Database";
-import { OBJECT_STORES, type SaveMigration } from "../../src/storage/SaveSchema";
 import { SettingsRepository } from "../../src/storage/repositories/SettingsRepository";
+import { OBJECT_STORES, type SaveMigration } from "../../src/storage/SaveSchema";
 
 let databaseCounter = 0;
 

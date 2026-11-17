@@ -1,15 +1,15 @@
 import { applyRadialDeadZone, clampVector2Magnitude, type Vector2Like } from "../shared/math";
 import {
-  DEFAULT_ACTION_BINDINGS,
-  INPUT_ACTIONS,
-  INPUT_ACTION_KINDS,
-  isActionEnabledInContext,
   type ActionBindings,
+  DEFAULT_ACTION_BINDINGS,
   type GamepadBindings,
   type GamepadButtonGroup,
   type GamepadSnapshot,
+  INPUT_ACTION_KINDS,
+  INPUT_ACTIONS,
   type InputAction,
   type InputContext,
+  isActionEnabledInContext,
   type KeyboardBindingGroup,
 } from "./InputActions";
 
@@ -149,9 +149,7 @@ export class InputActionResolver {
     }
 
     return {
-      move: isActionEnabledInContext("Move", raw.context)
-        ? this.resolveMove(raw)
-        : ZERO_VECTOR,
+      move: isActionEnabledInContext("Move", raw.context) ? this.resolveMove(raw) : ZERO_VECTOR,
       navigate: isActionEnabledInContext("Navigate", raw.context)
         ? this.resolveNavigate(raw)
         : ZERO_VECTOR,
@@ -229,10 +227,7 @@ export class InputActionResolver {
     return clampVector2Magnitude({ x, y });
   }
 
-  private keyboardButtonValue(
-    keys: readonly string[],
-    heldKeys: ReadonlySet<string>,
-  ): number {
+  private keyboardButtonValue(keys: readonly string[], heldKeys: ReadonlySet<string>): number {
     for (const key of keys) {
       if (heldKeys.has(key)) {
         return 1;
@@ -242,10 +237,7 @@ export class InputActionResolver {
     return 0;
   }
 
-  private gamepadButtonValue(
-    gamepad: GamepadSnapshot | null,
-    indices: readonly number[],
-  ): number {
+  private gamepadButtonValue(gamepad: GamepadSnapshot | null, indices: readonly number[]): number {
     if (!gamepad) {
       return 0;
     }

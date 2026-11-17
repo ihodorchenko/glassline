@@ -247,8 +247,10 @@ Tasks:
 
 Implemented:
 
-- `package.json` — npm scripts (`dev`, `build`, `preview`, `typecheck`, `test`, `test:watch`, `validate`) and dependency set: `three`, `@dimforge/rapier3d-compat`, `vite`, `typescript`, `vitest`, `fake-indexeddb` for IndexedDB tests.
+- `package.json` — npm scripts (`dev`, `build`, `preview`, `typecheck`, `lint`, `format`, `check`, `test`, `test:watch`, `validate`) and dependency set: `three`, `@dimforge/rapier3d-compat`, `vite`, `typescript`, `vitest`, `@biomejs/biome`, `fake-indexeddb` for IndexedDB tests.
 - `tsconfig.json` — strict TypeScript (strict, exactOptionalPropertyTypes, noUncheckedIndexedAccess, noUnusedLocals/Parameters, verbatimModuleSyntax, isolatedModules).
+- `biome.json` — Biome 2 lint + formatter + import organization, using the repository git ignore rules; Markdown documentation is intentionally excluded.
+- `.github/workflows/validate.yml` — CI pipeline (Node 22, `npm ci`, `npm run validate`) on pushes to `main` and pull requests.
 - `vite.config.ts` — Vite 8 build and Vitest 5 configuration (Node test environment, `tests/**/*.test.ts`).
 - `index.html` — application shell with the game canvas.
 - `src/` — application structure per `02_TECHNICAL_ARCHITECTURE.md` (`app/`, `core/`, `rendering/`, `physics/`, `input/`, `storage/`, `diagnostics/`, `debug/`, `shared/`).
@@ -259,10 +261,13 @@ Validation commands (also documented in `README.md`):
 
 ```bash
 npm run typecheck   # strict TypeScript
+npm run check       # Biome: lint, formatting, import order
 npm test            # unit tests
 npm run build       # typecheck + production build
-npm run validate    # typecheck + tests + production build
+npm run validate    # typecheck + Biome check + tests + production build
 ```
+
+CI (`.github/workflows/validate.yml`) runs the same validation pipeline on pushes to `main` and on pull requests.
 
 Exit criteria:
 
@@ -664,6 +669,12 @@ Every system must pass all applicable quality gates before being marked `Verifie
 - [ ] Expensive work is kept out of critical gameplay paths.
 - [ ] Resource lifecycles are controlled.
 - [ ] Performance is profiled in a representative environment.
+
+### Static Analysis and Formatting
+
+- [ ] TypeScript strict check passes (`npm run typecheck`).
+- [ ] Biome check passes (`npm run check`): lint, formatting, import order.
+- [ ] CI validation passes for the change.
 
 ### Testing
 

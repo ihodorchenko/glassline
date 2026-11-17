@@ -1,8 +1,7 @@
 import RAPIER from "@dimforge/rapier3d-compat";
 import { describe, expect, it } from "vitest";
-
-import { PhysicsWorld } from "../../src/physics/PhysicsWorld";
 import type { PhysicsWorldOptions } from "../../src/physics/PhysicsConfig";
+import { PhysicsWorld } from "../../src/physics/PhysicsWorld";
 
 const OPTIONS: PhysicsWorldOptions = {
   gravity: { x: 0, y: -9.81, z: 0 },
@@ -18,9 +17,7 @@ describe("PhysicsWorld", () => {
     expect(physics.isInitialized).toBe(true);
 
     const world = physics.rapierWorld;
-    const body = world.createRigidBody(
-      RAPIER.RigidBodyDesc.dynamic().setTranslation(0, 5, 0),
-    );
+    const body = world.createRigidBody(RAPIER.RigidBodyDesc.dynamic().setTranslation(0, 5, 0));
 
     world.createCollider(RAPIER.ColliderDesc.ball(0.5), body);
 

@@ -1,4 +1,4 @@
-import { disposeAll, type Disposable } from "../core/Disposable";
+import { type Disposable, disposeAll } from "../core/Disposable";
 
 export interface StatusOverlayState {
   readonly lines: readonly string[];

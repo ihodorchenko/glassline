@@ -1,5 +1,5 @@
+import { type Disposable, disposeAll } from "../core/Disposable";
 import { GameLoop } from "../core/GameLoop";
-import { disposeAll, type Disposable } from "../core/Disposable";
 import { PhysicsDebugSandbox } from "../debug/PhysicsDebugSandbox";
 import { StatusOverlay } from "../diagnostics/StatusOverlay";
 import { InputManager } from "../input/InputManager";
@@ -8,7 +8,7 @@ import { Renderer } from "../rendering/Renderer";
 import { RenderScene } from "../rendering/RenderScene";
 import { Database, StorageError } from "../storage/Database";
 import { SettingsRepository } from "../storage/repositories/SettingsRepository";
-import { DEFAULT_APPLICATION_CONFIG, type ApplicationConfig } from "./ApplicationConfig";
+import { type ApplicationConfig, DEFAULT_APPLICATION_CONFIG } from "./ApplicationConfig";
 
 export type ApplicationState = "idle" | "initializing" | "ready" | "running" | "stopped" | "failed";
 
@@ -179,10 +179,7 @@ export class Application implements Disposable {
       this.database = null;
       this.storageStatus = `unavailable (${error instanceof StorageError ? error.code : "unknown"})`;
 
-      console.warn(
-        "[Glassline] Persistence is unavailable; continuing without saved data.",
-        error,
-      );
+      console.warn("[Glassline] Persistence is unavailable; continuing without saved data.", error);
     }
   }
 
@@ -303,7 +300,9 @@ export class Application implements Disposable {
     const frame = this.input?.currentFrame;
     const gameLoopStats = this.gameLoop?.getStats();
 
-    const move = frame ? `(${frame.move.x.toFixed(2)}, ${frame.move.y.toFixed(2)})` : "(0.00, 0.00)";
+    const move = frame
+      ? `(${frame.move.x.toFixed(2)}, ${frame.move.y.toFixed(2)})`
+      : "(0.00, 0.00)";
     const look = frame
       ? `(${frame.lookMouse.x.toFixed(1)}, ${frame.lookMouse.y.toFixed(1)})`
       : "(0.0, 0.0)";
@@ -334,7 +333,8 @@ export class Application implements Disposable {
     };
 
     document.addEventListener("visibilitychange", onVisibilityChange);
-    this.visibilityCleanup = () => document.removeEventListener("visibilitychange", onVisibilityChange);
+    this.visibilityCleanup = () =>
+      document.removeEventListener("visibilitychange", onVisibilityChange);
   }
 
   private handleResize(): void {

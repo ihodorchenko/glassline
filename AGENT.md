@@ -384,7 +384,7 @@ Do not leave critical behavior as a placeholder.
 Run available and relevant commands:
 
 - Type checking (`npm run typecheck`).
-- Linting (when configured).
+- Linting, formatting, and import order (`npm run check`).
 - Unit tests (`npm test`).
 - Integration tests (when configured).
 - Production build (`npm run build`).

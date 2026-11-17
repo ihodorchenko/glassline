@@ -1,6 +1,6 @@
 import { isFiniteNumber } from "../../shared/math";
-import { StorageError, type Database } from "../Database";
-import { SAVE_DATA_VERSION, type ObjectStoreName } from "../SaveSchema";
+import { type Database, StorageError } from "../Database";
+import { type ObjectStoreName, SAVE_DATA_VERSION } from "../SaveSchema";
 
 /**
  * Persisted settings payload.

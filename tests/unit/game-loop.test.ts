@@ -1,10 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import {
-  DEFAULT_GAME_LOOP_CONFIG,
-  GameLoop,
-  type GameLoopConfig,
-} from "../../src/core/GameLoop";
+import { DEFAULT_GAME_LOOP_CONFIG, GameLoop, type GameLoopConfig } from "../../src/core/GameLoop";
 import { ManualFrameScheduler } from "../helpers/manual-scheduler";
 
 interface LoopHarness {
@@ -132,11 +128,15 @@ describe("GameLoop", () => {
     const scheduler = new ManualFrameScheduler();
     const order: string[] = [];
 
-    const loop = new GameLoop(DEFAULT_GAME_LOOP_CONFIG, {
-      onFrameStart: () => order.push("frame-start"),
-      onFixedUpdate: () => order.push("fixed"),
-      onRender: () => order.push("render"),
-    }, scheduler);
+    const loop = new GameLoop(
+      DEFAULT_GAME_LOOP_CONFIG,
+      {
+        onFrameStart: () => order.push("frame-start"),
+        onFixedUpdate: () => order.push("fixed"),
+        onRender: () => order.push("render"),
+      },
+      scheduler,
+    );
 
     loop.start();
     scheduler.advanceTo(0);
@@ -148,14 +148,26 @@ describe("GameLoop", () => {
   });
 
   it("rejects invalid configuration", () => {
-    expect(() => new GameLoop({ ...DEFAULT_GAME_LOOP_CONFIG, physicsHz: 0 }, {
-      onFixedUpdate: () => undefined,
-      onRender: () => undefined,
-    })).toThrow(RangeError);
+    expect(
+      () =>
+        new GameLoop(
+          { ...DEFAULT_GAME_LOOP_CONFIG, physicsHz: 0 },
+          {
+            onFixedUpdate: () => undefined,
+            onRender: () => undefined,
+          },
+        ),
+    ).toThrow(RangeError);
 
-    expect(() => new GameLoop({ ...DEFAULT_GAME_LOOP_CONFIG, maxFrameDeltaSeconds: 0 }, {
-      onFixedUpdate: () => undefined,
-      onRender: () => undefined,
-    })).toThrow(RangeError);
+    expect(
+      () =>
+        new GameLoop(
+          { ...DEFAULT_GAME_LOOP_CONFIG, maxFrameDeltaSeconds: 0 },
+          {
+            onFixedUpdate: () => undefined,
+            onRender: () => undefined,
+          },
+        ),
+    ).toThrow(RangeError);
   });
 });

@@ -1,11 +1,11 @@
 import type { Disposable } from "../core/Disposable";
 import {
-  DEFAULT_ACTION_BINDINGS,
   type ActionBindings,
+  DEFAULT_ACTION_BINDINGS,
   type GamepadSnapshot,
   type InputContext,
 } from "./InputActions";
-import { IDLE_INPUT_FRAME, InputFrameBuilder, type InputFrame } from "./InputState";
+import { IDLE_INPUT_FRAME, type InputFrame, InputFrameBuilder } from "./InputState";
 
 export interface InputManagerOptions {
   readonly canvas: HTMLCanvasElement;
@@ -36,7 +36,7 @@ function readGamepadSnapshot(): GamepadSnapshot | null {
   }
 
   for (const gamepad of gamepads) {
-    if (!gamepad || !gamepad.connected) {
+    if (!gamepad?.connected) {
       continue;
     }
 
