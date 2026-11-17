@@ -1,0 +1,70 @@
+:root {
+  color-scheme: dark;
+  --glassline-sky: #a7b9c4;
+  --glassline-ink: #1b2226;
+  --glassline-panel: rgba(20, 26, 30, 0.82);
+  --glassline-text: #eef2f4;
+  --glassline-accent: #d52e36;
+  font-family: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: var(--glassline-sky);
+}
+
+#game-canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+  outline: none;
+  cursor: crosshair;
+}
+
+.boot-message {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  margin: 0;
+  color: var(--glassline-ink);
+  font-size: 1rem;
+}
+
+.gl-status {
+  position: fixed;
+  top: 12px;
+  left: 12px;
+  max-width: min(560px, calc(100vw - 24px));
+  padding: 10px 12px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 4px;
+  background: var(--glassline-panel);
+  color: var(--glassline-text);
+  font-family: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+  font-size: 12px;
+  line-height: 1.45;
+  pointer-events: none;
+  white-space: pre-wrap;
+  z-index: 10;
+}
+
+.gl-status::before {
+  content: "";
+  display: block;
+  width: 22px;
+  height: 2px;
+  margin-bottom: 8px;
+  background: var(--glassline-accent);
+}
+
+.gl-status--fatal {
+  border-color: var(--glassline-accent);
+  max-width: min(720px, calc(100vw - 24px));
+  white-space: pre-wrap;
+}

@@ -1,0 +1,16 @@
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+coverage/
+.vite/
+
+# Local tooling caches (sandbox-friendly npm cache lives in the workspace)
+.npm-cache/
+.npm-logs/
+*.log
+
+# Editor / OS
+.DS_Store
+*.local

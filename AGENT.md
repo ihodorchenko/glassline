@@ -383,12 +383,13 @@ Do not leave critical behavior as a placeholder.
 
 Run available and relevant commands:
 
-- Type checking.
-- Linting.
-- Unit tests.
-- Integration tests.
-- Production build.
-- Relevant browser/runtime checks.
+- Type checking (`npm run typecheck`).
+- Linting (when configured).
+- Unit tests (`npm test`).
+- Integration tests (when configured).
+- Production build (`npm run build`).
+- Full validation pipeline (`npm run validate`).
+- Relevant browser/runtime checks (`npm run dev`; verify rendering, physics, input, and persistence manually when affected).
 
 Do not claim a command passed if it was not executed.
 

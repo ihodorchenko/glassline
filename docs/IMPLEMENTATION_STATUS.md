@@ -3,8 +3,8 @@
 **Document:** `IMPLEMENTATION_STATUS.md`  
 **Project:** Glassline  
 **Last Updated:** 2026-11-17  
-**Project Stage:** Pre-Implementation  
-**Status:** Specification Baseline Reconciled; Implementation Not Started
+**Project Stage:** Pre-Implementation → Runtime Foundation  
+**Status:** Phase 0 Complete; Phase 1 In Progress
 
 ---
 
@@ -87,23 +87,23 @@ Only `Verified` means that the applicable acceptance criteria have been checked 
 
 | Area | Specification | Implementation | Integration | Verification |
 |---|---|---|---|---|
-| Project Foundation | Defined | Not Started | Not Started | Not Verified |
-| Technical Architecture | Defined | Not Started | Not Started | Not Verified |
+| Project Foundation | Defined | In Progress | In Progress | Partially Verified |
+| Technical Architecture | Defined | In Progress | In Progress | Partially Verified |
 | Core Gameplay | Defined | Not Started | Not Started | Not Verified |
 | Player Systems | Defined | Not Started | Not Started | Not Verified |
 | Level Systems | Defined | Not Started | Not Started | Not Verified |
 | Gameplay Modes | Defined | Not Started | Not Started | Not Verified |
 | UI / UX | Defined | Not Started | Not Started | Not Verified |
 | Audio | Defined | Not Started | Not Started | Not Verified |
-| Persistence | Defined | Not Started | Not Started | Not Verified |
+| Persistence | Defined | In Progress | In Progress | Partially Verified |
 | Progression | Defined | Not Started | Not Started | Not Verified |
 | Accessibility | Defined | Not Started | Not Started | Not Verified |
 | Localization | Defined | Not Started | Not Started | Not Verified |
 | Statistics | Defined | Not Started | Not Started | Not Verified |
 
-**Current phase:** Documentation baseline reconciled; repository initialization is the next step.
+**Current phase:** Phase 0 (repository foundation) is complete. Phase 1 (application runtime) is in progress.
 
-**Implementation readiness:** The project has a reconciled system specification and no known cross-document ownership conflicts. Repository configuration (`package.json`) and the source tree are still empty and must be established before gameplay implementation begins. Phase 0 below is the next active workstream.
+**Implementation readiness:** The repository is initialized and the application foundation is runnable. Gameplay systems (movement, player state, level runtime, sessions) have not been implemented yet. The next active workstream is completing Phase 1 and then starting Phase 2.
 
 ### 3.1. Documentation Reconciliation (2026-11-17)
 
@@ -130,7 +130,7 @@ The following documents form the current specification baseline.
 |---:|---|---|---|
 | 00 | `00_PROJECT_BRIEF.md` | Defined | Not Started |
 | 01 | `01_AGENT_RULES.md` | Defined | Not Started |
-| 02 | `02_TECHNICAL_ARCHITECTURE.md` | Defined | Not Started |
+| 02 | `02_TECHNICAL_ARCHITECTURE.md` | Defined | In Progress |
 | 03 | `03_GAMEPLAY_SPEC.md` | Defined | Not Started |
 | 04 | `04_ASSET_BIBLE.md` | Defined | Not Started |
 | 05 | `05_PROCEDURAL_GENERATION_SPEC.md` | Defined | Not Started |
@@ -138,8 +138,8 @@ The following documents form the current specification baseline.
 | 07 | `07_UI_UX_SPEC.md` | Defined | Not Started |
 | 08 | `08_AUDIO_DESIGN_SPEC.md` | Defined | Not Started |
 | 09 | `09_SPEEDRUN_SYSTEM_SPEC.md` | Defined | Not Started |
-| 10 | `10_SAVE_SYSTEM_SPEC.md` | Defined | Not Started |
-| 11 | `11_INPUT_SYSTEM_SPEC.md` | Defined | Not Started |
+| 10 | `10_SAVE_SYSTEM_SPEC.md` | Defined | In Progress |
+| 11 | `11_INPUT_SYSTEM_SPEC.md` | Defined | In Progress |
 | 12 | `12_MOVEMENT_SYSTEM_SPEC.md` | Defined | Not Started |
 | 13 | `13_CAMERA_SYSTEM_SPEC.md` | Defined | Not Started |
 | 14 | `14_INTERACTION_SYSTEM_SPEC.md` | Defined | Not Started |
@@ -172,11 +172,11 @@ Systems are not completely independent. Integration should happen continuously a
 
 | System | Specification | Initial Goal | Status |
 |---|---|---|---|
-| Technical Architecture | 02 | Establish runtime, modules, and application foundation | Not Started |
+| Technical Architecture | 02 | Establish runtime, modules, and application foundation | In Progress |
 | Asset Bible | 04 | Establish asset and resource conventions | Not Started |
 | Procedural Generation | 05 | Establish reusable procedural generation foundations | Not Started |
-| Input | 11 | Provide abstract input actions and device handling | Not Started |
-| Save | 10 | Establish IndexedDB persistence infrastructure | Not Started |
+| Input | 11 | Provide abstract input actions and device handling | In Progress |
+| Save | 10 | Establish IndexedDB persistence infrastructure | In Progress |
 | Settings | 25 | Establish configuration registry and runtime application | Not Started |
 | Localization | 27 | Establish translation resources and resolution | Not Started |
 
@@ -230,6 +230,8 @@ Systems are not completely independent. Integration should happen continuously a
 
 **Goal:** Ensure that the specifications form a consistent implementation contract and that the repository can support the initial application.
 
+**Status:** Complete (2026-11-17).
+
 Tasks:
 
 - Normalize documentation filenames and links.
@@ -243,17 +245,38 @@ Tasks:
 - Define coding conventions and validation commands.
 - Establish the initial build and test pipeline.
 
+Implemented:
+
+- `package.json` — npm scripts (`dev`, `build`, `preview`, `typecheck`, `test`, `test:watch`, `validate`) and dependency set: `three`, `@dimforge/rapier3d-compat`, `vite`, `typescript`, `vitest`, `fake-indexeddb` for IndexedDB tests.
+- `tsconfig.json` — strict TypeScript (strict, exactOptionalPropertyTypes, noUncheckedIndexedAccess, noUnusedLocals/Parameters, verbatimModuleSyntax, isolatedModules).
+- `vite.config.ts` — Vite 8 build and Vitest 5 configuration (Node test environment, `tests/**/*.test.ts`).
+- `index.html` — application shell with the game canvas.
+- `src/` — application structure per `02_TECHNICAL_ARCHITECTURE.md` (`app/`, `core/`, `rendering/`, `physics/`, `input/`, `storage/`, `diagnostics/`, `debug/`, `shared/`).
+- `tests/` — unit tests for the game loop, input resolution, IndexedDB/schema, Rapier integration, and the event bus.
+- `.gitignore` — dependencies, build output, local caches.
+
+Validation commands (also documented in `README.md`):
+
+```bash
+npm run typecheck   # strict TypeScript
+npm test            # unit tests
+npm run build       # typecheck + production build
+npm run validate    # typecheck + tests + production build
+```
+
 Exit criteria:
 
-- No unresolved architectural conflicts affecting the first playable build.
-- Repository configuration is valid.
-- Core module boundaries are clear.
-- The application can be built and tested.
-- Implementation agents have clear ownership boundaries.
+- [x] No unresolved architectural conflicts affecting the first playable build.
+- [x] Repository configuration is valid.
+- [x] Core module boundaries are clear.
+- [x] The application can be built and tested.
+- [x] Implementation agents have clear ownership boundaries.
 
 ### Phase 1 — Runtime Foundation
 
 **Goal:** Establish a working application runtime.
+
+**Status:** In Progress (runtime foundation complete; Settings/Localization systems not started).
 
 Systems:
 
@@ -275,14 +298,44 @@ Initial features:
 - Settings loading and saving.
 - Resource loading and error reporting.
 
+Implemented and smoke-verified:
+
+- `Application` composition root: documented startup order (storage → renderer → physics → input), recoverable storage failure, fatal-error overlay, idempotent shutdown, resize and visibility handling.
+- `GameLoop`: fixed 60 Hz simulation step, frame-delta clamping, catch-up protection, interpolation alpha, render/fixed callbacks. Unit-tested (60 steps per simulated second, dropped-time accounting, restart, stop).
+- `Renderer` + `RenderScene`: WebGL2 renderer, sRGB/tone mapping, shadows, camera, lighting, placeholder architecture scene.
+- `PhysicsWorld`: Rapier init, fixed timestep matching the game loop, world stepping, deterministic disposal. Unit-tested with a falling rigid body.
+- `InputManager` + `InputActionResolver`: action registry, configurable keyboard/gamepad bindings, gameplay/menu contexts, pointer lock, mouse deltas, dead zones, pressed/held/released edges. Unit-tested without a DOM.
+- `Database` + `SaveSchema` + `SettingsRepository`: IndexedDB `GlasslineSaveData`, schema migrations, versioned stores, transactions, typed errors, malformed-payload rejection. Tested with fake-indexeddb.
+- `EventBus`, `Time`, `Disposable`/`disposeAll`, `StatusOverlay` diagnostics.
+
+Verification performed:
+
+- `npm run typecheck` — passes.
+- `npm test` — 38 unit tests pass (game loop, input, database, physics, event bus).
+- `npm run build` — production build succeeds.
+- Headless browser smoke check (Microsoft Edge, WebGL2/SwiftShader): application reaches `phase running`; renderer reports WebGL2 + Three.js r187; Rapier initializes; persistence reports `ready (no saved data)`; the placeholder scene and falling physics cube render correctly.
+
 Exit criteria:
 
-- Application starts successfully.
-- Renderer and physics initialize correctly.
-- Input actions can be read through the abstraction layer.
-- Settings can be loaded and saved.
-- IndexedDB persistence works.
-- Resource loading reports failures safely.
+- [x] Application starts successfully.
+- [x] Renderer and physics initialize correctly.
+- [x] Input actions can be read through the abstraction layer.
+- [ ] Settings can be loaded and saved (repository exists; Settings System not implemented).
+- [x] IndexedDB persistence works at the storage layer.
+- [ ] Resource loading reports failures safely (asset loading not implemented yet).
+
+Remaining Phase 1 work:
+
+- Settings System foundation: definitions registry, defaults, validation, snapshot, runtime application adapters.
+- Localization system foundation: language registry and translation resource loading.
+- Resource loading and non-fatal error reporting for procedural assets.
+- Audio manager foundation (deferred until a user gesture is available).
+- Replace the temporary debug sandbox when the player controller arrives (Phase 2).
+
+Known notes:
+
+- The production bundle is currently a single ~4.9 MB chunk (Three.js + Rapier WASM). Code splitting is deferred until the gameplay modules exist; the build warning is expected and not a blocker for the prototype.
+- The `StatusOverlay` and `PhysicsDebugSandbox` are temporary Phase 1 diagnostics and must not become permanent gameplay coupling.
 
 ### Phase 2 — First-Person Player
 

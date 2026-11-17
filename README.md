@@ -202,9 +202,11 @@ Prefer a working and verified gameplay foundation over broad but incomplete impl
 
 Glassline currently has a structured specification covering its intended architecture, gameplay systems, and initial release scope.
 
-The specification baseline was reconciled on 2026-11-17: cross-document ownership conflicts were resolved, deferred mechanics were removed from active contracts, and duplicated rules were consolidated. No known contradictory instructions remain in the documentation set.
+The specification baseline was reconciled on 2026-11-17: cross-document ownership conflicts were resolved, deferred mechanics were removed from active contracts, and duplicated rules were consolidated.
 
-The presence of a specification does not mean that its system has been implemented. The repository currently contains documentation only; `package.json` and the source tree are not initialized.
+The repository foundation (**Phase 0**) is complete: Vite + TypeScript (strict) + Three.js + Rapier project scaffold, validation commands, and a unit-test runner are in place.
+
+**Phase 1** (application runtime) is in progress: application lifecycle, fixed 60 Hz game loop, WebGL2 renderer, Rapier physics world, input abstraction, and the IndexedDB save foundation are implemented and smoke-verified in a browser. Settings, localization, and audio systems are not implemented yet.
 
 For actual implementation, integration, and verification status, see:
 
@@ -272,6 +274,46 @@ The `docs/` directory is the primary source of implementation specifications.
 | Document | Description |
 |---|---|
 | [`IMPLEMENTATION_STATUS.md`](docs/IMPLEMENTATION_STATUS.md) | Implementation, integration, and verification tracking |
+
+---
+
+## Getting Started
+
+### Requirements
+
+- Node.js **22.12** or newer (Node 22 LTS recommended).
+- npm **10** or newer.
+- A desktop browser with WebGL2 for runtime verification.
+
+### Install
+
+```bash
+npm install
+```
+
+### Commands
+
+| Command | Purpose |
+|---|---|
+| `npm run dev` | Start the Vite development server at `http://127.0.0.1:5173` |
+| `npm run build` | Typecheck and build the production bundle into `dist/` |
+| `npm run preview` | Serve the production build locally |
+| `npm run typecheck` | Strict TypeScript check without emitting files |
+| `npm test` | Run the unit test suite once |
+| `npm run test:watch` | Run unit tests in watch mode |
+| `npm run validate` | Full validation: typecheck → tests → production build |
+
+Do not report a task as complete based on `npm run build` alone. Runtime behavior must be checked in a browser when the change affects rendering, physics, input, or persistence.
+
+### Current Runtime State (Phase 1)
+
+Running `npm run dev` opens a placeholder 3D scene with a falling physics cube and a development status overlay showing frame rate, fixed stepping, renderer/physics/storage status, and input state.
+
+- Click the canvas to capture the mouse (pointer lock).
+- `Esc` releases pointer lock.
+- `WASD` move, `Space` jump, `Ctrl` crouch/slide, `Shift` sprint, `E` interact, `R` restart, `Esc` pause.
+
+The overlay is a temporary diagnostic, not the HUD. The placeholder scene and debug cube are removed when the player controller and level runtime arrive (Phase 2–4).
 
 ---
 
