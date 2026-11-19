@@ -242,26 +242,33 @@ describe("Prologue lower-route traversal", () => {
 
     expect(turn.z).toBeLessThan(-129.5);
 
-    let barrierJumped = false;
+    let firstBarrierJumped = false;
+    let secondBarrierJumped = false;
     let barrierHoldFrames = 0;
 
     for (let index = 0; index < 900; index += 1) {
       const position = harness.player.getPosition();
-      const jump =
-        !barrierJumped &&
+      const grounded = harness.player.getMovementSnapshot().grounded;
+      const jumpFirst = !firstBarrierJumped && position.x < 39.8 && position.x > 38.6 && grounded;
+      const jumpSecond =
+        firstBarrierJumped &&
+        !secondBarrierJumped &&
         position.x < 34.8 &&
         position.x > 33.6 &&
-        harness.player.getMovementSnapshot().grounded;
+        grounded;
 
-      if (jump) {
-        barrierJumped = true;
+      if (jumpFirst) {
+        firstBarrierJumped = true;
+        barrierHoldFrames = 14;
+      } else if (jumpSecond) {
+        secondBarrierJumped = true;
         barrierHoldFrames = 14;
       }
 
       harness.player.fixedUpdate(
         input({
           move: { x: 0, y: 1 },
-          jumpPressed: jump,
+          jumpPressed: jumpFirst || jumpSecond,
           jumpHeld: barrierHoldFrames > 0,
         }),
         Math.PI / 2,
@@ -277,7 +284,8 @@ describe("Prologue lower-route traversal", () => {
 
     const back = harness.player.getPosition();
 
-    expect(barrierJumped).toBe(true);
+    expect(firstBarrierJumped).toBe(true);
+    expect(secondBarrierJumped).toBe(true);
     expect(back.x).toBeLessThan(12);
     expect(back.y).toBeGreaterThan(4.8);
   });

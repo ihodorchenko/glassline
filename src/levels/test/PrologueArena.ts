@@ -356,6 +356,13 @@ export const PROLOGUE_ARENA_BOXES: readonly PrologueArenaBox[] = [
     material: "metal",
   },
   {
+    id: "geo_catwalk_barrier_west",
+    position: { x: 39, y: 5.45, z: -130.8 },
+    size: { x: 0.5, y: 0.5, z: 3.2 },
+    surfaceId: "surface_boundary",
+    material: "metal",
+  },
+  {
     id: "geo_catwalk_turn",
     position: { x: 51, y: 5.1, z: -126.8 },
     size: { x: 10, y: 0.2, z: 11.2 },

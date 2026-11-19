@@ -2202,6 +2202,53 @@ path.
 2. Physical bypass tradeoff.
 3. Human review of video/audio.
 
+---
+
+## Round 35 — physical bypass tradeoff (2026-11-19)
+
+### Scope
+
+The lower bypass existed but the direct line only had one low barrier, so the
+bypass had no clear purpose. This round adds a second return barrier and makes
+the two lines legible.
+
+### What changed
+
+- **Second barrier** at x=39 on the return catwalk (0.5×0.5×3.2 m), alongside
+  the existing x=34 barrier; both get red hazard plates.
+- **Line choice:** direct = jump x=39, then x=34. Bypass = jump x=39, drop into
+  the x=30–38 opening, run under x=34, climb steps back at x=30. One jump plus
+  drop/climb vs two jumps.
+- **Test:** catwalk traversal now scripts both jumps; bypass-step test remains
+  unchanged/green.
+- No checkpoint/route-length/audio changes; start 13/13 unaffected.
+
+### Verification
+
+- `npm run validate`: typecheck, Biome, **276 tests in 36 files**, build.
+- Prologue start still 13/13; performance **60.3 fps**.
+- Captures: barrier line and lower bypass.
+
+### Evidence
+
+| View | Image |
+|---|---|
+| Two-jump line | ![Barriers](evidence/visual/round-35/barriers.jpg) |
+| Lower bypass | ![Bypass](evidence/visual/round-35/bypass.jpg) |
+
+### Honest gaps
+
+- The tradeoff is geometric, not measured: no timed A/B proof that bypass is
+  faster; skilled players may still prefer two jumps.
+- Barriers are close and may feel gamey; bypass still requires jumping x=39.
+- Human listening, clipped highlights, and final motion/menu calibration remain.
+
+### Next
+
+1. Measure direct vs bypass traversal time and tune spacing.
+2. Human playtest of the choice.
+3. Continue highlight/motion calibration.
+
 ## Round log
 
 | Round | Date | Focus | Outcome |

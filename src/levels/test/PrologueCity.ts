@@ -1420,6 +1420,17 @@ function addCatwalk(builder: CityBuilder): void {
     receiveShadow: false,
   });
 
+  // Hazard plates on both return barriers make the two-jump line readable
+  // against the lower bypass.
+  for (const x of [39, 34]) {
+    builder.box(x + 0.27, 5.45, -130.8, 0.03, 0.36, 3.0, {
+      material: "red",
+      emissive: 0xc0262d,
+      emissiveIntensity: 0.35,
+      castShadow: false,
+    });
+  }
+
   // A distant hero skyline closes the open turn view without forming a wall.
   addBuilding(builder, 50, -300, 26, 18, {
     material: "glass-far",
