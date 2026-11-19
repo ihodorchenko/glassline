@@ -1,0 +1,25 @@
+{
+  "profile": "live-high-route-recording",
+  "wav": "docs/evidence/audio/round-28/live-high-route.wav",
+  "values": {
+    "durationSeconds": 6.315827664399093,
+    "sampleRate": 44100,
+    "peak": 0.656646728515625,
+    "peak_db": -3.653364301936061,
+    "rms": 0.08506245830277545,
+    "rms_db": -21.40524140683378,
+    "short_term_range": 0.15322076976108434,
+    "lufs": -22.152731451044147,
+    "low_share": 0.862883806122309,
+    "mid_share": 0.10330165717950779,
+    "high_share": 0.0338145366981833,
+    "per_second_rms_db": [-22.0, -21.6, -21.8, -22.0, -21.9, -21.9, -16.9],
+    "per_second_range_db": 5.1
+  },
+  "source": {
+    "sampleRate": 44100,
+    "durationSeconds": 6.32,
+    "channels": 2
+  },
+  "note": "Live in-engine recording from headless Edge: high-roof wind, metal footsteps, landing, music. No human listening verdict."
+}

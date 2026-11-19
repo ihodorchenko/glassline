@@ -96,6 +96,10 @@ Probe the live master output through an `AnalyserNode` after a trusted click:
 
 ```bash
 npm run audio:probe -- --json docs/evidence/audio/round-2/live-probe.json
+
+# Record an actual in-engine WAV (high roof, metal steps, landing, wind, music).
+npm run audio:probe -- --record docs/evidence/audio/round-28/live-high-route.wav \
+  --seconds 6 --json docs/evidence/audio/round-28/live-high-route.json
 ```
 
 The probe triggers a deterministic footstep/landing sequence, then reports

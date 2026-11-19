@@ -8,11 +8,12 @@
  *   node tools/capture/audio-probe.mjs [--port 9222] [--json report.json]
  */
 
-import { writeFile } from "node:fs/promises";
+import { mkdir, writeFile } from "node:fs/promises";
+import { dirname } from "node:path";
 import { setTimeout as delay } from "node:timers/promises";
 
 function parseArgs(argv) {
-  const args = { port: 9222, json: null, highRoute: false };
+  const args = { port: 9222, json: null, highRoute: false, record: null, seconds: 6 };
 
   for (let index = 0; index < argv.length; index += 1) {
     const flag = argv[index];
@@ -24,9 +25,14 @@ function parseArgs(argv) {
       args.json = value();
     } else if (flag === "--high-route") {
       args.highRoute = true;
+    } else if (flag === "--record") {
+      args.record = value();
+      args.highRoute = true;
+    } else if (flag === "--seconds") {
+      args.seconds = Number(value());
     } else if (flag === "--help") {
       console.log(
-        "Usage: node tools/capture/audio-probe.mjs [--port 9222] [--json report.json] [--high-route]",
+        "Usage: node tools/capture/audio-probe.mjs [--port 9222] [--json report.json] [--high-route] [--record file.wav] [--seconds 6]",
       );
       process.exit(0);
     } else {
@@ -162,8 +168,121 @@ async function main() {
   }
 
   const result = await session.evaluate(
-    args.highRoute
+    args.record
       ? `(async () => {
+          const app = window.__glassline;
+          const audio = app.audioManager;
+          const context = audio.context;
+          const source = audio.limiter ?? audio.mixTrim;
+          const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
+          if (!context || !source || audio.state !== "running") {
+            return { error: "Audio is not running after the trusted click." };
+          }
+
+          app.player.teleportTo({ x: 0, y: 6.1, z: -121 });
+          app.cameraSystem.resetForRespawn(0);
+          await wait(1500);
+
+          const chunks = [];
+          const processor = context.createScriptProcessor(4096, 2, 2);
+          const sink = context.createGain();
+
+          sink.gain.value = 0;
+          processor.onaudioprocess = (event) => {
+            const left = event.inputBuffer.getChannelData(0);
+            const right =
+              event.inputBuffer.numberOfChannels > 1
+                ? event.inputBuffer.getChannelData(1)
+                : left;
+
+            chunks.push([new Float32Array(left), new Float32Array(right)]);
+          };
+          source.connect(processor);
+          processor.connect(sink);
+          sink.connect(context.destination);
+
+          const steps = setInterval(() => {
+            audio.playFootstep(0.9, "metal");
+          }, 320);
+
+          await wait(${Math.max(1, args.seconds) * 1000});
+          clearInterval(steps);
+          audio.playLanding(10, "metal");
+          await wait(350);
+
+          processor.onaudioprocess = null;
+          source.disconnect(processor);
+          processor.disconnect();
+          sink.disconnect();
+
+          const frameCount = chunks.reduce((total, [left]) => total + left.length, 0);
+          const left = new Float32Array(frameCount);
+          const right = new Float32Array(frameCount);
+          let offset = 0;
+
+          for (const [l, r] of chunks) {
+            left.set(l, offset);
+            right.set(r, offset);
+            offset += l.length;
+          }
+
+          const buffer = new ArrayBuffer(44 + frameCount * 4);
+          const view = new DataView(buffer);
+          const writeString = (position, value) => {
+            for (let index = 0; index < value.length; index += 1) {
+              view.setUint8(position + index, value.charCodeAt(index));
+            }
+          };
+
+          writeString(0, "RIFF");
+          view.setUint32(4, 36 + frameCount * 4, true);
+          writeString(8, "WAVE");
+          writeString(12, "fmt ");
+          view.setUint32(16, 16, true);
+          view.setUint16(20, 1, true);
+          view.setUint16(22, 2, true);
+          view.setUint32(24, context.sampleRate, true);
+          view.setUint32(28, context.sampleRate * 4, true);
+          view.setUint16(32, 4, true);
+          view.setUint16(34, 16, true);
+          writeString(36, "data");
+          view.setUint32(40, frameCount * 4, true);
+
+          let peak = 0;
+          let sum = 0;
+          let dataOffset = 44;
+
+          for (let frame = 0; frame < frameCount; frame += 1) {
+            const l = left[frame] ?? 0;
+            const r = right[frame] ?? 0;
+
+            peak = Math.max(peak, Math.abs(l), Math.abs(r));
+            sum += (l * l + r * r) * 0.5;
+            view.setInt16(dataOffset, Math.max(-1, Math.min(1, l)) * 0x7fff, true);
+            view.setInt16(dataOffset + 2, Math.max(-1, Math.min(1, r)) * 0x7fff, true);
+            dataOffset += 4;
+          }
+
+          const bytes = new Uint8Array(buffer);
+          let binary = "";
+
+          for (let index = 0; index < bytes.length; index += 0x8000) {
+            binary += String.fromCharCode(...bytes.subarray(index, index + 0x8000));
+          }
+
+          return {
+            wavBase64: btoa(binary),
+            sampleRate: context.sampleRate,
+            durationSeconds: frameCount / context.sampleRate,
+            peak,
+            rms: Math.sqrt(sum / Math.max(1, frameCount)),
+            snapshot: audio.getDebugSnapshot(),
+            position: app.player.getPosition(),
+          };
+        })()`
+      : args.highRoute
+        ? `(async () => {
           const app = window.__glassline;
           const audio = app.audioManager;
           const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
@@ -203,7 +322,7 @@ async function main() {
             position: app.player.getPosition(),
           };
         })()`
-      : `(async () => {
+        : `(async () => {
           const app = window.__glassline;
           const audio = app.audioManager;
 
@@ -228,8 +347,22 @@ async function main() {
     true,
   );
 
+  if (args.record) {
+    if (!result.wavBase64) {
+      throw new Error("Live recording did not return WAV data.");
+    }
+
+    await mkdir(dirname(args.record), { recursive: true });
+    await writeFile(args.record, Buffer.from(result.wavBase64, "base64"));
+    delete result.wavBase64;
+  }
+
   const report = {
-    profile: args.highRoute ? "live-high-route" : "live-prologue",
+    profile: args.record
+      ? "live-high-route-recording"
+      : args.highRoute
+        ? "live-high-route"
+        : "live-prologue",
     ...result,
     errors: session.errors,
   };

@@ -83,6 +83,7 @@ The finale has its own deterministic profile: altitude wind with a lull/gust,
 metal catwalk footsteps, jump/landing hits, and a finish impact. It measures 5/5
 in its custom bands while the prologue mix keeps 5/5 reference targets.
 
+[Live in-engine high-route recording](docs/evidence/audio/round-28/live-high-route.wav) ·
 [High-route render](docs/evidence/audio/round-15/high-route.wav) ·
 [metrics](docs/evidence/audio/round-15/metrics.json) ·
 ![High-route waveform](docs/evidence/audio/round-15/high-route-waveform.png)

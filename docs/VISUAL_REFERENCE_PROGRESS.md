@@ -1867,6 +1867,57 @@ when the accessibility setting is on.
 3. Human listening and final camera/menu calibration.
 4. Prologue highlight recovery without losing 13/13.
 
+---
+
+## Round 28 — live in-engine audio recording (2026-11-19)
+
+### Scope
+
+Rounds 15–16 measured synthesized and analyser-only audio. This round records an
+actual in-engine stereo WAV from the high route, so the mix can finally be
+listened to outside the browser.
+
+### What changed
+
+- **Recording mode:** `audio-probe.mjs --record <file.wav> [--seconds N]` taps the
+  post-limiter master with a ScriptProcessor, records 16-bit stereo WAV, then
+  disconnects. The player is teleported to the high finish roof; metal footsteps
+  every 320 ms, a landing, altitude wind, and music are captured live.
+- **Evidence:** 6.32 s / 44100 Hz / stereo WAV (`live-high-route.wav`), waveform,
+  analyser metrics and probe snapshot.
+- **Measured:** peak −3.65 dBFS, LUFS ≈ −22.15, low share 0.863, high share 0.034,
+  per-second RMS range 5.1 dB (dense short clip).
+- **No game/mix/route changes**; tooling only.
+
+### Verification
+
+- `npm run validate`: typecheck, Biome, **275 tests in 36 files**, build.
+- Recording is a valid PCM WAV; probe errors: none.
+- Prologue/offline metrics remain unchanged.
+
+### Evidence
+
+- [`live-high-route.wav`](evidence/audio/round-28/live-high-route.wav)
+- [`live-high-route-waveform.png`](evidence/audio/round-28/live-high-route-waveform.png)
+- [`metrics.json`](evidence/audio/round-28/metrics.json)
+- [`README.md`](evidence/audio/round-28/README.md)
+
+### Honest gaps
+
+- The clip is dense/loud (footsteps every 320 ms) and only 6 s; it is not a full
+  route mix.
+- No human listening verdict yet; loudness targets are prologue-oriented and not
+  applied to this live clip.
+- The ScriptProcessor tap is a diagnostic path, not production audio capture.
+- Bypass tradeoff, clipped highlights, and final motion/menu calibration remain.
+
+### Next
+
+1. Record a longer full-route live mix at normal footstep cadence.
+2. Human listening pass on live + offline profiles.
+3. Balance the high-route loudness against the prologue mix.
+4. Final visual/motion calibration.
+
 ## Round log
 
 | Round | Date | Focus | Outcome |
