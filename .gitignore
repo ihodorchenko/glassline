@@ -17,3 +17,6 @@ __pycache__/
 .DS_Store
 *.local
 ref/
+
+# Local release bundle (generated, 4.4 MB)
+glassline-final-build.zip
