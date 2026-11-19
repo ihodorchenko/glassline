@@ -63,9 +63,9 @@ async function createHarness(spawn: { x: number; y: number; z: number }): Promis
   return harness;
 }
 
-function step(harness: Harness, sample: MovementInputSample, steps: number): void {
+function step(harness: Harness, sample: MovementInputSample, steps: number, yaw = 0): void {
   for (let index = 0; index < steps; index += 1) {
-    harness.player.fixedUpdate(sample, 0, DT);
+    harness.player.fixedUpdate(sample, yaw, DT);
     harness.physics.step();
   }
 }
@@ -184,6 +184,52 @@ describe("Prologue lower-route traversal", () => {
 
     expect(landed).toBe(true);
     expect(position.y).toBeGreaterThan(4.8);
+  });
+
+  it("walks the high catwalk out, around the turn, and back", async () => {
+    const harness = await createHarness({ x: 0, y: 6.1, z: -122.8 });
+
+    step(harness, input(), 60);
+    for (let index = 0; index < 700; index += 1) {
+      harness.player.fixedUpdate(input({ move: { x: 0, y: 1 } }), -Math.PI / 2, DT);
+      harness.physics.step();
+
+      if (harness.player.getPosition().x > 47) {
+        break;
+      }
+    }
+
+    const outbound = harness.player.getPosition();
+
+    expect(outbound.x).toBeGreaterThan(46);
+    expect(outbound.y).toBeGreaterThan(4.8);
+
+    for (let index = 0; index < 160; index += 1) {
+      harness.player.fixedUpdate(input({ move: { x: 0, y: 1 } }), 0, DT);
+      harness.physics.step();
+
+      if (harness.player.getPosition().z < -130.6) {
+        break;
+      }
+    }
+
+    const turn = harness.player.getPosition();
+
+    expect(turn.z).toBeLessThan(-129.5);
+
+    for (let index = 0; index < 900; index += 1) {
+      harness.player.fixedUpdate(input({ move: { x: 0, y: 1 } }), Math.PI / 2, DT);
+      harness.physics.step();
+
+      if (harness.player.getPosition().x < 10) {
+        break;
+      }
+    }
+
+    const back = harness.player.getPosition();
+
+    expect(back.x).toBeLessThan(12);
+    expect(back.y).toBeGreaterThan(4.8);
   });
 
   it("crosses the bridge and reaches the finish roof", async () => {

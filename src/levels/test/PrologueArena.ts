@@ -326,6 +326,41 @@ export const PROLOGUE_ARENA_BOXES: readonly PrologueArenaBox[] = [
       material: "roof" as const,
     };
   }),
+  // High catwalk U-turn over the city: out, east turn, and back to the roof.
+  {
+    id: "geo_catwalk_out",
+    position: { x: 27, y: 5.1, z: -122.8 },
+    size: { x: 38, y: 0.2, z: 3.2 },
+    surfaceId: "surface_concrete",
+    material: "roof",
+  },
+  {
+    id: "geo_catwalk_return",
+    position: { x: 32, y: 5.1, z: -130.8 },
+    size: { x: 48, y: 0.2, z: 3.2 },
+    surfaceId: "surface_concrete",
+    material: "roof",
+  },
+  {
+    id: "geo_catwalk_turn",
+    position: { x: 51, y: 5.1, z: -126.8 },
+    size: { x: 10, y: 0.2, z: 11.2 },
+    surfaceId: "surface_concrete",
+    material: "roof",
+  },
+  ...[
+    ["geo_catwalk_rail_out_north", 27, 5.75, -121.2, 38, 1.1, 0.16],
+    ["geo_catwalk_rail_out_south", 27, 5.75, -124.4, 38, 1.1, 0.16],
+    ["geo_catwalk_rail_return_north", 27, 5.75, -129.2, 38, 1.1, 0.16],
+    ["geo_catwalk_rail_return_south", 32, 5.75, -132.4, 48, 1.1, 0.16],
+    ["geo_catwalk_rail_turn_east", 56.1, 5.75, -126.8, 0.16, 1.1, 11.2],
+  ].map(([id, x, y, z, sx, sy, sz]) => ({
+    id: id as string,
+    position: { x: x as number, y: y as number, z: z as number },
+    size: { x: sx as number, y: sy as number, z: sz as number },
+    surfaceId: "surface_boundary",
+    material: "glass" as const,
+  })),
   {
     id: "geo_final_deck",
     position: { x: 0, y: 5.1, z: -127.15 },
@@ -341,9 +376,23 @@ export const PROLOGUE_ARENA_BOXES: readonly PrologueArenaBox[] = [
     material: "facade",
   },
   {
-    id: "geo_final_parapet_east",
-    position: { x: 8.2, y: 5.7, z: -127.15 },
-    size: { x: PARAPET_THICKNESS, y: 1, z: 15.7 },
+    id: "geo_final_parapet_east_north",
+    position: { x: 8.2, y: 5.7, z: -120.25 },
+    size: { x: PARAPET_THICKNESS, y: 1, z: 1.9 },
+    surfaceId: "surface_boundary",
+    material: "facade",
+  },
+  {
+    id: "geo_final_parapet_east_middle",
+    position: { x: 8.2, y: 5.7, z: -126.8 },
+    size: { x: PARAPET_THICKNESS, y: 1, z: 4.8 },
+    surfaceId: "surface_boundary",
+    material: "facade",
+  },
+  {
+    id: "geo_final_parapet_east_south",
+    position: { x: 8.2, y: 5.7, z: -133.7 },
+    size: { x: PARAPET_THICKNESS, y: 1, z: 2.6 },
     surfaceId: "surface_boundary",
     material: "facade",
   },
@@ -371,14 +420,14 @@ export const PROLOGUE_ARENA_BOXES: readonly PrologueArenaBox[] = [
   // Interaction terminal and finish marker on the high roof.
   {
     id: "geo_terminal_finish",
-    position: { x: 2.5, y: 5.82, z: -128 },
+    position: { x: 2.5, y: 5.82, z: -131.5 },
     size: { x: 0.6, y: 1.2, z: 0.6 },
     surfaceId: "surface_terminal",
     material: "metal",
   },
   {
     id: "geo_finish_marker",
-    position: { x: 6, y: 6.3, z: -128 },
+    position: { x: 6, y: 6.3, z: -131.5 },
     size: { x: 0.5, y: 2.2, z: 0.5 },
     surfaceId: "surface_marker",
     material: "red",

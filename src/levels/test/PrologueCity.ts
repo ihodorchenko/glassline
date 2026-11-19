@@ -828,7 +828,7 @@ function addNearCity(builder: CityBuilder): void {
     roofProps: true,
     seed: 31,
   });
-  addBuilding(builder, 30, -96, 28, 26, {
+  addBuilding(builder, 22, -96, 20, 26, {
     material: "facade",
     top: 54,
     facing: "south",
@@ -1164,8 +1164,8 @@ function addFinaleScaffold(builder: CityBuilder): void {
     }
   }
 
-  builder.box(0, 5.82, -132.5, 2.2, 1.0, 1.6, { material: "metal" });
-  builder.box(0, 6.36, -132.5, 2.0, 0.1, 1.4, { material: "dark-metal" });
+  builder.box(-5.6, 5.82, -133.4, 2.2, 1.0, 1.6, { material: "metal" });
+  builder.box(-5.6, 6.36, -133.4, 2.0, 0.1, 1.4, { material: "dark-metal" });
   builder.box(-6.6, 6.2, -126.8, 0.16, 2.0, 0.16, {
     material: "cool-light",
     emissive: 0xcfe8ff,
@@ -1177,18 +1177,76 @@ function addFinaleScaffold(builder: CityBuilder): void {
   builder.box(0, -30.1, -108, 64.4, 0.3, 82.4, { material: "concrete" });
 }
 
-function addBillboards(builder: CityBuilder): void {
-  // Finish-roof sign, offset from the gate's centre line on the high roof.
-  builder.box(6.4, 7.8, -129.2, 3.8, 2.6, 0.36, { material: "white", castShadow: true });
-  builder.box(6.4, 7.8, -128.98, 3.4, 2.2, 0.1, { material: "white" });
-  builder.box(6.4, 7.9, -128.9, 2.5, 0.26, 0.05, { material: "metal" });
-  builder.box(6.4, 7.05, -128.9, 2.5, 0.12, 0.04, { material: "red" });
-
-  for (const x of [5.0, 7.8]) {
-    builder.box(x, 5.8, -129.4, 0.24, 3.2, 0.24, { material: "metal" });
+function addCatwalk(builder: CityBuilder): void {
+  // Red route paint along the outbound and return spans.
+  for (let x = 10; x <= 44; x += 2.4) {
+    builder.box(x, 5.218, -122.8, 1.1, 0.02, 0.14, {
+      material: "red",
+      castShadow: false,
+      receiveShadow: false,
+    });
+    builder.box(x, 5.218, -130.8, 1.1, 0.02, 0.14, {
+      material: "red",
+      castShadow: false,
+      receiveShadow: false,
+    });
   }
 
-  builder.plane(6.4, 7.8, -128.86, 3.4, 2.2, 0, {
+  // Support masts down the catwalk and cables back to the tower.
+  for (const x of [12, 26, 40, 52]) {
+    for (const z of [-122.8, -130.8]) {
+      builder.box(x, -12, z, 0.32, 35, 0.32, { material: "metal" });
+      builder.box(x, 5.4, z, 0.5, 0.5, 0.5, { material: "red" });
+    }
+  }
+
+  for (const x of [20, 35, 50]) {
+    builder.box(x, 9.2, -126.8, 0.1, 0.1, 8.4, { material: "metal" });
+    builder.box(x, 12.4, -126.8, 0.1, 0.1, 8.4, {
+      material: "metal",
+      rotationX: 0.5,
+    });
+  }
+
+  for (const x of [14, 28, 42]) {
+    builder.box(x, 5.5, -126.8, 1.2, 0.06, 0.06, {
+      material: "cool-light",
+      emissive: 0xcfe8ff,
+      emissiveIntensity: 0.7,
+      castShadow: false,
+    });
+  }
+
+  // The turn marker faces the player on the outbound span.
+  builder.plane(51.92, 6.55, -126.8, 2.2, 0.7, -Math.PI / 2, {
+    text: "07 / TURN",
+    background: 0x14191d,
+    textColor: 0xf4f1e9,
+    accentColor: 0xd52e36,
+  });
+
+  builder.box(49, 6.3, -129.0, 2.8, 0.1, 0.1, { material: "red" });
+
+  // A lower city roof under the catwalk keeps the drop readable.
+  builder.box(32, -24, -126.8, 58, 0.8, 30, {
+    material: "roof",
+    castShadow: false,
+  });
+  builder.box(32, -23.6, -126.8, 58.4, 0.3, 30.4, { material: "concrete" });
+
+  for (const x of [14, 30, 46]) {
+    builder.box(x, -22.8, -126.8, 2.2, 1.4, 1.8, { material: "metal" });
+    builder.box(x, -22.05, -126.8, 2.0, 0.1, 1.6, { material: "dark-metal" });
+  }
+}
+
+function addBillboards(builder: CityBuilder): void {
+  // Finish banner centred in the gate so it reads on approach from the
+  // catwalk return.
+  builder.box(0, 8.2, -132.9, 5.0, 1.3, 0.32, { material: "white", castShadow: true });
+  builder.box(0, 8.2, -132.72, 4.6, 1.1, 0.08, { material: "white" });
+
+  builder.plane(0, 8.2, -132.62, 4.4, 1.0, 0, {
     text: "FINISH",
     background: 0x14191d,
     textColor: 0xf4f1e9,
@@ -1209,6 +1267,11 @@ function addFarSkyline(builder: CityBuilder): void {
     const top = 24 + random() * 120;
     const material: LevelMaterialType =
       random() > 0.62 ? "glass-far" : random() > 0.5 ? "concrete" : "facade";
+    const crowdsCatwalkTurn = x > 30 && x < 95 && z < -112 && z > -175;
+
+    if (crowdsCatwalkTurn) {
+      continue;
+    }
 
     builder.box(x, (top + GROUND_Y) / 2, z, width, top - GROUND_Y, depth, {
       material,
@@ -1303,7 +1366,8 @@ export function createPrologueCityDecorations(
   addMiscRoofProps(builder);
   addLowerZone(builder);
   addFinaleScaffold(builder);
-  addFinishArea(builder, -130, 5.2);
+  addCatwalk(builder);
+  addFinishArea(builder, -133, 5.2);
   addCheckpointBeacons(builder);
 
   addNearCity(builder);

@@ -102,9 +102,9 @@ Only `Verified` means that the applicable acceptance criteria have been checked 
 | Statistics | Defined | Implemented | Integrated | Verified |
 | Reference Presentation | Defined | In Progress | Integrated | Partially Verified |
 
-**Current phase:** Phases 0–7 and Phase 8 (stabilization) are complete. A post-roadmap **Release Polish** pass has also been completed: initial release content presentation, HUD tutorial guidance, atmosphere, and procedural ambience/footsteps. A **Reference Presentation Pass** is in progress to bring design, graphics, and sound up to the *Mirror's Edge* prologue reference. Round 1 (HDR rendering, sky, materials, rooftop city, first-person arms) is complete and measured. Round 2 (procedural audio architecture, surface-aware movement, parkour set, ambience, score, radio) is implemented and measured. Round 3 extends the Prologue from a 25 m flat corridor to a ~66 m route with a roof drop, sprint gap, stair climb, narrow skybridge, and finish roof. Round 4 applies the reference's editorial UI language (paper panels, ink type, red rules, minimal HUD), canvas signage (`RUN`, section indices, `FINISH`), and a speed-reactive radial blur. Round 5 adds a visual-only Prologue city vignette behind the paper menu, shown only outside gameplay. Round 6 extends the playable route with a final scaffold ascent: a beam, eight rising jump platforms, and a high finish roof, bringing the route to ~136 m with 8.2 m vertical range. A human listening pass, the remaining route distance toward 180–220 m, and further world/motion detail remain.
+**Current phase:** Phases 0–7 and Phase 8 (stabilization) are complete. A post-roadmap **Release Polish** pass has also been completed: initial release content presentation, HUD tutorial guidance, atmosphere, and procedural ambience/footsteps. A **Reference Presentation Pass** is in progress to bring design, graphics, and sound up to the *Mirror's Edge* prologue reference. Round 1 (HDR rendering, sky, materials, rooftop city, first-person arms) is complete and measured. Round 2 (procedural audio architecture, surface-aware movement, parkour set, ambience, score, radio) is implemented and measured. Round 3 extends the Prologue from a 25 m flat corridor to a ~66 m route with a roof drop, sprint gap, stair climb, narrow skybridge, and finish roof. Round 4 applies the reference's editorial UI language (paper panels, ink type, red rules, minimal HUD), canvas signage (`RUN`, section indices, `FINISH`), and a speed-reactive radial blur. Round 5 adds a visual-only Prologue city vignette behind the paper menu, shown only outside gameplay. Round 6 extends the playable route with a final scaffold ascent: a beam, eight rising jump platforms, and a high finish roof. Round 7 adds an exposed high catwalk U-turn before the finish gate, bringing the path to ~220 m with 8.2 m vertical range in the 180–220 m band. A human listening pass, mid-route safety/variation, and final world/motion polish remain.
 
-**Implementation readiness:** The game is feature-complete for the initial release scope, stabilized, and visually/audio-polished: core gameplay, Training/Prologue sessions, Speedrun validation and local records, persistent progression/achievements/statistics/tutorial, HUD tutorial guidance, level atmosphere and ambience, UI/accessibility/localization, Save System recovery, and the fixed-step loop are implemented, integrated, and covered by automated and browser checks. The reference pass has added an HDR post pipeline, procedural sky/reflections, PBR materials, a dense Prologue city, a first-person body, a procedural audio mix with surface-aware movement, parkour loops, ambience, and a sparse score, a vertical Prologue route with drop, gap, stair climb, skybridge, and finish roof, a reference-style paper/ink UI with canvas signage and speed blur, a visual-only menu city vignette, and a high-roof scaffold finale. The measured start frame is inside the reference tolerance band on 10/13 image metrics (highlight headroom and sky area are open gaps); the offline audio demo is inside all five planned audio bands (5/5). Remaining limitations are compatibility verification depth (Firefox/Safari gameplay, actual assistive-technology testing), reference-level sound and route design, asset-level art polish, and intentionally deferred features.
+**Implementation readiness:** The game is feature-complete for the initial release scope, stabilized, and visually/audio-polished: core gameplay, Training/Prologue sessions, Speedrun validation and local records, persistent progression/achievements/statistics/tutorial, HUD tutorial guidance, level atmosphere and ambience, UI/accessibility/localization, Save System recovery, and the fixed-step loop are implemented, integrated, and covered by automated and browser checks. The reference pass has added an HDR post pipeline, procedural sky/reflections, PBR materials, a dense Prologue city, a first-person body, a procedural audio mix with surface-aware movement, parkour loops, ambience, and a sparse score, a vertical Prologue route with drop, gap, stair climb, skybridge, and finish roof, a reference-style paper/ink UI with canvas signage and speed blur, a visual-only menu city vignette, a high-roof scaffold finale, and an exposed catwalk U-turn. The measured start frame is inside the reference tolerance band on 10/13 image metrics (highlight headroom and sky area are open gaps); the offline audio demo is inside all five planned audio bands (5/5). Remaining limitations are compatibility verification depth (Firefox/Safari gameplay, actual assistive-technology testing), reference-level sound and route design, asset-level art polish, and intentionally deferred features.
 
 ### 3.1. Documentation Reconciliation (2026-11-17)
 
@@ -1205,6 +1205,45 @@ Known limitations:
 - Platforms float over a dark void; high roof is sparse; jump rhythm is
   repetitive; no mid-climb checkpoint without changing the five-ID contract.
 - Audio listening and final motion/menu calibration remain open.
+
+---
+### Reference Presentation Pass — Round 7 (2026-11-19)
+
+**Goal:** bring the route into the reference-scale 180–220 m band without
+changing the five checkpoint IDs or section order.
+
+**Status:** Implemented, physically verified, captured; ~220 m and 8.2 m
+vertical. Mid-route variation and final art/audio polish remain.
+
+Implemented:
+
+- **Catwalk U-turn:** high roof exits east onto a 3.2 m catwalk, crosses a 10 m
+  turn platform, and returns on a parallel span; blue glass rails, red route
+  paint, support masts, cables, work lights, `07 / TURN` marker.
+- **Finish gate/banner:** moved to z = −133; centered dark FINISH banner in the
+  gate; finish trigger moved with it. `cp_finish` remains on the beam.
+- **Connections:** high-roof east parapet split into three segments for the two
+  catwalk openings; turn platform/rail seams fixed so a full 180° walk is
+  possible.
+- **Environment:** near east tower moved west, far-skyline boxes near the turn
+  skipped, shadow frustum widened, lower city roof under the catwalk.
+- **Tests:** new physical catwalk walk-out/turn/return test; integration
+  waypoints include both catwalk legs and the high gate.
+
+Verification:
+
+- `npm run validate`: typecheck, Biome, **272 tests in 36 files**, build.
+- Integration passes five checkpoints and the relocated finish.
+- Browser captures at outbound/return/gate; start frame 10/13; ~60 fps.
+
+Known limitations:
+
+- Length is partly earned by an out-and-back catwalk, not another vertical
+  sequence.
+- Turn view is partly blocked by a tower wall; catwalk rails/dashes repeat for
+  ~80 m; high roof sparse.
+- No mid-climb/mid-catwalk checkpoint without changing the five-ID contract.
+- Audio listening and final motion/colour calibration remain open.
 
 ---
 

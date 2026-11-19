@@ -51,11 +51,14 @@ Reference alignment is tracked in
 
 The Prologue now descends from the white rooftop through a service roof, a
 sprint gap, a construction stair climb, a narrow skybridge, a low finish roof,
-and a final scaffold jump ascent to a high roof (~136 m route, 8.2 m vertical).
+a final scaffold jump ascent, and an exposed catwalk U-turn (~220 m route, 8.2 m
+vertical).
 
 ![Prologue lower route](docs/evidence/visual/round-3/lower.jpg)
 
 ![Final scaffold ascent](docs/evidence/visual/round-6/ascent.jpg)
+
+![High catwalk](docs/evidence/visual/round-7/mid.jpg)
 
 The shell uses a paper-and-ink editorial language: ivory panels, black uppercase
 type, hard red rules, a minimal HUD, and canvas-rendered `RUN` / section /

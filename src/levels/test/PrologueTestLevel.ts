@@ -270,7 +270,7 @@ export const PROLOGUE_TEST_LEVEL: LevelDefinition = {
       id: "trigger_finish",
       sectionId: SECTION_IDS.finish,
       type: "level-transition",
-      center: { x: 0, y: 5.9, z: -130 },
+      center: { x: 0, y: 5.9, z: -133 },
       halfExtents: { x: 4, y: 3, z: 0.7 },
       repeatable: false,
       metadata: { kind: "finish" },
@@ -387,7 +387,7 @@ export const PROLOGUE_TEST_LEVEL: LevelDefinition = {
     {
       id: "test_terminal",
       sectionId: SECTION_IDS.finish,
-      position: { x: 2.5, y: 6.1, z: -128 },
+      position: { x: 2.5, y: 6.1, z: -131.5 },
       radius: 2.5,
       prompt: "Press E to access the terminal",
       enabled: true,

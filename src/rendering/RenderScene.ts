@@ -103,8 +103,8 @@ export class RenderScene implements Disposable {
     this.sun.shadow.normalBias = 0.035;
     this.sun.shadow.camera.near = 1;
     this.sun.shadow.camera.far = 280;
-    this.sun.shadow.camera.left = -42;
-    this.sun.shadow.camera.right = 42;
+    this.sun.shadow.camera.left = -60;
+    this.sun.shadow.camera.right = 60;
     this.sun.shadow.camera.top = 92;
     this.sun.shadow.camera.bottom = -92;
     this.sun.shadow.camera.updateProjectionMatrix();

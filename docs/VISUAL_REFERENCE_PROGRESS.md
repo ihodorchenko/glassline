@@ -623,6 +623,84 @@ to the high roof.
 3. Dress the high roof and city void below the tower.
 4. Listening pass and final colour/motion calibration.
 
+---
+
+## Round 7 — high catwalk U-turn (2026-11-19)
+
+### Scope
+
+Round 6 reached a high finish roof at ~136 m. This round inserts a long exposed
+catwalk U-turn before the gate, bringing the route into the 180–220 m band while
+keeping the five checkpoint IDs and section order unchanged.
+
+### What changed
+
+- **Catwalk:** from the high roof (y = 5.2) the route exits east onto a 3.2 m
+  catwalk at z = −122.8 (x 8…46), crosses a 10 m turn platform at x 46…56, and
+  returns on a parallel catwalk at z = −130.8. Blue glass rails, red route paint,
+  support masts, overhead cables, work lights, and a `07 / TURN` marker frame the
+  span.
+- **Finish gate** moved from z = −130 to z = −133 on the same high roof; the
+  finish trigger moved with it. A centered dark **FINISH** banner now hangs in
+  the gate so it reads from the return leg. `cp_finish` remains on the beam.
+- **Connections:** the high-roof east parapet is split into three segments,
+  leaving openings for both catwalk legs; the turn platform is large enough to
+  walk a full 180° without falling through a rail seam.
+- **Environment:** near east tower moved west to open the turn frame; far-skyline
+  boxes that crowded the turn are skipped; shadow frustum widened to x ±60/z
+  ≈ −140; a lower city roof sits under the catwalk for depth.
+- **Tests:** new physical catwalk test walks out, around the turn, and back to
+  the roof; integration waypoints now include the outbound, turn, return, and
+  high-gate finish.
+
+### Route result
+
+| Metric | Round 6 | Round 7 | Plan target |
+|---|---:|---:|---:|
+| Path start → finish | ~136 m | **~220 m** | 180–220 m |
+| Vertical range | 8.2 m | 8.2 m | ≥ 8 m |
+| Explicit jumps | 10 | 10 | several |
+| Sections / checkpoints | 5 / 5 | 5 / 5 | 5 / 5 |
+
+### Verification
+
+- `npm run validate`: typecheck, Biome, **272 tests in 36 files**, build.
+- Physical catwalk test exposes the rail/seam problems fixed above: the return
+  span was widened, the turn platform extended to both legs, and the rail gap
+  opened at the turn.
+- Integration test passes all five checkpoints and the relocated finish trigger.
+- Browser captures at outbound, return, and gate; start remains 10/13 metrics.
+- Frame probe: **60.4 fps** (16.6 ms average), 1 855 instances, 29k triangles.
+
+### Evidence
+
+| View | Image |
+|---|---|
+| Outbound catwalk | ![Catwalk](evidence/visual/round-7/mid.jpg) |
+| Return catwalk | ![Return](evidence/visual/round-7/return.jpg) |
+| High finish gate | ![Finish](evidence/visual/round-7/finish.jpg) |
+| Start regression | ![Start](evidence/visual/round-7/start.jpg) |
+
+### Honest gaps
+
+- The length is reached partly by an out-and-back catwalk; it is a real authored
+  traverse, but not another vertical rooftop sequence.
+- From the turn, a blank tower wall fills much of the frame; the view corridor
+  needs a final art pass.
+- The catwalk is visually repetitive: identical rails and dashes for 80 m.
+- Falls on the catwalk respawn at the beam far below; there is no mid-climb or
+  mid-catwalk checkpoint without changing the five-ID contract.
+- High roof remains sparse, jump rhythm is uniform, and audio listening/final
+  motion calibration are still open.
+
+### Next
+
+1. Break the catwalk repetition with a mid-span variation (gap, glass floor,
+   service platform, or crane crossing).
+2. Open the turn view and dress the high roof.
+3. Add a mid-route safety beat without changing checkpoint IDs.
+4. Listening pass and final colour/motion calibration.
+
 ## Round log
 
 | Round | Date | Focus | Outcome |
@@ -633,3 +711,4 @@ to the high roof.
 | 4 | 2026-11-19 | Reference UI, canvas signage, speed blur | Paper/ink menu, minimalist HUD, RUN/section signs, radial blur; 270 tests |
 | 5 | 2026-11-19 | Menu city vignette | Visual-only prologue rooftop/city behind paper menu; hidden in gameplay; 270 tests |
 | 6 | 2026-11-19 | Final scaffold ascent | ~136 m route, 8.2 m vertical, 8 jump platforms, high finish roof; 271 tests |
+| 7 | 2026-11-19 | High catwalk U-turn | ~220 m route, 8.2 m vertical, exposed catwalk, high gate; 272 tests |

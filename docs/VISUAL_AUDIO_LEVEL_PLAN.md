@@ -11,9 +11,9 @@
 > W3 is still open — the 180–220 m / 8 m target is not met. Round 4 applies the
 > reference's paper/ink UI, canvas signage, and speed blur (part of W1/W5), and
 > Round 5 adds a visual-only prologue city vignette behind the menu. Round 6
-> extends the playable route with a final scaffold ascent (~136 m / 8.2 m
-> vertical). A listening pass, the remaining 180–220 m distance, and further
-> W1/W2 polish remain. The plan's anti-hack rule is honored: the
+> extends the playable route with a final scaffold ascent, and Round 7 adds an
+> exposed catwalk U-turn (~220 m / 8.2 m vertical), reaching the 180–220 m band.
+> Mid-route variation, listening pass, and further W1/W2 polish remain. The plan's anti-hack rule is honored: the
 > hard highlight clip was replaced by a gentler shoulder; the remaining
 > near-white/highlight gap is assigned to real lighting and content.
 
@@ -38,7 +38,7 @@ closing the gap between the current build and the reference prologue footage in
 | Renderer | WebGL2 HDR + `EffectComposer`: GTAO, UnrealBloom, custom ACES grade (vignette, grain, CA), PMREM sky IBL, PCF soft sun shadows. No volumetrics, no calibrated exposure, no quality tiers |
 | Materials | `MaterialLibrary` (procedural PBR, triplanar) landed and measured on the start frame |
 | Audio | Round 2: six-bus graph + limiter/reverb, procedural noise bank, surface-aware footsteps/landings, parkour one-shots and loops, three-layer ambience, sparse score, radio/ducking. No spatial emitters or speech |
-| Level | Prologue colliders: upper roof (y 0) → lower service roof (y −3) → 2.4 m gap → 15-step climb → 3.4 m skybridge (y −0.9) → low finish roof → beam (y −2) → eight 0.8 m jump platforms → high finish roof (y 5.2, z −130). Five sections/checkpoints preserved; ~136 m and 8.2 m vertical, still short of 180–220 m but at the ≥ 8 m vertical target |
+| Level | Prologue colliders: upper roof (y 0) → lower service roof (y −3) → 2.4 m gap → 15-step climb → 3.4 m skybridge (y −0.9) → low finish roof → beam (y −2) → eight 0.8 m jump platforms → high roof (y 5.2) → exposed catwalk U-turn (x 8…56) → high finish gate (z −133). Five sections/checkpoints preserved; ~220 m and 8.2 m vertical, inside the 180–220 m target band |
 | Reference | `ref/reference/prolog-kit`: 827 s video, 829 frames, 24 contact sheets, `shots.csv` (luma/motion per shot), `audio/segments.json` (band shares, LUFS), `study/` grouped by segment |
 
 Baseline is green, so this pass starts from a working tree, not a repair job.
