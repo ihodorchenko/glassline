@@ -18,8 +18,8 @@ const modeLabel = modeArg.toLowerCase() === "prologue" ? "Prologue" : "Training"
 const modeSlug = modeLabel.toLowerCase();
 const probeMovement = args.includes("--probe-movement");
 const probeFps = args.includes("--probe-fps");
-const viewportArg = args.find((value, index) => args[index - 1] === "--viewport") ?? "1280x720";
-const [viewportWidth, viewportHeight] = viewportArg.split("x").map(Number);
+const viewportArg = args.find((value, index) => args[index - 1] === "--viewport") ?? null;
+const [viewportWidth, viewportHeight] = (viewportArg ?? "").split("x").map(Number);
 
 await mkdir(outDir, { recursive: true });
 
@@ -89,10 +89,10 @@ async function main() {
     );
 
     await tool("navigate_to_url", { url });
-    await tool("set_viewport_size", {
-      width: Number.isFinite(viewportWidth) ? viewportWidth : 1280,
-      height: Number.isFinite(viewportHeight) ? viewportHeight : 720,
-    });
+
+    if (viewportArg && Number.isFinite(viewportWidth) && Number.isFinite(viewportHeight)) {
+      await tool("set_viewport_size", { width: viewportWidth, height: viewportHeight });
+    }
     await new Promise((resolve) => setTimeout(resolve, 3000));
     await tool("screenshot", { savePath: join(outDir, "menu.png") });
 
