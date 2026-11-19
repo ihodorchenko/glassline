@@ -1,0 +1,60 @@
+{
+  "wav": "docs/evidence/video/round-47/catwalk-uturn.wav",
+  "values": {
+    "durationSeconds": 5.851428571428571,
+    "sampleRate": 44100,
+    "peak": 0.611541748046875,
+    "peak_db": -4.271477793731268,
+    "rms": 0.09136993602921888,
+    "rms_db": -20.78393358300943,
+    "short_term_range": 0.0,
+    "lufs": -21.382844520357178,
+    "low_share": 0.847703633654952,
+    "mid_share": 0.11628929047582318,
+    "high_share": 0.036007075869224796
+  },
+  "targets": [
+    {
+      "metric": "low_share",
+      "label": "Energy < 500 Hz",
+      "value": 0.847703633654952,
+      "min": 0.85,
+      "max": 0.94,
+      "pass": false
+    },
+    {
+      "metric": "high_share",
+      "label": "Energy > 2 kHz",
+      "value": 0.036007075869224796,
+      "min": 0.03,
+      "max": 0.08,
+      "pass": true
+    },
+    {
+      "metric": "lufs",
+      "label": "Integrated loudness (approx K-weighted)",
+      "value": -21.382844520357178,
+      "min": -31.0,
+      "max": -26.0,
+      "pass": false
+    },
+    {
+      "metric": "peak_db",
+      "label": "Sample peak",
+      "value": -4.271477793731268,
+      "min": -60.0,
+      "max": -3.0,
+      "pass": true
+    },
+    {
+      "metric": "short_term_range",
+      "label": "Short-term range",
+      "value": 0.0,
+      "min": 18.0,
+      "max": 26.0,
+      "pass": false
+    }
+  ],
+  "passed": 2,
+  "total": 5
+}

@@ -41,6 +41,7 @@ function parseArgs(argv) {
     yaw: 0,
     cinematic: false,
     unlock: false,
+    waypoints: null,
   };
 
   for (let index = 0; index < argv.length; index += 1) {
@@ -89,6 +90,15 @@ function parseArgs(argv) {
         break;
       case "--unlock":
         args.unlock = true;
+        break;
+      case "--waypoints":
+        args.waypoints = value()
+          .split(";")
+          .map((pair) => {
+            const [x, z] = pair.split(",").map((entry) => Number(entry.trim()));
+            return { x, z };
+          })
+          .filter((point) => Number.isFinite(point.x) && Number.isFinite(point.z));
         break;
       case "--verbose":
         args.verbose = true;
@@ -577,6 +587,47 @@ async function main() {
   if (args.cinematic) {
     await session.evaluate(CINEMATIC_SETUP);
     await delay(args.seconds * 1000);
+  } else if (args.waypoints && args.waypoints.length > 0) {
+    const waypoints = args.waypoints;
+    await session.evaluate(
+      "window.__glassline.input.heldKeys.add('ShiftLeft'); window.__glassline.input.heldKeys.add('KeyW'); true",
+    );
+    const started = Date.now();
+    let index = 0;
+
+    while (Date.now() - started < args.seconds * 1000) {
+      const state = await session.evaluate(`(() => {
+        const app = window.__glassline;
+        return { x: app.player.getPosition().x, z: app.player.getPosition().z };
+      })()`);
+      const target = waypoints[index] ?? waypoints[waypoints.length - 1];
+
+      if (!state || !target) break;
+
+      const distance = Math.hypot(target.x - state.x, target.z - state.z);
+
+      if (distance < 1.0 && index < waypoints.length - 1) {
+        index += 1;
+        continue;
+      }
+
+      const yaw = Math.atan2(-(target.x - state.x), -(target.z - state.z));
+      await session.evaluate(`(() => {
+        const camera = window.__glassline.cameraSystem;
+        camera.yaw = ${yaw};
+        camera.pitch = 0;
+        return true;
+      })()`);
+
+      if (index === waypoints.length - 1 && distance < 1.2) break;
+
+      await delay(80);
+    }
+
+    await session.evaluate(
+      "window.__glassline.input.heldKeys.delete('KeyW'); window.__glassline.input.heldKeys.delete('ShiftLeft'); true",
+    );
+    await delay(300);
   } else {
     await session.evaluate(
       "window.__glassline.input.heldKeys.add('ShiftLeft'); window.__glassline.input.heldKeys.add('KeyW'); true",

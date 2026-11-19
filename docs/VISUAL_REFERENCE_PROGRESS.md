@@ -2683,6 +2683,40 @@ a section-unlock capture path and records a clean catwalk sprint.
 - Only 2.8 s; no turn/return/barriers; audio loud.
 - Human audio/video verdict still pending before round 60.
 
+---
+
+## Round 47 — catwalk U-turn gameplay capture (2026-11-19)
+
+### Scope
+
+Round 46's catwalk clip ended at the turn wall. This round adds waypoint steering
+and captures the full 180° turn.
+
+### What changed
+
+- `route-video --waypoints "x,z;..."` steers the held sprint by setting camera
+  yaw toward each waypoint.
+- 5.85 s clip: outbound at 8.5 m/s → catwalk turn → return toward BYPASS/barriers.
+- Live audio peak −4.27 dBFS / LUFS ≈ −21.38.
+- No game/route/visual changes.
+
+### Verification
+
+- `npm run validate`: **279 tests in 37 files**, build.
+- Video 5.85 s/1280×720/30 fps; no probe errors.
+- Start metrics unchanged 13/13.
+
+### Evidence
+
+- [`catwalk-uturn.mp4`](evidence/video/round-47/catwalk-uturn.mp4)
+- [`catwalk-uturn.wav`](evidence/video/round-47/catwalk-uturn.wav)
+- [`poster.png`](evidence/video/round-47/poster.png)
+
+### Honest gaps
+
+- Stops before barriers; no bypass/return-run; audio loud.
+- Human audio/video verdict still pending.
+
 ## Round log
 
 | Round | Date | Focus | Outcome |
