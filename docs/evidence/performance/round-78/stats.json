@@ -1,0 +1,14 @@
+{
+  "capturedAt": "2026-11-19",
+  "build": "dev, 5199",
+  "position": [0, 0.93, 6],
+  "resolution": [1592, 769],
+  "pixelRatio": 1,
+  "render": { "calls": 488, "triangles": 4023204, "points": 0, "lines": 0 },
+  "memory": { "geometries": 54, "textures": 49 },
+  "programs": 27,
+  "fps": 60.3,
+  "avgFrameMs": 16.59,
+  "p95FrameMs": 16.8,
+  "fullRun": { "completed": true, "respawns": 1, "timeMs": 30635 }
+}

@@ -3459,6 +3459,32 @@ Keep the high-key reference exposure without flattening material detail.
 
 - Still a stylized render; no human visual verdict.
 
+---
+
+## Round 78 — static merge (2026-11-19)
+
+### Scope
+
+Cut draw calls introduced by beveled per-box meshes.
+
+### What changed
+
+- Static boxes merged per material with `mergeGeometries` into one buffer per
+  material; transforms baked into geometry.
+- Colliders, surfaces, bounds and route unchanged.
+- Draw calls **1040 → 488**; geometries **111 → 54**; FPS 60.3.
+- Full run still completes; start 13/13; 280 tests.
+
+### Evidence
+
+- [`stats.json`](evidence/performance/round-78/stats.json)
+- [`start.jpg`](evidence/performance/round-78/start.jpg)
+- [PERFORMANCE_BASELINE.md](PERFORMANCE_BASELINE.md)
+
+### Honest gaps
+
+- No per-box culling now; triangles flat. Safari unmeasured.
+
 ## Round log
 
 | Round | Date | Focus | Outcome |

@@ -18,6 +18,22 @@ Method: set `threeRenderer.info.autoReset = false`, reset, wait two rAF,
 read `info`, restore. This counts **all composer/shadow passes**, not just the
 main scene, so it is an upper-bound workload indicator.
 
+## Round 78 optimization — static merge
+
+Static boxes are now merged per material into one buffer per material. Same
+start pose, same method:
+
+| Metric | Round 77 | Round 78 | Change |
+|---|---:|---:|---:|
+| Draw calls | 1040 | **488** | −53% |
+| Triangles | 3.99M | 4.02M | +0.8% |
+| Geometries | 111 | **54** | −51% |
+| FPS | 60.2 | 60.3 | — |
+
+The merged mesh loses per-box frustum culling, so triangle count stays flat, but
+the call reduction is meaningful for CPU-bound browsers. A full spawn→finish
+vehicle run still completed (1 stochastic checkpoint respawn).
+
 ## Interpretation
 
 The visual pass (bevels, two-scale triplanar, parallax, puddles, 4K shadows)

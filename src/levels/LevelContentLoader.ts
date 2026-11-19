@@ -1,6 +1,7 @@
 import RAPIER from "@dimforge/rapier3d-compat";
 import * as THREE from "three";
 import { RoundedBoxGeometry } from "three/addons/geometries/RoundedBoxGeometry.js";
+import { mergeGeometries } from "three/addons/utils/BufferGeometryUtils.js";
 
 import type { Disposable } from "../core/Disposable";
 import type { PhysicsWorld } from "../physics/PhysicsWorld";
@@ -144,6 +145,10 @@ export class BoxLevelContentLoader {
     }
 
     const surfaceDefinitions = new Map(definition.surfaces.map((surface) => [surface.id, surface]));
+    const staticBatches = new Map<
+      string,
+      { material: THREE.Material; geometries: THREE.BufferGeometry[] }
+    >();
 
     for (const geometry of definition.geometry) {
       const surfaceDefinition = surfaceDefinitions.get(geometry.surfaceId);
@@ -157,17 +162,26 @@ export class BoxLevelContentLoader {
       const material = library.get(
         geometry.material ?? SURFACE_MATERIALS[surfaceDefinition.surfaceType],
       );
-      const mesh = new THREE.Mesh(getBoxGeometry(geometry.size), material);
+      const surfaceMaterial =
+        geometry.color !== undefined ? library.getColor(geometry.color, 0.78, 0.08) : material;
+      const batchKey = surfaceMaterial.uuid;
+      let staticBatch = staticBatches.get(batchKey);
 
-      if (geometry.color !== undefined) {
-        mesh.material = library.getColor(geometry.color, 0.78, 0.08);
+      if (!staticBatch) {
+        staticBatch = { material: surfaceMaterial, geometries: [] };
+        staticBatches.set(batchKey, staticBatch);
       }
 
-      mesh.position.set(geometry.position.x, geometry.position.y, geometry.position.z);
-      mesh.castShadow = true;
-      mesh.receiveShadow = true;
-      dependencies.scene.addObject(mesh);
-      meshes.push(mesh);
+      const transformed = getBoxGeometry(geometry.size).clone();
+
+      transformed.applyMatrix4(
+        new THREE.Matrix4().makeTranslation(
+          geometry.position.x,
+          geometry.position.y,
+          geometry.position.z,
+        ),
+      );
+      staticBatch.geometries.push(transformed);
 
       const body = world.createRigidBody(
         RAPIER.RigidBodyDesc.fixed().setTranslation(
@@ -202,6 +216,29 @@ export class BoxLevelContentLoader {
       });
       dependencies.objects.register(surfaceObject(geometry, dependencies.surfaces));
     }
+
+    for (const staticBatch of staticBatches.values()) {
+      const merged = mergeGeometries(staticBatch.geometries, false);
+
+      for (const geometry of staticBatch.geometries) {
+        geometry.dispose();
+      }
+
+      staticBatch.geometries.length = 0;
+
+      if (!merged) {
+        continue;
+      }
+
+      const mesh = new THREE.Mesh(merged, staticBatch.material);
+
+      mesh.castShadow = true;
+      mesh.receiveShadow = true;
+      dependencies.scene.addObject(mesh);
+      meshes.push(mesh);
+    }
+
+    staticBatches.clear();
 
     const batches = new Map<string, DecorationBatch>();
 
