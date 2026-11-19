@@ -2990,6 +2990,31 @@ finish/results run** the primary listening/watching artifact.
 - Section-run start (catwalk x=32), not full-level spawn; normalization is
   review-only; human verdict pending.
 
+---
+
+## Round 56 — final gate re-run (2026-11-19)
+
+### Scope
+
+Re-run every gate against the current code after the finish/cue/review changes.
+
+### What changed
+
+- No game code.
+- Evidence refreshed: start capture/metrics, 24 s prologue audio/metrics.
+- `VERIFICATION.md` updated to Round 56 values.
+- Result: **279 tests**, **13/13**, **5/5**, **60.1 fps**, **0 broken links**.
+
+### Evidence
+
+- [`start.jpg`](evidence/verification/start.jpg)
+- [`metrics.json`](evidence/verification/metrics.json)
+- [`prologue-24s.wav`](evidence/verification/prologue-24s.wav)
+
+### Honest gaps
+
+- Human perception, full-level run, cross-browser/AT remain.
+
 ## Round log
 
 | Round | Date | Focus | Outcome |

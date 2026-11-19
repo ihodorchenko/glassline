@@ -5,19 +5,19 @@
     "sampleRate": 48000,
     "peak": 0.545867919921875,
     "peak_db": -5.258248559394277,
-    "rms": 0.051733048652744834,
-    "rms_db": -25.724638553198126,
-    "short_term_range": 22.861242605787176,
-    "lufs": -26.003790810725828,
-    "low_share": 0.8955055071984379,
-    "mid_share": 0.0442607127825876,
-    "high_share": 0.06023378001897448
+    "rms": 0.05173304750774798,
+    "rms_db": -25.724638745441126,
+    "short_term_range": 22.86124256000783,
+    "lufs": -26.00379100838575,
+    "low_share": 0.8955055115842453,
+    "mid_share": 0.04426071081276203,
+    "high_share": 0.06023377760299274
   },
   "targets": [
     {
       "metric": "low_share",
       "label": "Energy < 500 Hz",
-      "value": 0.8955055071984379,
+      "value": 0.8955055115842453,
       "min": 0.85,
       "max": 0.94,
       "pass": true
@@ -25,7 +25,7 @@
     {
       "metric": "high_share",
       "label": "Energy > 2 kHz",
-      "value": 0.06023378001897448,
+      "value": 0.06023377760299274,
       "min": 0.03,
       "max": 0.08,
       "pass": true
@@ -33,7 +33,7 @@
     {
       "metric": "lufs",
       "label": "Integrated loudness (approx K-weighted)",
-      "value": -26.003790810725828,
+      "value": -26.00379100838575,
       "min": -31.0,
       "max": -26.0,
       "pass": true
@@ -49,7 +49,7 @@
     {
       "metric": "short_term_range",
       "label": "Short-term range",
-      "value": 22.861242605787176,
+      "value": 22.86124256000783,
       "min": 18.0,
       "max": 26.0,
       "pass": true
