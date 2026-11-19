@@ -1,4 +1,4 @@
-import type { Object3D, PerspectiveCamera, WebGLInfo, WebGLRenderer } from "three";
+import type { Object3D, PerspectiveCamera, Scene, WebGLInfo, WebGLRenderer } from "three";
 
 import {
   CAPTURE_FOV_DEGREES,
@@ -33,6 +33,10 @@ const DISPLAY_QUALITY = "high";
  */
 const CAPTURE_RANDOM_SEED = 0x5f3759df;
 const FRAMES_BEFORE_READY = 2;
+/** Frames between GPU pixel probes when waiting for a settled frame. */
+const STABILITY_PROBE_FRAMES = 2;
+/** Upper bound of probe rounds before `ready` is declared anyway. */
+const STABILITY_MAX_ROUNDS = 6;
 const GAMEPLAY_READY_TIMEOUT_MS = 20_000;
 const GAMEPLAY_POLL_INTERVAL_MS = 50;
 
@@ -111,8 +115,11 @@ interface CityLifeLike {
 
 interface RenderSceneLike {
   update(deltaSeconds: number): void;
+  readonly scene: Scene;
   readonly skyDome: SkyDomeLike;
   readonly cityLife: CityLifeLike;
+  /** Re-bakes the PMREM sky probe (private on `RenderScene`, runtime reachable). */
+  refreshEnvironmentMap?(): void;
 }
 
 interface CameraSystemLike {
@@ -128,6 +135,7 @@ interface RendererLike {
   render(scene: unknown, camera: unknown, deltaSeconds?: number, speedRatio?: number): void;
   setQuality(quality: string): void;
   resize(width: number, height: number): void;
+  refreshShadows(): void;
   readonly currentQuality: string;
   readonly threeRenderer: WebGLRenderer;
 }
@@ -159,6 +167,9 @@ interface CaptureRuntimeState {
   app: CaptureApplicationLike | null;
   shotId: string;
   lastStats: GlasslineCaptureStats | null;
+  /** True while the settle gate records GPU frame checksums. */
+  probeActive: boolean;
+  readonly probeHashes: number[];
 }
 
 /** Boot handle returned by {@link prepareCaptureMode}. */
@@ -201,6 +212,8 @@ export function prepareCaptureMode(search = window.location.search): CaptureMode
     app: null,
     shotId: request.shotId,
     lastStats: null,
+    probeActive: false,
+    probeHashes: [],
   };
 
   const api = createCaptureApi(state);
@@ -217,11 +230,17 @@ export function prepareCaptureMode(search = window.location.search): CaptureMode
       await startPrologue(state.app);
 
       // Reset the time-driven layer once more after the level session has
-      // started, then apply the authored camera pose.
+      // started, then re-pin the surface and rebuild every GPU-side cache
+      // (PMREM sky probe, shadow map, shader programs) from that frozen state,
+      // so no per-launch "which frame baked what" state can leak into the frame.
       resetAnimatedTime(state.app);
+      pinCaptureSurface(state.app);
+      rebuildDeterministicGpuState(state.app);
+      primeShaderPrograms(state.app);
+
       applyShot(state, request.shotId);
 
-      await nextAnimationFrames(FRAMES_BEFORE_READY);
+      await settleCaptureFrame(state);
 
       api.ready = true;
     },
@@ -405,6 +424,14 @@ function installFreezes(state: CaptureRuntimeState): void {
       threeRenderer.info.reset();
       originalRender.call(renderer, scene, camera, 0, 0);
       state.lastStats = readFrameStats(state);
+
+      if (state.probeActive) {
+        const hash = hashBackbuffer(threeRenderer);
+
+        if (hash !== null) {
+          state.probeHashes.push(hash);
+        }
+      }
     };
   }
 
@@ -432,6 +459,131 @@ function resetAnimatedTime(app: CaptureApplicationLike): void {
       post.elapsedSeconds = 0;
     }
   }
+}
+
+/**
+ * Re-pins DPR, backing-buffer size, camera aspect and the quality tier *after*
+ * the level session has started. The level boot can trigger resizes / quality
+ * application, and a stale aspect or pixel ratio is a per-launch difference.
+ */
+function pinCaptureSurface(app: CaptureApplicationLike): void {
+  const renderer = app.renderer;
+
+  if (renderer) {
+    if (renderer.currentQuality !== DISPLAY_QUALITY) {
+      renderer.setQuality(DISPLAY_QUALITY);
+    }
+
+    renderer.threeRenderer.setPixelRatio(1);
+    renderer.resize(window.innerWidth, window.innerHeight);
+    renderer.refreshShadows();
+  }
+
+  const camera = app.cameraSystem?.camera;
+
+  if (camera) {
+    camera.aspect = Math.max(1, window.innerWidth) / Math.max(1, window.innerHeight);
+    camera.updateProjectionMatrix();
+  }
+}
+
+/**
+ * Rebuilds every GPU cache that is derived from scene state (PMREM sky probe and
+ * the sun shadow map) at a fixed point in the boot: after the level content is
+ * loaded and after world time is frozen. Baking these lazily on "whichever frame
+ * happens first" is the kind of per-launch state that changes specular LSBs on
+ * glass/metal while every JS-side counter stays identical.
+ */
+function rebuildDeterministicGpuState(app: CaptureApplicationLike): void {
+  app.renderScene?.refreshEnvironmentMap?.();
+  app.renderer?.refreshShadows();
+}
+
+/**
+ * Compiles the shader programs for all six authored cameras in a fixed order.
+ * Once the program cache is warm for every pose, the captured frame no longer
+ * depends on which camera happened to be active when a material/program pair was
+ * first used.
+ */
+function primeShaderPrograms(app: CaptureApplicationLike): void {
+  const renderer = app.renderer;
+  const cameraSystem = app.cameraSystem;
+  const scene = app.renderScene?.scene;
+
+  if (!renderer || !cameraSystem || !scene) {
+    return;
+  }
+
+  const camera = cameraSystem.camera;
+  const threeRenderer = renderer.threeRenderer;
+
+  for (const shot of CAPTURE_SHOTS) {
+    positionCamera(camera, shot);
+    threeRenderer.compile(scene, camera);
+  }
+}
+
+/**
+ * Waits until two consecutive rendered frames hash identically (or the probe
+ * budget is spent). This turns "the frame is stable" into a measured condition
+ * instead of a fixed sleep, so a slow machine cannot capture a mid-warm-up frame.
+ */
+async function settleCaptureFrame(state: CaptureRuntimeState): Promise<void> {
+  await nextAnimationFrames(FRAMES_BEFORE_READY);
+
+  if (!state.app?.renderer) {
+    return;
+  }
+
+  state.probeHashes.length = 0;
+  state.probeActive = true;
+
+  try {
+    for (let round = 0; round < STABILITY_MAX_ROUNDS; round += 1) {
+      await nextAnimationFrames(STABILITY_PROBE_FRAMES);
+
+      const count = state.probeHashes.length;
+      const latest = count > 0 ? state.probeHashes[count - 1] : undefined;
+      const previous = count > 1 ? state.probeHashes[count - 2] : undefined;
+
+      if (latest !== undefined && previous !== undefined && latest === previous) {
+        return;
+      }
+    }
+  } finally {
+    state.probeActive = false;
+    state.probeHashes.length = 0;
+  }
+}
+
+/** FNV-1a checksum of the default framebuffer contents. */
+function hashBackbuffer(threeRenderer: WebGLRenderer): number | null {
+  const gl = threeRenderer.getContext();
+  const canvas = threeRenderer.domElement;
+  const width = canvas.width;
+  const height = canvas.height;
+
+  if (width <= 0 || height <= 0) {
+    return null;
+  }
+
+  const pixels = new Uint8Array(width * height * 4);
+
+  try {
+    gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+    gl.readPixels(0, 0, width, height, gl.RGBA, gl.UNSIGNED_BYTE, pixels);
+  } catch {
+    return null;
+  }
+
+  let hash = 2166136261;
+
+  for (let index = 0; index < pixels.length; index += 1) {
+    hash ^= pixels[index] ?? 0;
+    hash = Math.imul(hash, 16777619);
+  }
+
+  return hash >>> 0;
 }
 
 function readFrameStats(state: CaptureRuntimeState): GlasslineCaptureStats | null {

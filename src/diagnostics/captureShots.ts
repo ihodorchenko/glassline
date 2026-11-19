@@ -23,7 +23,7 @@ export const CAPTURE_LEVEL_PARAM = "level";
 export const SUPPORTED_CAPTURE_LEVEL_ID = "prologue";
 
 /** Fixed field of view (degrees) applied to every capture shot. */
-export const CAPTURE_FOV_DEGREES = 65;
+export const CAPTURE_FOV_DEGREES = 50;
 
 export type CaptureVector3 = readonly [number, number, number];
 
@@ -56,62 +56,63 @@ export const CAPTURE_SHOTS: readonly CaptureShot[] = [
   {
     id: "start-roof",
     title: "Prologue Start Roof",
-    position: [-2.5, 1.65, 21.0],
-    lookAt: [1.5, 1.6, -9.0],
+    position: [-2.5, 1.65, 3.0],
+    lookAt: [0.0, 2.6, -8.7],
     fov: CAPTURE_FOV_DEGREES,
     intent:
-      "ART_BRIEF beat 1: runner-height gaze north along the white start roof; glass tower mass " +
-      "on the left, canyon and open sky on the right, overhead canyon bridge as MG landmark.",
+      "AD-2 framing: dollied north to z=3 so the overhead canyon bridge leaves the frustum and " +
+      "the FG planters/barrels drop behind; 12 deg right yaw, 4.5 deg up pitch, horizon ~59 %, " +
+      "red maintenance ladder on the west facade as the leading red element.",
   },
   {
     id: "first-gap",
     title: "First Roof Gap",
-    position: [0.0, -1.45, -30.0],
-    lookAt: [0.0, -3.2, -38.5],
+    position: [0.0, -1.45, -27.0],
+    lookAt: [0.0, -1.0, -41.0],
     fov: CAPTURE_FOV_DEGREES,
     intent:
-      "ART_BRIEF beat 2: accentuation run-up on lower_roof_a; deck edge and red route dashes in " +
-      "FG, 2.4 m sprint gap with sunlit landing edge and lower-city structure visible through it.",
+      "AD-2 framing: dollied ~3 m back from the gap edge (5 m to the edge), 2 deg up pitch; FG " +
+      "deck edge, MG 2.4 m sprint gap with sunlit landing edge, lower structure visible through it.",
   },
   {
     id: "wallrun-corridor",
     title: "Wall-Run Corridor",
-    position: [-3.6, 1.5, 0.0],
-    lookAt: [-8.0, 1.3, -7.0],
+    position: [-4.6, 1.5, 0.0],
+    lookAt: [-10.6, 2.2, -8.0],
     fov: CAPTURE_FOV_DEGREES,
     intent:
-      "ART_BRIEF beat 3: 32 deg gaze into the glass tower; mullion rhythm on the left, red " +
-      "handrail leading to the exit ledge, city and sky strip on the right.",
+      "AD-2 framing: dollied 1 m toward the glass wall, 37 deg gaze into it (effective wall " +
+      "angle ~30 deg), 4 deg up pitch; exit ledge and stairs stay on the right edge.",
   },
   {
     id: "service-block",
     title: "Service Block Descent",
-    position: [0.0, 0.35, -4.9],
-    lookAt: [0.0, 0.75, -12.0],
+    position: [0.0, 0.4, -6.3],
+    lookAt: [1.7, 0.75, -14.1],
     fov: CAPTURE_FOV_DEGREES,
     intent:
-      "ART_BRIEF beat 4: slide-height camera (1.0 m ceiling clearance) inside the covered " +
-      "service duct; red handrail landmark and bright exit slit, sky kept below 5 %.",
+      "AD-2 framing: slide-eye kept at 0.4 m; dollied 1.4 m into the duct, 12 deg right yaw and " +
+      "2.5 deg up pitch so the duct edge reads in FG and the bright exit slit stays in MG.",
   },
   {
     id: "skybridge",
     title: "Skybridge Deck",
-    position: [0.0, 0.75, -42.4],
-    lookAt: [0.0, 0.45, -55.5],
+    position: [0.0, 0.75, -47.5],
+    lookAt: [0.0, 1.8, -57.5],
     fov: CAPTURE_FOV_DEGREES,
     intent:
-      "ART_BRIEF beat 6: long sightline along the 3.4 m span; both glass-insert rails converge " +
-      "on the distant finish gate, city canyon below on both sides.",
+      "AD-2 framing: dollied 5 m along the span, ~6 deg up pitch; both glass-insert rails still " +
+      "converge on the finish silhouette while more sky enters the top of frame.",
   },
   {
     id: "finish-roof",
     title: "High Finish Roof",
-    position: [0.0, 6.8, -125.5],
-    lookAt: [2.0, 6.9, -133.0],
+    position: [0.0, 6.8, -123.5],
+    lookAt: [1.4, 7.75, -132.4],
     fov: CAPTURE_FOV_DEGREES,
     intent:
-      "ART_BRIEF beat 7: clean eye-level silhouette of the FINISH gate and terminal, the single " +
-      "red finish marker as the only accent, hazy skyline behind.",
+      "AD-2 framing: dolly 2 m back, 9 deg right yaw and ~6 deg up pitch; FINISH gate sits in the " +
+      "left third, terminal fully in frame, clean deck in FG and ~45 % sky above.",
   },
 ];
 
