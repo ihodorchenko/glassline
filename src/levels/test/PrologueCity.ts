@@ -1454,6 +1454,31 @@ function addCatwalk(builder: CityBuilder): void {
     });
   }
 
+  // Finish-approach cue: the return rail ends near x=8; signpost the west-end
+  // detour so the final gate is readable from the return catwalk.
+  builder.plane(10.5, 6.45, -131.85, 2.5, 0.62, Math.PI / 2, {
+    text: "FINISH / WEST END",
+    background: 0x14191d,
+    textColor: 0xf4f1e9,
+    accentColor: 0xd52e36,
+  });
+  for (const z of [-131.55, -132.15]) {
+    builder.box(10.5, 5.85, z, 0.06, 2.1, 0.06, {
+      material: "metal",
+      castShadow: false,
+    });
+  }
+  for (const side of [-1, 1]) {
+    builder.box(11.4 + side * 0.42, 5.218, -131.9, 0.74, 0.02, 0.16, {
+      material: "red",
+      emissive: 0xc0262d,
+      emissiveIntensity: 0.3,
+      rotationY: side * 0.52,
+      castShadow: false,
+      receiveShadow: false,
+    });
+  }
+
   // Entrance cue for the lower bypass: sign, edge paint, and a floor chevron.
   builder.plane(37, 6.55, -131.85, 2.1, 0.58, Math.PI / 2, {
     text: "BYPASS",

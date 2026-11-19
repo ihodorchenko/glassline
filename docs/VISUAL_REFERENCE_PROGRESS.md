@@ -2922,6 +2922,39 @@ path and captures a real completion.
   full-level speedrun.
 - Audio loud; human verdict pending.
 
+---
+
+## Round 54 — finish-approach cue (2026-11-19)
+
+### Scope
+
+Round 53 proved the finish requires a west-end detour around the return rail;
+there was no cue for it. This round signposts the detour.
+
+### What changed
+
+- Hanging `FINISH / WEST END` sign at x≈10.5 with two posts and red deck
+  chevrons, before the rail ends.
+- Visual only; no collider/route/audio changes.
+- Start metrics unaffected.
+
+### Verification
+
+- `npm run validate`: **279 tests in 37 files**, build.
+- Performance **60.2 fps**; capture saved.
+- Finish route remains physical (Round 53).
+
+### Evidence
+
+| View | Image |
+|---|---|
+| Finish approach cue | ![Finish cue](evidence/visual/round-54/finish-cue.jpg) |
+
+### Honest gaps
+
+- The sign is large and hangs over the return deck; the detour is still a detour.
+- Human audio/video verdict pending.
+
 ## Round log
 
 | Round | Date | Focus | Outcome |
