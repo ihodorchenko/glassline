@@ -1442,6 +1442,65 @@ All **13/13** start-frame metrics now pass:
 3. Human listening and final motion/menu calibration.
 4. Continue facade/world detail parity.
 
+---
+
+## Round 20 — Training yard visual parity (2026-11-19)
+
+### Scope
+
+Training was still a black-walled white box with flat colored obstacles, far
+below the Prologue's presentation level. This round restyles the yard's shell and
+backdrop to the same white/red/glass city language without changing its course or
+collision.
+
+### What changed
+
+- **Boundary walls:** dark-metal walls changed to a light boundary concrete
+  (`0xd8d9d4`), with a red coping strip along the top on all four sides; the yard
+  now reads as a rooftop parapet rather than a black box.
+- **City backdrop:** five material-based towers (glass/facade/glass-far) at
+  x ±31…36 / z −34…−92, with lit window bands, roof caps, and rooftop mechanical
+  units; the old color-only skyline remains as deeper layers.
+- **Signage:** black training boards now carry `TRAVERSAL` and `FINISH` signs;
+  section signs `01 START`, `02 TRAVERSAL`, `03 FINISH` sit on the west parapet;
+  a `MOVEMENT YARD` sign is mounted on the east wall (partly outside the initial
+  frustum).
+- **Service kit:** AC boxes, a long duct, crates, an overhead pipe with red strip,
+  and rooftop props frame the lane without entering it.
+- **No course/collision/route changes:** only wall colors and visual-only
+  decorations; 275 tests unchanged.
+
+### Evidence
+
+| View | Image |
+|---|---|
+| Before: black-walled yard | ![Before](evidence/visual/round-20/before.jpg) |
+| After: light parapet, city, signage | ![After](evidence/visual/round-20/after.jpg) |
+
+### Verification
+
+- `npm run validate`: typecheck, Biome, **275 tests in 36 files**, build.
+- Training course/physics/integration tests unchanged and green.
+- Prologue metrics unaffected (Training-only decorations/wall colors).
+
+### Honest gaps
+
+- The new city towers are simple boxes with striped light bands, not authored
+  facades; the yard sign is not readable from the initial camera.
+- Boundary walls remain 3 m high, so the city is visible above but not through
+  the yard perimeter.
+- Training has no reference image metric suite; parity is judged visually against
+  the Prologue palette.
+- Billboard/helipad balance, bypass tradeoff, human listening, and final motion
+  calibration remain open.
+
+### Next
+
+1. Add authored facades/roof detail to Training's near towers.
+2. Lower/visual-open the parapet or add glass inserts for city depth.
+3. Balance the Prologue billboard/helipad and bypass risk/time.
+4. Human listening and final menu/motion calibration.
+
 ## Round log
 
 | Round | Date | Focus | Outcome |

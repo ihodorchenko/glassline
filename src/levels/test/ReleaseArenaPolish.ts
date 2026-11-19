@@ -1,4 +1,8 @@
-import type { LevelDecorationDefinition, LevelEnvironmentDefinition } from "../LevelTypes";
+import type {
+  LevelDecorationDefinition,
+  LevelEnvironmentDefinition,
+  LevelMaterialType,
+} from "../LevelTypes";
 
 const TRAINING_SKYLINE = [0x74838f, 0x687782, 0x7f8d97, 0x5d6a75] as const;
 const PROLOGUE_SKYLINE = [0x586778, 0x647587, 0x4d5b6b, 0x708192] as const;
@@ -141,14 +145,113 @@ export const PROLOGUE_ENVIRONMENT: LevelEnvironmentDefinition = {
   sunElevation: 0.83,
 };
 
+function trainingTower(
+  prefix: string,
+  sectionId: string,
+  x: number,
+  z: number,
+  width: number,
+  depth: number,
+  top: number,
+  material: LevelMaterialType,
+): LevelDecorationDefinition[] {
+  const decorations: LevelDecorationDefinition[] = [
+    {
+      id: `${prefix}_body`,
+      sectionId,
+      shape: "box",
+      position: { x, y: top / 2 - 0.1, z },
+      size: { x: width, y: top, z: depth },
+      material,
+      castShadow: true,
+      receiveShadow: true,
+    },
+    {
+      id: `${prefix}_cap`,
+      sectionId,
+      shape: "box",
+      position: { x, y: top + 0.25, z },
+      size: { x: width + 0.6, y: 0.5, z: depth + 0.6 },
+      material: "concrete",
+      castShadow: true,
+    },
+  ];
+  const inward = x < 0 ? width / 2 + 0.05 : -width / 2 - 0.05;
+
+  for (let band = 0; band < 5; band += 1) {
+    decorations.push({
+      id: `${prefix}_band_${band}`,
+      sectionId,
+      shape: "box",
+      position: {
+        x: x + inward,
+        y: 5 + band * 4.2,
+        z,
+      },
+      size: { x: 0.08, y: 1.2, z: depth * 0.78 },
+      material: band === 3 ? "warm-light" : "cool-light",
+      emissive: band === 3 ? 0xffd9a5 : 0xbfe6ff,
+      emissiveIntensity: 0.18,
+      castShadow: false,
+    });
+  }
+
+  decorations.push({
+    id: `${prefix}_mechanical`,
+    sectionId,
+    shape: "box",
+    position: { x: x + inward * 0.3, y: top + 1.1, z },
+    size: { x: width * 0.32, y: 1.4, z: depth * 0.35 },
+    material: "metal",
+    castShadow: true,
+  });
+
+  return decorations;
+}
+
 export function createTrainingDecorations(
   sectionForPosition: (z: number) => string,
 ): LevelDecorationDefinition[] {
   const start = sectionForPosition(5);
   const mid = sectionForPosition(-4);
   const finish = sectionForPosition(-18.5);
+  const trainingTowers = [
+    ...trainingTower("training_tower_west", sectionForPosition(-34), -31, -34, 18, 24, 30, "glass"),
+    ...trainingTower("training_tower_east", sectionForPosition(-42), 32, -42, 20, 26, 34, "facade"),
+    ...trainingTower(
+      "training_tower_far_w",
+      sectionForPosition(-64),
+      -35,
+      -64,
+      22,
+      28,
+      46,
+      "glass-far",
+    ),
+    ...trainingTower(
+      "training_tower_far_e",
+      sectionForPosition(-70),
+      36,
+      -70,
+      24,
+      26,
+      42,
+      "facade",
+    ),
+    ...trainingTower(
+      "training_tower_north",
+      sectionForPosition(-92),
+      0,
+      -92,
+      34,
+      30,
+      58,
+      "glass-far",
+    ),
+  ];
 
   return [
+    ...trainingTowers,
     ...skyline("training", (z) => sectionForPosition(z), TRAINING_SKYLINE, 10, 0xdcecf2, 0.2),
     ...gate("training_start", start, 5.9, 0xd7d9d4, 0xd52e36),
     ...gate("training_finish", finish, -19.6, 0x3c444b, 0xd52e36),
@@ -203,6 +306,34 @@ export function createTrainingDecorations(
       color: 0x343b40,
       emissive: 0xd52e36,
       emissiveIntensity: 0.12,
+    },
+    {
+      id: "training_board_traversal_sign",
+      sectionId: mid,
+      shape: "plane",
+      position: { x: -5.6, y: 2.1, z: -4.91 },
+      size: { x: 2.2, y: 1.1, z: 0.02 },
+      rotationY: 0,
+      text: "TRAVERSAL",
+      color: 0x14191d,
+      textColor: 0xf4f1e9,
+      accentColor: 0xd52e36,
+      castShadow: false,
+      receiveShadow: false,
+    },
+    {
+      id: "training_board_finish_sign",
+      sectionId: finish,
+      shape: "plane",
+      position: { x: 5.6, y: 2.1, z: -16.51 },
+      size: { x: 2.2, y: 1.1, z: 0.02 },
+      rotationY: 0,
+      text: "FINISH",
+      color: 0x14191d,
+      textColor: 0xf4f1e9,
+      accentColor: 0xd52e36,
+      castShadow: false,
+      receiveShadow: false,
     },
     {
       id: "training_scaffold_west",
@@ -269,6 +400,125 @@ export function createTrainingDecorations(
       color: 0xd52e36,
       emissive: 0xd52e36,
       emissiveIntensity: 0.5,
+    },
+    // Red coping turns the boundary into a rooftop parapet rather than a black wall.
+    ...[
+      ["north", 0, 3.02, -22.05, 44, 0.1, 0.2],
+      ["south", 0, 3.02, 22.05, 44, 0.1, 0.2],
+      ["west", -22.05, 3.02, 0, 0.2, 0.1, 44],
+      ["east", 22.05, 3.02, 0, 0.2, 0.1, 44],
+    ].map(([id, x, y, z, sx, sy, sz]) => ({
+      id: `training_coping_${id}`,
+      sectionId: start,
+      shape: "box" as const,
+      position: { x: x as number, y: y as number, z: z as number },
+      size: { x: sx as number, y: sy as number, z: sz as number },
+      color: 0xd52e36,
+      emissive: 0xd52e36,
+      emissiveIntensity: 0.25,
+      castShadow: false,
+    })),
+    {
+      id: "training_yard_sign",
+      sectionId: mid,
+      shape: "plane",
+      position: { x: 21.94, y: 3.65, z: -6 },
+      size: { x: 7.5, y: 1.1, z: 0.02 },
+      rotationY: -Math.PI / 2,
+      text: "MOVEMENT YARD",
+      color: 0x14191d,
+      textColor: 0xf4f1e9,
+      accentColor: 0xd52e36,
+      castShadow: false,
+      receiveShadow: false,
+    },
+    ...(
+      [
+        ["01 START", 2.4],
+        ["02 TRAVERSAL", -7.2],
+        ["03 FINISH", -17.8],
+      ] as const
+    ).map(([text, z]) => ({
+      id: `training_section_sign_${z}`,
+      sectionId: sectionForPosition(z),
+      shape: "plane" as const,
+      position: { x: -21.94, y: 2.1, z },
+      size: { x: 2.4, y: 0.58, z: 0.02 },
+      rotationY: Math.PI / 2,
+      text,
+      color: 0xf4f1e9,
+      textColor: 0x14191d,
+      accentColor: 0xd52e36,
+      castShadow: false,
+      receiveShadow: false,
+    })),
+    // Rooftop service kit framing the training lane.
+    ...[
+      [-15.2, 0.65, -4.2],
+      [15.0, 0.55, -8.4],
+      [-14.8, 0.75, -15.5],
+    ].flatMap(([x, y, z], index) => [
+      {
+        id: `training_ac_body_${index}`,
+        sectionId: start,
+        shape: "box" as const,
+        position: { x: x as number, y: y as number, z: z as number },
+        size: { x: 2.2, y: 1.3, z: 1.6 },
+        material: "metal" as LevelMaterialType,
+        castShadow: true,
+      },
+      {
+        id: `training_ac_cap_${index}`,
+        sectionId: start,
+        shape: "box" as const,
+        position: { x: x as number, y: (y as number) + 0.7, z: z as number },
+        size: { x: 2.0, y: 0.1, z: 1.4 },
+        material: "dark-metal" as LevelMaterialType,
+        castShadow: true,
+      },
+    ]),
+    {
+      id: "training_duct",
+      sectionId: start,
+      shape: "box",
+      position: { x: -14.9, y: 0.5, z: -10.2 },
+      size: { x: 0.7, y: 0.7, z: 11.5 },
+      material: "metal",
+      castShadow: true,
+    },
+    ...[
+      [-10.8, 0.5, 9.4],
+      [-9.7, 0.4, 10.2],
+      [11.2, 0.45, 12.2],
+    ].map(([x, y, z], index) => ({
+      id: `training_crate_${index}`,
+      sectionId: start,
+      shape: "box" as const,
+      position: { x: x as number, y: y as number, z: z as number },
+      size: { x: 0.9, y: 0.8, z: 0.9 },
+      material: "dark-metal" as LevelMaterialType,
+      rotationY: index * 0.2,
+      castShadow: true,
+    })),
+    {
+      id: "training_overhead_pipe",
+      sectionId: mid,
+      shape: "box",
+      position: { x: 0, y: 5.2, z: -14 },
+      size: { x: 44, y: 0.35, z: 0.35 },
+      material: "metal",
+      castShadow: true,
+    },
+    {
+      id: "training_overhead_pipe_red",
+      sectionId: mid,
+      shape: "box",
+      position: { x: 0, y: 5.55, z: -14 },
+      size: { x: 44, y: 0.1, z: 0.1 },
+      color: 0xd52e36,
+      emissive: 0xd52e36,
+      emissiveIntensity: 0.3,
+      castShadow: false,
     },
   ];
 }

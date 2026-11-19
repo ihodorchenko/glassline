@@ -66,6 +66,10 @@ type, hard red rules, a minimal HUD, and canvas-rendered `RUN` / section /
 
 ![Main menu](docs/evidence/visual/round-5/menu.jpg)
 
+The Training yard shares the same white/red rooftop language and city backdrop.
+
+![Training yard](docs/evidence/visual/round-20/after.jpg)
+
 ## Sound
 
 All audio is generated procedurally at runtime: a multi-bus mix with limiter and

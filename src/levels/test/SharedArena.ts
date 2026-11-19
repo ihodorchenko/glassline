@@ -5,6 +5,7 @@ export const ARENA_COLORS = {
   pureWhite: 0xf1f1ed,
   steel: 0x747a7d,
   darkMetal: 0x33393d,
+  boundary: 0xd8d9d4,
   runnerRed: 0xd52e36,
 } as const;
 
@@ -52,28 +53,28 @@ export const ARENA_BOXES: readonly ArenaBox[] = [
     position: { x: -22.25, y: 1.5, z: 0 },
     size: { x: 0.5, y: 3, z: 44 },
     surfaceId: "surface_boundary",
-    color: ARENA_COLORS.darkMetal,
+    color: ARENA_COLORS.boundary,
   },
   {
     id: "geo_wall_east",
     position: { x: 22.25, y: 1.5, z: 0 },
     size: { x: 0.5, y: 3, z: 44 },
     surfaceId: "surface_boundary",
-    color: ARENA_COLORS.darkMetal,
+    color: ARENA_COLORS.boundary,
   },
   {
     id: "geo_wall_north",
     position: { x: 0, y: 1.5, z: -22.25 },
     size: { x: 44, y: 3, z: 0.5 },
     surfaceId: "surface_boundary",
-    color: ARENA_COLORS.darkMetal,
+    color: ARENA_COLORS.boundary,
   },
   {
     id: "geo_wall_south",
     position: { x: 0, y: 1.5, z: 22.25 },
     size: { x: 44, y: 3, z: 0.5 },
     surfaceId: "surface_boundary",
-    color: ARENA_COLORS.darkMetal,
+    color: ARENA_COLORS.boundary,
   },
   // Vault obstacle.
   {
