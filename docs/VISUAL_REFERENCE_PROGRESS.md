@@ -2575,6 +2575,47 @@ sets a decision deadline instead of continuing open-ended polish.
 - Human listening/playtest still not done; the package cannot replace it.
 - If no decision is made, round 60 will record a technical-not-perceptual status.
 
+---
+
+## Round 44 — balanced bridge banners (2026-11-19)
+
+### Scope
+
+Round 42's banners dominated the top center. This round moves them to the span
+edges and scales them down, opening the canyon composition.
+
+### What changed
+
+- Banners x=±4.2 → **±6.8**, size 1.55×2.15 → **1.3×1.9**; hangers follow.
+- No bridge/route/audio changes.
+- Center of the frame is open sky/canyon; red accents remain at the edges.
+
+### Verification
+
+- `npm run validate`: typecheck, Biome, **279 tests in 37 files**, build.
+- Start **13/13**: sky 40.0%, deep-shadow 1.83%, red 3.07, split −17.42, luma
+  0.608.
+- Performance **60.0 fps**.
+
+### Evidence
+
+| View | Image |
+|---|---|
+| Balanced banners | ![Start](evidence/visual/round-44/start.jpg) |
+| Metrics | [`metrics.json`](evidence/visual/round-44/metrics.json) |
+
+### Honest gaps
+
+- Banners are still large at the top edge; left sign slightly overlaps the RUN
+  billboard line of sight.
+- Bridge remains a simple slab; human review still pending.
+
+### Next
+
+1. Final menu/URL/accessibility checks.
+2. Longer gameplay capture.
+3. Human audio/video review before round 60.
+
 ## Round log
 
 | Round | Date | Focus | Outcome |
