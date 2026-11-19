@@ -3743,6 +3743,31 @@ Playwright.
 - Firefox gameplay/WebGL remains **unverified** in this environment.
 - No game code changed; 282 tests.
 
+---
+
+## Round 91 — final review bundle (2026-11-19)
+
+### Scope
+
+Make the current build reviewable in one pass.
+
+### What changed
+
+- New normalized full-run review video/audio (~−26 LUFS, 0 respawns,
+  Results 23.123).
+- Contact sheet: current start / Training / ascent / Results.
+- REFERENCE_REVIEW starts with the full run; manifest refreshed.
+- No game code changes; 282 tests.
+
+### Evidence
+
+- [`full-run-review.mp4`](evidence/review/full-run-review.mp4)
+- [`contact-sheet.jpg`](evidence/review/contact-sheet.jpg)
+
+### Honest gaps
+
+- Automated run, not human speedrun; human visual/audio verdict still pending.
+
 ## Round log
 
 | Round | Date | Focus | Outcome |

@@ -2,7 +2,7 @@
 
 ![Контактный лист](evidence/review/contact-sheet.jpg)
 
-**Быстрый просмотр:** [нормализованный 13,7-секундный забег](evidence/review/finish-results-run-review.mp4) (звук −26 LUFS, физический финиш и настоящий Results). Ниже — исходные live-записи и полный чек-лист.
+**Быстрый просмотр:** [нормализованный полный забег спавн→финиш](evidence/review/full-run-review.mp4) (22,6 с, звук −26 LUFS, 0 респавнов, Results 23.123). Ниже — исходные live-записи и полный чек-лист.
 
 Обновлено: 2026-11-19, раунд 88. Предел текущей итерации — **раунд 60**.
 
@@ -48,7 +48,7 @@ deep-shadow 1,72% · sky 39,8% · split −16,69 · red 3,28**.
    - [ground-8s.wav](evidence/audio/round-29/ground-8s.wav)
    - [gameplay-route.wav](evidence/video/round-31/gameplay-route.wav) — реальный игровой микс.
 2. **Посмотреть 9-секундный реальный геймплей** и 17,5-секундный обзор:
-   - [finish-results-run-review.mp4](evidence/review/finish-results-run-review.mp4) — нормализованный, физический финиш + Results
+   - [full-run-review.mp4](evidence/review/full-run-review.mp4) — полный забег с нормализованным звуком
    - [gameplay-route.mp4](evidence/video/round-31/gameplay-route.mp4)
    - [finish-terminal-run.mp4](evidence/video/round-49/finish-terminal-run.mp4) — 14,40 с, catwalk + терминал FINISH
    - [finish-results-run.mp4](evidence/video/round-53/finish-results-run.mp4) — 13,7 с, физический финиш + Results (15,594 с)
