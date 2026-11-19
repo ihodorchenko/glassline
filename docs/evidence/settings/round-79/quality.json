@@ -1,0 +1,16 @@
+{
+  "capturedAt": "2026-11-19",
+  "modes": {
+    "low": { "quality": "low", "gtao": false, "bloom": false, "shadows": false, "pixelRatio": 1 },
+    "medium": {
+      "quality": "medium",
+      "gtao": true,
+      "bloom": true,
+      "shadows": true,
+      "pixelRatio": 1
+    },
+    "high": { "quality": "high", "gtao": true, "bloom": true, "shadows": true, "pixelRatio": 1 }
+  },
+  "note": "pixelRatio 1 because the headless device DPR is 1; caps differ on Retina.",
+  "tests": 282
+}

@@ -47,6 +47,7 @@ import {
 import { AudioSettingsAdapter } from "../settings/adapters/AudioSettingsAdapter";
 import { CameraSettingsAdapter } from "../settings/adapters/CameraSettingsAdapter";
 import { ControlsSettingsAdapter } from "../settings/adapters/ControlsSettingsAdapter";
+import { DisplaySettingsAdapter } from "../settings/adapters/DisplaySettingsAdapter";
 import { SettingsApplicationPipeline } from "../settings/SettingsApplication";
 import { SETTING_DEFINITIONS } from "../settings/SettingsDefinitions";
 import { SettingsManager } from "../settings/SettingsManager";
@@ -1604,6 +1605,10 @@ export class Application implements Disposable {
     if (this.cameraSystem) {
       pipeline.register(new CameraSettingsAdapter(this.cameraSystem));
       pipeline.register(new ControlsSettingsAdapter(this.cameraSystem));
+    }
+
+    if (this.renderer) {
+      pipeline.register(new DisplaySettingsAdapter(this.renderer));
     }
 
     this.settingsPipeline = pipeline;

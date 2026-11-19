@@ -185,6 +185,11 @@ export class PostPipeline implements Disposable {
     this.setSize(size.x, size.y);
   }
 
+  setQuality(quality: "low" | "medium" | "high"): void {
+    this.gtaoPass.enabled = quality !== "low";
+    this.bloomPass.enabled = quality !== "low";
+  }
+
   setSize(width: number, height: number): void {
     const safeWidth = Math.max(1, Math.floor(width));
     const safeHeight = Math.max(1, Math.floor(height));

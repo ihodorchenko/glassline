@@ -108,6 +108,8 @@ Only `Verified` means that the applicable acceptance criteria have been checked 
 
 **Maintenance:** light membrane repair patches on the roof.
 
+**Display quality:** functional low/medium/high (shadows/GTAO/bloom/DPR cap).
+
 **Grading:** softer photographic highlight shoulder (0.38) with exposure 1.08.
 
 **Dampness:** shallow reflective puddles with soft alpha edges.

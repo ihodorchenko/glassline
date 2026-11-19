@@ -3485,6 +3485,31 @@ Cut draw calls introduced by beveled per-box meshes.
 
 - No per-box culling now; triangles flat. Safari unmeasured.
 
+---
+
+## Round 79 — functional display quality (2026-11-19)
+
+### Scope
+
+Make the dead `display.quality` setting control the renderer.
+
+### What changed
+
+- New `DisplaySettingsAdapter` registered in the settings pipeline.
+- `Renderer.setQuality` live-switches shadows/GTAO/bloom and DPR cap:
+  low 1.0 / medium 1.5 / high 2.0.
+- Default medium; live runtime verified.
+- Tests **282**.
+
+### Evidence
+
+- [`quality.json`](evidence/settings/round-79/quality.json)
+- [DISPLAY_QUALITY.md](DISPLAY_QUALITY.md)
+
+### Honest gaps
+
+- Safari not measured; low mode is a fallback, not a visual-quality win.
+
 ## Round log
 
 | Round | Date | Focus | Outcome |

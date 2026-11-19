@@ -3,6 +3,8 @@ import * as THREE from "three";
 import type { Disposable } from "../core/Disposable";
 import { PostPipeline } from "./PostPipeline";
 
+export type DisplayQuality = "low" | "medium" | "high";
+
 export interface RendererOptions {
   readonly antialias: boolean;
   readonly maxPixelRatio: number;
@@ -19,10 +21,15 @@ export class Renderer implements Disposable {
   private readonly canvas: HTMLCanvasElement;
   private readonly renderer: THREE.WebGLRenderer;
   private readonly post: PostPipeline | null;
+  private readonly baseMaxPixelRatio: number;
+  private readonly shadowsEnabled: boolean;
+  private quality: DisplayQuality = "high";
   private disposed = false;
 
   constructor(canvas: HTMLCanvasElement, options: RendererOptions) {
     this.canvas = canvas;
+    this.baseMaxPixelRatio = options.maxPixelRatio;
+    this.shadowsEnabled = options.shadowsEnabled;
     this.renderer = new THREE.WebGLRenderer({
       canvas,
       antialias: options.antialias,
@@ -56,6 +63,25 @@ export class Renderer implements Disposable {
   /** Underlying Three.js renderer for systems that need GPU resources. */
   get threeRenderer(): THREE.WebGLRenderer {
     return this.renderer;
+  }
+
+  /** Applies the display-quality setting to shadows, post effects and DPR. */
+  setQuality(quality: DisplayQuality): void {
+    this.quality = quality;
+
+    const pixelRatioCap =
+      quality === "low" ? 1 : quality === "medium" ? 1.5 : this.baseMaxPixelRatio;
+
+    this.renderer.setPixelRatio(
+      Math.min(window.devicePixelRatio || 1, this.baseMaxPixelRatio, pixelRatioCap),
+    );
+    this.renderer.shadowMap.enabled = this.shadowsEnabled && quality !== "low";
+    this.post?.setQuality(quality);
+    this.resize(window.innerWidth, window.innerHeight);
+  }
+
+  get currentQuality(): DisplayQuality {
+    return this.quality;
   }
 
   /** Resizes the drawing buffer. CSS keeps the canvas at the full viewport size. */
