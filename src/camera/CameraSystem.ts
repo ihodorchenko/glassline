@@ -174,16 +174,17 @@ export class CameraSystem implements Disposable {
     this.updateRoll(input.movement, deltaSeconds);
 
     const bobOffset = this.computeBobOffset(input.movement, deltaSeconds);
-    const landingDip = this.view.reducedMotion
-      ? 0
-      : input.movement.landingIntensity * LANDING_DIP_METERS;
+    const impact = this.view.reducedMotion ? 0 : input.movement.landingIntensity;
+    const landingDip = impact * LANDING_DIP_METERS;
+    const landingLift = Math.sin(this.bobPhase * 3.7) * impact * 0.008;
+    const landingRoll = Math.sin(this.bobPhase * 4.5) * impact * 0.012;
 
     this.camera.position.set(
       input.playerPosition.x,
-      input.playerPosition.y + this.currentEyeHeightOffset + bobOffset - landingDip,
+      input.playerPosition.y + this.currentEyeHeightOffset + bobOffset - landingDip + landingLift,
       input.playerPosition.z,
     );
-    this.camera.rotation.set(this.pitch, this.yaw, this.currentRoll);
+    this.camera.rotation.set(this.pitch, this.yaw, this.currentRoll + landingRoll);
 
     if (this.camera.fov !== this.currentFov) {
       this.camera.fov = this.currentFov;

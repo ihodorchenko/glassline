@@ -2377,6 +2377,50 @@ exposure. This round makes the panel grid readable without darkening the deck.
 2. Human audio/video review.
 3. Motion/menu calibration.
 
+---
+
+## Round 39 — panel variation + landing camera (2026-11-19)
+
+### Scope
+
+Round 38's seam grid was uniform; this round varies panel tint and adds a small
+landing impact to the camera for feel.
+
+### What changed
+
+- Roof texture: each 96 px panel gets a low-alpha warm/cool tint
+  (0.012–0.04), applied before seams.
+- CameraSystem: landing adds a brief lift (`sin(bobPhase*3.7)*impact*0.008`) and
+  roll (`sin(bobPhase*4.5)*impact*0.012`); reduced motion/disabling impact yields
+  zero.
+- No route/audio changes.
+
+### Verification
+
+- `npm run validate`: typecheck, Biome, **278 tests in 37 files**, build.
+- Camera suite 17/17; start **13/13** (luma 0.600, near-white 19.9%,
+  deep-shadow 3.28%).
+- Performance **60.2 fps**.
+
+### Evidence
+
+| View | Image |
+|---|---|
+| Panel variation | ![Start](evidence/visual/round-39/start.jpg) |
+| Metrics | [`metrics.json`](evidence/visual/round-39/metrics.json) |
+
+### Honest gaps
+
+- Panel variation is extremely subtle at 720p; landing shake is untuned by a
+  human and not captured in a still.
+- Human listening, clipped highlights, and final menu/motion calibration remain.
+
+### Next
+
+1. Human camera-feel review.
+2. Audio/video review.
+3. Final highlight/menu calibration.
+
 ## Round log
 
 | Round | Date | Focus | Outcome |
