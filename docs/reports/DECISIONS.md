@@ -186,3 +186,50 @@ image does not" risk in plan §9, and why D-03 makes blind review binding.
 no red door in duct, unreachable "city below" in `first-gap`, fixed overhead
 bridge in `start-roof`), guardrails from D-09, and the `stats()` vs full-run perf
 count discrepancy. See `BASELINE.md` §8.
+
+## D-11 — FOV contract moved to 50° vertical; band policy owner-confirmed (2026-11-19)
+
+**Owner decision (explicit, this date):** the capture contract uses **50° vertical
+FOV** (hFOV ≈ 78° at 16:9), replacing the provisional 65° vertical. Both this and
+the D-02 band policy ("measured reference is the source of truth, uniform shift")
+were confirmed by the owner in the same message.
+
+**Rationale.** 65° vertical ≈ 97° hFOV is a fisheye-like lens that no reference
+frame uses; the art director's shot cards are authored for hFOV 78–82°, and the
+blind review would otherwise judge the wrong frame. 50° vertical matches the
+reference lens and keeps the "readable first-person parkour" feel.
+
+**Implementation and consequences.**
+- `src/diagnostics/captureShots.ts` → `CAPTURE_FOV_DEGREES = 50`; contract shape
+  unchanged (position + lookAt + fov per shot, no camera roll).
+- Frames recorded at 65° (G0 revision 1, commit `2442b54`) are superseded; the
+  baseline is re-captured and re-measured at 50° before W1 claims any numbers.
+  Revision-1 evidence remains in git history and in the FOV-65 metrics files.
+- At 50° one shot (`first-gap`) exposed a scene-state nondeterminism that the
+  wider lens had hidden (draw calls 120 vs 122, 976 pixels at ±1/255); it is
+  fixed under capture mode before the baseline is re-frozen (task W0-E), so the
+  determinism contract stays byte-identical rather than "visually identical".
+- The narrow lens changes framing, so pose corrections go through the art
+  director (task AD-2) and are applied before the final W0 numbers are taken.
+
+### D-11 addendum — FOV 50 implemented, determinism re-proven, baseline revision 2 (2026-11-19)
+
+- `CAPTURE_FOV_DEGREES = 50`; six poses re-authored after the AD-2 framing pass
+  (pose-only corrections; camera roll remains unrepresentable). See `BASELINE.md`
+  §2 for the final pose table.
+- The narrower lens exposed a **GPU-baked state** nondeterminism in `first-gap`
+  (976 px at ±1/255; scene graph and camera matrices identical across loads).
+  Fixed in capture mode only: re-pin surface/quality after level start, rebuild
+  the PMREM sky probe and shadow map from the frozen state, pre-compile shader
+  programs for all six poses in fixed order, and replace the fixed 2-frame wait
+  with a GPU-readback settle gate (identical checksum on two consecutive
+  frames). Evidence: 3 independent full runs → 18/18 byte-identical PNGs, plus
+  the canonical `captures/w0` run reproducing the same hashes.
+- Art-director framing corrections that are **not** pose-solvable are recorded
+  as W1+/W2/W3 content work in `BASELINE.md` §8 (first-gap stair dominance and
+  sky share, start-roof city-wall sky limit, skybridge city-below and suspended
+  load, service-block duct edge and red door, wall-run camera roll).
+- Revision-1 (FOV 65) artefacts are preserved: archived metrics
+  `w0-baseline-metrics-fov65.{md,json}`, archived images
+  `docs/evidence/w0-baseline/fov65/`, and git commit `2442b54`. Revision-1 and
+  revision-2 metric values are **not comparable** — different lens and poses.

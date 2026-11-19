@@ -7,6 +7,13 @@ randomized names (`frame-A`=wallrun-corridor, `B`=finish-roof, `C`=start-roof,
 `D`=first-gap, `E`=skybridge, `F`=service-block); no labels, no commentary, no
 shot ids were given. Reference anchors are those of
 [`ART_BRIEF.md`](ART_BRIEF.md) (sampled from the 20 prologue-roof frames).
+**Frame revision:** this blind pass ran on the revision-1 captures (vertical
+FOV 65, commit `2442b54`). The owner-approved lens is now 50° vertical (D-11)
+and the six poses were re-framed by the same art director in the AD-2 pass
+(see `DECISIONS.md` D-11); the material/colour defects below are systemic and
+independent of the lens, so the verdict stands as the W0 record. A fresh blind
+pass on the FOV-50 frames is the W1 gate, not a W0 re-run.
+
 **Question per frame:** *"can this frame stand in the reference prologue without
 breaking its language?"*
 

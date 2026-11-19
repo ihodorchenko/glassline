@@ -2,10 +2,20 @@
 
 **Gate:** G0 (measurement harness + baseline) of
 [`../VISUAL_AUDIO_LEVEL_PLAN.md`](../VISUAL_AUDIO_LEVEL_PLAN.md) §6–§7.
-**Date:** 2026-11-19. **Branch:** `feat/art-audio-level` (nothing merged to
-`main`). **Scope:** Prologue route only.
+**Branch:** `feat/art-audio-level` (nothing merged to `main`). **Scope:** Prologue route only.
 **Purpose:** freeze the *current* numbers before W1 look work, using one script
 for the reference and for our captures, plus a blind art-director verdict.
+
+**Revision 2 (2026-11-19, FOV 50).** Owner approved the capture lens change from
+65° to **50° vertical** (D-11) and confirmed the band policy (D-02). All six
+frames were re-captured and re-measured at 50° with art-director framing
+corrections (AD-2), and the determinism contract was re-proven after a GPU-state
+nondeterminism exposed by the narrower lens was fixed. Revision 1 (FOV 65)
+evidence: git history commit `2442b54`, archived numbers in
+[`w0-baseline-metrics-fov65.md`](w0-baseline-metrics-fov65.md) /
+[`.json`](w0-baseline-metrics-fov65.json), archived images in
+[`docs/evidence/w0-baseline/fov65/`](../evidence/w0-baseline/fov65/). Frames at
+the two lenses are **not comparable**; W1 starts from revision 2.
 
 > Numbers here are a regression gauge, not a perceptual-equivalence claim. The
 > binding look gate is the blind review ([`BLIND_REVIEW_W0.md`](BLIND_REVIEW_W0.md));
@@ -19,8 +29,9 @@ for the reference and for our captures, plus a blind art-director verdict.
 |---|---|
 | Browser | Microsoft Edge 157.0.4341.46, Playwright `channel: "msedge"`, headless |
 | Viewport | 1600 × 900 CSS px, deviceScaleFactor 1, PNG (not JPEG) |
-| Capture mode | dev-only `?capture=1&level=prologue&shot=<id>`; menu skipped, HUD and first-person viewmodel hidden, world time frozen, `display.quality=high`, seeded `Math.random` |
-| Settle | 30 `requestAnimationFrame` after `window.__glasslineCapture.ready` |
+| Capture mode | dev-only `?capture=1&level=prologue&shot=<id>`; menu skipped, HUD and first-person viewmodel hidden, world time frozen, `display.quality=high`, seeded `Math.random`, GPU caches (PMREM sky probe, shadow map, shader programs for all six poses) rebuilt from the frozen state, GPU-readback settle gate |
+| FOV | **50° vertical** (≈ 78° horizontal at 16:9) for all six shots, per owner decision D-11 |
+| Settle | until two consecutive default-framebuffer checksums match (max 6 probe rounds), then 30 rAF |
 | Reference | `ref/reference/prolog-kit/study/05-prologue-roofs` — 20 JPEG 1280×720 frames (git-ignored), the same `05` prologue-roof segment used by the plan |
 | Metrics | `tools/capture/metrics.py` v2.1, identical formulas for both sides, max dimension 960 LANCZOS, 13 metrics |
 | Bands | plan §2.1 bands shifted by Δ = measured_reference_mean − legacy_reference_value; reference mean inside 13/13 shifted bands ([`METRIC_SPEC.md`](METRIC_SPEC.md), [`BAND_CALIBRATION.md`](BAND_CALIBRATION.md)) |
@@ -45,56 +56,62 @@ manifest schema, these numbers and the JPEG copies above.
 
 ## 2. Six fixed shots
 
-FOV 65° vertical for all shots (contract value; the art brief asked for hFOV
-78–82° ≈ vertical 50° — open item for W1, see §7).
+FOV 50° vertical for all shots. Poses were re-authored after the art director's
+AD-2 framing pass (pose-only corrections; camera roll is not representable in
+the position+lookAt contract and was not faked).
 
 | Shot | Camera position | lookAt | Intent (beat) |
 |---|---|---|---|
-| `start-roof` | `(-2.5, 1.65, 21.0)` | `(1.5, 1.6, -9.0)` | beat 1: eye-level along the start roof, facade mass left, canyon/sky right |
-| `first-gap` | `(0.0, -1.45, -30.0)` | `(0.0, -3.2, -38.5)` | beat 2: run-up edge, sprint gap and landing edge on the lower roofs |
-| `wallrun-corridor` | `(-3.6, 1.5, 0.0)` | `(-8.0, 1.3, -7.0)` | beat 3: gaze into the glass facade, mullion rhythm, red handrail |
-| `service-block` | `(0.0, 0.35, -4.9)` | `(0.0, 0.75, -12.0)` | beat 4: slide-camera under the duct (≈1.0 m clearance), exit slit in BG |
-| `skybridge` | `(0.0, 0.75, -42.4)` | `(0.0, 0.45, -55.5)` | beat 6: long sightline along the 3.4 m deck to the finish gate |
-| `finish-roof` | `(0.0, 6.8, -125.5)` | `(2.0, 6.9, -133.0)` | beat 7: FINISH gate, single red marker, clean silhouette |
+| `start-roof` | `(-2.5, 1.65, 3.0)` | `(0.0, 2.6, -8.7)` | beat 1: open start roof, bridge out of frustum, red maintenance ladder leads the eye, facade mass left |
+| `first-gap` | `(0.0, -1.45, -27.0)` | `(0.0, -1.0, -41.0)` | beat 2: 5 m run-up to the 2.4 m sprint gap, landing edge readable, stairs behind |
+| `wallrun-corridor` | `(-4.6, 1.5, 0.0)` | `(-10.6, 2.2, -8.0)` | beat 3: ~30° to the glass wall, mullion rhythm, red handrail, exit ledge right |
+| `service-block` | `(0.0, 0.4, -6.3)` | `(1.7, 0.75, -14.1)` | beat 4: slide-eye 0.4 m, duct edge in FG, bright exit slit in MG |
+| `skybridge` | `(0.0, 0.75, -47.5)` | `(0.0, 1.8, -57.5)` | beat 6: long sightline along the deck, rails converge on the finish gate |
+| `finish-roof` | `(0.0, 6.8, -123.5)` | `(1.4, 7.75, -132.4)` | beat 7: FINISH gate in the left third, clean silhouette, single red marker |
 
 Scene statistics from `window.__glasslineCapture.stats()` (per frame, `quality:
-high`, canvas 1600×900, 26 shader programs):
+high`, canvas 1600×900, 36 shader programs after pre-compiling all six poses):
 
-| Shot | draw calls | triangles | textures* | PNG bytes | sha256 (first 12) |
-|---|---:|---:|---:|---:|---|
-| `start-roof` | 136 | 1,356,546 | 49 | 2,087,611 | `e4d7d8df7bcc` |
-| `first-gap` | 122 | 1,353,522 | 43 | 2,115,182 | `7a840b297b75` |
-| `wallrun-corridor` | 124 | 1,356,522 | 45 | 2,234,109 | `8b2dec531870` |
-| `service-block` | 126 | 1,356,526 | 44 | 2,157,364 | `15ddb0443530` |
-| `skybridge` | 122 | 1,353,522 | 46 | 1,910,775 | `6ec7fc19a374` |
-| `finish-roof` | 106 | 1,352,894 | 37 | 1,938,516 | `f95a94429c87` |
+| Shot | draw calls | triangles | textures* | programs | PNG bytes | sha256 (first 12) |
+|---|---:|---:|---:|---:|---:|---|
+| `start-roof` | 130 | 1,356,534 | 47 | 36 | 2,097,144 | `9fbfd14ff579` |
+| `first-gap` | 122 | 1,353,522 | 43 | 36 | 2,047,823 | `737c46fc8dc1` |
+| `wallrun-corridor` | 116 | 1,356,506 | 40 | 36 | 2,265,805 | `a8463514f60f` |
+| `service-block` | 124 | 1,356,522 | 46 | 36 | 2,135,423 | `034c95772328` |
+| `skybridge` | 118 | 1,353,514 | 44 | 36 | 1,906,287 | `c150f2904983` |
+| `finish-roof` | 106 | 1,352,894 | 40 | 36 | 1,904,214 | `69e1b9491daa` |
 
-\* `renderer.info.memory.textures` is a GPU counter that floats 37–49 between
+\* `renderer.info.memory.textures` is a GPU counter that floats 40–47 between
 runs even when the PNG is byte-identical; it is not part of the determinism
 check. Draw calls and triangles are stable per shot.
 
 **Caveat vs earlier rounds:** `docs/DECISION_AT_100.md` and
 `docs/FINAL_REPORT.md` claim 352 draw calls / 2.67 M triangles. This capture
-reports 106–136 calls / ≈1.35 M triangles at the six review poses. The numbers
+reports 106–130 calls / ≈1.35 M triangles at the six review poses. The numbers
 come from different instruments (capture `stats()` vs a full-run overlay) and
 different poses/quality, so they are **not comparable**; a real perf pass is W5,
 not W0. No regression is claimed either way.
 
 ## 3. Determinism
 
-Two independent Edge launches (separate browser processes), one with the
-harness's own Vite and one on an external port, produced **byte-identical PNGs
-for all six shots** (`captures/w0/manifest.json`, `determinism.verified = true`,
-`matches = 6/6`).
+Three independent full runs (`captures/w0-fov50-poses-a|b|c`) produced
+byte-identical PNGs for all six shots (18/18), and the canonical
+`captures/w0` run reproduced the same hashes (`manifest.determinism.verified =
+true, matches = 6/6`).
 
-Root cause found during W0: `GTAOPass._generateNoise()` builds a `SimplexNoise`
-whose permutation table is filled with `Math.random()`, so the 64×64 AO noise
-texture changed per page load (mean pixel delta 0.2–0.8/255 — invisible, but
-hash-breaking). Under `?capture=1` only, `prepareCaptureMode()` now installs a
-seeded `Math.random` (mulberry32, fixed seed) before application initialisation,
-plus frozen sky/city/grain time (`update(0)`, `elapsedSeconds = 0`). Production
-path untouched: the production bundle contains zero capture-mode symbols.
-Decision: [`DECISIONS.md`](DECISIONS.md) D-04.
+Under the 50° lens one shot (`first-gap`) initially differed between loads
+(976 pixels at ±1/255). Diagnosis: the scene graph, camera matrices and shader
+counters were identical across loads — the difference was LSB jitter of
+per-launch **GPU-baked state** (which frame first baked the PMREM sky probe /
+shadow map / compiled a program). Fix in capture mode only:
+1. re-pin display quality, DPR and aspect after the level session starts;
+2. rebuild the PMREM sky probe and shadow map from the frozen state;
+3. pre-compile shader programs for all six authored cameras in fixed order;
+4. replace the fixed 2-frame wait with a GPU-readback settle gate (default
+   framebuffer checksum must be identical on two consecutive frames).
+
+Production path untouched: the production bundle contains zero capture-mode
+symbols. Decision: [`DECISIONS.md`](DECISIONS.md) D-04, D-11.
 
 ## 4. Reference recomputed by our own script
 
@@ -123,7 +140,7 @@ script reproduces the historical v1 numbers bit-for-bit (round-93 `start.jpg`:
 max abs diff 0.0 over all 13 metrics), so round 1–100 evidence stays
 comparable. Provenance and band policy: [`DECISIONS.md`](DECISIONS.md) D-02.
 
-## 5. Baseline numbers (six shots)
+## 5. Baseline numbers (six shots, FOV 50)
 
 Verdict columns: `shifted` = W0/W1 target (13 metrics), `tol` = v1 tolerance
 continuity gauge, `legacy` = raw plan band (traceability). Full 13×6 table:
@@ -132,41 +149,47 @@ continuity gauge, `legacy` = raw plan band (traceability). Full 13×6 table:
 
 | Shot | luma | std | p25 | p95 | nw% | ds% | sat | lc | edge | sky% | tc | split | red% | shifted | tol | legacy |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
-| `start-roof` | 0.700✗ | 0.224✗ | 0.554✗ | 0.969 | 25.5 | 0.5 | 0.204✗ | 0.210✗ | 0.026 | 37.4 | 0.187✗ | 31.7✗ | 1.6 | **6/13** | 6/13 | 7/13 |
-| `first-gap` | 0.635 | 0.220✗ | 0.495✗ | 0.946 | 14.4✗ | 0.5 | 0.234✗ | 0.204✗ | 0.028 | 39.7 | 0.209✗ | −4.6✗ | 0.9 | **6/13** | 8/13 | 5/13 |
-| `wallrun-corridor` | 0.593 | 0.273 | 0.316✗ | 0.950 | 17.3✗ | 2.0 | 0.365✗ | 0.264✗ | 0.025 | 50.0✗ | 0.221✗ | −26.8 | 1.7 | **7/13** | 13/13 | 9/13 |
-| `service-block` | 0.605 | 0.291 | 0.321✗ | 0.970 | 18.7✗ | 2.9 | 0.281 | 0.285 | 0.026 | 2.7✗ | 0.233✗ | −65.4✗ | 1.8 | **8/13** | 11/13 | 7/13 |
-| `skybridge` | 0.561 | 0.246 | 0.362 | 0.946 | 10.9✗ | 1.4 | 0.388✗ | 0.235✗ | 0.021 | 54.2✗ | 0.166✗ | −66.5✗ | 0.6 | **7/13** | 8/13 | 8/13 |
-| `finish-roof` | 0.760✗ | 0.203✗ | 0.655✗ | 0.962 | 30.7 | 0.6 | 0.155✗ | 0.196✗ | 0.017 | 39.0 | 0.187✗ | 61.3✗ | 1.7 | **6/13** | 6/13 | 5/13 |
+| `start-roof` | 0.636 | 0.231✗ | 0.458✗ | 0.953 | 15.3✗ | 0.3 | 0.265 | 0.219✗ | 0.025 | 51.0✗ | 0.207✗ | 12.0✗ | 1.5 | **6/13** | 9/13 | 7/13 |
+| `first-gap` | 0.660✗ | 0.215✗ | 0.529✗ | 0.943 | 16.1✗ | 0.4 | 0.231✗ | 0.198✗ | 0.028 | 52.6✗ | 0.205✗ | −22.9 | 0.5 | **5/13** | 9/13 | 6/13 |
+| `wallrun-corridor` | 0.480✗ | 0.260 | 0.275✗ | 0.907✗ | 5.6✗ | 4.0✗ | 0.501✗ | 0.248✗ | 0.027 | 65.9✗ | 0.192✗ | −12.6✗ | 1.9 | **3/13** | 6/13 | 5/13 |
+| `service-block` | 0.508 | 0.219✗ | 0.437✗ | 0.794✗ | 0.2✗ | 3.6 | 0.268 | 0.206✗ | 0.028 | 8.7✗ | 0.248 | −49.0✗ | 1.1 | **6/13** | 6/13 | 5/13 |
+| `skybridge` | 0.661✗ | 0.196✗ | 0.557✗ | 0.946 | 13.1✗ | 0.5 | 0.230✗ | 0.185✗ | 0.020 | 48.5✗ | 0.172✗ | −37.2✗ | 0.2✗ | **3/13** | 7/13 | 5/13 |
+| `finish-roof` | 0.740✗ | 0.185✗ | 0.620✗ | 0.955 | 20.3✗ | 0.6 | 0.154✗ | 0.175✗ | 0.017 | 44.0 | 0.127✗ | 52.2✗ | 1.9 | **5/13** | 6/13 | 6/13 |
 
 Per-metric passes across the six shots:
 
 | Metric | PASS | Reading |
 |---|---:|---|
-| Luma p95 | 6/6 | highlights reach the reference level |
-| Deep-shadow share | 6/6 | no crushed blacks |
 | Edge energy | 6/6 | enough detail at 960 px |
-| Red accent share | 6/6 | red is present — but the art director reports salmon/terracotta hue, so the metric over-counts |
-| Luma mean | 4/6 | three shots are too bright (0.70–0.76 vs band 0.51–0.65) |
-| Luma std | 3/6 | flat frames (0.20–0.22 vs ≥ 0.243) |
-| Sky-blue area | 3/6 | interior shot 2.7 %; but the metric also counts blue facades (see §7) |
-| Near-white share | 2/6 | four shots too far from the bright reference roofs (10.9–18.7 % vs 22.2–35.2) |
-| Luma p25 | 1/6 | shadows/midtones too bright and flat |
-| Saturation | 1/6 | bimodal: too grey (0.155–0.234) or too saturated (0.365–0.388) |
-| Local contrast | 1/6 | flat mid-scale structure |
-| Split-tone dark R−B | 1/6 | dark masses are not the cool blue of the reference |
-| Top-third contrast | 0/6 | **flat pale sky in every shot — the single most systematic gap** |
+| Deep-shadow share | 5/6 | no crushed blacks (the glass-heavy corridor is the exception, 4.0 %) |
+| Red accent share | 5/6 | red present — but the art director reports salmon/terracotta hue, so the metric over-counts |
+| Luma p95 | 4/6 | highlights near the reference level; the two darker interiors fall short |
+| Luma mean | 2/6 | four shots too bright or too flat versus 0.506–0.646 |
+| Saturation | 2/6 | bimodal: too grey (0.154–0.231) or far too saturated (0.501 on the glass corridor) |
+| Luma std | 1/6 | flat frames (0.185–0.231 vs ≥ 0.243) |
+| Sky-blue area | 1/6 | **the metric counts blue facades**: 48–66 % "sky" on facade-heavy frames; real sky is a fraction of that |
+| Top-third contrast | 1/6 | flat pale sky in every frame except one |
+| Split-tone dark R−B | 1/6 | dark masses are not the cool blue of the reference (positive/warm on many frames) |
+| Luma p25 | 0/6 | shadows/midtones too bright and flat everywhere |
+| Near-white share | 0/6 | 0.2–20.3 % vs 22.2–35.2 %: the reference's blown-out white roofs are simply not in our frames |
+| Local contrast | 0/6 | flat mid-scale structure everywhere |
 
-Read with D-03: a dark composition (`service-block`, `sky% = 2.7`) cannot pass
-`sky-blue`/`near-white` by design. These are reported, not waived; the
-applicable metric family is noted when a shot is structurally exempt.
+Read with D-03: `service-block` and `wallrun-corridor` are structurally dark/sky-dark
+compositions; `sky-blue` and `near-white` are not their metric family. They are
+reported, not waived. **Framing sensitivity:** `near-white` fell versus revision 1
+mostly because the AD-2 poses show less bright deck (the reference frames are
+roof-dominant). That is an honest content gap for W1, not a lens artefact to game.
 
 ## 6. Blind art-director verdict
 
 **0/6 PASS** against the "can this frame stand in the reference prologue"
 criterion; the W1 gate is 4/6. Beats were recognised 6/6 without labels, so
-route readability is in place — the image language is not. Full per-frame
-deviations and fixes: [`BLIND_REVIEW_W0.md`](BLIND_REVIEW_W0.md).
+route readability is in place — the image language is not. The blind review was
+performed on the revision-1 frames (FOV 65); the defects it names are
+systemic and independent of the lens, and the AD-2 framing pass on the FOV-50
+frames changed composition, not materials/colour. Full per-frame deviations and
+fixes: [`BLIND_REVIEW_W0.md`](BLIND_REVIEW_W0.md); framing corrections already
+applied: [`BLIND_REVIEW_W0.md`](BLIND_REVIEW_W0.md) §AD-2 and D-11.
 
 Systemic defects, in leverage order (inputs to W1):
 1. **Colour script** — warm whites `#F0E8E0` instead of neutral `#F8F8F8`;
@@ -187,39 +210,46 @@ Systemic defects, in leverage order (inputs to W1):
    segment, not the whole 827 s prologue. A shot can pass the mean bands while
    missing the reference's interior beats.
 2. **Sky-blue is not a sky mask.** The metric counts blue-dominant pixels in the
-   upper 66 % of the frame; our saturated blue facades count as "sky". The art
-   director measured ~8–12 % real sky on frames with `sky% ≈ 37–54`. This is a
-   known over-count, not a win (guardrail planned, D-09).
+   upper 66 % of the frame; our saturated blue facades and glass count as "sky"
+   (65.9 % on the glass corridor while visible sky is a thin strip). Known
+   over-count, not a win (guardrail planned, D-09).
 3. **Near-white is not a clip detector.** `luma > 0.9` also counts clipped
    whites; edge energy inside the near-white mask and seam readability must be
    checked by eye (art director checks in `ART_BRIEF.md` §4).
 4. **Red share is not route readability.** Banners and props satisfy the metric;
    hue/saturation and continuity of the route line are not measured.
-5. **No human acceptance.** W0 numbers and the blind review are machine/
+5. **Framing changes metrics.** The same renderer at a different pose or lens
+   moves `near-white`/`sky`/`luma` strongly; revision-1 and revision-2 numbers are
+   not comparable, and no W1 claim may be based on re-framing a shot instead of
+   changing the look.
+6. **No human acceptance.** W0 numbers and the blind review are machine/
    model-mediated; owner acceptance remains required (plan §2.1, `DECISION_AT_100`).
-6. **No frame-copy intent.** Passing the bands is not "matching a screenshot";
+7. **No frame-copy intent.** Passing the bands is not "matching a screenshot";
    the target is the reference language (D-06).
-7. **FPS not measured here.** The plan's W1 gate (≥ 55 fps at 1600×900 high) is
+8. **FPS not measured here.** The plan's W1 gate (≥ 55 fps at 1600×900 high) is
    out of scope for W0.
 
 ## 8. Open items handed to W1
 
 1. **Fix the three systemic defects** from §6/`ART_BRIEF.md` §3; verify with the
    same six-shot capture and blind review (4/6 gate).
-2. **FOV contract.** Capture contract fixes vertical FOV 65; the art brief asks
-   hFOV 78–82° (vertical ≈ 50°). Decide in W1 and record in D-2x before the next
-   baseline.
-3. **Composition deviations** forced by geometry (honest list from the capture
-   executor): no camera roll in the position+lookAt contract (wall-run 8–15°
-   roll unrepresentable); the wall-run corridor walls are white panels, so the
-   glass language was framed on the west tower instead; there is no red door in
-   the duct (red landmark is a handrail); `first-gap` opens onto a lower roof at
-   −19 m rather than "city below"; the overhead canyon bridge is fixed geometry
-   and stays in `start-roof` MG.
-4. **Anti-gaming guardrails** (D-09): sky mask above the horizon, edge energy
-   inside the near-white mask, continuous red component with HSV S ≥ 0.6.
-5. **Perf instrumentation** — reconcile `stats()` counts with the full-run
+2. **Composition limits forced by geometry/contract** (from the capture executor,
+   honest list): no camera roll in the contract (wall-run 8–15° roll is
+   unrepresentable, accepted as roll=0 for capture); `first-gap` is backed by a
+   15-step stair only 4 m after the landing, so the gap cannot dominate MG without
+   W3 geometry, and the closed canyon tops out its sky share; `start-roof` sky is
+   limited by the tall city wall on the right (22–28 % visible vs 35–40 % card);
+   `skybridge` cannot show the city below or 40–55 % sky before W1+/W2 (solid
+   parapets, missing suspended load); `service-block` has no red door in the duct
+   (red landmark is an entrance rail that leaves the frame after the dolly) and
+   the duct edge is thin — W2 content; the "04 / SKYBRIDGE" billboard left the
+   frame as a side effect of the dolly and is a candidate to re-introduce in W1.
+3. **Anti-gaming guardrails** (D-09): sky mask above the horizon, edge energy
+   inside the near-white mask, continuous red component with HSV S ≥ 0.6. Given
+   §5 (`sky-blue` 65.9 % on a glass wall), this is the first W1 measurement task.
+4. **Perf instrumentation** — reconcile `stats()` counts with the full-run
    overlay before any perf claim (W5).
+5. **FOV contract** — resolved: 50° vertical (D-11).
 
 ## 9. Audio baseline (already landed, not re-run in W0)
 
@@ -239,7 +269,7 @@ listening pass is still required for the W4 gate and is not claimed here.**
 
 | G0 item (plan §6 W0) | Status |
 |---|---|
-| Dev-only capture boot, six fixed poses, no menu/HUD, frozen time | ✅ `?capture=1&level=prologue&shot=<id>`; byte-identical across independent loads |
+| Dev-only capture boot, six fixed poses, no menu/HUD, frozen time | ✅ `?capture=1&level=prologue&shot=<id>` at 50° FOV; byte-identical across independent loads |
 | `tools/capture.*` Playwright Edge harness, 1600×900 PNGs, iteration dirs | ✅ `tools/capture/capture.mjs` + `captures/<iteration>/manifest.json` |
 | `tools/metrics.py` measured identically for reference and captures | ✅ v2.1, three verdict modes, reference recompute + calibration |
 | Audio render + metrics tooling | ✅ landed earlier, 5/5 prologue targets in existing evidence (listening pass open) |
@@ -247,5 +277,5 @@ listening pass is still required for the W4 gate and is not claimed here.**
 | Meta-requirement: reference bands recomputed by our own script | ✅ [`reference-prolog.json`](reference-prolog.json), [`METRIC_SPEC.md`](METRIC_SPEC.md), D-02 |
 
 **G0 is not a look gate.** The baseline is red by design: AD 0/6 PASS, shifted
-bands 6–8/13 per shot. That is the starting line for W1, with the fixes in
-`ART_BRIEF.md` §3 and `BLIND_REVIEW_W0.md`.
+bands 3–6/13 per shot at the owner-approved 50° lens. That is the starting line
+for W1, with the fixes in `ART_BRIEF.md` §3 and `BLIND_REVIEW_W0.md`.

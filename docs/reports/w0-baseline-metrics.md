@@ -27,119 +27,119 @@ Reference: `ref/reference/prolog-kit/study/05-prologue-roofs` (20 frames, set `p
 
 | Metric | Value | Ref mean | Delta | Shifted band | Gap | Shifted | Tolerance | Legacy |
 |---|---:|---:|---:|---|---:|:---:|:---:|:---:|
-| Luma mean | 0.7602 | 0.6152 | +0.1450 | 0.506224..0.646224 | -0.1140 | FAIL | WATCH | FAIL |
-| Luma std | 0.2028 | 0.2946 | -0.0918 | >=0.242584 | -0.0398 | FAIL | WATCH | FAIL |
-| Luma p25 | 0.6549 | 0.3710 | +0.2839 | 0.330988..0.420988 | -0.2339 | FAIL | WATCH | FAIL |
-| Luma p95 | 0.9621 | 0.9806 | -0.0185 | >=0.9316 | +0.0305 | PASS | PASS | PASS |
-| Near-white share | 30.7263 | 34.4913 | -3.7651 | 22.1913..35.1913 | +4.4651 | PASS | PASS | FAIL |
-| Deep-shadow share | 0.5785 | 0.6781 | -0.0996 | <=3.6781 | +3.0996 | PASS | PASS | PASS |
-| Saturation | 0.1551 | 0.3000 | -0.1449 | 0.241027..0.321027 | -0.0859 | FAIL | WATCH | FAIL |
-| Local contrast | 0.1957 | 0.2850 | -0.0893 | >=0.273703 | -0.0780 | FAIL | WATCH | PASS |
-| Edge energy | 0.0167 | 0.0194 | -0.0027 | >=0.0132946 | +0.0034 | PASS | PASS | FAIL |
-| Sky-blue area | 38.9920 | 43.2583 | -4.2664 | 25.1583..45.1583 | +6.1664 | PASS | PASS | PASS |
-| Top-third contrast | 0.1872 | 0.2433 | -0.0561 | >=0.234796 | -0.0476 | FAIL | WATCH | PASS |
-| Split-tone dark R-B | 61.2917 | -21.8069 | +83.0986 | -28.2069..-13.2069 | -74.4986 | FAIL | WATCH | FAIL |
-| Red accent share | 1.6865 | 2.3938 | -0.7073 | 0.193789..3.19379 | +1.4927 | PASS | PASS | FAIL |
+| Luma mean | 0.7399 | 0.6152 | +0.1246 | 0.506224..0.646224 | -0.0936 | FAIL | WATCH | FAIL |
+| Luma std | 0.1845 | 0.2946 | -0.1100 | >=0.242584 | -0.0580 | FAIL | WATCH | FAIL |
+| Luma p25 | 0.6199 | 0.3710 | +0.2489 | 0.330988..0.420988 | -0.1989 | FAIL | WATCH | FAIL |
+| Luma p95 | 0.9546 | 0.9806 | -0.0260 | >=0.9316 | +0.0230 | PASS | PASS | PASS |
+| Near-white share | 20.2921 | 34.4913 | -14.1993 | 22.1913..35.1913 | -1.8993 | FAIL | PASS | PASS |
+| Deep-shadow share | 0.5966 | 0.6781 | -0.0815 | <=3.6781 | +3.0815 | PASS | PASS | PASS |
+| Saturation | 0.1544 | 0.3000 | -0.1457 | 0.241027..0.321027 | -0.0867 | FAIL | WATCH | FAIL |
+| Local contrast | 0.1748 | 0.2850 | -0.1102 | >=0.273703 | -0.0989 | FAIL | WATCH | PASS |
+| Edge energy | 0.0172 | 0.0194 | -0.0022 | >=0.0132946 | +0.0039 | PASS | PASS | FAIL |
+| Sky-blue area | 44.0397 | 43.2583 | +0.7813 | 25.1583..45.1583 | +1.1187 | PASS | PASS | PASS |
+| Top-third contrast | 0.1266 | 0.2433 | -0.1167 | >=0.234796 | -0.1082 | FAIL | WATCH | PASS |
+| Split-tone dark R-B | 52.2469 | -21.8069 | +74.0538 | -28.2069..-13.2069 | -65.4538 | FAIL | WATCH | FAIL |
+| Red accent share | 1.9361 | 2.3938 | -0.4576 | 0.193789..3.19379 | +1.2576 | PASS | PASS | FAIL |
 
-**6/13 shifted PASS, 7 FAIL | 6/13 tolerance PASS, 7 WATCH | 5/13 legacy PASS, 8 FAIL**
+**5/13 shifted PASS, 8 FAIL | 6/13 tolerance PASS, 7 WATCH | 6/13 legacy PASS, 7 FAIL**
 
 ### `captures/w0/first-gap.png`
 
 | Metric | Value | Ref mean | Delta | Shifted band | Gap | Shifted | Tolerance | Legacy |
 |---|---:|---:|---:|---|---:|:---:|:---:|:---:|
-| Luma mean | 0.6355 | 0.6152 | +0.0202 | 0.506224..0.646224 | +0.0108 | PASS | PASS | FAIL |
-| Luma std | 0.2199 | 0.2946 | -0.0747 | >=0.242584 | -0.0227 | FAIL | WATCH | FAIL |
-| Luma p25 | 0.4953 | 0.3710 | +0.1243 | 0.330988..0.420988 | -0.0743 | FAIL | WATCH | FAIL |
-| Luma p95 | 0.9462 | 0.9806 | -0.0344 | >=0.9316 | +0.0146 | PASS | PASS | PASS |
-| Near-white share | 14.3619 | 34.4913 | -20.1295 | 22.1913..35.1913 | -7.8295 | FAIL | WATCH | FAIL |
-| Deep-shadow share | 0.5243 | 0.6781 | -0.1538 | <=3.6781 | +3.1538 | PASS | PASS | PASS |
-| Saturation | 0.2339 | 0.3000 | -0.0661 | 0.241027..0.321027 | -0.0071 | FAIL | PASS | FAIL |
-| Local contrast | 0.2038 | 0.2850 | -0.0812 | >=0.273703 | -0.0699 | FAIL | WATCH | PASS |
+| Luma mean | 0.6598 | 0.6152 | +0.0445 | 0.506224..0.646224 | -0.0135 | FAIL | PASS | FAIL |
+| Luma std | 0.2146 | 0.2946 | -0.0800 | >=0.242584 | -0.0280 | FAIL | WATCH | FAIL |
+| Luma p25 | 0.5295 | 0.3710 | +0.1585 | 0.330988..0.420988 | -0.1085 | FAIL | WATCH | FAIL |
+| Luma p95 | 0.9428 | 0.9806 | -0.0378 | >=0.9316 | +0.0112 | PASS | PASS | PASS |
+| Near-white share | 16.1267 | 34.4913 | -18.3646 | 22.1913..35.1913 | -6.0646 | FAIL | WATCH | PASS |
+| Deep-shadow share | 0.4248 | 0.6781 | -0.2533 | <=3.6781 | +3.2533 | PASS | PASS | PASS |
+| Saturation | 0.2305 | 0.3000 | -0.0695 | 0.241027..0.321027 | -0.0105 | FAIL | PASS | FAIL |
+| Local contrast | 0.1980 | 0.2850 | -0.0870 | >=0.273703 | -0.0757 | FAIL | WATCH | PASS |
 | Edge energy | 0.0278 | 0.0194 | +0.0084 | >=0.0132946 | +0.0145 | PASS | PASS | FAIL |
-| Sky-blue area | 39.6670 | 43.2583 | -3.5913 | 25.1583..45.1583 | +5.4913 | PASS | PASS | PASS |
-| Top-third contrast | 0.2087 | 0.2433 | -0.0346 | >=0.234796 | -0.0261 | FAIL | PASS | PASS |
-| Split-tone dark R-B | -4.5703 | -21.8069 | +17.2366 | -28.2069..-13.2069 | -8.6366 | FAIL | WATCH | FAIL |
-| Red accent share | 0.9290 | 2.3938 | -1.4648 | 0.193789..3.19379 | +0.7352 | PASS | PASS | FAIL |
+| Sky-blue area | 52.6355 | 43.2583 | +9.3771 | 25.1583..45.1583 | -7.4771 | FAIL | PASS | PASS |
+| Top-third contrast | 0.2053 | 0.2433 | -0.0380 | >=0.234796 | -0.0295 | FAIL | PASS | PASS |
+| Split-tone dark R-B | -22.9052 | -21.8069 | -1.0983 | -28.2069..-13.2069 | +5.3017 | PASS | PASS | FAIL |
+| Red accent share | 0.5469 | 2.3938 | -1.8469 | 0.193789..3.19379 | +0.3531 | PASS | PASS | FAIL |
 
-**6/13 shifted PASS, 7 FAIL | 8/13 tolerance PASS, 5 WATCH | 5/13 legacy PASS, 8 FAIL**
+**5/13 shifted PASS, 8 FAIL | 9/13 tolerance PASS, 4 WATCH | 6/13 legacy PASS, 7 FAIL**
 
 ### `captures/w0/service-block.png`
 
 | Metric | Value | Ref mean | Delta | Shifted band | Gap | Shifted | Tolerance | Legacy |
 |---|---:|---:|---:|---|---:|:---:|:---:|:---:|
-| Luma mean | 0.6046 | 0.6152 | -0.0106 | 0.506224..0.646224 | +0.0416 | PASS | PASS | PASS |
-| Luma std | 0.2906 | 0.2946 | -0.0040 | >=0.242584 | +0.0480 | PASS | PASS | PASS |
-| Luma p25 | 0.3206 | 0.3710 | -0.0504 | 0.330988..0.420988 | -0.0104 | FAIL | PASS | FAIL |
-| Luma p95 | 0.9700 | 0.9806 | -0.0106 | >=0.9316 | +0.0384 | PASS | PASS | PASS |
-| Near-white share | 18.6566 | 34.4913 | -15.8347 | 22.1913..35.1913 | -3.5347 | FAIL | PASS | PASS |
-| Deep-shadow share | 2.9018 | 0.6781 | +2.2237 | <=3.6781 | +0.7763 | PASS | PASS | PASS |
-| Saturation | 0.2805 | 0.3000 | -0.0195 | 0.241027..0.321027 | +0.0395 | PASS | PASS | FAIL |
-| Local contrast | 0.2849 | 0.2850 | -0.0001 | >=0.273703 | +0.0112 | PASS | PASS | PASS |
-| Edge energy | 0.0255 | 0.0194 | +0.0061 | >=0.0132946 | +0.0122 | PASS | PASS | FAIL |
-| Sky-blue area | 2.7174 | 43.2583 | -40.5409 | 25.1583..45.1583 | -22.4409 | FAIL | WATCH | FAIL |
-| Top-third contrast | 0.2326 | 0.2433 | -0.0107 | >=0.234796 | -0.0022 | FAIL | PASS | PASS |
-| Split-tone dark R-B | -65.4001 | -21.8069 | -43.5932 | -28.2069..-13.2069 | -37.1932 | FAIL | WATCH | FAIL |
-| Red accent share | 1.8256 | 2.3938 | -0.5682 | 0.193789..3.19379 | +1.3682 | PASS | PASS | FAIL |
+| Luma mean | 0.5080 | 0.6152 | -0.1072 | 0.506224..0.646224 | +0.0018 | PASS | WATCH | PASS |
+| Luma std | 0.2191 | 0.2946 | -0.0755 | >=0.242584 | -0.0235 | FAIL | WATCH | FAIL |
+| Luma p25 | 0.4374 | 0.3710 | +0.0664 | 0.330988..0.420988 | -0.0164 | FAIL | PASS | FAIL |
+| Luma p95 | 0.7943 | 0.9806 | -0.1863 | >=0.9316 | -0.1373 | FAIL | WATCH | FAIL |
+| Near-white share | 0.1765 | 34.4913 | -34.3148 | 22.1913..35.1913 | -22.0148 | FAIL | WATCH | FAIL |
+| Deep-shadow share | 3.5505 | 0.6781 | +2.8724 | <=3.6781 | +0.1276 | PASS | PASS | PASS |
+| Saturation | 0.2681 | 0.3000 | -0.0319 | 0.241027..0.321027 | +0.0271 | PASS | PASS | FAIL |
+| Local contrast | 0.2056 | 0.2850 | -0.0794 | >=0.273703 | -0.0681 | FAIL | WATCH | PASS |
+| Edge energy | 0.0275 | 0.0194 | +0.0081 | >=0.0132946 | +0.0142 | PASS | PASS | FAIL |
+| Sky-blue area | 8.6561 | 43.2583 | -34.6023 | 25.1583..45.1583 | -16.5023 | FAIL | WATCH | FAIL |
+| Top-third contrast | 0.2480 | 0.2433 | +0.0047 | >=0.234796 | +0.0132 | PASS | PASS | PASS |
+| Split-tone dark R-B | -48.9960 | -21.8069 | -27.1891 | -28.2069..-13.2069 | -20.7891 | FAIL | WATCH | PASS |
+| Red accent share | 1.0552 | 2.3938 | -1.3386 | 0.193789..3.19379 | +0.8614 | PASS | PASS | FAIL |
 
-**8/13 shifted PASS, 5 FAIL | 11/13 tolerance PASS, 2 WATCH | 7/13 legacy PASS, 6 FAIL**
+**6/13 shifted PASS, 7 FAIL | 6/13 tolerance PASS, 7 WATCH | 5/13 legacy PASS, 8 FAIL**
 
 ### `captures/w0/skybridge.png`
 
 | Metric | Value | Ref mean | Delta | Shifted band | Gap | Shifted | Tolerance | Legacy |
 |---|---:|---:|---:|---|---:|:---:|:---:|:---:|
-| Luma mean | 0.5609 | 0.6152 | -0.0543 | 0.506224..0.646224 | +0.0547 | PASS | PASS | PASS |
-| Luma std | 0.2456 | 0.2946 | -0.0490 | >=0.242584 | +0.0030 | PASS | PASS | PASS |
-| Luma p25 | 0.3625 | 0.3710 | -0.0085 | 0.330988..0.420988 | +0.0315 | PASS | PASS | PASS |
-| Luma p95 | 0.9462 | 0.9806 | -0.0344 | >=0.9316 | +0.0146 | PASS | PASS | PASS |
-| Near-white share | 10.8926 | 34.4913 | -23.5988 | 22.1913..35.1913 | -11.2988 | FAIL | WATCH | FAIL |
-| Deep-shadow share | 1.4448 | 0.6781 | +0.7667 | <=3.6781 | +2.2333 | PASS | PASS | PASS |
-| Saturation | 0.3877 | 0.3000 | +0.0876 | 0.241027..0.321027 | -0.0666 | FAIL | WATCH | FAIL |
-| Local contrast | 0.2346 | 0.2850 | -0.0504 | >=0.273703 | -0.0391 | FAIL | WATCH | PASS |
-| Edge energy | 0.0213 | 0.0194 | +0.0019 | >=0.0132946 | +0.0080 | PASS | PASS | FAIL |
-| Sky-blue area | 54.1912 | 43.2583 | +10.9329 | 25.1583..45.1583 | -9.0329 | FAIL | PASS | PASS |
-| Top-third contrast | 0.1663 | 0.2433 | -0.0770 | >=0.234796 | -0.0685 | FAIL | WATCH | PASS |
-| Split-tone dark R-B | -66.4513 | -21.8069 | -44.6444 | -28.2069..-13.2069 | -38.2444 | FAIL | WATCH | FAIL |
-| Red accent share | 0.6208 | 2.3938 | -1.7730 | 0.193789..3.19379 | +0.4270 | PASS | PASS | FAIL |
+| Luma mean | 0.6611 | 0.6152 | +0.0459 | 0.506224..0.646224 | -0.0149 | FAIL | PASS | FAIL |
+| Luma std | 0.1959 | 0.2946 | -0.0987 | >=0.242584 | -0.0467 | FAIL | WATCH | FAIL |
+| Luma p25 | 0.5567 | 0.3710 | +0.1857 | 0.330988..0.420988 | -0.1357 | FAIL | WATCH | FAIL |
+| Luma p95 | 0.9459 | 0.9806 | -0.0347 | >=0.9316 | +0.0143 | PASS | PASS | PASS |
+| Near-white share | 13.1182 | 34.4913 | -21.3731 | 22.1913..35.1913 | -9.0731 | FAIL | WATCH | FAIL |
+| Deep-shadow share | 0.4618 | 0.6781 | -0.2163 | <=3.6781 | +3.2163 | PASS | PASS | PASS |
+| Saturation | 0.2296 | 0.3000 | -0.0705 | 0.241027..0.321027 | -0.0115 | FAIL | PASS | FAIL |
+| Local contrast | 0.1847 | 0.2850 | -0.1003 | >=0.273703 | -0.0890 | FAIL | WATCH | PASS |
+| Edge energy | 0.0197 | 0.0194 | +0.0003 | >=0.0132946 | +0.0064 | PASS | PASS | FAIL |
+| Sky-blue area | 48.4758 | 43.2583 | +5.2175 | 25.1583..45.1583 | -3.3175 | FAIL | PASS | PASS |
+| Top-third contrast | 0.1720 | 0.2433 | -0.0713 | >=0.234796 | -0.0628 | FAIL | WATCH | PASS |
+| Split-tone dark R-B | -37.1709 | -21.8069 | -15.3640 | -28.2069..-13.2069 | -8.9640 | FAIL | WATCH | FAIL |
+| Red accent share | 0.1811 | 2.3938 | -2.2127 | 0.193789..3.19379 | -0.0127 | FAIL | PASS | FAIL |
 
-**7/13 shifted PASS, 6 FAIL | 8/13 tolerance PASS, 5 WATCH | 8/13 legacy PASS, 5 FAIL**
+**3/13 shifted PASS, 10 FAIL | 7/13 tolerance PASS, 6 WATCH | 5/13 legacy PASS, 8 FAIL**
 
 ### `captures/w0/start-roof.png`
 
 | Metric | Value | Ref mean | Delta | Shifted band | Gap | Shifted | Tolerance | Legacy |
 |---|---:|---:|---:|---|---:|:---:|:---:|:---:|
-| Luma mean | 0.7003 | 0.6152 | +0.0851 | 0.506224..0.646224 | -0.0541 | FAIL | WATCH | FAIL |
-| Luma std | 0.2243 | 0.2946 | -0.0703 | >=0.242584 | -0.0183 | FAIL | WATCH | PASS |
-| Luma p25 | 0.5535 | 0.3710 | +0.1825 | 0.330988..0.420988 | -0.1325 | FAIL | WATCH | FAIL |
-| Luma p95 | 0.9689 | 0.9806 | -0.0117 | >=0.9316 | +0.0373 | PASS | PASS | PASS |
-| Near-white share | 25.5177 | 34.4913 | -8.9736 | 22.1913..35.1913 | +3.3264 | PASS | PASS | PASS |
-| Deep-shadow share | 0.5193 | 0.6781 | -0.1588 | <=3.6781 | +3.1588 | PASS | PASS | PASS |
-| Saturation | 0.2039 | 0.3000 | -0.0962 | 0.241027..0.321027 | -0.0372 | FAIL | WATCH | FAIL |
-| Local contrast | 0.2105 | 0.2850 | -0.0745 | >=0.273703 | -0.0632 | FAIL | WATCH | PASS |
-| Edge energy | 0.0258 | 0.0194 | +0.0065 | >=0.0132946 | +0.0126 | PASS | PASS | FAIL |
-| Sky-blue area | 37.3800 | 43.2583 | -5.8783 | 25.1583..45.1583 | +7.7783 | PASS | PASS | PASS |
-| Top-third contrast | 0.1873 | 0.2433 | -0.0560 | >=0.234796 | -0.0475 | FAIL | WATCH | PASS |
-| Split-tone dark R-B | 31.7459 | -21.8069 | +53.5528 | -28.2069..-13.2069 | -44.9528 | FAIL | WATCH | FAIL |
-| Red accent share | 1.6242 | 2.3938 | -0.7696 | 0.193789..3.19379 | +1.4304 | PASS | PASS | FAIL |
+| Luma mean | 0.6357 | 0.6152 | +0.0205 | 0.506224..0.646224 | +0.0105 | PASS | PASS | FAIL |
+| Luma std | 0.2313 | 0.2946 | -0.0633 | >=0.242584 | -0.0113 | FAIL | WATCH | PASS |
+| Luma p25 | 0.4577 | 0.3710 | +0.0867 | 0.330988..0.420988 | -0.0367 | FAIL | PASS | FAIL |
+| Luma p95 | 0.9535 | 0.9806 | -0.0271 | >=0.9316 | +0.0219 | PASS | PASS | PASS |
+| Near-white share | 15.3376 | 34.4913 | -19.1538 | 22.1913..35.1913 | -6.8538 | FAIL | WATCH | PASS |
+| Deep-shadow share | 0.3191 | 0.6781 | -0.3590 | <=3.6781 | +3.3590 | PASS | PASS | PASS |
+| Saturation | 0.2655 | 0.3000 | -0.0346 | 0.241027..0.321027 | +0.0244 | PASS | PASS | FAIL |
+| Local contrast | 0.2187 | 0.2850 | -0.0663 | >=0.273703 | -0.0550 | FAIL | WATCH | PASS |
+| Edge energy | 0.0255 | 0.0194 | +0.0061 | >=0.0132946 | +0.0122 | PASS | PASS | FAIL |
+| Sky-blue area | 50.9533 | 43.2583 | +7.6950 | 25.1583..45.1583 | -5.7950 | FAIL | PASS | PASS |
+| Top-third contrast | 0.2065 | 0.2433 | -0.0368 | >=0.234796 | -0.0283 | FAIL | PASS | PASS |
+| Split-tone dark R-B | 11.9775 | -21.8069 | +33.7844 | -28.2069..-13.2069 | -25.1844 | FAIL | WATCH | FAIL |
+| Red accent share | 1.5228 | 2.3938 | -0.8710 | 0.193789..3.19379 | +1.3290 | PASS | PASS | FAIL |
 
-**6/13 shifted PASS, 7 FAIL | 6/13 tolerance PASS, 7 WATCH | 7/13 legacy PASS, 6 FAIL**
+**6/13 shifted PASS, 7 FAIL | 9/13 tolerance PASS, 4 WATCH | 7/13 legacy PASS, 6 FAIL**
 
 ### `captures/w0/wallrun-corridor.png`
 
 | Metric | Value | Ref mean | Delta | Shifted band | Gap | Shifted | Tolerance | Legacy |
 |---|---:|---:|---:|---|---:|:---:|:---:|:---:|
-| Luma mean | 0.5926 | 0.6152 | -0.0227 | 0.506224..0.646224 | +0.0537 | PASS | PASS | PASS |
-| Luma std | 0.2735 | 0.2946 | -0.0211 | >=0.242584 | +0.0309 | PASS | PASS | PASS |
-| Luma p25 | 0.3159 | 0.3710 | -0.0551 | 0.330988..0.420988 | -0.0151 | FAIL | PASS | FAIL |
-| Luma p95 | 0.9495 | 0.9806 | -0.0311 | >=0.9316 | +0.0179 | PASS | PASS | PASS |
-| Near-white share | 17.3013 | 34.4913 | -17.1900 | 22.1913..35.1913 | -4.8900 | FAIL | PASS | PASS |
-| Deep-shadow share | 2.0289 | 0.6781 | +1.3508 | <=3.6781 | +1.6492 | PASS | PASS | PASS |
-| Saturation | 0.3650 | 0.3000 | +0.0650 | 0.241027..0.321027 | -0.0440 | FAIL | PASS | PASS |
-| Local contrast | 0.2640 | 0.2850 | -0.0210 | >=0.273703 | -0.0097 | FAIL | PASS | PASS |
-| Edge energy | 0.0247 | 0.0194 | +0.0054 | >=0.0132946 | +0.0115 | PASS | PASS | FAIL |
-| Sky-blue area | 50.0275 | 43.2583 | +6.7692 | 25.1583..45.1583 | -4.8692 | FAIL | PASS | PASS |
-| Top-third contrast | 0.2207 | 0.2433 | -0.0226 | >=0.234796 | -0.0141 | FAIL | PASS | PASS |
-| Split-tone dark R-B | -26.8415 | -21.8069 | -5.0346 | -28.2069..-13.2069 | +1.3654 | PASS | PASS | FAIL |
-| Red accent share | 1.6881 | 2.3938 | -0.7057 | 0.193789..3.19379 | +1.4943 | PASS | PASS | FAIL |
+| Luma mean | 0.4803 | 0.6152 | -0.1349 | 0.506224..0.646224 | -0.0259 | FAIL | WATCH | PASS |
+| Luma std | 0.2600 | 0.2946 | -0.0345 | >=0.242584 | +0.0175 | PASS | PASS | PASS |
+| Luma p25 | 0.2752 | 0.3710 | -0.0958 | 0.330988..0.420988 | -0.0558 | FAIL | PASS | FAIL |
+| Luma p95 | 0.9072 | 0.9806 | -0.0734 | >=0.9316 | -0.0244 | FAIL | WATCH | FAIL |
+| Near-white share | 5.5999 | 34.4913 | -28.8914 | 22.1913..35.1913 | -16.5914 | FAIL | WATCH | FAIL |
+| Deep-shadow share | 3.9686 | 0.6781 | +3.2905 | <=3.6781 | -0.2905 | FAIL | WATCH | PASS |
+| Saturation | 0.5008 | 0.3000 | +0.2008 | 0.241027..0.321027 | -0.1798 | FAIL | WATCH | FAIL |
+| Local contrast | 0.2481 | 0.2850 | -0.0369 | >=0.273703 | -0.0256 | FAIL | PASS | PASS |
+| Edge energy | 0.0268 | 0.0194 | +0.0074 | >=0.0132946 | +0.0135 | PASS | PASS | FAIL |
+| Sky-blue area | 65.9077 | 43.2583 | +22.6493 | 25.1583..45.1583 | -20.7493 | FAIL | WATCH | FAIL |
+| Top-third contrast | 0.1922 | 0.2433 | -0.0510 | >=0.234796 | -0.0425 | FAIL | WATCH | PASS |
+| Split-tone dark R-B | -12.6299 | -21.8069 | +9.1770 | -28.2069..-13.2069 | -0.5770 | FAIL | PASS | FAIL |
+| Red accent share | 1.8706 | 2.3938 | -0.5232 | 0.193789..3.19379 | +1.3232 | PASS | PASS | FAIL |
 
-**7/13 shifted PASS, 6 FAIL | 13/13 tolerance PASS, 0 WATCH | 9/13 legacy PASS, 4 FAIL**
+**3/13 shifted PASS, 10 FAIL | 6/13 tolerance PASS, 7 WATCH | 5/13 legacy PASS, 8 FAIL**
 
