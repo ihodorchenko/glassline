@@ -3640,6 +3640,32 @@ After enabling Safari Remote Automation, verify the real browser end-to-end.
   Chromium 24.0 s.
 - Firefox/assistive technology remain unverified; audio in Safari not judged.
 
+---
+
+## Round 86 — stronger microrelief (2026-11-19)
+
+### Scope
+
+Make the procedural surface relief read at normal camera height.
+
+### What changed
+
+- Bump strengths ~2×: concrete 0.34, roof 0.26, asphalt 0.36, plaster 0.16,
+  facade 0.17, metal 0.10, red 0.08.
+- Uniform-only change; no new draw calls/branches.
+- Start **13/13**, 282 tests.
+
+### Evidence
+
+- [`microrelief.jpg`](evidence/visual/round-86/microrelief.jpg)
+- [`start.jpg`](evidence/visual/round-86/start.jpg)
+
+### Honest gaps
+
+- Grit is more visible but low-poly silhouettes remain; no human visual verdict.
+- Current host FPS is contaminated by concurrent Safari/GPU state; no new fps
+  claim is made.
+
 ## Round log
 
 | Round | Date | Focus | Outcome |

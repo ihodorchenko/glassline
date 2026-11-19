@@ -219,13 +219,13 @@ const MATERIAL_SPECS: Record<MaterialKey, MaterialSpec> = {
 const TEXTURE_SIZE = 512;
 
 const TEXTURE_BUMP_SCALE: Record<TextureKind, number> = {
-  plaster: 0.09,
-  concrete: 0.2,
-  roof: 0.15,
-  facade: 0.1,
-  metal: 0.06,
-  asphalt: 0.22,
-  red: 0.05,
+  plaster: 0.16,
+  concrete: 0.34,
+  roof: 0.26,
+  facade: 0.17,
+  metal: 0.1,
+  asphalt: 0.36,
+  red: 0.08,
   stain: 0,
 };
 

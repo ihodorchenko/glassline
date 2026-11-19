@@ -114,7 +114,7 @@ Only `Verified` means that the applicable acceptance criteria have been checked 
 
 **Dampness:** shallow reflective puddles with soft alpha edges.
 
-**Texture filtering:** 16× anisotropy on procedural surfaces.
+**Texture filtering:** 16× anisotropy; stronger procedural bump relief (Round 86).
 
 **Materials/lighting:** two-scale triplanar bump/parallax + cracks/grime/rust/seam highlights, 4096 PCF shadows, metal coping and expansion joints ([Rounds 61/66/67/68/69/70](VISUAL_REFERENCE_PROGRESS.md)); start remains 13/13.
 
