@@ -1205,10 +1205,9 @@ function addCatwalk(builder: CityBuilder): void {
   }
 
   // Support masts down the catwalk and cables back to the tower.
-  for (const x of [12, 26, 40, 52]) {
+  for (const x of [12, 22, 40, 52]) {
     for (const z of [-122.8, -130.8]) {
       builder.box(x, -12, z, 0.32, 35, 0.32, { material: "metal" });
-      builder.box(x, 5.4, z, 0.5, 0.5, 0.5, { material: "red" });
     }
   }
 
@@ -1277,6 +1276,29 @@ function addCatwalk(builder: CityBuilder): void {
     emissiveIntensity: 0.4,
     castShadow: false,
     receiveShadow: false,
+  });
+
+  // A distant hero skyline closes the open turn view without forming a wall.
+  for (const [x, z, width, top, depth] of [
+    [50, -300, 26, 96, 18],
+    [18, -330, 18, 72, 14],
+    [82, -318, 20, 82, 16],
+  ] as const) {
+    builder.box(x, (top + -31) / 2, z, width, top + 31, depth, {
+      material: "glass-far",
+      castShadow: false,
+    });
+    builder.box(x, top + 0.3, z, width + 0.6, 0.6, depth + 0.6, {
+      material: "concrete",
+      castShadow: false,
+    });
+  }
+
+  builder.box(50, 97.2, -300, 0.5, 2.0, 0.5, {
+    material: "red",
+    emissive: 0xc0262d,
+    emissiveIntensity: 0.8,
+    castShadow: false,
   });
 
   // A lower city roof under the catwalk keeps the drop readable.

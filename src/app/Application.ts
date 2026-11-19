@@ -135,6 +135,7 @@ export class Application implements Disposable {
   private checkpointSystem: CheckpointSystem | null = null;
   private interactionSystem: InteractionSystem | null = null;
   private respawnManager: RespawnManager | null = null;
+  private highRouteAnchorSet = false;
   private trainingSystem: TrainingSystem | null = null;
   private speedrunSystem: SpeedrunSystem | null = null;
   private statisticsSystem: StatisticsSystem | null = null;
@@ -847,6 +848,7 @@ export class Application implements Disposable {
       },
     );
     this.sessionDisposables.push(this.respawnManager);
+    this.highRouteAnchorSet = false;
     this.sessionUnsubscribes.push(
       this.respawnManager.subscribe(() => {
         this.sessionRecoveries += 1;
@@ -1707,6 +1709,7 @@ export class Application implements Disposable {
       }
     }
 
+    this.updateHighRouteAnchor();
     this.updateInteraction(frame);
 
     const playerPosition = this.player?.getPosition();
@@ -1728,6 +1731,40 @@ export class Application implements Disposable {
 
     this.physics?.step();
     this.syncPlayerState();
+  }
+
+  /**
+   * The catwalk/final roof sits above the last speedrun checkpoint. This
+   * fall-only anchor keeps a failed catwalk attempt from replaying the climb,
+   * without adding a checkpoint ID or touching speedrun splits.
+   */
+  private updateHighRouteAnchor(): void {
+    const player = this.player;
+    const respawn = this.respawnManager;
+
+    if (!player || !respawn || this.currentMode === "training") {
+      return;
+    }
+
+    const position = player.getPosition();
+    const movement = player.getMovementSnapshot();
+    const onHighRoute = position.y > 4.6 && position.z < -110;
+
+    if (onHighRoute && !this.highRouteAnchorSet) {
+      this.highRouteAnchorSet = true;
+      respawn.setEmergencyAnchor({
+        checkpointId: "respawn_high_route",
+        spawnPointId: "sp_respawn_high_route",
+        position: { x: 0, y: 6.075, z: -121 },
+        rotationY: 0,
+      });
+      return;
+    }
+
+    if (this.highRouteAnchorSet && movement.grounded && position.y < 3 && position.z > -112) {
+      this.highRouteAnchorSet = false;
+      respawn.setEmergencyAnchor(null);
+    }
   }
 
   private updateInteraction(frame: InputFrame): void {

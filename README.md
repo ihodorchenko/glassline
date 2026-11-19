@@ -58,7 +58,7 @@ vertical).
 
 ![Final scaffold ascent](docs/evidence/visual/round-6/ascent.jpg)
 
-![High catwalk](docs/evidence/visual/round-9/gap.jpg)
+![High catwalk](docs/evidence/visual/round-10/gap.jpg)
 
 The shell uses a paper-and-ink editorial language: ivory panels, black uppercase
 type, hard red rules, a minimal HUD, and canvas-rendered `RUN` / section /

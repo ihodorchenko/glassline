@@ -94,6 +94,48 @@ describe("RespawnManager", () => {
     });
   });
 
+  it("prefers a fall-only emergency anchor over the active checkpoint", () => {
+    const harness = createHarness(checkpointDestination);
+    const anchor: RespawnDestination = {
+      checkpointId: "respawn_high_route",
+      spawnPointId: "sp_respawn_high_route",
+      position: { x: 0, y: 6.075, z: -121 },
+      rotationY: 0,
+    };
+
+    harness.manager.setEmergencyAnchor(anchor);
+    harness.manager.request("fall");
+
+    expect(harness.player.teleportTo).toHaveBeenCalledWith(anchor.position);
+    expect(harness.checkpoints.resolveRespawnDestination).not.toHaveBeenCalled();
+    expect(harness.manager.getLastDestination()).toEqual(anchor);
+
+    harness.manager.update(0.11);
+
+    expect(harness.manager.getLastDestination()).toEqual(anchor);
+  });
+
+  it("ignores the emergency anchor for non-fall recovery and can clear it", () => {
+    const harness = createHarness(checkpointDestination);
+    const anchor: RespawnDestination = {
+      checkpointId: "respawn_high_route",
+      spawnPointId: "sp_respawn_high_route",
+      position: { x: 0, y: 6.075, z: -121 },
+      rotationY: 0,
+    };
+
+    harness.manager.setEmergencyAnchor(anchor);
+    harness.manager.request("manual-restart");
+
+    expect(harness.player.teleportTo).toHaveBeenCalledWith(checkpointDestination.position);
+
+    harness.manager.update(0.11);
+    harness.manager.setEmergencyAnchor(null);
+    harness.manager.request("fall");
+
+    expect(harness.player.teleportTo).toHaveBeenLastCalledWith(checkpointDestination.position);
+  });
+
   it("passes a preferred checkpoint id to the destination resolver", () => {
     const harness = createHarness(checkpointDestination);
 

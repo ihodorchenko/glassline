@@ -73,6 +73,7 @@ export class RespawnManager implements Disposable {
   private lastReason: RespawnReason = "recovery";
   private lastDestination: RespawnDestination | null = null;
   private lastUsedFallback = false;
+  private emergencyAnchor: RespawnDestination | null = null;
 
   constructor(dependencies: RespawnManagerDependencies, options: RespawnManagerOptions) {
     this.dependencies = dependencies;
@@ -94,6 +95,17 @@ export class RespawnManager implements Disposable {
     return this.lastDestination;
   }
 
+  /**
+   * Sets a fall-only recovery anchor for exposed optional route sections. It
+   * does not participate in checkpoints, speedrun splits, or preferred
+   * checkpoint requests; passing `null` restores normal checkpoint recovery.
+   */
+  setEmergencyAnchor(destination: RespawnDestination | null): void {
+    this.emergencyAnchor = destination
+      ? { ...destination, position: { ...destination.position } }
+      : null;
+  }
+
   subscribe(listener: RespawnListener): () => void {
     this.listeners.add(listener);
 
@@ -111,8 +123,9 @@ export class RespawnManager implements Disposable {
       return false;
     }
 
+    const anchor = reason === "fall" ? this.emergencyAnchor : null;
     const checkpointDestination =
-      this.dependencies.checkpoints.resolveRespawnDestination(preferredCheckpointId);
+      anchor ?? this.dependencies.checkpoints.resolveRespawnDestination(preferredCheckpointId);
     const destination = checkpointDestination ?? {
       checkpointId: "fallback",
       spawnPointId: "fallback",

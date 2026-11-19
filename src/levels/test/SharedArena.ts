@@ -222,6 +222,16 @@ export const ARENA_SURFACES: readonly SurfaceMetadata[] = [
     metadata: { role: "interactable" },
   },
   {
+    id: "surface_catwalk",
+    surfaceType: "metal",
+    walkable: true,
+    landingSurface: true,
+    wallRunSurface: false,
+    wallJumpSurface: false,
+    vaultObstacle: false,
+    metadata: { role: "catwalk" },
+  },
+  {
     id: "surface_marker",
     surfaceType: "concrete",
     walkable: false,

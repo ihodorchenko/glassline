@@ -841,6 +841,84 @@ silhouette, without changing route length or checkpoint IDs.
 3. Add catwalk/grate surface audio; run the listening pass.
 4. Final menu/motion/colour calibration.
 
+---
+
+## Round 10 — catwalk safety, surface audio, turn skyline (2026-11-19)
+
+### Scope
+
+Round 9 added a punishing catwalk gap. This round adds a fall-only safety anchor
+for the high route, gives the catwalk a metal surface for footsteps/landings, and
+closes the open turn view with a distant hero skyline.
+
+### What changed
+
+**Safety without changing the speedrun contract**
+
+- `RespawnManager` gained `setEmergencyAnchor(destination)`: it is used only for
+  `fall` recovery and never for scripted/manual restarts, checkpoints, or
+  speedrun splits.
+- The application sets a high-route anchor at `(0, 6.075, −121)` once the player
+  is above y = 4.6 and past z = −110 (high roof/catwalk). It clears when the
+  player is grounded below y = 3 and back at z > −112 (beam/ascent).
+- Result: a catwalk/gap fall respawns on the high roof instead of replaying the
+  climb; the five checkpoint IDs, order, triggers, and route length are
+  unchanged. Training sessions are excluded.
+
+**Catwalk surface audio**
+
+- New `surface_catwalk` (`surfaceType: metal`) is assigned to all four catwalk
+  decks. Footsteps and landings now use the metal preset on the grate rather than
+  concrete; the beam/ascent remain concrete.
+- Verified in-browser: feet on the catwalk resolve `surfaceType: metal`, altitude
+  ~6.1 m, while the altitude wind remains active.
+
+**Turn vista**
+
+- Three distant hero towers at z = −300/−318/−330 close the southern horizon,
+  with a red beacon on the tallest; the existing distant crane provides the
+  industrial silhouette.
+- Removed the red mast caps that read as floating blocks at the catwalk edge and
+  moved a support mast out of the 2.2 m gap.
+
+### Verification
+
+- `npm run validate` green: typecheck, Biome, **274 tests in 36 files**, build.
+- New respawn tests: anchor wins over the active checkpoint for falls; ignored
+  for manual restarts; can be cleared.
+- In-browser anchor probe: high-route anchor set, fall destination
+  `respawn_high_route` at (0, 6.075, −121), anchor cleared after returning to the
+  beam.
+- Physical catwalk/gap/turn test still passes; integration route unchanged.
+- Performance **60.1 fps**; start frame **10/13**.
+
+### Evidence
+
+| View | Image |
+|---|---|
+| Turn with hero skyline and crane | ![Turn](evidence/visual/round-10/turn.jpg) |
+| Catwalk gap, clear of support mast | ![Gap](evidence/visual/round-10/gap.jpg) |
+| High roof | ![High roof](evidence/visual/round-10/high.jpg) |
+| Start regression | ![Start](evidence/visual/round-10/start.jpg) |
+
+### Honest gaps
+
+- The safety anchor covers the high route only; a fall on the scaffold ascent
+  still returns to the beam.
+- Hero towers are simple boxes, not authored architecture; the turn remains
+  stylised rather than reference-photographic.
+- Catwalk still has one jump beat and repeated rails; no dedicated grate visual.
+- Metal surface audio is code-verified, not listening-verified.
+- No mid-catwalk variation after the gap; high roof remains sparse; final
+  menu/motion/colour calibration remains open.
+
+### Next
+
+1. Add a second mid-catwalk traversal beat or a service platform detour.
+2. Author the hero-tower facades/billboards instead of simple boxes.
+3. Run the listening pass; balance metal footsteps against wind/music.
+4. Mid-climb safety and final menu/motion calibration.
+
 ## Round log
 
 | Round | Date | Focus | Outcome |

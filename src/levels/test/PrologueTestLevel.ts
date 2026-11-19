@@ -22,6 +22,7 @@ const SURFACE_SECTIONS: Record<string, string> = {
   surface_wallrun: SECTION_IDS.skybridge,
   surface_terminal: SECTION_IDS.finish,
   surface_marker: SECTION_IDS.skybridge,
+  surface_catwalk: SECTION_IDS.finish,
 };
 
 function sectionForZ(z: number): string {
