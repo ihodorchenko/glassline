@@ -3320,6 +3320,30 @@ Read the roof as a maintained real place rather than bare slabs.
 
 - Detail only; low-poly silhouettes remain.
 
+---
+
+## Round 70 — triplanar parallax (2026-11-19)
+
+### Scope
+
+Add depth to flat panel textures.
+
+### What changed
+
+- Triplanar sample offsets world position by view direction × height × 0.06 m
+  before resampling; detail layer follows the same offset.
+- Subtle parallax on seams/grime; no POM iteration.
+- Start **13/13**, 60.2 fps, 280 tests.
+
+### Evidence
+
+- [`material-closeup.jpg`](evidence/visual/round-70/material-closeup.jpg)
+- [`start.jpg`](evidence/visual/round-70/start.jpg)
+
+### Honest gaps
+
+- Parallax is subtle; low-poly geometry remains.
+
 ## Round log
 
 | Round | Date | Focus | Outcome |

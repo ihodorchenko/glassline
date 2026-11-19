@@ -544,6 +544,7 @@ const TRIPLANAR_SAMPLE = /* glsl */ `
   uniform float uBumpScale;
   uniform float uDetailScale;
   uniform float uDetailMix;
+  uniform float uParallaxDepth;
 
   vec4 sampleTriplanarAt(sampler2D source, vec3 scaled, vec3 weights) {
     return texture2D(source, scaled.zy) * weights.x
@@ -554,9 +555,13 @@ const TRIPLANAR_SAMPLE = /* glsl */ `
   vec4 sampleTriplanar(sampler2D source, vec3 position, vec3 weights) {
     vec3 scaled = position * uTriplanarScale;
     vec4 base = sampleTriplanarAt(source, scaled, weights);
-    vec4 detail = sampleTriplanarAt(source, scaled * uDetailScale, weights);
+    float height = dot(base.rgb, vec3(0.299, 0.587, 0.114)) - 0.5;
+    vec3 viewDir = normalize(cameraPosition - position);
+    vec3 shifted = (position + viewDir * height * uParallaxDepth) * uTriplanarScale;
+    vec4 parallaxed = sampleTriplanarAt(source, shifted, weights);
+    vec4 detail = sampleTriplanarAt(source, shifted * uDetailScale, weights);
 
-    return mix(base, detail, uDetailMix);
+    return mix(parallaxed, detail, uDetailMix);
   }
 `;
 
@@ -570,6 +575,7 @@ function applyTriplanar(
     shader.uniforms.uBumpScale = { value: bumpScale };
     shader.uniforms.uDetailScale = { value: 3.3 };
     shader.uniforms.uDetailMix = { value: 0.16 };
+    shader.uniforms.uParallaxDepth = { value: 0.06 };
 
     shader.vertexShader = shader.vertexShader
       .replace("#include <common>", `#include <common>\n${TRIPLANAR_PATCH}`)
