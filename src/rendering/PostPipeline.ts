@@ -12,7 +12,7 @@ const GRADE_SHADER = {
     tDiffuse: { value: null as THREE.Texture | null },
     uResolution: { value: new THREE.Vector2(1, 1) },
     uTime: { value: 0 },
-    uExposure: { value: 1.0 },
+    uExposure: { value: 1.08 },
     uContrast: { value: 0.22 },
     uSaturation: { value: 1.3 },
     uShadowTint: { value: new THREE.Color(0.9, 0.97, 1.08) },
@@ -116,7 +116,7 @@ const GRADE_SHADER = {
       // reference footage instead of compressing into grey.
       float highlightLuma = dot(color, vec3(0.2126, 0.7152, 0.0722));
       float clip = smoothstep(0.62, 0.9, highlightLuma);
-      color = mix(color, vec3(1.0), clip * 0.7);
+      color = mix(color, vec3(1.0), clip * 0.38);
 
       float vignette = smoothstep(0.95, 0.22, radial * 1.7);
       color *= mix(1.0, vignette, uVignette);

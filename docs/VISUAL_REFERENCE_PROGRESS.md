@@ -3435,6 +3435,30 @@ Add believable maintenance history to the roof.
 
 - Patches are flat rectangles; no real membrane seams/bubbles.
 
+---
+
+## Round 76 — photographic highlight shoulder (2026-11-19)
+
+### Scope
+
+Keep the high-key reference exposure without flattening material detail.
+
+### What changed
+
+- Highlight shoulder mix 0.70 → 0.38.
+- Exposure 1.00 → 1.08.
+- Sunlit whites retain more panel/grime detail; start **13/13**, 60.3 fps.
+- 280 tests.
+
+### Evidence
+
+- [`highlight-detail.jpg`](evidence/visual/round-76/highlight-detail.jpg)
+- [`start.jpg`](evidence/visual/round-76/start.jpg)
+
+### Honest gaps
+
+- Still a stylized render; no human visual verdict.
+
 ## Round log
 
 | Round | Date | Focus | Outcome |

@@ -108,6 +108,8 @@ Only `Verified` means that the applicable acceptance criteria have been checked 
 
 **Maintenance:** light membrane repair patches on the roof.
 
+**Grading:** softer photographic highlight shoulder (0.38) with exposure 1.08.
+
 **Dampness:** shallow reflective puddles with soft alpha edges.
 
 **Materials/lighting:** two-scale triplanar bump/parallax + cracks/grime/rust/seam highlights, PCF-soft 4096 shadows, metal coping and expansion joints ([Rounds 61/66/67/68/69/70](VISUAL_REFERENCE_PROGRESS.md)); start remains 13/13.
