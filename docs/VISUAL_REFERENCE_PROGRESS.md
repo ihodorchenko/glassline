@@ -3297,6 +3297,29 @@ Reduce visible texture tiling without new assets.
 
 - Still stylized low-poly; no human visual verdict.
 
+---
+
+## Round 69 — architectural trim (2026-11-19)
+
+### Scope
+
+Read the roof as a maintained real place rather than bare slabs.
+
+### What changed
+
+- Parapet coping → dark metal, west side added; base runoff band.
+- Flush metal expansion joints across roof panels (visual only).
+- Start **13/13**, 60.2 fps, 280 tests.
+
+### Evidence
+
+- [`start.jpg`](evidence/visual/round-69/start.jpg)
+- [`roof-detail.jpg`](evidence/visual/round-69/roof-detail.jpg)
+
+### Honest gaps
+
+- Detail only; low-poly silhouettes remain.
+
 ## Round log
 
 | Round | Date | Focus | Outcome |

@@ -104,7 +104,7 @@ Only `Verified` means that the applicable acceptance criteria have been checked 
 
 **Full run:** **clean spawn → FINISH in 24.014 s with 0 respawns**, no unlock/teleport (automated) — [Round 65](VISUAL_REFERENCE_PROGRESS.md).
 
-**Materials/lighting:** two-scale triplanar bump + cracks/grime/rust/seam highlights, and PCF-soft 4096 sun shadows ([Rounds 61/66/67/68](VISUAL_REFERENCE_PROGRESS.md)); start remains 13/13.
+**Materials/lighting:** two-scale triplanar bump + cracks/grime/rust/seam highlights, PCF-soft 4096 shadows, metal coping and expansion joints ([Rounds 61/66/67/68/69](VISUAL_REFERENCE_PROGRESS.md)); start remains 13/13.
 
 **Cross-browser:** Chromium passes; **real Safari 27.2 passes Training** (user-confirmed); Playwright WebKit hits a non-representative Rapier WASM trap; Firefox is environment-sandbox-blocked ([CROSS_BROWSER.md](CROSS_BROWSER.md)).
 

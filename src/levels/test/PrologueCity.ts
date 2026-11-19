@@ -115,9 +115,31 @@ const GROUND_Y = -31;
 function addParapetCoping(builder: CityBuilder): void {
   const coping = 0.5;
 
-  builder.box(11.2, 1.08, 0, coping, 0.07, 44.6, { material: "white" });
-  builder.box(0, 1.08, -22.2, 44.6, 0.07, coping, { material: "white" });
-  builder.box(0, 1.08, 22.2, 44.6, 0.07, coping, { material: "white" });
+  builder.box(11.2, 1.08, 0, coping, 0.08, 44.6, { material: "dark-metal" });
+  builder.box(0, 1.08, -22.2, 44.6, 0.08, coping, { material: "dark-metal" });
+  builder.box(0, 1.08, 22.2, 44.6, 0.08, coping, { material: "dark-metal" });
+  builder.box(-11.2, 1.08, 0, coping, 0.08, 44.6, { material: "dark-metal" });
+
+  // A darker base band reads as years of runoff at the parapet foot.
+  builder.box(11.18, 0.07, 0, 0.02, 0.14, 44.2, { material: "dark-metal", castShadow: false });
+  builder.box(-11.18, 0.07, 0, 0.02, 0.14, 44.2, { material: "dark-metal", castShadow: false });
+}
+
+function addRoofExpansionJoints(builder: CityBuilder): void {
+  // Flush metal expansion joints break up the roof panels at human scale.
+  for (const z of [-16, -8, 0, 8, 16]) {
+    builder.box(-3.2, 0.018, z, 15.6, 0.024, 0.05, {
+      material: "dark-metal",
+      castShadow: false,
+    });
+  }
+
+  for (const z of [-16, -8, 0, 8, 16]) {
+    builder.box(10, 0.018, z, 2, 0.024, 0.05, {
+      material: "dark-metal",
+      castShadow: false,
+    });
+  }
 }
 
 function addEdgeRailings(builder: CityBuilder): void {
@@ -1771,6 +1793,7 @@ export function createPrologueCityDecorations(
   const builder = new CityBuilder(sectionForZ, createRandom(0x91135));
 
   addParapetCoping(builder);
+  addRoofExpansionJoints(builder);
   addEdgeRailings(builder);
   addSkylight(builder);
   addSolarArray(builder);
