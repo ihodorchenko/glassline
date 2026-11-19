@@ -1158,6 +1158,23 @@ function addLowerZone(builder: CityBuilder): void {
     }
   }
 
+  // Red stair handrail inside the scaffold cage, matching the reference
+  // stair rail line. Visual only; the character collider uses the steps.
+  for (const side of [-1, 1]) {
+    builder.box(side * 1.65, -0.85, -38.275, 0.06, 0.06, 7.6, {
+      material: "red",
+      rotationX: 0.283,
+    });
+
+    for (const [z, y] of [
+      [-35.2, -2.05],
+      [-38.1, -1.21],
+      [-41, -0.39],
+    ] as const) {
+      builder.box(side * 1.65, y, z, 0.06, 0.9, 0.06, { material: "red" });
+    }
+  }
+
   // Service units and construction kit on the lower deck.
   for (const [x, z, rotation] of [
     [-9.5, -26.5, 0.1],

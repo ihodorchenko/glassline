@@ -3791,6 +3791,28 @@ Bring the reference's red rail language into the final ascent.
 
 - Rail line is thin at distance; low-poly construction remains.
 
+---
+
+## Round 93 — red stair handrails (2026-11-19)
+
+### Scope
+
+Carry the reference red rail line onto the main stair flight.
+
+### What changed
+
+- Sloped red handrail + three posts per side inside the stair cage.
+- Visual only; start **13/13**, clean in-page run **0 respawns**, 282 tests.
+
+### Evidence
+
+- [`stair-rails.jpg`](evidence/visual/round-93/stair-rails.jpg)
+- [`start.jpg`](evidence/visual/round-93/start.jpg)
+
+### Honest gaps
+
+- Thin rails; low-poly geometry remains.
+
 ## Round log
 
 | Round | Date | Focus | Outcome |
