@@ -100,10 +100,11 @@ Only `Verified` means that the applicable acceptance criteria have been checked 
 | Accessibility | Defined | Implemented | Integrated | Partially Verified |
 | Localization | Defined | Implemented | Integrated | Verified |
 | Statistics | Defined | Implemented | Integrated | Verified |
+| Reference Presentation | Defined | In Progress | Integrated | Partially Verified |
 
-**Current phase:** Phases 0–7 and Phase 8 (stabilization) are complete. A post-roadmap **Release Polish** pass has also been completed: initial release content presentation, HUD tutorial guidance, atmosphere, and procedural ambience/footsteps. The repository is a polished initial release candidate; residual verification limitations are recorded below.
+**Current phase:** Phases 0–7 and Phase 8 (stabilization) are complete. A post-roadmap **Release Polish** pass has also been completed: initial release content presentation, HUD tutorial guidance, atmosphere, and procedural ambience/footsteps. A **Reference Presentation Pass** is now in progress to bring design, graphics, and sound up to the *Mirror's Edge* prologue reference. Round 1 (HDR rendering, sky, materials, rooftop city, first-person arms) is complete and measured; sound, route design, and further graphics polish remain.
 
-**Implementation readiness:** The game is feature-complete for the initial release scope, stabilized, and visually/audio-polished: core gameplay, Training/Prologue sessions, Speedrun validation and local records, persistent progression/achievements/statistics/tutorial, HUD tutorial guidance, level atmosphere and ambience, UI/accessibility/localization, Save System recovery, and the fixed-step loop are implemented, integrated, and covered by automated and browser checks. Remaining limitations are compatibility verification depth (Firefox/Safari gameplay, actual assistive-technology testing), asset-level art polish, and intentionally deferred features.
+**Implementation readiness:** The game is feature-complete for the initial release scope, stabilized, and visually/audio-polished: core gameplay, Training/Prologue sessions, Speedrun validation and local records, persistent progression/achievements/statistics/tutorial, HUD tutorial guidance, level atmosphere and ambience, UI/accessibility/localization, Save System recovery, and the fixed-step loop are implemented, integrated, and covered by automated and browser checks. The reference pass has added an HDR post pipeline, procedural sky/reflections, PBR materials, a dense Prologue city, and a first-person body; its measured start frame is inside the reference tolerance band on 10/13 metrics, with highlight headroom and sky area recorded as open gaps. Remaining limitations are compatibility verification depth (Firefox/Safari gameplay, actual assistive-technology testing), reference-level sound and route design, asset-level art polish, and intentionally deferred features.
 
 ### 3.1. Documentation Reconciliation (2026-11-17)
 
@@ -904,6 +905,66 @@ Known limitations:
 - Tutorial guidance is HUD copy; contextual in-world hint markers remain deferred.
 - Content-unlock gating for Training selection remains evaluated/persisted but not enforced in the exercise list (as recorded previously).
 - Browser/AT verification limitations from Phase 8 remain unchanged.
+
+---
+### Reference Presentation Pass — Round 1 (2026-11-19)
+
+**Goal:** align the presentation with the *Mirror's Edge* prologue reference
+(design, graphics, sound). Reference record: `docs/VISUAL_REFERENCE_PROGRESS.md`.
+
+**Status:** In Progress — graphics foundation complete, sound and route design
+not started.
+
+Implemented:
+
+- **HDR post pipeline** (`src/rendering/PostPipeline.ts`): half-float MSAA target,
+  GTAO, bloom, ACES tone mapping, split tone, grade, chromatic aberration,
+  vignette, grain, dither, and highlight clipping.
+- **Procedural sky and reflections** (`SkyDome.ts`): gradient, sun disc/glow,
+  drifting cumulus, and PMREM sky environment for PBR reflections.
+- **Lighting/atmosphere:** PCF soft sun shadows, hemisphere/ambient/rim fill, and
+  level-owned sky palette, sun angle, sun intensity, and fog.
+- **Procedural materials** (`MaterialLibrary.ts`): runtime canvas PBR textures for
+  roof/concrete/plaster/facade/metal/asphalt/red paint with world-space triplanar
+  mapping, plus glass/emissive families.
+- **Instanced decoration batching** in `LevelContentLoader`; 1,657 instances in 27
+  batches for the Prologue.
+- **Prologue presentation:** 22 m rooftop with low parapets and void kill
+  volumes; close west glass tower with orange billboard, bracing, red ladder and
+  handrail; dense near facades, skybridge, crane, billboards, lower roofs, and a
+  64-building skyline; skylight, solar array, AC/duct/pipe kit, bulkhead, tank,
+  antenna, route paint, checkpoint chevrons, start/finish gantries, lit terminal.
+- **First-person viewmodel** (`ViewModel.ts`): sleeves, forearms, gloves, red
+  wraps, fingers; idle/run/air/slide/landing/wall-run response; dedicated layer-1
+  camera light.
+- **Capture/metrics tooling** (`tools/capture/`): deterministic CDP screenshots and
+  reference-frame statistics. Round evidence in `docs/evidence/visual/round-1/`.
+
+Verification:
+
+- `npm run validate`: typecheck, Biome, **250 tests in 34 files**, production build.
+- Deterministic capture at the Prologue start is inside tolerance on 10/13
+  reference metrics (luma 0.586 vs 0.615, std 0.265 vs 0.295, saturation 0.360
+  vs 0.300, red 2.7 % vs 2.4 %). Open gaps: p95 0.895 vs 0.981, near-white 3.6 %
+  vs 34.5 % (highlight headroom), sky area 60.1 % vs 43.3 % (open composition).
+  An earlier hard highlight clip reached 12/13 but flattened surface detail and
+  was replaced with a gentler shoulder.
+- Live gameplay on Apple M1 Pro / ANGLE Metal at 1600×900: 60 fps (16.6 ms mean,
+  16.8 ms p95), 27 batches / 1,657 instances / ~24k triangles.
+- Synthetic input: forward movement, jump state/vertical speed, and fall-off-roof
+  respawn to the rooftop checkpoint verified; no console errors.
+
+Known limitations:
+
+- Sound is unchanged (the simple oscillator ambience/footstep bed).
+- The Prologue route is still one straight rooftop lane; it lacks the reference's
+  leaps, drops, climbs, and branching.
+- Graphics remain stylized: box facades, soft clouds, no billboard typography,
+  no local reflections, no motion blur, no animated world. Sunlit whites do not
+  clip as much as the reference (near-white 3.6 % vs 34.5 %); this needs stronger
+  real lighting/content next round.
+- Training still uses the old yard and flat skyline dressing.
+- The post pipeline has no quality tiers/dynamic resolution yet.
 
 ---
 

@@ -44,6 +44,11 @@ Core principles:
 
 The interface follows the same principles: minimal, functional, readable, and unobtrusive.
 
+Reference alignment is tracked in
+[`docs/VISUAL_REFERENCE_PROGRESS.md`](docs/VISUAL_REFERENCE_PROGRESS.md).
+
+![Prologue rooftop presentation](docs/evidence/visual/round-1/start.jpg)
+
 ---
 
 ## Gameplay

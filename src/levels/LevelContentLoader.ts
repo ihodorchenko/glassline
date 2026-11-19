@@ -3,12 +3,15 @@ import * as THREE from "three";
 
 import type { Disposable } from "../core/Disposable";
 import type { PhysicsWorld } from "../physics/PhysicsWorld";
+import type { MaterialLibrary } from "../rendering/MaterialLibrary";
 import type { RenderScene } from "../rendering/RenderScene";
 import type {
   LevelDecorationDefinition,
   LevelDefinition,
   LevelGeometryDefinition,
   LevelInteractionTargetDefinition,
+  LevelMaterialType,
+  SurfaceType,
 } from "./LevelTypes";
 import type { ILevelRuntimeObject, RuntimeObjectRegistry } from "./RuntimeObjectRegistry";
 import type { SpawnPointManager } from "./SpawnPointManager";
@@ -29,6 +32,14 @@ export interface LevelContentDependencies {
 export interface LoadedLevelContent extends Disposable {
   readonly interactionTargets: readonly LevelInteractionTargetDefinition[];
 }
+
+const SURFACE_MATERIALS: Record<SurfaceType, LevelMaterialType> = {
+  concrete: "concrete",
+  metal: "metal",
+  rubber: "rubber",
+  glass: "glass",
+  asphalt: "asphalt",
+};
 
 function surfaceObject(
   geometry: LevelGeometryDefinition,
@@ -61,62 +72,39 @@ function spawnObject(
   };
 }
 
-function resolveDecorationMaterial(
-  decoration: LevelDecorationDefinition,
-  sharedMaterials: Map<number, THREE.MeshStandardMaterial>,
-  decorationMaterials: Map<string, THREE.MeshStandardMaterial>,
-): THREE.MeshStandardMaterial {
-  const opacity = decoration.opacity ?? 1;
-  const emissive = decoration.emissive ?? 0x000000;
-  const emissiveIntensity = decoration.emissiveIntensity ?? 0;
+function decorationMatrix(decoration: LevelDecorationDefinition): THREE.Matrix4 {
+  const position = new THREE.Vector3(
+    decoration.position.x,
+    decoration.position.y,
+    decoration.position.z,
+  );
+  const rotation = new THREE.Quaternion().setFromEuler(
+    new THREE.Euler(
+      decoration.rotationX ?? 0,
+      decoration.rotationY ?? 0,
+      decoration.rotationZ ?? 0,
+      "YXZ",
+    ),
+  );
+  const scale = new THREE.Vector3(decoration.size.x, decoration.size.y, decoration.size.z);
 
-  if (opacity >= 1 && emissive === 0x000000) {
-    const existing = sharedMaterials.get(decoration.color);
+  return new THREE.Matrix4().compose(position, rotation, scale);
+}
 
-    if (existing) {
-      return existing;
-    }
-
-    const material = new THREE.MeshStandardMaterial({
-      color: decoration.color,
-      roughness: 0.68,
-      metalness: 0.12,
-    });
-
-    sharedMaterials.set(decoration.color, material);
-
-    return material;
-  }
-
-  const key = `${decoration.color}:${opacity}:${emissive}:${emissiveIntensity}`;
-  const existing = decorationMaterials.get(key);
-
-  if (existing) {
-    return existing;
-  }
-
-  const material = new THREE.MeshStandardMaterial({
-    color: decoration.color,
-    roughness: 0.6,
-    metalness: 0.15,
-    transparent: opacity < 1,
-    opacity,
-    emissive,
-    emissiveIntensity,
-  });
-
-  decorationMaterials.set(key, material);
-
-  return material;
+interface DecorationBatch {
+  readonly shape: "box" | "cylinder";
+  readonly material: THREE.MeshStandardMaterial;
+  readonly castShadow: boolean;
+  readonly receiveShadow: boolean;
+  readonly matrices: THREE.Matrix4[];
 }
 
 /**
- * Instantiates authored box geometry as visual meshes and static Rapier
- * colliders, and registers level runtime objects.
+ * Instantiates authored geometry as visual meshes and static Rapier colliders,
+ * and registers level runtime objects.
  *
- * This is the initial "load the whole level" implementation; procedural
- * generation or asset streaming can replace this loader behind the same
- * runtime contract (`docs/15` §16.3).
+ * Visual decorations are batched into instanced meshes by material and shape so
+ * dense city dressing stays inside a small draw-call budget.
  */
 export class BoxLevelContentLoader {
   async load(
@@ -124,35 +112,18 @@ export class BoxLevelContentLoader {
     dependencies: LevelContentDependencies,
   ): Promise<LoadedLevelContent> {
     const unitBox = new THREE.BoxGeometry(1, 1, 1);
-    const materials = new Map<number, THREE.MeshStandardMaterial>();
-    const decorationMaterials = new Map<string, THREE.MeshStandardMaterial>();
+    const unitCylinder = new THREE.CylinderGeometry(0.5, 0.5, 1, 16);
+    const library: MaterialLibrary = dependencies.scene.materials;
     const meshes: THREE.Mesh[] = [];
-    const decorationMeshes: THREE.Mesh[] = [];
-    const ownedDecorationGeometries: THREE.BufferGeometry[] = [];
+    const decorationMeshes: THREE.InstancedMesh[] = [];
+    const transparentMeshes: THREE.Mesh[] = [];
+    const transparentMaterials: THREE.MeshStandardMaterial[] = [];
     const bodies: RAPIER.RigidBody[] = [];
     const world = dependencies.physics.rapierWorld;
 
     if (definition.environment) {
       dependencies.scene.setEnvironment(definition.environment);
     }
-
-    const getMaterial = (color: number): THREE.MeshStandardMaterial => {
-      const existing = materials.get(color);
-
-      if (existing) {
-        return existing;
-      }
-
-      const material = new THREE.MeshStandardMaterial({
-        color,
-        roughness: 0.82,
-        metalness: 0.06,
-      });
-
-      materials.set(color, material);
-
-      return material;
-    };
 
     const surfaceDefinitions = new Map(definition.surfaces.map((surface) => [surface.id, surface]));
 
@@ -165,8 +136,14 @@ export class BoxLevelContentLoader {
         );
       }
 
-      const material = getMaterial(geometry.color ?? 0xc7c9c7);
+      const material = library.get(
+        geometry.material ?? SURFACE_MATERIALS[surfaceDefinition.surfaceType],
+      );
       const mesh = new THREE.Mesh(unitBox, material);
+
+      if (geometry.color !== undefined) {
+        mesh.material = library.getColor(geometry.color, 0.78, 0.08);
+      }
 
       mesh.scale.set(geometry.size.x, geometry.size.y, geometry.size.z);
       mesh.position.set(geometry.position.x, geometry.position.y, geometry.position.z);
@@ -209,21 +186,73 @@ export class BoxLevelContentLoader {
       dependencies.objects.register(surfaceObject(geometry, dependencies.surfaces));
     }
 
-    for (const decoration of definition.decorations ?? []) {
-      const material = resolveDecorationMaterial(decoration, materials, decorationMaterials);
-      const geometry =
-        decoration.shape === "cylinder" ? new THREE.CylinderGeometry(0.5, 0.5, 1, 12) : unitBox;
-      const mesh = new THREE.Mesh(geometry, material);
+    const batches = new Map<string, DecorationBatch>();
 
-      if (decoration.shape === "cylinder") {
-        ownedDecorationGeometries.push(geometry);
+    for (const decoration of definition.decorations ?? []) {
+      const opacity = decoration.opacity ?? 1;
+
+      if (opacity < 1) {
+        const material = new THREE.MeshStandardMaterial({
+          color: decoration.color ?? 0xffffff,
+          roughness: 0.5,
+          metalness: 0.1,
+          transparent: true,
+          opacity,
+          emissive: decoration.emissive ?? 0x000000,
+          emissiveIntensity: decoration.emissiveIntensity ?? 0,
+        });
+        const geometry = decoration.shape === "cylinder" ? unitCylinder : unitBox;
+        const mesh = new THREE.Mesh(geometry, material);
+
+        mesh.position.set(decoration.position.x, decoration.position.y, decoration.position.z);
+        mesh.scale.set(decoration.size.x, decoration.size.y, decoration.size.z);
+        mesh.rotation.set(
+          decoration.rotationX ?? 0,
+          decoration.rotationY ?? 0,
+          decoration.rotationZ ?? 0,
+        );
+        mesh.castShadow = decoration.castShadow ?? false;
+        mesh.receiveShadow = decoration.receiveShadow ?? false;
+        dependencies.scene.addObject(mesh);
+        transparentMeshes.push(mesh);
+        transparentMaterials.push(material);
+        continue;
       }
 
-      mesh.position.set(decoration.position.x, decoration.position.y, decoration.position.z);
-      mesh.scale.set(decoration.size.x, decoration.size.y, decoration.size.z);
-      mesh.rotation.y = decoration.rotationY ?? 0;
-      mesh.castShadow = decoration.castShadow ?? false;
-      mesh.receiveShadow = false;
+      const material = decoration.material
+        ? library.get(decoration.material)
+        : library.getColor(decoration.color ?? 0xffffff);
+      const castShadow = decoration.castShadow ?? true;
+      const receiveShadow = decoration.receiveShadow ?? true;
+      const key = `${material.uuid}:${decoration.shape}:${castShadow ? 1 : 0}:${receiveShadow ? 1 : 0}`;
+      let batch = batches.get(key);
+
+      if (!batch) {
+        batch = {
+          shape: decoration.shape,
+          material,
+          castShadow,
+          receiveShadow,
+          matrices: [],
+        };
+        batches.set(key, batch);
+      }
+
+      batch.matrices.push(decorationMatrix(decoration));
+    }
+
+    for (const batch of batches.values()) {
+      const geometry = batch.shape === "cylinder" ? unitCylinder : unitBox;
+      const mesh = new THREE.InstancedMesh(geometry, batch.material, batch.matrices.length);
+
+      batch.matrices.forEach((matrix, index) => {
+        mesh.setMatrixAt(index, matrix);
+      });
+
+      mesh.instanceMatrix.needsUpdate = true;
+      mesh.castShadow = batch.castShadow;
+      mesh.receiveShadow = batch.receiveShadow;
+      mesh.frustumCulled = false;
       dependencies.scene.addObject(mesh);
       decorationMeshes.push(mesh);
     }
@@ -291,13 +320,14 @@ export class BoxLevelContentLoader {
 
         for (const mesh of decorationMeshes) {
           dependencies.scene.removeObject(mesh);
+          mesh.dispose();
         }
 
-        for (const geometry of ownedDecorationGeometries) {
-          geometry.dispose();
+        for (const mesh of transparentMeshes) {
+          dependencies.scene.removeObject(mesh);
         }
 
-        for (const material of decorationMaterials.values()) {
+        for (const material of transparentMaterials) {
           material.dispose();
         }
 
@@ -308,17 +338,14 @@ export class BoxLevelContentLoader {
         }
 
         unitBox.dispose();
-
-        for (const material of materials.values()) {
-          material.dispose();
-        }
+        unitCylinder.dispose();
 
         meshes.length = 0;
         decorationMeshes.length = 0;
-        ownedDecorationGeometries.length = 0;
+        transparentMeshes.length = 0;
+        transparentMaterials.length = 0;
         bodies.length = 0;
-        materials.clear();
-        decorationMaterials.clear();
+        batches.clear();
         dependencies.scene.setEnvironment(null);
       },
     };

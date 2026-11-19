@@ -103,26 +103,42 @@ function gate(
   ];
 }
 
-/** Initial release Training course atmosphere and visual identity. */
+/** Training yard atmosphere: bright, slightly warmer midday. */
 export const TRAINING_ENVIRONMENT: LevelEnvironmentDefinition = {
-  skyColor: 0xa2c3d6,
-  fogColor: 0xa2c3d6,
-  fogNear: 60,
-  fogFar: 180,
-  sunColor: 0xfff1d6,
-  sunIntensity: 1.9,
-  hemisphereIntensity: 1.35,
+  skyColor: 0xa8cfe9,
+  fogColor: 0xe2edf4,
+  fogNear: 80,
+  fogFar: 480,
+  sunColor: 0xfff0da,
+  sunIntensity: 4.9,
+  hemisphereIntensity: 0.32,
+  zenithColor: 0x3379ca,
+  horizonColor: 0xe5f1f9,
+  groundColor: 0xc8d8e1,
+  cloudColor: 0xffffff,
+  cloudShadowColor: 0xb0c1cf,
+  cloudCover: 0.34,
+  sunAzimuth: 2.4,
+  sunElevation: 0.82,
 };
 
-/** Initial release Prologue atmosphere: cooler dusk over the skyline. */
+/** Prologue atmosphere: clear high-summer daylight over the city. */
 export const PROLOGUE_ENVIRONMENT: LevelEnvironmentDefinition = {
-  skyColor: 0x7389a0,
-  fogColor: 0x7b91a6,
-  fogNear: 45,
-  fogFar: 165,
-  sunColor: 0xffd6ae,
-  sunIntensity: 1.5,
-  hemisphereIntensity: 1.2,
+  skyColor: 0x8fc4e6,
+  fogColor: 0xdfeaf2,
+  fogNear: 90,
+  fogFar: 560,
+  sunColor: 0xfff2dc,
+  sunIntensity: 5.6,
+  hemisphereIntensity: 0.3,
+  zenithColor: 0x2f6ec0,
+  horizonColor: 0xd3e9f8,
+  groundColor: 0xb9ccd8,
+  cloudColor: 0xffffff,
+  cloudShadowColor: 0xaebfce,
+  cloudCover: 0.46,
+  sunAzimuth: 2.25,
+  sunElevation: 0.83,
 };
 
 export function createTrainingDecorations(

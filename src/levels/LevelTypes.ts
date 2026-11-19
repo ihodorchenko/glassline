@@ -50,6 +50,23 @@ export interface LevelSurfaceDefinition {
 
 export type LevelDecorationShape = "box" | "cylinder";
 
+/** Semantic material family resolved by the renderer's procedural library. */
+export type LevelMaterialType =
+  | "white"
+  | "concrete"
+  | "roof"
+  | "facade"
+  | "glass"
+  | "glass-far"
+  | "metal"
+  | "dark-metal"
+  | "red"
+  | "orange"
+  | "rubber"
+  | "asphalt"
+  | "warm-light"
+  | "cool-light";
+
 /** Visual-only authored geometry; it never receives a physics collider. */
 export interface LevelDecorationDefinition {
   readonly id: string;
@@ -57,12 +74,17 @@ export interface LevelDecorationDefinition {
   readonly shape: LevelDecorationShape;
   readonly position: LevelVector3;
   readonly size: LevelVector3;
-  readonly color: number;
+  readonly color?: number;
+  /** Semantic PBR material; falls back to the authored colour when omitted. */
+  readonly material?: LevelMaterialType;
+  readonly rotationX?: number;
   readonly rotationY?: number;
+  readonly rotationZ?: number;
   readonly opacity?: number;
   readonly emissive?: number;
   readonly emissiveIntensity?: number;
   readonly castShadow?: boolean;
+  readonly receiveShadow?: boolean;
 }
 
 /** Lighting, fog, and sky treatment applied while a level is loaded. */
@@ -74,6 +96,16 @@ export interface LevelEnvironmentDefinition {
   readonly sunColor: number;
   readonly sunIntensity: number;
   readonly hemisphereIntensity: number;
+  readonly zenithColor?: number;
+  readonly horizonColor?: number;
+  readonly groundColor?: number;
+  readonly cloudColor?: number;
+  readonly cloudShadowColor?: number;
+  readonly cloudCover?: number;
+  /** Sun azimuth in radians, 0 pointing down the route (-Z). */
+  readonly sunAzimuth?: number;
+  /** Sun elevation above the horizon in radians. */
+  readonly sunElevation?: number;
 }
 
 export interface LevelGeometryDefinition {
@@ -84,6 +116,7 @@ export interface LevelGeometryDefinition {
   /** References a `LevelSurfaceDefinition.id`. */
   readonly surfaceId: string;
   readonly color?: number;
+  readonly material?: LevelMaterialType;
 }
 
 export interface LevelSpawnPointDefinition {

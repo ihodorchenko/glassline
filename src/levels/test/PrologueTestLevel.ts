@@ -1,6 +1,7 @@
 import type { LevelDefinition } from "../LevelTypes";
-import { createPrologueDecorations, PROLOGUE_ENVIRONMENT } from "./ReleaseArenaPolish";
-import { createArenaGeometry, createArenaSurfaces } from "./SharedArena";
+import { createPrologueArenaGeometry, createPrologueArenaSurfaces } from "./PrologueArena";
+import { createPrologueCityDecorations } from "./PrologueCity";
+import { PROLOGUE_ENVIRONMENT } from "./ReleaseArenaPolish";
 
 export const PROLOGUE_TEST_LEVEL_ID = "prologue_test";
 
@@ -177,8 +178,8 @@ export const PROLOGUE_TEST_LEVEL: LevelDefinition = {
       id: "trigger_kill_volume",
       sectionId: SECTION_IDS.rooftop,
       type: "generic",
-      center: { x: 11, y: -4, z: 5 },
-      halfExtents: { x: 3, y: 1.5, z: 3 },
+      center: { x: 7, y: -4, z: 5 },
+      halfExtents: { x: 2.5, y: 1.5, z: 2.5 },
       repeatable: true,
       metadata: { kind: "kill-volume" },
     },
@@ -217,6 +218,51 @@ export const PROLOGUE_TEST_LEVEL: LevelDefinition = {
       halfExtents: { x: 12, y: 2, z: 0.6 },
       repeatable: true,
       metadata: { targetSectionId: SECTION_IDS.finish },
+    },
+    {
+      id: "trigger_void_rooftop",
+      sectionId: SECTION_IDS.rooftop,
+      type: "generic",
+      center: { x: 0, y: -5, z: 0 },
+      halfExtents: { x: 90, y: 3, z: 90 },
+      repeatable: true,
+      metadata: { kind: "kill-volume" },
+    },
+    {
+      id: "trigger_void_industrial",
+      sectionId: SECTION_IDS.industrial,
+      type: "generic",
+      center: { x: 0, y: -5, z: 0 },
+      halfExtents: { x: 90, y: 3, z: 90 },
+      repeatable: true,
+      metadata: { kind: "kill-volume" },
+    },
+    {
+      id: "trigger_void_construction",
+      sectionId: SECTION_IDS.construction,
+      type: "generic",
+      center: { x: 0, y: -5, z: 0 },
+      halfExtents: { x: 90, y: 3, z: 90 },
+      repeatable: true,
+      metadata: { kind: "kill-volume" },
+    },
+    {
+      id: "trigger_void_skybridge",
+      sectionId: SECTION_IDS.skybridge,
+      type: "generic",
+      center: { x: 0, y: -5, z: 0 },
+      halfExtents: { x: 90, y: 3, z: 90 },
+      repeatable: true,
+      metadata: { kind: "kill-volume" },
+    },
+    {
+      id: "trigger_void_finish",
+      sectionId: SECTION_IDS.finish,
+      type: "generic",
+      center: { x: 0, y: -5, z: 0 },
+      halfExtents: { x: 90, y: 3, z: 90 },
+      repeatable: true,
+      metadata: { kind: "kill-volume" },
     },
     {
       id: "trigger_finish",
@@ -345,9 +391,11 @@ export const PROLOGUE_TEST_LEVEL: LevelDefinition = {
       enabled: true,
     },
   ],
-  surfaces: createArenaSurfaces((surfaceId) => SURFACE_SECTIONS[surfaceId] ?? SECTION_IDS.rooftop),
-  geometry: createArenaGeometry((position) => sectionForZ(position.z)),
-  decorations: createPrologueDecorations((z) => sectionForZ(z)),
+  surfaces: createPrologueArenaSurfaces(
+    (surfaceId) => SURFACE_SECTIONS[surfaceId] ?? SECTION_IDS.rooftop,
+  ),
+  geometry: createPrologueArenaGeometry((z) => sectionForZ(z)),
+  decorations: createPrologueCityDecorations((z) => sectionForZ(z)),
   environment: PROLOGUE_ENVIRONMENT,
 };
 

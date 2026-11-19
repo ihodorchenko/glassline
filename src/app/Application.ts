@@ -32,6 +32,7 @@ import { PROGRESSION_CONTENT, PROGRESSION_MILESTONES } from "../progression/Prog
 import { ProgressionSystem } from "../progression/ProgressionSystem";
 import { Renderer } from "../rendering/Renderer";
 import { RenderScene } from "../rendering/RenderScene";
+import { ViewModel } from "../rendering/ViewModel";
 import { ResourceLoader } from "../resources/ResourceLoader";
 import { RespawnManager } from "../respawn/RespawnManager";
 import {
@@ -108,6 +109,7 @@ export class Application implements Disposable {
   private statusOverlay: StatusOverlay | null = null;
   private renderer: Renderer | null = null;
   private renderScene: RenderScene | null = null;
+  private viewModel: ViewModel | null = null;
   private physics: PhysicsWorld | null = null;
   private input: InputManager | null = null;
   private database: Database | null = null;
@@ -338,7 +340,7 @@ export class Application implements Disposable {
     this.renderer = new Renderer(this.canvas, this.config.renderer);
     this.resources.push(this.renderer);
 
-    this.renderScene = new RenderScene();
+    this.renderScene = new RenderScene(this.renderer.threeRenderer);
     this.resources.push(this.renderScene);
   }
 
@@ -378,6 +380,12 @@ export class Application implements Disposable {
       tuning: this.config.movement,
     });
     this.resources.push(this.cameraSystem);
+
+    if (this.renderScene) {
+      this.renderScene.addObject(this.cameraSystem.camera);
+      this.viewModel = new ViewModel(this.cameraSystem.camera);
+      this.resources.push(this.viewModel);
+    }
   }
 
   private initializeInput(): void {
@@ -1710,7 +1718,12 @@ export class Application implements Disposable {
     }
 
     if (this.renderer && this.renderScene && this.cameraSystem) {
-      this.renderer.render(this.renderScene.scene, this.cameraSystem.camera);
+      if (this.player) {
+        this.viewModel?.update(frameDeltaSeconds, this.player.getMovementSnapshot());
+      }
+
+      this.renderScene.update(frameDeltaSeconds);
+      this.renderer.render(this.renderScene.scene, this.cameraSystem.camera, frameDeltaSeconds);
     }
 
     this.updateStatus();
@@ -2058,6 +2071,7 @@ export class Application implements Disposable {
     this.statusOverlay = null;
     this.renderer = null;
     this.renderScene = null;
+    this.viewModel = null;
     this.physics = null;
     this.input = null;
     this.database = null;
