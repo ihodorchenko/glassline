@@ -1279,22 +1279,35 @@ function addCatwalk(builder: CityBuilder): void {
   });
 
   // A distant hero skyline closes the open turn view without forming a wall.
-  for (const [x, z, width, top, depth] of [
-    [50, -300, 26, 96, 18],
-    [18, -330, 18, 72, 14],
-    [82, -318, 20, 82, 16],
-  ] as const) {
-    builder.box(x, (top + -31) / 2, z, width, top + 31, depth, {
-      material: "glass-far",
-      castShadow: false,
-    });
-    builder.box(x, top + 0.3, z, width + 0.6, 0.6, depth + 0.6, {
-      material: "concrete",
-      castShadow: false,
-    });
-  }
+  addBuilding(builder, 50, -300, 26, 18, {
+    material: "glass-far",
+    top: 96,
+    facing: "north",
+    roofProps: true,
+    seed: 77,
+  });
+  addBuilding(builder, 18, -330, 18, 14, {
+    material: "glass-far",
+    top: 72,
+    facing: "north",
+    roofProps: true,
+    seed: 78,
+  });
+  addBuilding(builder, 82, -318, 20, 16, {
+    material: "glass-far",
+    top: 82,
+    facing: "north",
+    roofProps: true,
+    seed: 79,
+  });
 
-  builder.box(50, 97.2, -300, 0.5, 2.0, 0.5, {
+  builder.plane(50, 74, -290.7, 13, 6.4, 0, {
+    text: "GLASSLINE",
+    background: 0x14191d,
+    textColor: 0xf4f1e9,
+    accentColor: 0xd52e36,
+  });
+  builder.box(50, 97.3, -300, 0.5, 2.0, 0.5, {
     material: "red",
     emissive: 0xc0262d,
     emissiveIntensity: 0.8,

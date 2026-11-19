@@ -1,0 +1,121 @@
+{
+  "reference": "ref/reference/prolog-kit/study/05-prologue-roofs",
+  "referenceFrames": 20,
+  "tolerances": {
+    "luma": 0.08,
+    "std": 0.05,
+    "p25": 0.1,
+    "p95": 0.05,
+    "near_white": 18.0,
+    "deep_shadow": 3.0,
+    "saturation": 0.08,
+    "local_contrast": 0.04,
+    "edge": 0.012,
+    "sky": 12.0,
+    "top_contrast": 0.05,
+    "split": 15.0,
+    "red": 2.5
+  },
+  "candidates": [
+    {
+      "path": "docs/evidence/visual/round-11/start.jpg",
+      "metrics": {
+        "luma": 0.5970495939254761,
+        "std": 0.2607753276824951,
+        "p25": 0.34110039472579956,
+        "p95": 0.8949200510978699,
+        "near_white": 3.8871527777777777,
+        "deep_shadow": 1.480516975308642,
+        "saturation": 0.3465632200241089,
+        "local_contrast": 0.24618220329284668,
+        "edge": 0.025992602109909058,
+        "sky": 58.74385533707866,
+        "top_contrast": 0.21847815811634064,
+        "split": -17.528095245361328,
+        "red": 2.666473765432099
+      },
+      "rows": [
+        {
+          "metric": "luma",
+          "candidate": 0.5970495939254761,
+          "reference": 0.6152243822813034,
+          "pass": true
+        },
+        {
+          "metric": "std",
+          "candidate": 0.2607753276824951,
+          "reference": 0.2945838652551174,
+          "pass": true
+        },
+        {
+          "metric": "p25",
+          "candidate": 0.34110039472579956,
+          "reference": 0.3709875293076038,
+          "pass": true
+        },
+        {
+          "metric": "p95",
+          "candidate": 0.8949200510978699,
+          "reference": 0.9805995345115661,
+          "pass": false
+        },
+        {
+          "metric": "near_white",
+          "candidate": 3.8871527777777777,
+          "reference": 34.491338734567904,
+          "pass": false
+        },
+        {
+          "metric": "deep_shadow",
+          "candidate": 1.480516975308642,
+          "reference": 0.6780960648148148,
+          "pass": true
+        },
+        {
+          "metric": "saturation",
+          "candidate": 0.3465632200241089,
+          "reference": 0.3000267282128334,
+          "pass": true
+        },
+        {
+          "metric": "local_contrast",
+          "candidate": 0.24618220329284668,
+          "reference": 0.28500273674726484,
+          "pass": true
+        },
+        {
+          "metric": "edge",
+          "candidate": 0.025992602109909058,
+          "reference": 0.01939456465188414,
+          "pass": true
+        },
+        {
+          "metric": "sky",
+          "candidate": 58.74385533707866,
+          "reference": 43.25833918539326,
+          "pass": false
+        },
+        {
+          "metric": "top_contrast",
+          "candidate": 0.21847815811634064,
+          "reference": 0.24329591020941735,
+          "pass": true
+        },
+        {
+          "metric": "split",
+          "candidate": -17.528095245361328,
+          "reference": -21.806927514076232,
+          "pass": true
+        },
+        {
+          "metric": "red",
+          "candidate": 2.666473765432099,
+          "reference": 2.3937885802469134,
+          "pass": true
+        }
+      ],
+      "passed": 10,
+      "total": 13
+    }
+  ]
+}

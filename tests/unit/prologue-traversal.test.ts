@@ -242,9 +242,33 @@ describe("Prologue lower-route traversal", () => {
 
     expect(turn.z).toBeLessThan(-129.5);
 
+    let barrierJumped = false;
+    let barrierHoldFrames = 0;
+
     for (let index = 0; index < 900; index += 1) {
-      harness.player.fixedUpdate(input({ move: { x: 0, y: 1 } }), Math.PI / 2, DT);
+      const position = harness.player.getPosition();
+      const jump =
+        !barrierJumped &&
+        position.x < 34.8 &&
+        position.x > 33.6 &&
+        harness.player.getMovementSnapshot().grounded;
+
+      if (jump) {
+        barrierJumped = true;
+        barrierHoldFrames = 14;
+      }
+
+      harness.player.fixedUpdate(
+        input({
+          move: { x: 0, y: 1 },
+          jumpPressed: jump,
+          jumpHeld: barrierHoldFrames > 0,
+        }),
+        Math.PI / 2,
+        DT,
+      );
       harness.physics.step();
+      barrierHoldFrames = Math.max(0, barrierHoldFrames - 1);
 
       if (harness.player.getPosition().x < 10) {
         break;
@@ -253,6 +277,7 @@ describe("Prologue lower-route traversal", () => {
 
     const back = harness.player.getPosition();
 
+    expect(barrierJumped).toBe(true);
     expect(back.x).toBeLessThan(12);
     expect(back.y).toBeGreaterThan(4.8);
   });

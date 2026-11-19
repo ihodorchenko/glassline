@@ -15,9 +15,9 @@
 > exposed catwalk U-turn (~220 m / 8.2 m vertical), reaching the 180–220 m band,
 > and Round 8 polishes the finale with catwalk/high-roof detail and altitude
 > wind. Round 9 adds a catwalk gap and opens the turn vista; Round 10 adds a
-> fall-only high-route anchor, metal catwalk surface audio, and hero towers.
-> Mid-climb safety, authored turn architecture, listening pass, and W1/W2 polish
-> remain. The plan's anti-hack rule is honored: the
+> fall-only high-route anchor, metal catwalk surface audio, and hero towers;
+> Round 11 authors those facades/billboard and adds a return barrier. Mid-climb
+> safety, listening pass, and W1/W2 polish remain. The plan's anti-hack rule is honored: the
 > hard highlight clip was replaced by a gentler shoulder; the remaining
 > near-white/highlight gap is assigned to real lighting and content.
 

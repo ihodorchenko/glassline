@@ -919,6 +919,63 @@ closes the open turn view with a distant hero skyline.
 3. Run the listening pass; balance metal footsteps against wind/music.
 4. Mid-climb safety and final menu/motion calibration.
 
+---
+
+## Round 11 — authored turn skyline and return barrier (2026-11-19)
+
+### Scope
+
+Round 10 opened the turn and added safety/audio. This round gives the horizon
+real facade detail and adds a second, different catwalk traversal beat on the
+return span.
+
+### What changed
+
+- **Hero towers:** the three distant boxes are replaced by `addBuilding`
+  instances with window grids/bands, roof caps, and rooftop props. The central
+  tower carries a 13 × 6.4 m **GLASSLINE** billboard and a red beacon; the
+  northern faces are detailed toward the catwalk.
+- **Return barrier:** a 0.5 m construction barrier spans the return catwalk at
+  x = 34, with red/white face plates. It is a collider; the player must jump or
+  vault it. The physical catwalk test now detects the barrier, jumps it with held
+  input, and continues back to the roof.
+- **Route/checkpoints unchanged:** ~220 m, 8.2 m vertical, five IDs, same
+  triggers. The barrier adds a second traversal beat without a new checkpoint.
+- Catwalk gap/return anchor/metal surface from Round 10 remain.
+
+### Verification
+
+- `npm run validate`: typecheck, Biome, **274 tests in 36 files**, build.
+- Physical catwalk test: gap, turn, barrier jump, return all pass.
+- Integration route unchanged.
+- Performance **60.1 fps**; start frame **10/13**.
+- Captures: turn skyline/billboard, return barrier, start.
+
+### Evidence
+
+| View | Image |
+|---|---|
+| Authored turn skyline and billboard | ![Turn](evidence/visual/round-11/turn.jpg) |
+| Return catwalk barrier | ![Barrier](evidence/visual/round-11/barrier.jpg) |
+| Start regression | ![Start](evidence/visual/round-11/start.jpg) |
+
+### Honest gaps
+
+- Hero towers are 160+ m away; the billboard reads as a small mark, not a
+  designed close-up. The barrier stripes are only partly legible against metal.
+- Catwalk still has two discrete obstacles but no lateral/detour choice.
+- No mid-climb safety; falls on the scaffold return to the beam.
+- Audio listening, final menu/motion/colour calibration, and high-roof density
+  remain open.
+- Route remains an out-and-back catwalk for a large share of its length.
+
+### Next
+
+1. Add a mid-climb safety beat and a catwalk detour/lateral choice.
+2. Bring one hero facade closer or add a closer billboard for the turn.
+3. Listening pass and final UI/motion calibration.
+4. Continue world-detail parity on the start/industrial roofs.
+
 ## Round log
 
 | Round | Date | Focus | Outcome |
