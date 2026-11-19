@@ -106,6 +106,8 @@ Only `Verified` means that the applicable acceptance criteria have been checked 
 
 **Geometry:** beveled static boxes and instanced props (visual only, colliders unchanged).
 
+**Maintenance:** light membrane repair patches on the roof.
+
 **Dampness:** shallow reflective puddles with soft alpha edges.
 
 **Materials/lighting:** two-scale triplanar bump/parallax + cracks/grime/rust/seam highlights, PCF-soft 4096 shadows, metal coping and expansion joints ([Rounds 61/66/67/68/69/70](VISUAL_REFERENCE_PROGRESS.md)); start remains 13/13.

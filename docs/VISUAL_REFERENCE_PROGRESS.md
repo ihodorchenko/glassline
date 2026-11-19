@@ -3413,6 +3413,28 @@ Add dampness/reflection variation to the dry white roof.
 
 - Puddles are subtle and circular; not a full wet-surface simulation.
 
+---
+
+## Round 75 — roof repair patches (2026-11-19)
+
+### Scope
+
+Add believable maintenance history to the roof.
+
+### What changed
+
+- Light-gray `membrane` material (asphalt texture) for repairs.
+- Four thin rotated patches on the start roof.
+- Start **13/13**, ~60 fps, 280 tests.
+
+### Evidence
+
+- [`start.jpg`](evidence/visual/round-75/start.jpg)
+
+### Honest gaps
+
+- Patches are flat rectangles; no real membrane seams/bubbles.
+
 ## Round log
 
 | Round | Date | Focus | Outcome |

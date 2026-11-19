@@ -20,7 +20,8 @@ export type MaterialKey =
   | "foliage"
   | "soil"
   | "stain"
-  | "water";
+  | "water"
+  | "membrane";
 
 interface MaterialSpec {
   readonly color: number;
@@ -189,6 +190,13 @@ const MATERIAL_SPECS: Record<MaterialKey, MaterialSpec> = {
     texture: "stain",
     transparent: true,
     depthWrite: false,
+  },
+  membrane: {
+    color: 0x8b8e8c,
+    roughness: 0.88,
+    metalness: 0.02,
+    uvScale: 0.18,
+    texture: "asphalt",
   },
   water: {
     color: 0x718793,

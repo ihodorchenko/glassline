@@ -170,6 +170,25 @@ function addPuddles(builder: CityBuilder): void {
   }
 }
 
+function addRoofRepairs(builder: CityBuilder): void {
+  // Patched asphalt membrane strips read as maintenance history on a white roof.
+  const patches: readonly [number, number, number, number, number][] = [
+    [-5.5, 2.5, 2.4, 1.4, 0.06],
+    [4.5, -12, 1.8, 2.4, -0.05],
+    [-7.8, 15.2, 2.2, 1.6, 0.03],
+    [8.8, -2, 1.5, 2.6, -0.08],
+  ];
+
+  for (const [x, z, width, depth, rotation] of patches) {
+    builder.box(x, 0.012, z, width, 0.01, depth, {
+      material: "membrane",
+      rotationY: rotation,
+      castShadow: false,
+      receiveShadow: true,
+    });
+  }
+}
+
 function addSkylight(builder: CityBuilder): void {
   // Glass below the opening, with a visible frame grid.
   builder.box(7, -2.65, 5, 4.2, 0.08, 4.2, {
@@ -1816,6 +1835,7 @@ export function createPrologueCityDecorations(
   addRoofExpansionJoints(builder);
   addEdgeRailings(builder);
   addPuddles(builder);
+  addRoofRepairs(builder);
   addSkylight(builder);
   addSolarArray(builder);
 
