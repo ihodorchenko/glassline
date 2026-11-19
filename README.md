@@ -1,6 +1,6 @@
 # Glassline
 
-[Пакет для решения по референсу](docs/REFERENCE_REVIEW.md) — метрики, видео/аудио и варианты приёмки.
+[Пакет для решения по референсу](docs/REFERENCE_REVIEW.md) — контактный лист, нормализованное видео, метрики и варианты приёмки.
 
 **A first-person parkour game focused on movement, momentum, and mastery.**
 

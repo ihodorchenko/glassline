@@ -2823,6 +2823,41 @@ captures and verifies the results flow.
 - Synthetic completion; time/score is not a real speedrun.
 - Human audio/video verdict still pending.
 
+---
+
+## Round 51 — review bundle and normalized mix (2026-11-19)
+
+### Scope
+
+The live gameplay mix is loud (−22 LUFS) and the evidence is scattered. This
+round creates a single review bundle for the final human pass.
+
+### What changed
+
+- Contact sheet: Start / Training / Catwalk-BYPASS / Results.
+- Normalized 14.4 s catwalk run video/audio: **−26.07 LUFS**, peak −7.53 dBFS
+  (original live −22.03 / −3.86).
+- Reference review package links the normalized clip first.
+- No game/visual/route/audio code changes.
+
+### Verification
+
+- `npm run validate`: **279 tests in 37 files**, build.
+- Normalized audio metrics: 4/5 general targets (short-term range metric not
+  applicable to a short clip).
+- Start 13/13 unchanged.
+
+### Evidence
+
+- [`contact-sheet.jpg`](evidence/review/contact-sheet.jpg)
+- [`finish-terminal-run-review.mp4`](evidence/review/finish-terminal-run-review.mp4)
+- [`finish-terminal-run-review.wav`](evidence/review/finish-terminal-run-review.wav)
+
+### Honest gaps
+
+- Normalization is for review only; the game mix itself is unchanged/loud.
+- Human verdict still pending; results screen remains synthetic.
+
 ## Round log
 
 | Round | Date | Focus | Outcome |

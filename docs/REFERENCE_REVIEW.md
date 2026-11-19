@@ -1,5 +1,9 @@
 # Glassline — пакет для решения по референсу
 
+![Контактный лист](evidence/review/contact-sheet.jpg)
+
+**Быстрый просмотр:** [нормализованный 14,4-секундный забег](evidence/review/finish-terminal-run-review.mp4) (звук −26 LUFS, без перегруза лимитера). Ниже — исходные live-записи и полный чек-лист.
+
 Обновлено: 2026-11-19, раунд 43. Предел текущей итерации — **раунд 60**.
 
 Этот файл сводит воедино доказательства, известные пробелы и варианты решения.
@@ -34,6 +38,7 @@ deep-shadow 1,72% · sky 39,8% · split −16,69 · red 3,28**.
    - [ground-8s.wav](evidence/audio/round-29/ground-8s.wav)
    - [gameplay-route.wav](evidence/video/round-31/gameplay-route.wav) — реальный игровой микс.
 2. **Посмотреть 9-секундный реальный геймплей** и 17,5-секундный обзор:
+   - [finish-terminal-run-review.mp4](evidence/review/finish-terminal-run-review.mp4) — нормализованный, удобный для прослушивания
    - [gameplay-route.mp4](evidence/video/round-31/gameplay-route.mp4)
    - [catwalk-finish-run.mp4](evidence/video/round-48/catwalk-finish-run.mp4) — 12,35 с, поворот + два барьера + подход к финишу
    - [finish-terminal-run.mp4](evidence/video/round-49/finish-terminal-run.mp4) — 14,40 с, весь catwalk + терминал FINISH + достижение «Making Contact»
