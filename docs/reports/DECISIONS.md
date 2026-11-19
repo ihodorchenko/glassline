@@ -341,3 +341,25 @@ The plan's blind threshold is met for the first time. Full records:
 `W1_ITERATION.md` §6), then repeat capture + metrics + full blind set and take
 the isolated fps measurement. No merge to `main`; the red-baseline rule still
 holds (no metric may be improved by a framing or exposure hack).
+
+## D-15 — W1 gate closed (2026-11-19)
+
+**Verdict.** The art director re-ran the blind gate on the final W1.1b frames:
+**5/6 PASS** (only skybridge fails, for W2 content/geometry). Combined with:
+- the plan rule "no shot may regress more than one band to gain another" cleared
+  between the mid-iteration and final captures (start 10→9, first-gap 11→10,
+  wallrun 9→9, service 3→5, skybridge 11→10, finish 9→9; the start luma
+  0.6466 vs 0.6462 edge and LC hairline are recorded as WATCH per AD);
+- guardrails green with the amendments in `W1_TARGETS.md` §8 (service sky-mask
+  and split report-only, first-gap sky window 6–25, start luma WATCH);
+- the isolated perf probe: 60.00 fps average on all six poses, 0/6 below 55 at
+  1600×900 high, with the documented headless-rAF caveat;
+
+the W1 exit criteria are met and the gate is **closed**. Final state:
+52/78 shifted (baseline 28, tolerance 60/78), determinism 6/6 byte-identical,
+typecheck/lint/293 tests/build green.
+
+**What this does not claim.** A real-window FPS number (W5), human acceptance,
+or reference-level realism: the residual gaps (mid-scale contrast/chroma,
+swirl-bump, skybridge structure, service interior content, sky vistas) are
+recorded as the W2 backlog in `W1_TARGETS.md` §8. Nothing is merged to `main`.

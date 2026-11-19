@@ -159,3 +159,47 @@ stair material recipe only if budget allows (deferred otherwise). The rest is
 explicitly W2/W3: skybridge glass rails and vista, sky vistas for finish/start,
 wallrun sky strip, duct/red door for service-block, first-gap stair geometry,
 04/SKYBRIDGE billboard.
+
+## 7. AD amendments after the blind review (W1.1b)
+
+- **Sky-mask windows for iteration 1 are pose-limited:** start 12–35, finish
+  4–20 (the frames' sky is a narrow patch because of the fixed poses; full
+  W2 vistas are needed before the 35–50/40–55 targets apply). wallrun and
+  skybridge remain 4–15; service ≤5 after the interior fix (measured 17.9 %
+  still flags it — treated as a diagnostic, the frame has no sky by
+  construction).
+- **service-block `split` is report-only in iteration 1:** its dark mask is
+  shadowed route red, structurally warm; the metric family does not apply
+  until W2 content changes the interior.
+- **Blind-review fix list (W1.1b):** cool dark steel joints, neutral (not blue)
+  glass fresnel, GTAO 0.78, interior tint `#d4d8dc` with AO weight 0.85,
+  first-gap underside dressing, terminal screen emissive ≤0.10 — see
+  [`W1_ITERATION.md`](W1_ITERATION.md) §6.
+
+## 8. AD amendments after the second blind gate (2026-11-19)
+
+The art director re-ran the blind gate on the final W1.1b frames (5/6 PASS) and
+recorded these reading rules for the residual band failures:
+
+1. **service-block `sky-mask` → report-only.** The mask classifies the cool
+   shaded interior walls (`#98A0A8`, blue-dominant at luma ≈0.38) as sky; the
+   lit-wall exclusion (luma > 0.75) does not catch them. Substitute reading:
+   white point + interior luma 0.44–0.60 (actual 0.5635 — in band).
+2. **service-block `split` → report-only** (`+19.8`): the dark mask there is
+   shadowed route red, structurally warm in this composition.
+3. **first-gap sky-mask iteration-1 window: 6–25** (closed canyon; actual 6.7 is
+   inside the reference p10–p90).
+4. **start-roof luma 0.6466** is a hairline (+0.0004) over the shifted band edge
+   0.6462 — read as WATCH, not as a look regression.
+5. Residual `local_contrast` 0.249–0.259 and saturation 0.166–0.194 sit inside
+   the reference per-frame spread (LC p10 0.2178, sat p10 0.1802): mean-band
+   strictness, not a break of the reference language.
+
+**Gate verdict: W1 CLOSED** (blind 5/6 ≥ 4/6; no shot loses more than one band
+mid → final; guardrails green with the readings above; fps probe 60/60 poses
+with the headless caveat). Residual work moves to W2 as one card:
+mid-scale contrast/chroma (prop shadow coverage 8–15 %, per-section sun azimuth,
+continuous red route), straight tile + stains instead of swirl-bump, skybridge
+glass rails/vista/suspended load, service duct + red door + yaw, first-gap stair
+material/nosing + lower-roof dressing, start-roof bulkhead panels, sky vistas
+for start/finish, and the real-window perf measurement in W5.

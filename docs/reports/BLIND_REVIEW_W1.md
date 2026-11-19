@@ -32,3 +32,17 @@ and two small look items (section sun azimuth, slightly stronger contact AO).
 §6 — cool dark steel joints, neutral (not blue) glass fresnel tint, GTAO 0.78,
 interior tint/AO weight, first-gap underside dressing, then a fresh capture +
 metrics + full blind set and the isolated fps gate.
+
+## Re-run after the W1.1b fix round (final gate)
+
+Six fresh unlabeled pairs (`captures/w1-final2` vs reference frames,
+randomized, no labels): **5 / 6 PASS** — `start-roof`, `first-gap`,
+`wallrun-corridor`, `service-block`, `finish-roof`. Only `skybridge` fails, and
+for W2 content/geometry reasons (solid parapets hide the city; no glass rails),
+not for the look language. The first-gap PASS is new — the underside parapet
+cap + attached hazard plate removed the "floating tab / mirror void" defect.
+
+The art director recorded the gate verdict: **W1 closed** (blind 5/6, band
+regression rule cleared, guardrails green with the amendments in
+[`W1_TARGETS.md`](W1_TARGETS.md) §8, fps probe 60/60 poses). Residual items are
+listed as one W2 card in `W1_TARGETS.md` §8.

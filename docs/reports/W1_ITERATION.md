@@ -94,3 +94,41 @@ numbers and caveat are recorded in [`w1-perf.json`](w1-perf.json) /
 Explicitly deferred: skybridge glass rails and city-below vista, first-gap stair
 geometry, sky vistas for start/finish, duct and red door for service-block,
 04/SKYBRIDGE billboard (all W2/W3 per W1_TARGETS §5).
+
+## 7. W1.1b fix round outcome (final state)
+
+Bounded fix round from §6 plus two data-driven follow-ups. Final integrated
+capture: `captures/w1-final2` (`w1-final2/manifest.json`), **6/6 byte-identical**
+determinism (tolerance contract D-13 not even needed), console/page errors 0.
+
+| Item | Result |
+|---|---|
+| Deck joints `metal` → cool `dark-metal` `0x2b3542` | seam luma 0.434 → 0.393 against deck 0.751: a steel seam, not a black hole; local contrast recovered on start-roof |
+| Glass sheen de-blued (tint `#585c60`, env 1.55, sheen strength reduced 1.35→0.90 / 1.45→1.00) | sky-blue over-count down (start 58.7→55.3, skybridge 50.1→42.7, wallrun 30.5→27.6); split back in band (start −14.0, skybridge −25.3, wallrun −19.9, finish −13.3); wallrun saturation 0.323→0.250. Cost: saturation below band on start/skybridge/finish (0.166–0.193) — the neutral sheen carries no chroma |
+| First-gap underside dressing (parapet cap 0.3 m, attached hazard plate 0.3×0.6 m, contact shadow) | floating tab removed (gap-band red 1174→0 px, edge band 440→3124 px); first-gap reads as a landing edge instead of a mirror-void |
+| Finish terminal screen matte (emissive 0.2→0.05, `cool-light`→`white`) | blue-dominance +0.046→+0.035; FINISH canvas stays readable |
+| Interior ambient neutral `#d4d8dc`, AO weight 0.85 | service-block luma 0.564 (band 0.44–0.60), sky-mask same-tree 22.2→19.6 %; open-roof frames byte-identical (probe gate) |
+| GTAO blend 0.78 → reverted to 0.70 | 0.78 gave no local_contrast gain (Δ ≤ 0.0003) and cost a band on finish-roof; reverted per the plan rule |
+| Exposure/saturation A/B (1.57/2.54 vs 1.65/2.4) | rejected: net +1 band only, white point worse (|R−B| up on all six), saturation still short of band; kept 1.65 / 2.4 |
+
+Shifted-band PASS (`docs/reports/w1-metrics.md`): **52/78** (baseline rev2 28,
+mid-iteration 53, W1.1 final 49). Per shot: start-roof 9, first-gap 10,
+wallrun-corridor 9, service-block 5, skybridge 10, finish-roof 9 — between the
+mid-iteration and this final state **no shot loses more than one band**, which
+clears the plan §2.1 regression rule (previously violated). Tolerance gauge:
+60/78.
+
+Still failing per metric family: saturation 5/6 (the de-blued sheen trade-off;
+structurally below band on dark-glass frames), local_contrast 5/6 (mid-scale
+contrast is a W2 content/lighting task; GTAO cannot move it), luma too high on
+skybridge/finish (0.664/0.711 vs 0.646) and start-roof is 0.647 vs 0.646 —
+borderline, p95/p25 mixed; guardrails: seam energy 0.0053–0.0092 (healthy), red
+continuity 0.31–2.00 % with S 0.73–0.99, sky-mask 4.7–19.7 % (interior reading
+explained in W1_TARGETS §7).
+
+**Performance gate.** Isolated probe (`perf.mjs --shot all --strict`, host
+1-min load 4.7): **60.00 fps average on all six poses**, median 59.88, 1 % low
+59.52, p95 frame time 16.7 ms; 0/6 below the 55 fps threshold
+(`docs/reports/w1-perf.json`, `captures/perf-w1-gate2/`). Caveat recorded in the
+tool: headless Edge rAF is capped near 60 Hz, so this is a regression probe that
+proves the build keeps up at 1600×900 high, not a real-window FPS claim.

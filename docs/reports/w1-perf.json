@@ -1,8 +1,8 @@
 {
   "generator": "tools/capture/perf.mjs",
   "environment": "headless-edge",
-  "iteration": "w1-gate",
-  "generatedAt": "2026-11-19T19:18:49.765Z",
+  "iteration": "w1-gate2",
+  "generatedAt": "2026-11-19T19:44:19.091Z",
   "level": "prologue",
   "url": "http://127.0.0.1:5310/",
   "browser": {
@@ -20,9 +20,9 @@
     "arch": "arm64",
     "cpuCount": 8,
     "loadAvg": [
-      7.2,
-      5.33,
-      5.67
+      4.67,
+      9.01,
+      12.02
     ]
   },
   "frames": {
@@ -31,52 +31,12 @@
   },
   "threshold": {
     "minFps": 55,
-    "strict": false
+    "strict": true
   },
   "shots": [
     {
       "shot": "start-roof",
-      "json": "captures/perf-w1-gate/start-roof.json",
-      "fps": {
-        "avg": 54.22,
-        "median": 59.88,
-        "p1Low": 29.94
-      },
-      "frameTimeMs": {
-        "avg": 18.44,
-        "median": 16.7,
-        "p95": 33.3,
-        "p99": 33.4,
-        "min": 16.5,
-        "max": 50
-      },
-      "durationMs": 5533.1,
-      "stats": {
-        "drawCalls": 129,
-        "triangles": 1364335,
-        "textures": 47,
-        "programs": 41,
-        "quality": "high",
-        "canvas": {
-          "width": 1600,
-          "height": 900
-        },
-        "shot": "start-roof"
-      },
-      "gpu": {
-        "context": "webgl2",
-        "vendor": "WebKit",
-        "renderer": "WebKit WebGL",
-        "unmaskedVendor": "Google Inc. (Apple)",
-        "unmaskedRenderer": "ANGLE (Apple, ANGLE Metal Renderer: Apple M1 Pro, Unspecified Version)"
-      },
-      "passed": false,
-      "consoleErrors": 0,
-      "pageErrors": 0
-    },
-    {
-      "shot": "first-gap",
-      "json": "captures/perf-w1-gate/first-gap.json",
+      "json": "captures/perf-w1-gate2/start-roof.json",
       "fps": {
         "avg": 60,
         "median": 59.88,
@@ -92,10 +52,50 @@
       },
       "durationMs": 4999.8,
       "stats": {
-        "drawCalls": 121,
-        "triangles": 1361323,
+        "drawCalls": 131,
+        "triangles": 1365535,
+        "textures": 45,
+        "programs": 42,
+        "quality": "high",
+        "canvas": {
+          "width": 1600,
+          "height": 900
+        },
+        "shot": "start-roof"
+      },
+      "gpu": {
+        "context": "webgl2",
+        "vendor": "WebKit",
+        "renderer": "WebKit WebGL",
+        "unmaskedVendor": "Google Inc. (Apple)",
+        "unmaskedRenderer": "ANGLE (Apple, ANGLE Metal Renderer: Apple M1 Pro, Unspecified Version)"
+      },
+      "passed": true,
+      "consoleErrors": 0,
+      "pageErrors": 0
+    },
+    {
+      "shot": "first-gap",
+      "json": "captures/perf-w1-gate2/first-gap.json",
+      "fps": {
+        "avg": 60,
+        "median": 59.88,
+        "p1Low": 59.52
+      },
+      "frameTimeMs": {
+        "avg": 16.67,
+        "median": 16.7,
+        "p95": 16.7,
+        "p99": 16.8,
+        "min": 16.5,
+        "max": 16.8
+      },
+      "durationMs": 4999.8,
+      "stats": {
+        "drawCalls": 123,
+        "triangles": 1362523,
         "textures": 46,
-        "programs": 41,
+        "programs": 43,
         "quality": "high",
         "canvas": {
           "width": 1600,
@@ -116,26 +116,26 @@
     },
     {
       "shot": "wallrun-corridor",
-      "json": "captures/perf-w1-gate/wallrun-corridor.json",
+      "json": "captures/perf-w1-gate2/wallrun-corridor.json",
       "fps": {
-        "avg": 54.55,
+        "avg": 60,
         "median": 59.88,
-        "p1Low": 29.94
+        "p1Low": 59.52
       },
       "frameTimeMs": {
-        "avg": 18.33,
+        "avg": 16.67,
         "median": 16.7,
-        "p95": 33.3,
-        "p99": 33.4,
+        "p95": 16.8,
+        "p99": 16.8,
         "min": 16.5,
-        "max": 33.4
+        "max": 16.8
       },
-      "durationMs": 5499.8,
+      "durationMs": 4999.7,
       "stats": {
-        "drawCalls": 115,
-        "triangles": 1364307,
+        "drawCalls": 117,
+        "triangles": 1365507,
         "textures": 43,
-        "programs": 41,
+        "programs": 43,
         "quality": "high",
         "canvas": {
           "width": 1600,
@@ -150,32 +150,32 @@
         "unmaskedVendor": "Google Inc. (Apple)",
         "unmaskedRenderer": "ANGLE (Apple, ANGLE Metal Renderer: Apple M1 Pro, Unspecified Version)"
       },
-      "passed": false,
+      "passed": true,
       "consoleErrors": 0,
       "pageErrors": 0
     },
     {
       "shot": "service-block",
-      "json": "captures/perf-w1-gate/service-block.json",
+      "json": "captures/perf-w1-gate2/service-block.json",
       "fps": {
-        "avg": 47.87,
+        "avg": 60,
         "median": 59.88,
-        "p1Low": 20
+        "p1Low": 59.52
       },
       "frameTimeMs": {
-        "avg": 20.89,
+        "avg": 16.67,
         "median": 16.7,
-        "p95": 33.4,
-        "p99": 50,
-        "min": 16.6,
-        "max": 50
+        "p95": 16.7,
+        "p99": 16.8,
+        "min": 16.5,
+        "max": 16.8
       },
-      "durationMs": 6266.4,
+      "durationMs": 4999.9,
       "stats": {
-        "drawCalls": 178,
-        "triangles": 2046478,
-        "textures": 52,
-        "programs": 42,
+        "drawCalls": 181,
+        "triangles": 2048278,
+        "textures": 49,
+        "programs": 43,
         "quality": "high",
         "canvas": {
           "width": 1600,
@@ -190,32 +190,32 @@
         "unmaskedVendor": "Google Inc. (Apple)",
         "unmaskedRenderer": "ANGLE (Apple, ANGLE Metal Renderer: Apple M1 Pro, Unspecified Version)"
       },
-      "passed": false,
+      "passed": true,
       "consoleErrors": 0,
       "pageErrors": 0
     },
     {
       "shot": "skybridge",
-      "json": "captures/perf-w1-gate/skybridge.json",
+      "json": "captures/perf-w1-gate2/skybridge.json",
       "fps": {
-        "avg": 59.41,
+        "avg": 60,
         "median": 59.88,
-        "p1Low": 58.94
+        "p1Low": 59.52
       },
       "frameTimeMs": {
-        "avg": 16.83,
+        "avg": 16.67,
         "median": 16.7,
-        "p95": 16.8,
-        "p99": 16.97,
+        "p95": 16.71,
+        "p99": 16.8,
         "min": 16.5,
-        "max": 33.4
+        "max": 16.8
       },
-      "durationMs": 5049.8,
+      "durationMs": 4999.9,
       "stats": {
-        "drawCalls": 117,
-        "triangles": 1361315,
-        "textures": 41,
-        "programs": 40,
+        "drawCalls": 119,
+        "triangles": 1362515,
+        "textures": 44,
+        "programs": 43,
         "quality": "high",
         "canvas": {
           "width": 1600,
@@ -236,7 +236,7 @@
     },
     {
       "shot": "finish-roof",
-      "json": "captures/perf-w1-gate/finish-roof.json",
+      "json": "captures/perf-w1-gate2/finish-roof.json",
       "fps": {
         "avg": 60,
         "median": 59.88,
@@ -245,7 +245,7 @@
       "frameTimeMs": {
         "avg": 16.67,
         "median": 16.7,
-        "p95": 16.8,
+        "p95": 16.7,
         "p99": 16.8,
         "min": 16.5,
         "max": 16.8
@@ -253,9 +253,9 @@
       "durationMs": 4999.8,
       "stats": {
         "drawCalls": 105,
-        "triangles": 1360695,
+        "triangles": 1361295,
         "textures": 37,
-        "programs": 40,
+        "programs": 41,
         "quality": "high",
         "canvas": {
           "width": 1600,
@@ -277,14 +277,10 @@
   ],
   "summary": {
     "shots": 6,
-    "passing": 3,
-    "failing": 3,
-    "worstShot": "service-block",
-    "worstAvgFps": 47.87,
-    "belowThreshold": [
-      "start-roof",
-      "wallrun-corridor",
-      "service-block"
-    ]
+    "passing": 6,
+    "failing": 0,
+    "worstShot": "start-roof",
+    "worstAvgFps": 60,
+    "belowThreshold": []
   }
 }
