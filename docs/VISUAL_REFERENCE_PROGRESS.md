@@ -2320,7 +2320,7 @@ it is actually a different choice rather than a strictly worse route.
 
 - [`lines.json`](evidence/design/round-37/lines.json)
 - [`README.md`](evidence/design/round-37/README.md)
-- Test: [`bypass-benchmark.test.ts`](tests/unit/bypass-benchmark.test.ts)
+- Test: [`bypass-benchmark.test.ts`](../tests/unit/bypass-benchmark.test.ts)
 
 ### Honest gaps
 
@@ -2448,7 +2448,7 @@ camera or menu drift. This round makes the setting consistent and test-locked.
 
 - [`motion.json`](evidence/settings/round-40/motion.json)
 - [`README.md`](evidence/settings/round-40/README.md)
-- [`camera.test.ts`](tests/unit/camera.test.ts)
+- [`camera.test.ts`](../tests/unit/camera.test.ts)
 
 ### Honest gaps
 
@@ -2857,6 +2857,35 @@ round creates a single review bundle for the final human pass.
 
 - Normalization is for review only; the game mix itself is unchanged/loud.
 - Human verdict still pending; results screen remains synthetic.
+
+---
+
+## Round 52 — final verification snapshot (2026-11-19)
+
+### Scope
+
+Freeze a reproducible verification snapshot before the final review rounds.
+
+### What changed
+
+- Added [`VERIFICATION.md`](VERIFICATION.md): commands/results for tests, start
+  metrics, prologue audio, performance, link audit.
+- Re-ran gates: **279 tests/37 files**, build, **13/13** start, **5/5** prologue
+  audio, **60.1 fps**, **0 broken relative links**.
+- Fixed two documentation links to `tests/` (missing `../`).
+- No game/visual/audio code changes.
+
+### Evidence
+
+- [`start.jpg`](evidence/verification/start.jpg)
+- [`metrics.json`](evidence/verification/metrics.json)
+- [`prologue-24s.wav`](evidence/verification/prologue-24s.wav)
+- [`audio.json`](evidence/verification/audio.json)
+
+### Honest gaps
+
+- Human perception, real speedrun result, cross-browser/AT testing, and
+  photorealism still out of scope of this snapshot.
 
 ## Round log
 
