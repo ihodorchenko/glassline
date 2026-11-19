@@ -2887,6 +2887,41 @@ Freeze a reproducible verification snapshot before the final review rounds.
 - Human perception, real speedrun result, cross-browser/AT testing, and
   photorealism still out of scope of this snapshot.
 
+---
+
+## Round 53 — real finish and results screen (2026-11-19)
+
+### Scope
+
+Round 50's results screen was synthetic. This round finds the physical finish
+path and captures a real completion.
+
+### What changed
+
+- Route the run around the **west end** of the return south rail (x≈7.5) onto
+  the final deck, then into `trigger_finish`; no teleport at the end.
+- 13.73 s clip ends on the real Results screen: **Time 00:15.594**.
+- Live audio peak −3.79 dBFS / LUFS ≈ −21.94.
+- No game/route/visual changes.
+
+### Verification
+
+- `npm run validate`: **279 tests in 37 files**, build.
+- Flow `results` reached physically; video includes the results screen.
+- Start 13/13 unchanged.
+
+### Evidence
+
+- [`finish-results-run.mp4`](evidence/video/round-53/finish-results-run.mp4)
+- [`real-results.png`](evidence/video/round-53/real-results.png)
+- [`README.md`](evidence/video/round-53/README.md)
+
+### Honest gaps
+
+- Starts at catwalk x=32, not the initial spawn; time is a section-run, not a
+  full-level speedrun.
+- Audio loud; human verdict pending.
+
 ## Round log
 
 | Round | Date | Focus | Outcome |

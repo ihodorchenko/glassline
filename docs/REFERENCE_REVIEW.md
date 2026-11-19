@@ -50,7 +50,7 @@ deep-shadow 1,72% · sky 39,8% · split −16,69 · red 3,28**.
    - [cinematic-route.mp4](evidence/video/round-30/cinematic-route.mp4)
 3. **Посмотреть стартовый кадр и Training**:
    - [start.jpg](evidence/visual/round-42/start.jpg)
-   - [results.jpg](evidence/visual/round-50/results.jpg) — экран результатов (синтетическое завершение)
+   - [real-results.png](evidence/video/round-53/real-results.png) — настоящий финиш/экран результатов (секционный забег 15,594 с)
    - [training.jpg](evidence/visual/round-27/training.jpg)
 4. **Пройти один забег** в браузере (если есть доступ к dev-сборке):
    - `npm run dev`, затем Training/Prologue.
