@@ -3089,6 +3089,28 @@ Prepare the round-60 decision with a single honest status document.
 
 - Human perception, full-level run, cross-browser/AT remain.
 
+---
+
+## Round 60 — decision record / cap reached (2026-11-19)
+
+### Scope
+
+Final round of the 60-round cap. No new game changes; record the honest status
+and the decision options.
+
+### What changed
+
+- Added [`DECISION_AT_60.md`](DECISION_AT_60.md): gates, why the goal is **not**
+  marked complete, options A/B/C, recommended A or C.
+- Final gates remain: 279 tests, 13/13 start, prologue 5/5, high-route 5/5,
+  ~60 fps, 0 broken links, manifest OK.
+- Goal remains active; automatic rounds are exhausted (60/60).
+
+### Honest gaps
+
+- No human perceptual verdict; stylized art; section-run finish; no cross-browser/
+  AT testing.
+
 ## Round log
 
 | Round | Date | Focus | Outcome |

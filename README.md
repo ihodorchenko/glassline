@@ -3,6 +3,7 @@
 [Пакет для решения по референсу](docs/REFERENCE_REVIEW.md) — контактный лист, нормализованное видео, метрики и варианты приёмки.
 [Итоговая верификация](docs/VERIFICATION.md) — тесты, 13/13 старта, 5/5 звука, 60 fps.
 [Финальный отчёт](docs/FINAL_REPORT.md) — что достигнуто и что осталось.
+[Решение на раунде 60](docs/DECISION_AT_60.md) — статус и варианты A/B/C.
 [Нормализованный реальный финиш/результаты](docs/evidence/review/finish-results-run-review.mp4) — физический забег по catwalk.
 
 **A first-person parkour game focused on movement, momentum, and mastery.**

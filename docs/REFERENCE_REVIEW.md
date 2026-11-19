@@ -14,6 +14,7 @@
 ## 0. Итоговая верификация
 
 Сводный статус и рекомендация: [`FINAL_REPORT.md`](FINAL_REPORT.md).
+Финальная развилка: [`DECISION_AT_60.md`](DECISION_AT_60.md).
 
 Хэши ключевых файлов: [`evidence/MANIFEST.md`](evidence/MANIFEST.md).
 
