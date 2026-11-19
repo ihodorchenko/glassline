@@ -116,9 +116,9 @@ Only `Verified` means that the applicable acceptance criteria have been checked 
 
 **Texture filtering:** 16× anisotropy on procedural surfaces.
 
-**Materials/lighting:** two-scale triplanar bump/parallax + cracks/grime/rust/seam highlights, PCF-soft 4096 shadows, metal coping and expansion joints ([Rounds 61/66/67/68/69/70](VISUAL_REFERENCE_PROGRESS.md)); start remains 13/13.
+**Materials/lighting:** two-scale triplanar bump/parallax + cracks/grime/rust/seam highlights, 4096 PCF shadows, metal coping and expansion joints ([Rounds 61/66/67/68/69/70](VISUAL_REFERENCE_PROGRESS.md)); start remains 13/13.
 
-**Cross-browser:** Chromium passes; **real Safari 27.2 passes Training** (user-confirmed); Playwright WebKit hits a non-representative Rapier WASM trap; Firefox is environment-sandbox-blocked ([CROSS_BROWSER.md](CROSS_BROWSER.md)).
+**Cross-browser:** Chromium passes; **real Safari 27.2 passes Production Training, Prologue and a full 0-respawn run (Results 33.542 s)**; Playwright WebKit is a non-representative false positive; Firefox is environment-sandbox-blocked ([CROSS_BROWSER.md](CROSS_BROWSER.md)).
 
 **Boot presentation:** styled inline paper/ink loader with staged progress + styled level-loading screen ([BOOT_LOADER.md](BOOT_LOADER.md)).
 

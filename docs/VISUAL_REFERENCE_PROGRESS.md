@@ -3261,7 +3261,8 @@ Harden the lighting realism without changing composition.
 
 ### What changed
 
-- PCFShadowMap → **PCFSoftShadowMap**.
+- 4K PCF shadows (Three r187 removed `PCFSoftShadowMap`; the desktop path uses
+  `PCFShadowMap` with a 4096 map).
 - Shadow map 2048 → **4096**; normalBias 0.025; radius 2.
 - Start metrics **13/13**; **60.4 fps**; 280 tests.
 

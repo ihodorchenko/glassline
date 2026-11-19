@@ -13,6 +13,10 @@ const args = process.argv.slice(2);
 const url = args.find((value, index) => args[index - 1] === "--url") ?? "http://127.0.0.1:4173/";
 const outDir =
   args.find((value, index) => args[index - 1] === "--out-dir") ?? "/tmp/glassline-safari";
+const modeArg = args.find((value, index) => args[index - 1] === "--mode") ?? "training";
+const modeLabel = modeArg.toLowerCase() === "prologue" ? "Prologue" : "Training";
+const modeSlug = modeLabel.toLowerCase();
+const probeMovement = args.includes("--probe-movement");
 
 await mkdir(outDir, { recursive: true });
 
@@ -86,22 +90,46 @@ async function main() {
     await tool("screenshot", { savePath: join(outDir, "menu.png") });
 
     await tool("page_interactions", {
-      interactions: [{ type: "click", text: "Training", purpose: "Open Training" }],
+      interactions: [{ type: "click", text: modeLabel, purpose: `Open ${modeLabel}` }],
     });
     await new Promise((resolve) => setTimeout(resolve, 4500));
-    await tool("screenshot", { savePath: join(outDir, "training.png") });
+    await tool("screenshot", { savePath: join(outDir, `${modeSlug}.png`) });
 
     const state = await tool("evaluate_javascript", {
       expression:
-        "return { body: document.body.innerText.slice(0, 200), canvas: !!document.querySelector('canvas'), hud: !!document.querySelector('.gl-hud.is-visible') };",
+        "return { body: document.body.innerText.slice(0, 200), canvas: !!document.querySelector('canvas'), hud: !!document.querySelector('.gl-hud.is-visible'), flow: window.__glassline?.flowManager?.getState?.(), player: window.__glassline?.player?.getPosition?.() };",
     });
+
+    let movement = null;
+
+    if (probeMovement && state?.flow === "gameplay") {
+      const before = state.player;
+
+      await tool("evaluate_javascript", {
+        expression:
+          "window.__glassline.input.heldKeys.add('KeyW'); window.__glassline.input.heldKeys.add('ShiftLeft'); return true;",
+      });
+      await new Promise((resolve) => setTimeout(resolve, 1200));
+      const after = await tool("evaluate_javascript", {
+        expression: `const app = window.__glassline; const p = app.player.getPosition(); app.input.heldKeys.delete('KeyW'); app.input.heldKeys.delete('ShiftLeft'); return { player: p };`,
+      });
+      movement = {
+        before,
+        after: after?.player,
+        distance:
+          before && after?.player
+            ? Math.hypot(after.player.x - before.x, after.player.z - before.z)
+            : null,
+      };
+    }
+
     const consoleState = await tool("browser_console_messages", { limit: 40 });
     await writeFile(
       join(outDir, "report.json"),
-      JSON.stringify({ url, state, consoleState }, null, 2),
+      JSON.stringify({ url, mode: modeLabel, state, movement, consoleState }, null, 2),
     );
 
-    console.log(JSON.stringify({ ok: true, outDir, state }, null, 2));
+    console.log(JSON.stringify({ ok: true, outDir, state, movement }, null, 2));
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
     console.error(message);

@@ -1,9 +1,10 @@
 # Safari testing
 
-## Manual smoke (already passed)
+## Status
 
-Safari **27.2** / macOS **27.2.1**, production URL, **Training** — no crash
-(2026-11-19, user-confirmed).
+Safari **27.2** / macOS **27.2.1**: production Training, Prologue and a full
+**0-respawn Prologue run** passed via `safaridriver --mcp`
+(Results 00:33.542). See `docs/evidence/cross-browser/safari/`.
 
 ## Automated real-Safari smoke
 

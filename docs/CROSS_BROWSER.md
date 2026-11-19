@@ -5,17 +5,18 @@
 
 ## ОБНОВЛЕНИЕ: реальный Safari (2026-11-19)
 
-Пользователь вручную открыл `http://127.0.0.1:4173/` в **Safari 27.2 на
-macOS 27.2.1**, выбрал Training — **игра не падает**. Значит, ошибка
-`rawcolliderset_createCollider` в Playwright WebKit — артефакт headless-сборки
-WebKit, а не отказ реального Safari. Код/зависимости из-за этого не менялись.
+В **Safari 27.2 / macOS 27.2.1** Training запускался вручную, затем через
+`safaridriver --mcp` проверены Production Training, Prologue и **полный
+Problue-забег**: **0 респавнов, Results 00:33.542**, консоль без ошибок.
+Ошибка `rawcolliderset_createCollider` в Playwright WebKit не воспроизвелась —
+это артефакт headless-Playwright, а не Safari.
 
 ## Матрица
 
 | Движок | Загрузчик/меню | Gameplay | Статус |
 |---|---|---|---|
 | Chromium (Edge, production) | PASS | PASS | рабочий браузер |
-| **Safari 27.2 (реальный, вручную)** | PASS | **PASS (Training)** | пользователь подтвердил: не падает |
+| **Safari 27.2 (реальный, MCP + вручную)** | PASS | **PASS (Training + полный Prologue)** | 0 респавнов, Results 33.542 s |
 | WebKit 18.4 (Playwright) | PASS | FAIL | **не представитель Safari**; см. ниже |
 | Firefox 135 (Playwright) | не проверено | не проверено | браузер не стартует под sandbox окружения |
 
@@ -76,17 +77,16 @@ Can't find profile directory
 
 ## Следующие шаги
 
-1. Включить Safari → Settings → Advanced → Show features for web developers →
-   Develop → Allow Remote Automation, затем запустить
-   `node tools/capture/safari-smoke.mjs` (см. SAFARI_TESTING.md) и проверить
-   полный маршрут/управление/звук (Training уже PASS вручную).
+1. Safari Remote Automation уже включён; smoke и полный забег пройдены
+   (`tools/capture/safari-smoke.mjs`, `tools/capture/safari-route.mjs`).
+   Осталось прослушать звук в Safari и сравнить визуал вручную.
 2. Firefox: запуск вне sandbox или через реальный профиль.
 3. Playwright WebKit оставить только как известный false-positive, не как
    блокер Safari.
 
 ## Evidence
 
-- [`evidence/cross-browser/README.md`](evidence/cross-browser/README.md) — real Safari manual PASS.
+- [`evidence/cross-browser/safari/README.md`](evidence/cross-browser/safari/README.md) — real Safari Training + full run PASS.
 
 ## Воспроизведение
 

@@ -44,7 +44,7 @@ export class Renderer implements Disposable {
     this.renderer.outputColorSpace = THREE.SRGBColorSpace;
     this.renderer.toneMapping = THREE.NoToneMapping;
     this.renderer.shadowMap.enabled = options.shadowsEnabled;
-    this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+    this.renderer.shadowMap.type = THREE.PCFShadowMap;
     // All shadow casters are static (level props/billboards); birds and the
     // viewmodel do not cast. Refresh explicitly on level/quality changes.
     this.renderer.shadowMap.autoUpdate = false;

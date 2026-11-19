@@ -1,0 +1,29 @@
+{
+  "url": "http://127.0.0.1:5199/",
+  "mode": "Prologue",
+  "state": {
+    "body": "Speed 0.0 m/sESC PAUSE",
+    "canvas": true,
+    "hud": true,
+    "flow": "gameplay",
+    "player": {
+      "x": 0,
+      "y": 0.8949981927871704,
+      "z": 6
+    }
+  },
+  "movement": {
+    "before": {
+      "x": 0,
+      "y": 0.8949981927871704,
+      "z": 6
+    },
+    "after": {
+      "x": 4.063283540745033e-7,
+      "y": 0.8948884010314941,
+      "z": 0.14516471326351166
+    },
+    "distance": 5.8548352867365026
+  },
+  "consoleState": []
+}
