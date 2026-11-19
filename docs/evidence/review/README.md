@@ -2,13 +2,12 @@
 
 | File | Purpose |
 |---|---|
-| [`contact-sheet.jpg`](contact-sheet.jpg) | Start / Training / Catwalk-BYPASS / Results in one frame |
-| [`finish-terminal-run-review.mp4`](finish-terminal-run-review.mp4) | 14.4 s full catwalk run with **normalized** audio |
-| [`finish-terminal-run-review.wav`](finish-terminal-run-review.wav) | Same audio, −26.07 LUFS / −7.53 dBFS peak |
-| [`finish-terminal-run-review.metrics.json`](finish-terminal-run-review.metrics.json) | Audio metrics |
+| [`contact-sheet.jpg`](contact-sheet.jpg) | Start / Training / Catwalk-BYPASS / real Results |
+| [`finish-results-run-review.mp4`](finish-results-run-review.mp4) | 13.7 s full catwalk run ending on the **real Results** screen, normalized audio |
+| [`finish-results-run-review.wav`](finish-results-run-review.wav) | Same audio, −26.07 LUFS / −7.54 dBFS peak |
+| [`finish-results-run-review.metrics.json`](finish-results-run-review.metrics.json) | Audio metrics |
 
-The original live mix is peak −3.86 dBFS / LUFS −22.03; this review copy is
-normalized to about −26 LUFS so it can be judged on normal playback volume
-without limiter crunch. Video is the Round 49 run: catwalk → turn → both
-barriers → FINISH gate/terminal → “Making Contact”. Results screen is synthetic
-and only for UI review.
+Original live mix: peak −3.79 dBFS / LUFS −21.94. This review copy is normalized
+to about −26 LUFS so it can be judged at normal playback volume. The run starts
+at the catwalk section (x=32), not the level's initial spawn; time **15.594 s**
+is a section-run, but the finish/results are physical.

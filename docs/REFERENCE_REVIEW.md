@@ -2,7 +2,7 @@
 
 ![Контактный лист](evidence/review/contact-sheet.jpg)
 
-**Быстрый просмотр:** [нормализованный 14,4-секундный забег](evidence/review/finish-terminal-run-review.mp4) (звук −26 LUFS, без перегруза лимитера). Ниже — исходные live-записи и полный чек-лист.
+**Быстрый просмотр:** [нормализованный 13,7-секундный забег](evidence/review/finish-results-run-review.mp4) (звук −26 LUFS, физический финиш и настоящий Results). Ниже — исходные live-записи и полный чек-лист.
 
 Обновлено: 2026-11-19, раунд 43. Предел текущей итерации — **раунд 60**.
 
@@ -43,10 +43,10 @@ deep-shadow 1,72% · sky 39,8% · split −16,69 · red 3,28**.
    - [ground-8s.wav](evidence/audio/round-29/ground-8s.wav)
    - [gameplay-route.wav](evidence/video/round-31/gameplay-route.wav) — реальный игровой микс.
 2. **Посмотреть 9-секундный реальный геймплей** и 17,5-секундный обзор:
-   - [finish-terminal-run-review.mp4](evidence/review/finish-terminal-run-review.mp4) — нормализованный, удобный для прослушивания
+   - [finish-results-run-review.mp4](evidence/review/finish-results-run-review.mp4) — нормализованный, физический финиш + Results
    - [gameplay-route.mp4](evidence/video/round-31/gameplay-route.mp4)
-   - [catwalk-finish-run.mp4](evidence/video/round-48/catwalk-finish-run.mp4) — 12,35 с, поворот + два барьера + подход к финишу
-   - [finish-terminal-run.mp4](evidence/video/round-49/finish-terminal-run.mp4) — 14,40 с, весь catwalk + терминал FINISH + достижение «Making Contact»
+   - [finish-terminal-run.mp4](evidence/video/round-49/finish-terminal-run.mp4) — 14,40 с, catwalk + терминал FINISH
+   - [finish-results-run.mp4](evidence/video/round-53/finish-results-run.mp4) — 13,7 с, физический финиш + Results (15,594 с)
    - [cinematic-route.mp4](evidence/video/round-30/cinematic-route.mp4)
 3. **Посмотреть стартовый кадр и Training**:
    - [start.jpg](evidence/visual/round-42/start.jpg)

@@ -1,31 +1,31 @@
 {
-  "wav": "docs/evidence/review/finish-terminal-run-review.wav",
+  "wav": "docs/evidence/review/finish-results-run-review.wav",
   "values": {
-    "durationSeconds": 14.396375,
+    "durationSeconds": 13.746208333333334,
     "sampleRate": 48000,
-    "peak": 0.420257568359375,
-    "peak_db": -7.52968913339782,
-    "rms": 0.05434489380502633,
-    "rms_db": -25.296825111214734,
-    "short_term_range": 2.1420378066655807,
-    "lufs": -26.067299259692362,
-    "low_share": 0.8555768476618095,
-    "mid_share": 0.11304071288097549,
-    "high_share": 0.03138243945721487
+    "peak": 0.41998291015625,
+    "peak_db": -7.535367628986886,
+    "rms": 0.05591809879348371,
+    "rms_db": -25.048952059101353,
+    "short_term_range": 1.0957871997801547,
+    "lufs": -26.065799381891217,
+    "low_share": 0.8471262208484225,
+    "mid_share": 0.12227530298125482,
+    "high_share": 0.030598476170322818
   },
   "targets": [
     {
       "metric": "low_share",
       "label": "Energy < 500 Hz",
-      "value": 0.8555768476618095,
+      "value": 0.8471262208484225,
       "min": 0.85,
       "max": 0.94,
-      "pass": true
+      "pass": false
     },
     {
       "metric": "high_share",
       "label": "Energy > 2 kHz",
-      "value": 0.03138243945721487,
+      "value": 0.030598476170322818,
       "min": 0.03,
       "max": 0.08,
       "pass": true
@@ -33,7 +33,7 @@
     {
       "metric": "lufs",
       "label": "Integrated loudness (approx K-weighted)",
-      "value": -26.067299259692362,
+      "value": -26.065799381891217,
       "min": -31.0,
       "max": -26.0,
       "pass": true
@@ -41,7 +41,7 @@
     {
       "metric": "peak_db",
       "label": "Sample peak",
-      "value": -7.52968913339782,
+      "value": -7.535367628986886,
       "min": -60.0,
       "max": -3.0,
       "pass": true
@@ -49,12 +49,12 @@
     {
       "metric": "short_term_range",
       "label": "Short-term range",
-      "value": 2.1420378066655807,
+      "value": 1.0957871997801547,
       "min": 18.0,
       "max": 26.0,
       "pass": false
     }
   ],
-  "passed": 4,
+  "passed": 3,
   "total": 5
 }

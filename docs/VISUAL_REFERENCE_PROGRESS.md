@@ -2850,8 +2850,8 @@ round creates a single review bundle for the final human pass.
 ### Evidence
 
 - [`contact-sheet.jpg`](evidence/review/contact-sheet.jpg)
-- [`finish-terminal-run-review.mp4`](evidence/review/finish-terminal-run-review.mp4)
-- [`finish-terminal-run-review.wav`](evidence/review/finish-terminal-run-review.wav)
+- [`finish-results-run-review.mp4`](evidence/review/finish-results-run-review.mp4)
+- [`finish-results-run-review.wav`](evidence/review/finish-results-run-review.wav)
 
 ### Honest gaps
 
@@ -2954,6 +2954,41 @@ there was no cue for it. This round signposts the detour.
 
 - The sign is large and hangs over the return deck; the detour is still a detour.
 - Human audio/video verdict pending.
+
+---
+
+## Round 55 — normalized real-finish review (2026-11-19)
+
+### Scope
+
+The review clip was still the terminal-only run. This round makes the **real
+finish/results run** the primary listening/watching artifact.
+
+### What changed
+
+- New normalized review: 13.7 s real-finish video, audio **−26.07 LUFS / −7.54
+  dBFS peak** (original live −21.94 / −3.79).
+- Contact sheet updated with the real Results (15.594 s).
+- Old terminal-only review files removed; historical Round 49 remains in video
+  evidence.
+- No game/route/visual/audio code changes.
+
+### Verification
+
+- `npm run validate`: **279 tests in 37 files**, build.
+- Review link audit: 0 broken relative links (after updating Round 51 links).
+- Start 13/13 unchanged.
+
+### Evidence
+
+- [`finish-results-run-review.mp4`](evidence/review/finish-results-run-review.mp4)
+- [`finish-results-run-review.wav`](evidence/review/finish-results-run-review.wav)
+- [`contact-sheet.jpg`](evidence/review/contact-sheet.jpg)
+
+### Honest gaps
+
+- Section-run start (catwalk x=32), not full-level spawn; normalization is
+  review-only; human verdict pending.
 
 ## Round log
 
