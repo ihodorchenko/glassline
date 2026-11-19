@@ -333,12 +333,13 @@ function drawSeams(
   color: string,
   width: number,
   alpha: number,
+  startOffset = 0,
 ): void {
   context.globalAlpha = alpha;
   context.strokeStyle = color;
   context.lineWidth = width;
 
-  for (let offset = spacing; offset < TEXTURE_SIZE; offset += spacing) {
+  for (let offset = spacing + startOffset; offset < TEXTURE_SIZE; offset += spacing) {
     context.beginPath();
     context.moveTo(offset, 0);
     context.lineTo(offset, TEXTURE_SIZE);
@@ -350,6 +351,55 @@ function drawSeams(
   }
 
   context.globalAlpha = 1;
+}
+
+function addCracks(
+  context: CanvasRenderingContext2D,
+  random: () => number,
+  count: number,
+  color: string,
+  alpha: number,
+): void {
+  context.strokeStyle = color;
+  context.lineCap = "round";
+
+  for (let index = 0; index < count; index += 1) {
+    let x = random() * TEXTURE_SIZE;
+    let y = random() * TEXTURE_SIZE;
+    const segments = 2 + Math.floor(random() * 5);
+
+    context.globalAlpha = alpha * (0.35 + random() * 0.65);
+    context.lineWidth = 0.5 + random() * 0.9;
+    context.beginPath();
+    context.moveTo(x, y);
+
+    for (let segment = 0; segment < segments; segment += 1) {
+      x += (random() - 0.5) * 46;
+      y += 12 + random() * 34;
+      context.lineTo(x, y);
+    }
+
+    context.stroke();
+  }
+
+  context.globalAlpha = 1;
+}
+
+function addRust(context: CanvasRenderingContext2D, random: () => number, count: number): void {
+  for (let index = 0; index < count; index += 1) {
+    const x = random() * TEXTURE_SIZE;
+    const y = random() * TEXTURE_SIZE;
+    const radius = 1.5 + random() * 8;
+    const gradient = context.createRadialGradient(x, y, 0, x, y, radius);
+
+    gradient.addColorStop(0, `rgba(104, 61, 34, ${0.14 + random() * 0.28})`);
+    gradient.addColorStop(0.6, `rgba(122, 74, 40, ${0.06 + random() * 0.12})`);
+    gradient.addColorStop(1, "rgba(122, 74, 40, 0)");
+    context.fillStyle = gradient;
+    context.beginPath();
+    context.arc(x, y, radius, 0, Math.PI * 2);
+    context.fill();
+  }
 }
 
 function paintTexture(kind: TextureKind): HTMLCanvasElement {
@@ -369,12 +419,14 @@ function paintTexture(kind: TextureKind): HTMLCanvasElement {
     case "plaster": {
       fillBase(context, "#e9e6de");
       addMottle(context, random, 90, 0.05, "#ffffff", "#b9b5aa", 64);
+      addCracks(context, random, 9, "#8f8a80", 0.16);
       addSpeckle(context, random, 2400, ["#ffffff", "#c9c5bb", "#a8a49a"], 1.2);
       break;
     }
     case "concrete": {
       fillBase(context, "#d7d4cb");
       addMottle(context, random, 110, 0.07, "#f4f1e9", "#a8a49a", 80);
+      addCracks(context, random, 16, "#77736a", 0.2);
       addSpeckle(context, random, 4200, ["#f6f2ea", "#b7b3a8", "#8d897f"], 1.4);
       break;
     }
@@ -392,7 +444,23 @@ function paintTexture(kind: TextureKind): HTMLCanvasElement {
       }
 
       context.globalAlpha = 1;
-      drawSeams(context, 96, "#7d7970", 1.4, 0.62);
+      drawSeams(context, 96, "#f8f4ea", 1, 0.22, 1.4);
+      drawSeams(context, 96, "#7d7970", 1.4, 0.52);
+      addCracks(context, random, 10, "#6f6b62", 0.14);
+
+      for (let index = 0; index < 36; index += 1) {
+        const x = random() * TEXTURE_SIZE;
+        const y = random() * TEXTURE_SIZE;
+        const radius = 8 + random() * 34;
+        const gradient = context.createRadialGradient(x, y, 0, x, y, radius);
+
+        gradient.addColorStop(0, `rgba(92, 88, 79, ${0.04 + random() * 0.08})`);
+        gradient.addColorStop(1, "rgba(92, 88, 79, 0)");
+        context.fillStyle = gradient;
+        context.beginPath();
+        context.arc(x, y, radius, 0, Math.PI * 2);
+        context.fill();
+      }
       break;
     }
     case "facade": {
@@ -400,6 +468,19 @@ function paintTexture(kind: TextureKind): HTMLCanvasElement {
       addMottle(context, random, 60, 0.04, "#ffffff", "#aaa69c", 90);
       drawSeams(context, 170, "#96928a", 2, 0.32);
       drawSeams(context, 85, "#b9b5aa", 1, 0.14);
+      addCracks(context, random, 7, "#8f8b82", 0.12);
+
+      for (let index = 0; index < 26; index += 1) {
+        const x = random() * TEXTURE_SIZE;
+        const y = random() * TEXTURE_SIZE;
+        const length = 30 + random() * 120;
+
+        context.globalAlpha = 0.03 + random() * 0.05;
+        context.fillStyle = "#6f6b62";
+        context.fillRect(x, y, 1 + random() * 2, length);
+      }
+
+      context.globalAlpha = 1;
       addSpeckle(context, random, 2200, ["#ffffff", "#c6c2b8", "#9c988e"], 1);
       break;
     }
@@ -417,6 +498,7 @@ function paintTexture(kind: TextureKind): HTMLCanvasElement {
         context.stroke();
       }
       context.globalAlpha = 1;
+      addRust(context, random, 52);
       break;
     }
     case "stain": {

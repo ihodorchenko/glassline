@@ -104,7 +104,7 @@ Only `Verified` means that the applicable acceptance criteria have been checked 
 
 **Full run:** **clean spawn → FINISH in 24.014 s with 0 respawns**, no unlock/teleport (automated) — [Round 65](VISUAL_REFERENCE_PROGRESS.md).
 
-**Materials:** triplanar procedural bump/normal relief across concrete/roof/metal/asphalt ([Round 61](VISUAL_REFERENCE_PROGRESS.md)); start remains 13/13.
+**Materials:** triplanar procedural bump/normal relief plus cracks, grime blooms, rain streaks, rust and seam highlights ([Rounds 61/66](VISUAL_REFERENCE_PROGRESS.md)); start remains 13/13.
 
 **Cross-browser:** Chromium passes; **real Safari 27.2 passes Training** (user-confirmed); Playwright WebKit hits a non-representative Rapier WASM trap; Firefox is environment-sandbox-blocked ([CROSS_BROWSER.md](CROSS_BROWSER.md)).
 

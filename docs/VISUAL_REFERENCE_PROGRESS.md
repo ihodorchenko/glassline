@@ -3226,6 +3226,31 @@ Turn the spawn→finish autopilot into a deterministic clean run.
 - Automated waypoint run, not a human/speedrun-valid record.
 - WebKit Playwright false positive; real Safari Training passes.
 
+---
+
+## Round 66 — surface weathering detail (2026-11-19)
+
+### Scope
+
+Add believable wear without new assets or geometry.
+
+### What changed
+
+- Roof seam highlight + lower dark-joint alpha, cracks, grime blooms.
+- Concrete/plaster hairline cracks; facade rain streaks; metal rust blooms.
+- Triplanar bump from Round 61 retained.
+- Start metrics **13/13**; 280 tests.
+
+### Evidence
+
+- [`material-closeup.jpg`](evidence/visual/round-66/material-closeup.jpg)
+- [`start.jpg`](evidence/visual/round-66/start.jpg)
+
+### Honest gaps
+
+- Micro-detail only; repeated panels/low-poly silhouettes remain.
+- No human visual verdict.
+
 ## Round log
 
 | Round | Date | Focus | Outcome |
