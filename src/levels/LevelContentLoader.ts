@@ -1,5 +1,6 @@
 import RAPIER from "@dimforge/rapier3d-compat";
 import * as THREE from "three";
+import { RoundedBoxGeometry } from "three/addons/geometries/RoundedBoxGeometry.js";
 
 import type { Disposable } from "../core/Disposable";
 import type { PhysicsWorld } from "../physics/PhysicsWorld";
@@ -113,6 +114,22 @@ export class BoxLevelContentLoader {
   ): Promise<LoadedLevelContent> {
     const unitBox = new THREE.BoxGeometry(1, 1, 1);
     const unitCylinder = new THREE.CylinderGeometry(0.5, 0.5, 1, 16);
+    const boxGeometries = new Map<string, THREE.BufferGeometry>();
+    const getBoxGeometry = (size: { x: number; y: number; z: number }): THREE.BufferGeometry => {
+      const key = `${size.x}:${size.y}:${size.z}`;
+      const cached = boxGeometries.get(key);
+
+      if (cached) {
+        return cached;
+      }
+
+      const bevel = Math.max(0.004, Math.min(0.035, Math.min(size.x, size.y, size.z) * 0.16));
+      const geometry = new RoundedBoxGeometry(size.x, size.y, size.z, 2, bevel);
+
+      boxGeometries.set(key, geometry);
+
+      return geometry;
+    };
     const library: MaterialLibrary = dependencies.scene.materials;
     const meshes: THREE.Mesh[] = [];
     const decorationMeshes: THREE.InstancedMesh[] = [];
@@ -140,13 +157,12 @@ export class BoxLevelContentLoader {
       const material = library.get(
         geometry.material ?? SURFACE_MATERIALS[surfaceDefinition.surfaceType],
       );
-      const mesh = new THREE.Mesh(unitBox, material);
+      const mesh = new THREE.Mesh(getBoxGeometry(geometry.size), material);
 
       if (geometry.color !== undefined) {
         mesh.material = library.getColor(geometry.color, 0.78, 0.08);
       }
 
-      mesh.scale.set(geometry.size.x, geometry.size.y, geometry.size.z);
       mesh.position.set(geometry.position.x, geometry.position.y, geometry.position.z);
       mesh.castShadow = true;
       mesh.receiveShadow = true;
@@ -367,6 +383,11 @@ export class BoxLevelContentLoader {
           }
         }
 
+        for (const geometry of boxGeometries.values()) {
+          geometry.dispose();
+        }
+
+        boxGeometries.clear();
         unitBox.dispose();
         unitCylinder.dispose();
 

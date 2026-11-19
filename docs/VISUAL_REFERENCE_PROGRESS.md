@@ -3344,6 +3344,29 @@ Add depth to flat panel textures.
 
 - Parallax is subtle; low-poly geometry remains.
 
+---
+
+## Round 71 — beveled level geometry (2026-11-19)
+
+### Scope
+
+Break razor-sharp low-poly edges on the route.
+
+### What changed
+
+- Static boxes use cached `RoundedBoxGeometry` (2 segments, 4–35 mm bevel).
+- Colliders remain cuboids; visual-only chamfer.
+- Start **13/13**, **60.2 fps**, 280 tests.
+
+### Evidence
+
+- [`start-beveled.jpg`](evidence/visual/round-71/start-beveled.jpg)
+- [`close-beveled.jpg`](evidence/visual/round-71/close-beveled.jpg)
+
+### Honest gaps
+
+- 3.5 cm bevel is subtle at distance; low-poly silhouettes remain.
+
 ## Round log
 
 | Round | Date | Focus | Outcome |
