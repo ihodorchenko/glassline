@@ -1,0 +1,14 @@
+{
+  "capturedAt": "2026-11-19",
+  "build": "dev, 5199",
+  "position": [0, 0.93, 6],
+  "resolution": [1592, 769],
+  "pixelRatio": 1,
+  "method": "threeRenderer.info.autoReset=false; reset; two rAF; read; restore",
+  "render": { "calls": 1040, "triangles": 3994404, "points": 0, "lines": 0 },
+  "memory": { "geometries": 111, "textures": 49 },
+  "programs": 27,
+  "fps": 60.2,
+  "avgFrameMs": 16.6,
+  "p95FrameMs": 16.7
+}
