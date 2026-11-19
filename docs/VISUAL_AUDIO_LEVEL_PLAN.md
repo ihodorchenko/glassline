@@ -27,7 +27,7 @@
 > yard parapets/city/signage; Round 21 adds authored Training facade grids and
 > balances the Prologue billboard/helipad; Round 22 adds glass Training windows
 > and a MOVEMENT YARD banner; Round 23 adds projecting balcony bands for facade
-> depth. The plan's anti-hack rule is honored: the
+> depth; Round 24 adds balcony doors/interiors and an animated bird flock. The plan's anti-hack rule is honored: the
 > hard highlight clip was replaced by a gentler shoulder; the remaining
 > near-white/highlight gap is assigned to real lighting and content.
 

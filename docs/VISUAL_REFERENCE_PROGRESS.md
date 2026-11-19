@@ -1660,6 +1660,59 @@ round adds projecting balcony bands and glass rails for depth and shadow.
 3. Human listening and final camera/menu calibration.
 4. Prologue highlight recovery without losing 13/13.
 
+---
+
+## Round 24 — balcony detail and living skyline (2026-11-19)
+
+### Scope
+
+Round 23 added balcony bands but they were blank and inward balconies protruded
+into the tower body. This round fixes the side, adds doors/warm interiors, and
+puts a small animated bird flock over the city.
+
+### What changed
+
+- **Balcony fix:** inward balconies now project on the correct (street-facing)
+  side of west/east towers instead of into the body.
+- **Doors/interiors:** each balcony gets a dark door panel and a warm interior
+  light strip; south balconies get the same treatment. This breaks the balcony
+  bands into inhabited bays.
+- **CityLife:** a new `CityLife` renders 18 instanced birds on slow circular
+  orbits above the city, with banking/flap orientation and vertical bobbing. One
+  draw call, no shadows; updated from `RenderScene.update`.
+- **No route/collision/audio changes.**
+
+### Verification
+
+- `npm run validate`: typecheck, Biome, **275 tests in 36 files**, build.
+- Prologue start remains **13/13** metrics (birds do not move the frame beyond
+  tolerance).
+- Performance **60.2 fps**; captures at Training/start.
+
+### Evidence
+
+| View | Image |
+|---|---|
+| Training balconies/doors + birds | ![Training](evidence/visual/round-24/training.jpg) |
+| Start regression | ![Start](evidence/visual/round-24/start.jpg) |
+| Metrics | [`metrics.json`](evidence/visual/round-24/metrics.json) |
+
+### Honest gaps
+
+- Balcony doors are simple dark panels; no interiors/furniture.
+- Birds are small dark silhouettes and may be barely visible at distance; no
+  audio (bird calls) was added.
+- Training still lacks a reference metric suite.
+- Human listening, clipped-highlight recovery, bypass tradeoff, and final motion
+  calibration remain open.
+
+### Next
+
+1. Add interior depth/balcony furniture and bird audio if appropriate.
+2. Balance Prologue highlights without losing 13/13.
+3. Human listening and final camera/menu calibration.
+4. Continue world-detail parity.
+
 ## Round log
 
 | Round | Date | Focus | Outcome |

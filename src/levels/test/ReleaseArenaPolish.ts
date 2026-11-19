@@ -232,7 +232,7 @@ function trainingTower(
   // Projecting balcony bands break the flat curtain wall and add depth.
   for (let row = 2; row < rows; row += 3) {
     const y = 4 + row * 3.8 + 0.9;
-    const side = Math.sign(x);
+    const side = -Math.sign(x);
 
     decorations.push(
       {
@@ -251,6 +251,26 @@ function trainingTower(
         position: { x: x + inward + side * 0.74, y: y + 0.5, z },
         size: { x: 0.08, y: 0.9, z: depth * 0.7 },
         material: "glass",
+        castShadow: false,
+      },
+      {
+        id: `${prefix}_balcony_in_door_${row}`,
+        sectionId,
+        shape: "box",
+        position: { x: x + inward + side * 0.05, y: y + 1.05, z },
+        size: { x: 0.08, y: 2.0, z: 1.15 },
+        material: "dark-metal",
+        castShadow: false,
+      },
+      {
+        id: `${prefix}_balcony_in_warm_${row}`,
+        sectionId,
+        shape: "box",
+        position: { x: x + inward + side * 0.06, y: y + 1.4, z: z + depth * 0.18 },
+        size: { x: 0.06, y: 0.9, z: 0.42 },
+        material: "warm-light",
+        emissive: 0xffd9a5,
+        emissiveIntensity: 0.22,
         castShadow: false,
       },
     );
@@ -329,6 +349,26 @@ function trainingTower(
         position: { x, y: y + 0.5, z: southZ + 0.74 },
         size: { x: width * 0.68, y: 0.9, z: 0.08 },
         material: "glass",
+        castShadow: false,
+      },
+      {
+        id: `${prefix}_balcony_south_door_${row}`,
+        sectionId,
+        shape: "box",
+        position: { x, y: y + 1.05, z: southZ + 0.05 },
+        size: { x: 1.15, y: 2.0, z: 0.08 },
+        material: "dark-metal",
+        castShadow: false,
+      },
+      {
+        id: `${prefix}_balcony_south_warm_${row}`,
+        sectionId,
+        shape: "box",
+        position: { x: x + width * 0.18, y: y + 1.4, z: southZ + 0.06 },
+        size: { x: 0.42, y: 0.9, z: 0.06 },
+        material: "warm-light",
+        emissive: 0xffd9a5,
+        emissiveIntensity: 0.22,
         castShadow: false,
       },
     );
