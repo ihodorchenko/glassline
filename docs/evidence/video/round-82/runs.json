@@ -3,13 +3,48 @@
   "route": "spawn -> finish",
   "note": "Autopilot reproducibility audit after visual/performance changes.",
   "attempts": [
-    { "pollMs": 80, "durationSeconds": 27.49, "respawns": 1, "completedWithinCapture": false },
-    { "pollMs": 80, "durationSeconds": 30.28, "respawns": 3, "completedWithinCapture": false },
-    { "pollMs": 80, "durationSeconds": 29.07, "respawns": 1, "completedWithinCapture": false },
-    { "pollMs": 30, "durationSeconds": 30.28, "respawns": 2, "completedWithinCapture": false },
-    { "pollMs": 30, "durationSeconds": 30.28, "respawns": 1, "completedWithinCapture": false },
-    { "pollMs": 30, "durationSeconds": 28.05, "respawns": 1, "completedWithinCapture": false }
+    {
+      "pollMs": 80,
+      "durationSeconds": 27.49,
+      "respawns": 1,
+      "completedWithinCapture": false
+    },
+    {
+      "pollMs": 80,
+      "durationSeconds": 30.28,
+      "respawns": 3,
+      "completedWithinCapture": false
+    },
+    {
+      "pollMs": 80,
+      "durationSeconds": 29.07,
+      "respawns": 1,
+      "completedWithinCapture": false
+    },
+    {
+      "pollMs": 30,
+      "durationSeconds": 30.28,
+      "respawns": 2,
+      "completedWithinCapture": false
+    },
+    {
+      "pollMs": 30,
+      "durationSeconds": 30.28,
+      "respawns": 1,
+      "completedWithinCapture": false
+    },
+    {
+      "pollMs": 30,
+      "durationSeconds": 28.05,
+      "respawns": 1,
+      "completedWithinCapture": false
+    }
   ],
-  "bestKnown": { "timeMs": 24014, "respawns": 0, "round": 65 },
-  "conclusion": "A clean 0-respawn run exists, but the current autopilot is not deterministic: 1-3 checkpoint respawns per attempt after visual changes. Full-run goal remains completed, not yet reproducibly clean."
+  "bestKnown": {
+    "timeMs": 24014,
+    "respawns": 0,
+    "round": 65
+  },
+  "conclusion": "A clean 0-respawn run exists, but the current autopilot is not deterministic: 1-3 checkpoint respawns per attempt after visual changes. Full-run goal remains completed, not yet reproducibly clean.",
+  "supersededBy": "Round 89 in-page autopilot: 4 consecutive 0-respawn runs"
 }
