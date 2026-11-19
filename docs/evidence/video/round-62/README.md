@@ -23,11 +23,12 @@ Initial spawn `(0, 0.93, 6)`, no `--unlock`, no end teleport.
 
 Result: `Time 00:32.739` (Prologue). Video ends on the gate; results are captured separately.
 
-**Caveat:** this is an automated waypoint/held-key run. It is physical (no unlock/teleport), but it is not a human-verified or speedrun-valid record; checkpoint respawns may occur during the run.
+**Caveat:** this is an automated waypoint/held-key run. It is physical (no unlock/teleport), but it is not a human-verified or speedrun-valid record. Instrumented reruns counted **7 checkpoint respawns** with the default 110 ms jump hold; the video is a completion, not yet a clean no-respawn run. A `--jump-hold` option is now available for tuning full-height jumps.
 
 ## Tooling added
 
-- `--jump-z` thresholds and `--slide-range a,b`;
+- `--jump-z` thresholds, `--slide-range a,b`, and configurable `--jump-hold`;
+- respawn counter in the JSON summary;
 - jumps injected through `input.heldKeys` (more reliable than CDP key events);
 - W/Shift refreshed every loop so checkpoint respawns recover;
 - jump thresholds reset on a large z reversal (respawn).

@@ -102,7 +102,7 @@ Only `Verified` means that the applicable acceptance criteria have been checked 
 | Statistics | Defined | Implemented | Integrated | Verified |
 | Reference Presentation | Defined | In Progress | Integrated | Partially Verified |
 
-**Full run:** spawn → FINISH in **32.739 s** (no unlock/teleport, automated) — [Round 62](VISUAL_REFERENCE_PROGRESS.md).
+**Full run:** spawn → FINISH in **32.739 s** (no unlock/teleport, automated; checkpoint respawns occurred — clean run pending) — [Round 62](VISUAL_REFERENCE_PROGRESS.md).
 
 **Materials:** triplanar procedural bump/normal relief across concrete/roof/metal/asphalt ([Round 61](VISUAL_REFERENCE_PROGRESS.md)); start remains 13/13.
 

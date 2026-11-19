@@ -44,6 +44,7 @@ function parseArgs(argv) {
     waypoints: null,
     jumpX: [],
     jumpZ: [],
+    jumpHold: 110,
     slideRange: null,
     interact: false,
   };
@@ -91,6 +92,9 @@ function parseArgs(argv) {
         break;
       case "--jump-z":
         args.jumpZ = (argv[++index] ?? "").split(",").map(Number).filter(Number.isFinite);
+        break;
+      case "--jump-hold":
+        args.jumpHold = Math.max(40, Number(argv[++index] ?? 110) || 110);
         break;
       case "--slide-range": {
         const range = (argv[++index] ?? "").split(",").map(Number);
@@ -143,6 +147,7 @@ function parseArgs(argv) {
             "  --launch           Launch headless Edge",
             "  --no-jumps         Do not auto-jump",
             "  --jump-z <list>    Jump once when crossing z thresholds (comma-separated)",
+            "  --jump-hold <ms>   Hold jump longer for full-height jumps (default 110)",
             "  --slide-range <a,b> Hold crouch/slide between z=a and z=b",
           ].join("\n"),
         );
@@ -591,6 +596,7 @@ async function main() {
   }
 
   const frames = [];
+  let respawnCount = 0;
 
   session.on("Page.screencastFrame", (params) => {
     frames.push(params.data);
@@ -638,6 +644,7 @@ async function main() {
       if (!state || state.done || !target) break;
 
       if (state.z > lastStateZ + 5) {
+        respawnCount += 1;
         jumpedZ.clear();
         jumped.clear();
       }
@@ -680,7 +687,7 @@ async function main() {
           if (!jumpedZ.has(targetZ) && state.z <= targetZ + 0.45 && state.z >= targetZ - 2.2) {
             jumpedZ.add(targetZ);
             await session.evaluate("window.__glassline.input.heldKeys.add('Space'); true");
-            await delay(110);
+            await delay(args.jumpHold);
             await session.evaluate("window.__glassline.input.heldKeys.delete('Space'); true");
             break;
           }
@@ -692,7 +699,7 @@ async function main() {
           if (!jumped.has(x) && Math.abs(state.x - x) < 1.15) {
             jumped.add(x);
             await session.evaluate("window.__glassline.input.heldKeys.add('Space'); true");
-            await delay(110);
+            await delay(args.jumpHold);
             await session.evaluate("window.__glassline.input.heldKeys.delete('Space'); true");
             break;
           }
@@ -872,6 +879,7 @@ async function main() {
         sampleRate: audio.sampleRate,
         peak: audio.peak,
         rms: audio.rms,
+        respawns: respawnCount,
         errors: session.errors,
       },
       null,

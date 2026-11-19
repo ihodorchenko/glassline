@@ -3166,8 +3166,9 @@ Priority «полный забег»: record the whole Prologue from the initial
 
 ### Honest gaps
 
-- Automated waypoint/held-key completion, not a human/speedrun-valid record;
-  checkpoint respawns may occur.
+- Automated waypoint/held-key completion, not a human/speedrun-valid record.
+- Instrumented reruns counted **7 checkpoint respawns** with default timing; a
+  clean no-respawn run is still pending (`--jump-hold` added for tuning).
 - WebKit gameplay remains blocked by Rapier WASM.
 
 ## Round log
