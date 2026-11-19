@@ -18,7 +18,7 @@ Problue-забег**: **0 респавнов, Results 00:33.542**, консол�
 | Chromium (Edge, production) | PASS | PASS | рабочий браузер |
 | **Safari 27.2 (реальный, MCP + вручную)** | PASS | **PASS (Training + полный Prologue)** | 0 респавнов, Results 33.542 s |
 | WebKit 18.4 (Playwright) | PASS | FAIL | **не представитель Safari**; см. ниже |
-| Firefox 135 (Playwright) | не проверено | не проверено | браузер не стартует под sandbox окружения |
+| Firefox 135 (Playwright/geckodriver) | не проверено | не проверено | Firefox падает с SIG11/`marionette decode` под sandbox; evidence: `firefox/geckodriver.log` |
 
 ## Playwright WebKit: ложное срабатывание
 
@@ -66,7 +66,10 @@ WASM. Это не ошибка уровня или геометрии: паде�
 
 ## Firefox
 
-Playwright Firefox 135 не стартует в этом окружении:
+Ни Playwright Firefox, ни системный Firefox через geckodriver не стартуют в
+этом окружении (SIG11, `Failed to decode response from marionette`,
+`NS_ERROR_FILE_ACCESS_DENIED` для Crash Reports). Это ограничение sandbox, не
+приложения.
 
 ```
 Sandbox error: sandbox_init() failed with error "Operation not permitted"

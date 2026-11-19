@@ -3717,6 +3717,32 @@ Fix the non-deterministic full-run autopilot from Round 82.
 - In-page autopilot still automated; not a human speedrun.
 - Safari full-run wall clock remains ~33.5 s.
 
+---
+
+## Round 90 — Firefox WebDriver attempt (2026-11-19)
+
+### Scope
+
+Try the last unverified browser with the official WebDriver instead of
+Playwright.
+
+### What happened
+
+- geckodriver 0.37.1 started on 4444.
+- Firefox session failed: **HTTP 500, Failed to decode response from marionette**.
+- Firefox processes exit SIG11; Crash Reports access denied.
+- Same class of sandbox failure as Playwright Firefox. No app-level result.
+
+### Evidence
+
+- [`firefox/geckodriver.log`](evidence/cross-browser/firefox/geckodriver.log)
+- [`firefox/README.md`](evidence/cross-browser/firefox/README.md)
+
+### Honest gaps
+
+- Firefox gameplay/WebGL remains **unverified** in this environment.
+- No game code changed; 282 tests.
+
 ## Round log
 
 | Round | Date | Focus | Outcome |

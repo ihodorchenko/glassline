@@ -120,7 +120,7 @@ Only `Verified` means that the applicable acceptance criteria have been checked 
 
 **Safari audio:** Web Audio context runs at 44.1 kHz; human listening pending.
 
-**Cross-browser:** Chromium passes; **real Safari 27.2 passes Production Training, Prologue and a full 0-respawn run (Results 33.542 s)**; Playwright WebKit is a non-representative false positive; Firefox is environment-sandbox-blocked ([CROSS_BROWSER.md](CROSS_BROWSER.md)).
+**Cross-browser:** Chromium passes; **real Safari 27.2 passes Production Training, Prologue and a full 0-respawn run (Results 33.542 s)**; Playwright WebKit is a non-representative false positive; Firefox cannot start under this host sandbox (geckodriver/marionette SIG11) ([CROSS_BROWSER.md](CROSS_BROWSER.md)).
 
 **Boot presentation:** styled inline paper/ink loader with staged progress + styled level-loading screen ([BOOT_LOADER.md](BOOT_LOADER.md)).
 
