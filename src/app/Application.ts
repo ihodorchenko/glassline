@@ -18,6 +18,7 @@ import { InputManager } from "../input/InputManager";
 import { IDLE_INPUT_FRAME, type InputFrame } from "../input/InputState";
 import { InteractionSystem } from "../interaction/InteractionSystem";
 import { LevelRuntimeManager } from "../levels/LevelRuntimeManager";
+import type { SurfaceType } from "../levels/LevelTypes";
 import type { TriggerEvent } from "../levels/TriggerManager";
 import { PROLOGUE_TEST_LEVEL_DEFINITIONS } from "../levels/test/PrologueTestLevel";
 import { TRAINING_TEST_LEVEL_DEFINITIONS } from "../levels/test/TrainingTestLevel";
@@ -902,7 +903,7 @@ export class Application implements Disposable {
       };
 
       for (const [eventName, action] of movementEvents) {
-        const unsubscribe = player.onMovementEvent(eventName, () => {
+        const unsubscribe = player.onMovementEvent(eventName, (payload: unknown) => {
           training?.handleEvent({
             type: "action",
             action: action as Parameters<TrainingSystem["handleEvent"]>[0] extends {
@@ -920,9 +921,7 @@ export class Application implements Disposable {
             this.publishDomainEvent("movement", domainEventType, { value: 1 });
           }
 
-          if (eventName === "player:landed") {
-            this.audioManager?.playUiCue("land");
-          }
+          this.playMovementAudio(String(eventName), payload);
         });
 
         this.sessionUnsubscribes.push(unsubscribe);
@@ -980,6 +979,50 @@ export class Application implements Disposable {
           }
         }),
       );
+    }
+  }
+
+  private playMovementAudio(eventName: string, payload: unknown): void {
+    const audio = this.audioManager;
+
+    if (!audio) {
+      return;
+    }
+
+    const surface = this.getPlayerSurfaceType();
+    const data = (payload ?? {}) as {
+      speed?: number;
+      impactSpeed?: number;
+      side?: "left" | "right";
+    };
+
+    switch (eventName) {
+      case "player:jumped":
+        audio.playJump(data.speed ?? 0);
+        break;
+      case "player:landed":
+        audio.playLanding(data.impactSpeed ?? 0, surface);
+        break;
+      case "player:sliding-started":
+        audio.startSlide(surface);
+        break;
+      case "player:sliding-ended":
+        audio.stopSlide();
+        break;
+      case "player:vault-started":
+        audio.playVault(data.speed ?? 0);
+        break;
+      case "player:wallrun-started":
+        audio.startWallRun(data.side ?? "left", surface);
+        break;
+      case "player:wallrun-ended":
+        audio.stopWallRun();
+        break;
+      case "player:walljumped":
+        audio.playWallJump(surface);
+        break;
+      default:
+        break;
     }
   }
 
@@ -1107,6 +1150,11 @@ export class Application implements Disposable {
     }
 
     this.audioManager?.startAmbience(context.mode === "training" ? "training" : "prologue");
+
+    if (context.mode !== "training") {
+      this.audioManager?.playRadioCue();
+    }
+
     this.syncInteractionPresentation();
     this.syncPlayerState();
   }
@@ -1117,12 +1165,14 @@ export class Application implements Disposable {
   ): Promise<void> {
     this.input?.setEnabled(false);
     this.levelRuntime?.pauseSession();
+    this.audioManager?.setGameplayPaused(true);
   }
 
   private async resumeGameplayPort(_context: GameplaySessionContext): Promise<void> {
     this.levelRuntime?.resumeSession();
     this.input?.setEnabled(true);
     this.input?.setContext("gameplay");
+    this.audioManager?.setGameplayPaused(false);
   }
 
   private async restartGameplayPort(context: GameplaySessionContext): Promise<void> {
@@ -1220,6 +1270,10 @@ export class Application implements Disposable {
       }
 
       return;
+    }
+
+    if (event.type === "section-entry" && this.currentMode !== "training") {
+      this.audioManager?.playRadioCue();
     }
 
     if (event.metadata?.kind === "kill-volume") {
@@ -1630,11 +1684,14 @@ export class Application implements Disposable {
       if (movement.grounded && movement.stance !== "sliding" && movement.speed > 0.8) {
         this.footstepAccumulatorSeconds += fixedDeltaSeconds;
 
-        const intervalSeconds = movement.speed > 5 ? 0.32 : 0.46;
+        const intervalSeconds = Math.max(0.22, Math.min(0.46, 0.5 - movement.speed * 0.03));
 
         if (this.footstepAccumulatorSeconds >= intervalSeconds) {
           this.footstepAccumulatorSeconds = 0;
-          this.audioManager?.playFootstep(Math.min(1, movement.speed / 8.5));
+          this.audioManager?.playFootstep(
+            Math.min(1, movement.speed / 8.5),
+            this.getPlayerSurfaceType(),
+          );
         }
       } else {
         this.footstepAccumulatorSeconds = 0;
@@ -1708,18 +1765,31 @@ export class Application implements Disposable {
   }
 
   private renderFrame(alpha: number, frameDeltaSeconds: number): void {
-    if (this.cameraSystem && this.player) {
+    const movement = this.player?.getMovementSnapshot() ?? null;
+
+    if (this.cameraSystem && this.player && movement) {
       this.cameraSystem.renderUpdate({
         frame: this.input?.currentFrame ?? IDLE_INPUT_FRAME,
-        movement: this.player.getMovementSnapshot(),
+        movement,
         playerPosition: this.player.getInterpolatedPosition(alpha),
         deltaSeconds: frameDeltaSeconds,
       });
     }
 
+    if (movement) {
+      this.audioManager?.update(frameDeltaSeconds, {
+        speed: movement.speed,
+        grounded: movement.grounded,
+        stance: movement.stance,
+        wallRunSide: movement.wallRunSide,
+        surface: this.getPlayerSurfaceType(),
+        paused: this.flowManager?.getState() !== "gameplay",
+      });
+    }
+
     if (this.renderer && this.renderScene && this.cameraSystem) {
-      if (this.player) {
-        this.viewModel?.update(frameDeltaSeconds, this.player.getMovementSnapshot());
+      if (movement) {
+        this.viewModel?.update(frameDeltaSeconds, movement);
       }
 
       this.renderScene.update(frameDeltaSeconds);
@@ -1885,16 +1955,20 @@ export class Application implements Disposable {
     return `RESULTS ${results.mode} · ${(results.durationMs / 1000).toFixed(2)}s ${training} ${speedrun}`.trim();
   }
 
-  private getPlayerSurfaceLabel(): string {
+  private getPlayerSurfaceType(): SurfaceType | null {
     const player = this.player;
 
     if (!player) {
-      return "n/a";
+      return null;
     }
 
-    const surface = this.levelRuntime?.getSurfaceAt(player.getFeetPosition());
+    return (
+      this.levelRuntime?.getSurfaceAt(player.getFeetPosition())?.definition.surfaceType ?? null
+    );
+  }
 
-    return surface ? surface.definition.surfaceType : "none";
+  private getPlayerSurfaceLabel(): string {
+    return this.getPlayerSurfaceType() ?? "none";
   }
 
   private buildKeyHints(flow: GameplayFlowState): string {

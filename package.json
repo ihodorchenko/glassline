@@ -22,7 +22,10 @@
     "test:watch": "vitest",
     "validate": "npm run typecheck && npm run check && npm run test && vite build",
     "capture": "node tools/capture/capture.mjs",
-    "metrics": "python3 tools/capture/metrics.py"
+    "metrics": "python3 tools/capture/metrics.py",
+    "audio:render": "node tools/capture/audio-render.mjs",
+    "audio:probe": "node tools/capture/audio-probe.mjs",
+    "audio:metrics": "python3 tools/capture/audio-metrics.py"
   },
   "dependencies": {
     "@dimforge/rapier3d-compat": "^0.21.0",

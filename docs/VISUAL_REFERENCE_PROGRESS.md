@@ -159,8 +159,135 @@ Functional checks:
    contact decals, motion blur, and animated city props.
 4. **Training and menu presentation** to match the same language.
 
+---
+
+## Round 2 — procedural sound pass (2026-11-19)
+
+### Scope
+
+Replace the three-oscillator ambience bed and sine-blip footsteps with a
+structured procedural mix: buses, limiter, reverb, layered ambience,
+surface-aware movement feedback, a parkour set, a sparse score, and radio.
+No external samples or audio assets were added.
+
+### What changed
+
+**Audio architecture**
+
+- `AudioTypes.ts` defines Web-Audio-like contracts for gain, oscillator, buffer
+  source, biquad, convolver, compressor, analyser, and buffer nodes, so the mix
+  is testable without a real `AudioContext`.
+- `noise.ts` provides deterministic white/pink/brown noise and stereo impulse
+  responses from seeded generators.
+- `surfaceAudio.ts` maps the SurfaceRegistry classification (`concrete`,
+  `metal`, `rubber`, `glass`, `asphalt`) to synthesis presets, with an explicit
+  fallback that is not a second classification system.
+- `synthesis.ts` implements layered footstep, landing, whoosh, contact-loop, and
+  UI-tone voices with attack/decay envelopes, filter shaping, variation, and
+  dry/reverb routing.
+- `AudioManager` now owns a real graph:
+  `buses → master → mix trim → compressor/limiter → destination`, with a shared
+  reverb send/return and independent environment, movement, parkour, UI, music,
+  and radio buses. Every one-shot is voice-limited and cleaned up on `ended` or
+  a timed fallback.
+
+**Movement and parkour sound**
+
+- Footsteps are surface-aware and combine band-passed noise, a low body thump,
+  a high-frequency texture layer, and optional metal/glass ring or tick;
+  intensity and variation follow speed.
+- Landings scale with impact velocity and use the surface preset's body/ring.
+- Jump, wall-jump, vault, slide, and wall-run have distinct voices. Slide and
+  wall-run use continuous filtered-noise loops with speed-dependent gain and
+  cutoff; loops stop on state change, pause, and session shutdown.
+- Footstep scheduling now derives its interval from actual speed instead of two
+  fixed buckets, and passes the current surface from `SurfaceRegistry`.
+
+**Environment**
+
+- Three continuous noise layers (wind, distant city, rooftop air) plus a very
+  low two-oscillator hum. Profile (Training/Prologue) changes gains and filter
+  frequencies; wind follows speed and breathes while idle.
+- A sparse four-chord score starts with gameplay: slow triangle/sine pad with a
+  low-pass filter, plus a quiet arpeggio only while moving. Speed increases the
+  music bus slightly.
+- Radio cues use filtered static and two signal tones; they duck the environment
+  bus smoothly and restore it. The Prologue plays one at run start and on each
+  section entry.
+- Pause/resume stops contact loops, ducks ambience/music, and leaves UI audio
+  available. Settings now apply `audio.music_volume` in addition to master, SFX,
+  and UI volumes.
+
+**Verification tooling**
+
+- `audioDemo.ts` renders a deterministic 24 s mix through an
+  `OfflineAudioContext`, using the same synthesis functions as live gameplay.
+- `tools/capture/audio-render.mjs` saves the WAV; `audio-metrics.py` computes
+  band shares, BS.1770-style gated loudness, peak, and short-term p5/p95 range;
+  `audio-probe.mjs` measures the live post-limiter output through an
+  `AnalyserNode`.
+- Evidence: [`docs/evidence/audio/round-2`](evidence/audio/round-2/).
+
+### Result
+
+Demo mix (24 s: quiet ambience intro, footsteps, parkour, score):
+
+| Metric | Demo | Reference prologue 500–800 s | Target | Band |
+|---|---:|---:|---:|---|
+| Energy < 500 Hz | 0.896 | 0.909 | 0.85–0.94 | PASS |
+| Energy > 2 kHz | 0.060 | 0.026 | 0.03–0.08 | PASS |
+| Gated loudness | −26.0 LUFS | −26.6 LUFS | −31…−26 | PASS |
+| Sample peak | −5.26 dBFS | −1.94 dBFS | ≤ −3 dBFS | PASS |
+| Short-term p95−p5 | 22.9 dB | 12.9 dB | 18–26 dB | PASS |
+
+5/5 planned targets are satisfied. The reference column is measured by the same
+script on the 500–800 s prologue segment (local `ref/` audio, not committed).
+
+![Audio waveform and spectrogram](evidence/audio/round-2/waveform.png)
+
+Live probe (post-limiter, deterministic metal footstep/landing sequence):
+
+- RMS 0.128 (−17.9 dBFS), peak 0.655 (−3.7 dBFS).
+- Band shares during the stress sequence: low 82 %, mid 12 %, high 2.9 %.
+- Audio state running; 3 ambience sources; music active; 7 buses present; no
+  console errors.
+- Pause flow verified: environment bus 0.28, music bus 0.144, `paused: true`;
+  resume restores 0.8 and the music target. Contact loops stop in both paths.
+
+Tests: 30 dedicated audio tests cover lifecycle, graph construction, surface
+presets, noise determinism, synthesis routing, loops, pause, voice limits,
+settings, radio, and score scheduling.
+
+### Honest gaps
+
+- **No human listening test.** Headless verification proves graph, levels,
+  spectral balance, and lifecycle, not subjective character. The mix still needs
+  an art-director/owner listening pass.
+- **No spatial audio** yet: no `PannerNode` emitters, listener transform, or
+  occlusion. All current sources are player-local or bus-routed.
+- **Music is a simple four-chord pad + arpeggio**, not the reference's full
+  interactive score. It has no section changes, combat/tension layer, or stingers.
+- **Radio is synthetic static/tones.** There is no speech or text-authored radio
+  content; the ducking path exists but has no longer transmissions.
+- **Surface transitions** update per step; continuous loops do not crossfade
+  between materials.
+- The demo's peak is conservatively low (−5.3 dBFS) versus the reference's
+  −1.9 dBFS measured by the same script; transient headroom could be raised after
+  a listening pass.
+
+### Next
+
+1. Listening pass and per-layer level tuning on desktop speakers/headphones.
+2. Spatial emitters and listener integration for machinery, city, and radio.
+3. Adaptive score sections (rooftop/industrial/construction/skybridge/finish).
+4. Route design pass: rooftop gaps, drops, climbs, and red guidance while
+   preserving checkpoint/speedrun contracts.
+5. Graphics polish: clouds, billboard typography, motion blur, contact decals,
+   animated city props, and Training/menu presentation.
+
 ## Round log
 
 | Round | Date | Focus | Outcome |
 |---|---|---|---|
 | 1 | 2026-11-19 | HDR renderer, sky, materials, city, viewmodel | 10/13 reference metrics in band (2 highlight metrics open); 60 fps at 1600×900 |
+| 2 | 2026-11-19 | Procedural audio: buses, ambience, movement/parkour, score, radio | 5/5 audio targets in band; live post-limiter peak −3.7 dBFS; 30 audio tests |

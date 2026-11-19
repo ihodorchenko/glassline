@@ -19,5 +19,6 @@ export class AudioSettingsAdapter implements ISettingsApplicationAdapter {
     this.audioManager.setMasterVolume(volume, muted);
     this.audioManager.setUiVolume(readNumberValue(snapshot.values, "audio.ui_volume", 0.8));
     this.audioManager.setSfxVolume(readNumberValue(snapshot.values, "audio.sfx_volume", 1));
+    this.audioManager.setMusicVolume(readNumberValue(snapshot.values, "audio.music_volume", 0.8));
   }
 }

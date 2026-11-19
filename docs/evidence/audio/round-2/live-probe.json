@@ -1,0 +1,31 @@
+{
+  "measurement": {
+    "rms": 0.12833846790886622,
+    "peak": 0.6562203168869019,
+    "lowShare": 0.8228699387005738,
+    "midShare": 0.12385059704186396,
+    "highShare": 0.02763843861653671,
+    "samples": 79872
+  },
+  "snapshot": {
+    "state": "running",
+    "buses": {
+      "environment": 0.800000011920929,
+      "movement": 0.8999999761581421,
+      "parkour": 1,
+      "ui": 0.800000011920929,
+      "music": 0.2878618836402893,
+      "radio": 0.800000011920929
+    },
+    "ambienceActive": true,
+    "ambienceSources": 3,
+    "musicActive": true,
+    "slideActive": false,
+    "wallRunActive": false,
+    "activeVoices": 2,
+    "paused": false,
+    "profile": "prologue",
+    "surface": "concrete"
+  },
+  "errors": []
+}

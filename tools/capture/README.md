@@ -68,3 +68,31 @@ equivalence claim.
 
 Round evidence is stored under `docs/evidence/visual/<round>/` as compressed
 JPEGs plus a JSON report. Reference frames themselves are not committed.
+
+## 4. Audio
+
+The audio pipeline is procedural, so it can be rendered offline and measured
+without listening.
+
+Render a deterministic 24 s demo (ambience, surface footsteps, parkour,
+score) through an `OfflineAudioContext` in the running dev build:
+
+```bash
+npm run audio:render -- --out docs/evidence/audio/round-2/mix.wav --seconds 24
+npm run audio:metrics -- --wav docs/evidence/audio/round-2/mix.wav \
+  --json docs/evidence/audio/round-2/metrics.json
+```
+
+`audio:metrics` computes spectral band shares, BS.1770-style gated loudness,
+sample peak, and short-term p5/p95 range. Run it on
+`ref/reference/prolog-kit/audio/audio.wav` (or a segment) to re-derive the
+reference profile with the identical script.
+
+Probe the live master output through an `AnalyserNode` after a trusted click:
+
+```bash
+npm run audio:probe -- --json docs/evidence/audio/round-2/live-probe.json
+```
+
+The probe triggers a deterministic footstep/landing sequence, then reports
+post-limiter RMS, peak, and band shares plus the debug bus/ambience/music state.

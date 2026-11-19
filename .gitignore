@@ -7,6 +7,8 @@ coverage/
 .vite/
 
 # Local tooling caches (sandbox-friendly npm cache lives in the workspace)
+__pycache__/
+*.pyc
 .npm-cache/
 .npm-logs/
 *.log

@@ -49,6 +49,15 @@ Reference alignment is tracked in
 
 ![Prologue rooftop presentation](docs/evidence/visual/round-1/start.jpg)
 
+## Sound
+
+All audio is generated procedurally at runtime: a multi-bus mix with limiter and
+reverb, surface-aware footsteps and landings, slide/wall-run loops, layered wind
+and city ambience, a sparse four-chord score, and radio cues. No samples or
+downloaded audio assets are used.
+
+![Procedural mix waveform and spectrogram](docs/evidence/audio/round-2/waveform.png)
+
 ---
 
 ## Gameplay

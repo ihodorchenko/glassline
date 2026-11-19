@@ -2,13 +2,16 @@
 
 > **Status update (2026-11-19):** Round 1 of this plan is committed — W0
 > capture/metrics tooling, W1 HDR look foundation, part of W2 (materials, city,
-> props), and the first-person body. See
+> props), and the first-person body. Round 2 adds the W4 audio foundation:
+> buses/limiter/reverb, surface-aware footsteps, parkour set, ambience, score,
+> radio, offline render and metrics (5/5 audio targets). See
 > [`VISUAL_REFERENCE_PROGRESS.md`](VISUAL_REFERENCE_PROGRESS.md) for measurements
-> and evidence. W3 route design and W4 audio remain. The plan's anti-hack rule is
-> honored: the hard highlight clip was replaced by a gentler shoulder; the
-> remaining near-white/highlight gap is assigned to real lighting and content.
+> and evidence. W3 route design, a listening pass, and further W1/W2 polish
+> remain. The plan's anti-hack rule is honored: the hard highlight clip was
+> replaced by a gentler shoulder; the remaining near-white/highlight gap is
+> assigned to real lighting and content.
 
-**Status:** Draft for owner approval (W0–W2 partially executed)
+**Status:** Draft for owner approval (W0–W2 partially executed, W4 foundation landed)
 **Date:** 2026-11-19
 **Scope:** Prologue route and Training arenas, renderer/post-processing, materials and city content, audio mix.
 **Non-goals:** new gameplay mechanics, new engine/renderer framework, online features, deferred traversal moves.
@@ -28,7 +31,7 @@ closing the gap between the current build and the reference prologue footage in
 | Verification | `npm run typecheck` PASS; `npm test` 250/250 PASS across 34 files |
 | Renderer | WebGL2 HDR + `EffectComposer`: GTAO, UnrealBloom, custom ACES grade (vignette, grain, CA), PMREM sky IBL, PCF soft sun shadows. No volumetrics, no calibrated exposure, no quality tiers |
 | Materials | `MaterialLibrary` (procedural PBR, triplanar) landed and measured on the start frame |
-| Audio | Procedural UI cues, sine-blip footsteps, minimal ambience. No music, no surface-aware footsteps, no parkour set, no bus structure |
+| Audio | Round 2: six-bus graph + limiter/reverb, procedural noise bank, surface-aware footsteps/landings, parkour one-shots and loops, three-layer ambience, sparse score, radio/ducking. No spatial emitters or speech |
 | Level | Prologue colliders: 22 m-wide roof (x −11..11, z −22..22) plus close tower wall and procedural city; five logical sections, still one flat lane with no vertical route |
 | Reference | `ref/reference/prolog-kit`: 827 s video, 829 frames, 24 contact sheets, `shots.csv` (luma/motion per shot), `audio/segments.json` (band shares, LUFS), `study/` grouped by segment |
 

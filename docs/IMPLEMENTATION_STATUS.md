@@ -102,9 +102,9 @@ Only `Verified` means that the applicable acceptance criteria have been checked 
 | Statistics | Defined | Implemented | Integrated | Verified |
 | Reference Presentation | Defined | In Progress | Integrated | Partially Verified |
 
-**Current phase:** Phases 0–7 and Phase 8 (stabilization) are complete. A post-roadmap **Release Polish** pass has also been completed: initial release content presentation, HUD tutorial guidance, atmosphere, and procedural ambience/footsteps. A **Reference Presentation Pass** is now in progress to bring design, graphics, and sound up to the *Mirror's Edge* prologue reference. Round 1 (HDR rendering, sky, materials, rooftop city, first-person arms) is complete and measured; sound, route design, and further graphics polish remain.
+**Current phase:** Phases 0–7 and Phase 8 (stabilization) are complete. A post-roadmap **Release Polish** pass has also been completed: initial release content presentation, HUD tutorial guidance, atmosphere, and procedural ambience/footsteps. A **Reference Presentation Pass** is in progress to bring design, graphics, and sound up to the *Mirror's Edge* prologue reference. Round 1 (HDR rendering, sky, materials, rooftop city, first-person arms) is complete and measured. Round 2 (procedural audio architecture, surface-aware movement, parkour set, ambience, score, radio) is implemented and measured; a human listening pass, route design, and further graphics polish remain.
 
-**Implementation readiness:** The game is feature-complete for the initial release scope, stabilized, and visually/audio-polished: core gameplay, Training/Prologue sessions, Speedrun validation and local records, persistent progression/achievements/statistics/tutorial, HUD tutorial guidance, level atmosphere and ambience, UI/accessibility/localization, Save System recovery, and the fixed-step loop are implemented, integrated, and covered by automated and browser checks. The reference pass has added an HDR post pipeline, procedural sky/reflections, PBR materials, a dense Prologue city, and a first-person body; its measured start frame is inside the reference tolerance band on 10/13 metrics, with highlight headroom and sky area recorded as open gaps. Remaining limitations are compatibility verification depth (Firefox/Safari gameplay, actual assistive-technology testing), reference-level sound and route design, asset-level art polish, and intentionally deferred features.
+**Implementation readiness:** The game is feature-complete for the initial release scope, stabilized, and visually/audio-polished: core gameplay, Training/Prologue sessions, Speedrun validation and local records, persistent progression/achievements/statistics/tutorial, HUD tutorial guidance, level atmosphere and ambience, UI/accessibility/localization, Save System recovery, and the fixed-step loop are implemented, integrated, and covered by automated and browser checks. The reference pass has added an HDR post pipeline, procedural sky/reflections, PBR materials, a dense Prologue city, a first-person body, and a procedural audio mix with surface-aware movement, parkour loops, ambience, and a sparse score. The measured start frame is inside the reference tolerance band on 10/13 image metrics (highlight headroom and sky area are open gaps); the offline audio demo is inside all five planned audio bands (5/5). Remaining limitations are compatibility verification depth (Firefox/Safari gameplay, actual assistive-technology testing), reference-level sound and route design, asset-level art polish, and intentionally deferred features.
 
 ### 3.1. Documentation Reconciliation (2026-11-17)
 
@@ -965,6 +965,70 @@ Known limitations:
   real lighting/content next round.
 - Training still uses the old yard and flat skyline dressing.
 - The post pipeline has no quality tiers/dynamic resolution yet.
+
+---
+### Reference Presentation Pass — Round 2 (2026-11-19)
+
+**Goal:** replace the placeholder audio with a reference-grade procedural mix
+(design, graphics, sound axis 3).
+
+**Status:** Implemented, integrated, measured; human listening pass pending.
+
+Implemented:
+
+- **Audio graph and buses:** master → mix trim → compressor/limiter →
+  destination, with environment, movement, parkour, UI, music, and radio buses,
+  a shared convolutional reverb send, and per-bus gain control.
+- **Procedural buffers:** deterministic white/pink/brown noise and stereo impulse
+  responses generated once and cached; no samples or downloaded assets.
+- **Surface-aware footsteps:** band-passed noise, body thump, high texture, and
+  metal/glass ring/tick selected from the SurfaceRegistry classification
+  (`concrete`, `metal`, `rubber`, `glass`, `asphalt`, explicit fallback).
+- **Parkour set:** impact-scaled landings, jump/wall-jump/vault whooshes, and
+  continuous slide/wall-run filtered-noise loops that stop on state change,
+  pause, and shutdown. Footstep interval now follows actual speed.
+- **Ambience:** wind, distant city, rooftop air, and low hum layers with
+  Training/Prologue profiles; wind responds to speed and breathes while idle.
+- **Score:** sparse four-chord pad plus a quiet moving arpeggio, started with
+  gameplay and scaled by speed; `audio.music_volume` is now applied.
+- **Radio:** procedural static and signal tones with smooth environment ducking;
+  plays at Prologue start and on section entries.
+- **Lifecycle:** pause/resume stops contact loops and ducks ambience/music;
+  voice limits and cleanup prevent node accumulation.
+- **Verification tools:** offline 24 s demo render, BS.1770-style metrics,
+  live post-limiter analyser probe, and 30 dedicated audio tests.
+
+Verification:
+
+- `npm run validate`: typecheck, Biome, **268 tests in 35 files**, build.
+- Offline demo (24 s) vs the reference Prologue 500–800 s segment measured by the
+  same script:
+
+  | Metric | Demo | Reference | Target | Band |
+  |---|---:|---:|---:|---|
+  | Energy < 500 Hz | 0.896 | 0.909 | 0.85–0.94 | PASS |
+  | Energy > 2 kHz | 0.060 | 0.026 | 0.03–0.08 | PASS |
+  | Gated loudness | −26.0 LUFS | −26.6 LUFS | −31…−26 | PASS |
+  | Sample peak | −5.26 dBFS | −1.94 dBFS | ≤ −3 dBFS | PASS |
+  | Short-term p95−p5 | 22.9 dB | 12.9 dB | 18–26 dB | PASS |
+
+- Live probe after a trusted gesture: audio running, 3 ambience sources, music
+  active, all seven buses present; deterministic footstep/landing stress sequence
+  peak −3.7 dBFS post-limiter; no console errors.
+- Evidence: `docs/evidence/audio/round-2/` (mix WAV, metrics, live probe,
+  waveform/spectrogram) and `docs/VISUAL_REFERENCE_PROGRESS.md`.
+
+Known limitations:
+
+- No human listening pass has been performed; headless metrics do not prove
+  subjective character, separation, or absence of clicks.
+- No spatial emitters/listener/occlusion; all current sources are player-local or
+  bus-routed.
+- The score is a simple pad plus arpeggio with no section/tension layers; radio
+  has no speech content.
+- Continuous loops do not crossfade between surface materials.
+- The demo peak is conservatively low versus the reference; transient headroom
+  can be raised after listening.
 
 ---
 

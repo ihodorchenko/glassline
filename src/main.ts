@@ -29,6 +29,12 @@ void bootstrap();
 
 if (import.meta.env.DEV) {
   (window as Window & { __glassline?: Application }).__glassline = application;
+
+  void import("./audio/audioDemo").then((module) => {
+    (
+      window as Window & { __glasslineAudioDemo?: typeof module.renderAudioDemo }
+    ).__glasslineAudioDemo = module.renderAudioDemo;
+  });
 }
 
 if (import.meta.hot) {
