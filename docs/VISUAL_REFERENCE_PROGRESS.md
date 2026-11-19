@@ -3610,6 +3610,36 @@ Sharpen material detail at grazing angles.
 
 - Subtle on distant views; low-poly shapes remain.
 
+---
+
+## Round 85 — real Safari deep verification (2026-11-19)
+
+### Scope
+
+After enabling Safari Remote Automation, verify the real browser end-to-end.
+
+### What changed
+
+- Real Safari 27.2 / macOS 27.2.1 via `safaridriver --mcp`:
+  - production menu + Training: **0 console errors**;
+  - Prologue movement probe: **6.28 m**;
+  - full spawn→finish: **0 respawns, Results 00:33.542**;
+  - start frame: **13/13** metrics.
+- Fixed Safari warnings: explicit PCF shadow type (PCFSoft removed in r187),
+  favicon 404 removed.
+- Added Safari smoke/route tools and evidence.
+
+### Evidence
+
+- [`safari/README.md`](evidence/cross-browser/safari/README.md)
+- [CROSS_BROWSER.md](CROSS_BROWSER.md)
+
+### Honest gaps
+
+- `safaridriver` throttles rAF, so no Safari FPS claim; wall-clock run 33.5 s vs
+  Chromium 24.0 s.
+- Firefox/assistive technology remain unverified; audio in Safari not judged.
+
 ## Round log
 
 | Round | Date | Focus | Outcome |
