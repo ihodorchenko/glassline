@@ -68,7 +68,7 @@ type, hard red rules, a minimal HUD, and canvas-rendered `RUN` / section /
 
 The Training yard shares the same white/red rooftop language and city backdrop.
 
-![Training yard](docs/evidence/visual/round-26/training.jpg)
+![Training yard](docs/evidence/visual/round-27/training.jpg)
 
 ## Sound
 

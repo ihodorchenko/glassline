@@ -31,6 +31,7 @@ export class CityLife implements Disposable {
   private readonly euler = new THREE.Euler();
   private readonly scale = new THREE.Vector3(1, 1, 1);
   private elapsedSeconds = 0;
+  private motionEnabled = true;
   private disposed = false;
 
   constructor(count = 18) {
@@ -74,8 +75,12 @@ export class CityLife implements Disposable {
     this.update(0);
   }
 
+  setMotionEnabled(enabled: boolean): void {
+    this.motionEnabled = enabled;
+  }
+
   update(deltaSeconds: number): void {
-    if (this.disposed) {
+    if (this.disposed || !this.motionEnabled) {
       return;
     }
 

@@ -1815,6 +1815,58 @@ drift ignored the reduced-motion setting. This round fixes both.
 3. Human listening and final camera/menu calibration.
 4. Prologue highlight recovery without losing 13/13.
 
+---
+
+## Round 27 — painted floor mat + reduced-motion ambience (2026-11-19)
+
+### Scope
+
+The Round 26 floor mat read as a black sticker, and reduced motion only stopped
+menu drift. This round blends the mat into the floor and freezes ambient motion
+when the accessibility setting is on.
+
+### What changed
+
+- **Painted floor mat:** `MOVEMENT YARD` floor plane changed from dark
+  background/white text to floor-toned `0xd8d4ca` with dark ink and a red accent;
+  it now reads as painted lane lettering instead of a black sticker. Wall/banner
+  signs keep the dark sign language.
+- **Reduced-motion ambience:** `CityLife.setMotionEnabled`; `RenderScene` stops
+  sky/cloud updates and freezes birds/hoist when reduced motion is on. Menu drift
+  already scales to zero; the gameplay camera behavior is unchanged.
+- **No route/collision/audio changes.**
+
+### Verification
+
+- `npm run validate`: typecheck, Biome, **275 tests in 36 files**, build.
+- Prologue start remains **13/13** metrics.
+- Performance **60.3 fps**; Training/Prologue tests green.
+- Captures: painted Training mat, start regression.
+
+### Evidence
+
+| View | Image |
+|---|---|
+| Painted Training floor mat | ![Training](evidence/visual/round-27/training.jpg) |
+| Start regression | ![Start](evidence/visual/round-27/start.jpg) |
+| Metrics | [`metrics.json`](evidence/visual/round-27/metrics.json) |
+
+### Honest gaps
+
+- The floor mat remains a thin sign plane; it has no wear/paint texture or
+  embedded lane material.
+- Reduced motion freezes ambience entirely (birds/hoist/clouds) rather than
+  offering a reduced variant; no menu indicator.
+- Human listening, clipped-highlight recovery, bypass tradeoff, and final motion
+  calibration remain open.
+
+### Next
+
+1. Paint/wear the floor mat or convert floor text to a decal material.
+2. Offer a subtle reduced-motion ambience variant instead of full freeze.
+3. Human listening and final camera/menu calibration.
+4. Prologue highlight recovery without losing 13/13.
+
 ## Round log
 
 | Round | Date | Focus | Outcome |

@@ -1876,6 +1876,7 @@ export class Application implements Disposable {
     }
 
     this.renderScene?.setMenuBackdropVisible(showMenuVignette);
+    this.renderScene?.setReducedMotion(this.cameraSystem?.reducedMotionEnabled ?? false);
 
     if (this.cameraSystem && this.player && movement) {
       this.cameraSystem.renderUpdate({

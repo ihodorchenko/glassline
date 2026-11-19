@@ -92,6 +92,7 @@ export class RenderScene implements Disposable {
     DEFAULT_ENVIRONMENT.sunElevation,
   );
   private disposed = false;
+  private reducedMotion = false;
 
   constructor(renderer?: THREE.WebGLRenderer) {
     this.hemisphere = new THREE.HemisphereLight(0xd6e9fa, 0x9a968a, 0.3);
@@ -141,6 +142,11 @@ export class RenderScene implements Disposable {
     this.menuBackdrop.setVisible(visible);
   }
 
+  setReducedMotion(enabled: boolean): void {
+    this.reducedMotion = enabled;
+    this.cityLife.setMotionEnabled(!enabled);
+  }
+
   /** Connects the renderer so the scene can build its sky reflection probe. */
   attachRenderer(renderer: THREE.WebGLRenderer): void {
     this.renderer = renderer;
@@ -185,7 +191,10 @@ export class RenderScene implements Disposable {
   }
 
   update(deltaSeconds: number): void {
-    this.sky.update(deltaSeconds);
+    if (!this.reducedMotion) {
+      this.sky.update(deltaSeconds);
+    }
+
     this.cityLife.update(deltaSeconds);
   }
 
