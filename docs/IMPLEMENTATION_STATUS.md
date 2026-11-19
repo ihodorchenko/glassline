@@ -102,6 +102,8 @@ Only `Verified` means that the applicable acceptance criteria have been checked 
 | Statistics | Defined | Implemented | Integrated | Verified |
 | Reference Presentation | Defined | In Progress | Integrated | Partially Verified |
 
+**Cross-browser:** Chromium passes; WebKit gameplay is blocked by a Rapier WASM collider trap; Firefox is blocked by the environment sandbox ([CROSS_BROWSER.md](CROSS_BROWSER.md)).
+
 **Boot presentation:** styled inline paper/ink loader with staged progress + styled level-loading screen ([BOOT_LOADER.md](BOOT_LOADER.md)).
 
 **Review package:** [`REFERENCE_REVIEW.md`](REFERENCE_REVIEW.md) — evidence, human checklist, and options A/B/C; decision deadline round 60.
