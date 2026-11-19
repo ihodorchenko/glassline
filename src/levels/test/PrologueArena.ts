@@ -301,17 +301,84 @@ export const PROLOGUE_ARENA_BOXES: readonly PrologueArenaBox[] = [
     surfaceId: "surface_boundary",
     material: "facade",
   },
-  // Interaction terminal and finish marker.
+  // Final ascent: a narrow beam over the gap, then eight rising scaffold
+  // platforms (0.8 m each) onto the high finish roof at y = 5.2.
+  {
+    id: "geo_final_beam",
+    position: { x: 0, y: -2.1, z: -68.5 },
+    size: { x: 2.4, y: 0.2, z: 8 },
+    surfaceId: "surface_step",
+    material: "concrete",
+  },
+  ...Array.from({ length: 8 }, (_, index) => {
+    const top = -2 + (index + 1) * 0.8;
+    const start = -74.5 - index * 5.6;
+
+    return {
+      id: `geo_ascent_platform_${index}`,
+      position: {
+        x: 0,
+        y: top - 0.1,
+        z: start - 1.8,
+      },
+      size: { x: 3.4, y: 0.2, z: 3.6 },
+      surfaceId: "surface_concrete",
+      material: "roof" as const,
+    };
+  }),
+  {
+    id: "geo_final_deck",
+    position: { x: 0, y: 5.1, z: -127.15 },
+    size: { x: 16, y: 0.2, z: 15.7 },
+    surfaceId: "surface_concrete",
+    material: "roof",
+  },
+  {
+    id: "geo_final_parapet_west",
+    position: { x: -8.2, y: 5.7, z: -127.15 },
+    size: { x: PARAPET_THICKNESS, y: 1, z: 15.7 },
+    surfaceId: "surface_boundary",
+    material: "facade",
+  },
+  {
+    id: "geo_final_parapet_east",
+    position: { x: 8.2, y: 5.7, z: -127.15 },
+    size: { x: PARAPET_THICKNESS, y: 1, z: 15.7 },
+    surfaceId: "surface_boundary",
+    material: "facade",
+  },
+  {
+    id: "geo_final_parapet_south_west",
+    position: { x: -5, y: 5.7, z: -119.3 },
+    size: { x: 6.4, y: 1, z: PARAPET_THICKNESS },
+    surfaceId: "surface_boundary",
+    material: "facade",
+  },
+  {
+    id: "geo_final_parapet_south_east",
+    position: { x: 5, y: 5.7, z: -119.3 },
+    size: { x: 6.4, y: 1, z: PARAPET_THICKNESS },
+    surfaceId: "surface_boundary",
+    material: "facade",
+  },
+  {
+    id: "geo_final_parapet_north",
+    position: { x: 0, y: 5.7, z: -135 },
+    size: { x: 16.4, y: 1, z: PARAPET_THICKNESS },
+    surfaceId: "surface_boundary",
+    material: "facade",
+  },
+  // Interaction terminal and finish marker on the high roof.
   {
     id: "geo_terminal_finish",
-    position: { x: 2.5, y: -0.3, z: -58 },
+    position: { x: 2.5, y: 5.82, z: -128 },
     size: { x: 0.6, y: 1.2, z: 0.6 },
     surfaceId: "surface_terminal",
     material: "metal",
   },
   {
     id: "geo_finish_marker",
-    position: { x: 6, y: 0.2, z: -58 },
+    position: { x: 6, y: 6.3, z: -128 },
     size: { x: 0.5, y: 2.2, z: 0.5 },
     surfaceId: "surface_marker",
     material: "red",

@@ -534,6 +534,95 @@ playable level or duplicating gameplay state.
 3. Tune menu colour/contrast and motion blur against the reference frames.
 4. Listening pass on the Round 2 mix.
 
+---
+
+## Round 6 — final scaffold ascent (2026-11-19)
+
+### Scope
+
+Round 5 ended at the low finish roof, ~66 m into a 180–220 m target. This round
+adds a final construction ascent after that roof: a narrow beam, eight rising
+jump platforms, and a high finish roof. The five checkpoint IDs and section
+order are preserved; `cp_finish` moves onto the beam and `trigger_finish` moves
+to the high roof.
+
+### What changed
+
+**Route**
+
+- The old finish roof (y = −0.9, ending z = −62) now ends at a red edge. A 2.3 m
+  gap drops onto a 2.4 m-wide concrete beam at y = −2.0 (z −64.5…−72.5).
+- Eight scaffold platforms climb 0.8 m each, with 2.0 m gaps and 3.6 m-deep
+  landings, from y = −1.2 to y = 4.4 (z −74.5…−117.3).
+- A 16 m-wide high finish roof at y = 5.2 spans z −119.3…−135, entered through
+  a split south parapet; the finish gate/terminal/sign sit at z = −130/−128.
+- `cp_finish` moved to the beam at z = −66 (respawn y = −1.07); the finish
+  trigger moved to the high roof at y = 5.9, z = −130. Order and IDs unchanged.
+- The old finish deck becomes a transition roof with the `05 / ASCENT` sign;
+  the new jump tower carries `06 / FINISH`.
+- Sun shadow frustum extended to z ≈ −140 and focus moved to z = −48; the far
+  central tower moved from z = −140 to z = −160 so it no longer intersects the
+  new finish roof.
+
+**Construction dressing**
+
+- Four 38 m scaffold standards, horizontal ledges, diagonal braces, red caps,
+  work lights, platform edge paint, high-roof support columns, and a lower city
+  roof under the tower.
+- Finish gate, lit terminal, `FINISH` billboard (dark for contrast), floodlight,
+  and service kit moved onto the high roof.
+
+### Verification
+
+- New physics test drives the beam and all eight jumps with held jump input and
+  lands on the high roof (y > 4.8); it exposed and fixed a solid south parapet
+  blocking the final landing.
+- Integration test walks the updated waypoints through `cp_finish` and the
+  high-roof finish trigger; speedrun route still has five checkpoints and
+  `trigger_finish`.
+- `npm run validate`: typecheck, Biome, **271 tests in 36 files**, build.
+- Browser evidence captured at the beam, mid-ascent, and high roof; start-frame
+  metrics unchanged at **10/13**. Frame probe still reports **60 fps**
+  (16.6 ms average), 30 instanced batches, 1 841 instances, 28.7k triangles.
+
+### Route result
+
+| Metric | Round 3 | Round 6 | Plan target |
+|---|---:|---:|---:|
+| Distance start → finish gate | ~66 m | ~136 m | 180–220 m |
+| Vertical range | 5.1 m | 8.2 m (−3.0…+5.2) | ≥ 8 m |
+| Authored jump gaps | 1 | 10 | several |
+| Sections / checkpoints | 5 / 5 | 5 / 5 | 5 / 5 |
+
+### Evidence
+
+| View | Image |
+|---|---|
+| Beam below the jump tower | ![Beam](evidence/visual/round-6/beam.jpg) |
+| Mid-ascent platforms | ![Ascent](evidence/visual/round-6/ascent.jpg) |
+| High finish roof | ![High finish](evidence/visual/round-6/top.jpg) |
+| Start regression | ![Start](evidence/visual/round-6/start.jpg) |
+
+### Honest gaps
+
+- ~136 m is still short of the 180–220 m target; the new finale adds one long
+  jump chain rather than another authored rooftop turn.
+- The beam/platforms float over a dark city void; support/scaffold detail needs
+  more depth from below.
+- The high finish roof is sparse: gate, sign, terminal, and one service box only.
+- Eight identical 0.8 m jumps are repetitive; the climb needs variation in
+  height, direction, or surface.
+- Falls on the climb respawn at the beam; there is no mid-climb checkpoint
+  because the five-ID contract is fixed.
+- Audio listening and final motion/menu calibration remain open.
+
+### Next
+
+1. Add a rooftop turn/second construction chain to reach 180–220 m.
+2. Vary the ascent and add a mid-climb safety beat without changing checkpoint IDs.
+3. Dress the high roof and city void below the tower.
+4. Listening pass and final colour/motion calibration.
+
 ## Round log
 
 | Round | Date | Focus | Outcome |
@@ -543,3 +632,4 @@ playable level or duplicating gameplay state.
 | 3 | 2026-11-19 | Vertical Prologue extension: drop, gap, stair climb, skybridge, finish roof | Route ~66 m / 5.1 m vertical; 270 tests; physical traversal verified |
 | 4 | 2026-11-19 | Reference UI, canvas signage, speed blur | Paper/ink menu, minimalist HUD, RUN/section signs, radial blur; 270 tests |
 | 5 | 2026-11-19 | Menu city vignette | Visual-only prologue rooftop/city behind paper menu; hidden in gameplay; 270 tests |
+| 6 | 2026-11-19 | Final scaffold ascent | ~136 m route, 8.2 m vertical, 8 jump platforms, high finish roof; 271 tests |

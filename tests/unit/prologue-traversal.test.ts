@@ -140,6 +140,52 @@ describe("Prologue lower-route traversal", () => {
     expect(afterStairs.y).toBeGreaterThan(-1.2);
   });
 
+  it("jumps the final scaffold ascent to the high finish roof", async () => {
+    const harness = await createHarness({ x: 0, y: -1.07, z: -65 });
+
+    step(harness, input(), 60);
+
+    const edges = [-72.3, -77.8, -83.4, -89.0, -94.6, -100.2, -105.8, -111.4, -117.0];
+    let edgeIndex = 0;
+    let jumpHoldFrames = 0;
+    let landed = false;
+
+    for (let index = 0; index < 2400; index += 1) {
+      const position = harness.player.getPosition();
+      const snapshot = harness.player.getMovementSnapshot();
+      const edgeZ = edges[edgeIndex] ?? Number.NEGATIVE_INFINITY;
+      const jump = position.z < edgeZ && snapshot.grounded;
+
+      if (jump) {
+        edgeIndex += 1;
+        jumpHoldFrames = 14;
+      }
+
+      harness.player.fixedUpdate(
+        input({
+          move: { x: 0, y: 1 },
+          jumpPressed: jump,
+          jumpHeld: jumpHoldFrames > 0,
+          sprintHeld: true,
+        }),
+        0,
+        DT,
+      );
+      harness.physics.step();
+      jumpHoldFrames = Math.max(0, jumpHoldFrames - 1);
+
+      if (position.z < -120 && snapshot.grounded) {
+        landed = true;
+        break;
+      }
+    }
+
+    const position = harness.player.getPosition();
+
+    expect(landed).toBe(true);
+    expect(position.y).toBeGreaterThan(4.8);
+  });
+
   it("crosses the bridge and reaches the finish roof", async () => {
     const harness = await createHarness({ x: 0, y: 0.03, z: -43 });
 

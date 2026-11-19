@@ -170,8 +170,11 @@ describe("Prologue start-to-finish integration", () => {
       { x: 0, y: -0.5, z: -43 },
       { x: 0, y: 0.03, z: -46 },
       { x: 0, y: -0.5, z: -50.3 },
-      { x: 0, y: 0.03, z: -56 },
-      { x: 0, y: -0.5, z: -60 },
+      { x: 0, y: -1.07, z: -66 },
+      { x: 0, y: -0.5, z: -74 },
+      { x: 0, y: 1.5, z: -86 },
+      { x: 0, y: 3.5, z: -104 },
+      { x: 0, y: 5.9, z: -130 },
     ];
 
     for (const waypoint of waypoints) {

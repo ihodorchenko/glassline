@@ -424,7 +424,7 @@ function addCheckpointBeacons(builder: CityBuilder): void {
     [-2.5, 0, 4.3],
     [-8.5, 0, 4.3],
     [-46, -0.9, 1.3],
-    [-56, -0.9, 4.3],
+    [-66, -2.0, 1.5],
   ];
 
   for (const [z, deckY, offset] of checkpoints) {
@@ -835,7 +835,7 @@ function addNearCity(builder: CityBuilder): void {
     roofProps: true,
     seed: 37,
   });
-  addBuilding(builder, 4, -140, 48, 32, {
+  addBuilding(builder, 4, -160, 48, 32, {
     material: "glass-far",
     top: 74,
     facing: "south",
@@ -1047,9 +1047,16 @@ function addLowerZone(builder: CityBuilder): void {
   });
 
   builder.plane(-9.0, 1.4, -55.5, 2.0, 0.66, Math.PI / 2, {
-    text: "05 / FINISH",
+    text: "05 / ASCENT",
     background: 0xf4f1e9,
     textColor: 0x14191d,
+    accentColor: 0xd52e36,
+  });
+
+  builder.plane(-1.82, 2.1, -76, 1.7, 0.55, Math.PI / 2, {
+    text: "06 / FINISH",
+    background: 0x14191d,
+    textColor: 0xf4f1e9,
     accentColor: 0xd52e36,
   });
 
@@ -1097,21 +1104,94 @@ function addLowerZone(builder: CityBuilder): void {
   }
 }
 
-function addBillboards(builder: CityBuilder): void {
-  // Finish-roof sign, offset from the gate's centre line.
-  builder.box(10.4, 2.6, -59, 4.4, 3.0, 0.36, { material: "white", castShadow: true });
-  builder.box(10.4, 2.6, -58.78, 4.0, 2.6, 0.1, { material: "white" });
-  builder.box(10.4, 2.72, -58.7, 2.8, 0.3, 0.05, { material: "metal" });
-  builder.box(10.4, 1.7, -58.7, 2.8, 0.14, 0.04, { material: "red" });
+function addFinaleScaffold(builder: CityBuilder): void {
+  // Red edge at the old finish roof and a narrow beam below it.
+  builder.box(0, -0.885, -61.9, 17.4, 0.02, 0.18, {
+    material: "red",
+    castShadow: false,
+    receiveShadow: false,
+  });
 
-  for (const x of [8.6, 12.2]) {
-    builder.box(x, 0.6, -59.2, 0.24, 3.2, 0.24, { material: "metal" });
+  // Four scaffold standards and cross-braces around the ascending platforms.
+  for (const x of [-2.6, 2.6]) {
+    for (const z of [-74.5, -118]) {
+      builder.box(x, -12, z, 0.22, 38, 0.22, { material: "metal" });
+      builder.box(x, 5.6, z, 0.34, 0.34, 0.34, { material: "red" });
+    }
   }
 
-  builder.plane(10.4, 2.6, -58.66, 4.0, 2.6, 0, {
+  for (let index = 0; index < 8; index += 1) {
+    const start = -74.5 - index * 5.6;
+    const top = -2 + (index + 1) * 0.8;
+
+    for (const side of [-1, 1]) {
+      builder.box(side * 2.6, top, start - 1.8, 0.18, 0.18, 3.8, { material: "metal" });
+      builder.box(side * 1.85, top + 0.55, start - 1.8, 0.06, 0.06, 3.4, { material: "metal" });
+    }
+
+    builder.box(0, top + 0.015, start - 0.15, 3.4, 0.02, 0.12, {
+      material: "red",
+      castShadow: false,
+      receiveShadow: false,
+    });
+  }
+
+  // Diagonal braces and hanging work lights make the tower read as construction.
+  for (let index = 0; index < 4; index += 1) {
+    const z = -76 - index * 11;
+    builder.box(-2.6, 0.5, z, 0.16, 0.16, 12.6, {
+      material: "metal",
+      rotationX: 0.55,
+    });
+    builder.box(2.6, 0.5, z, 0.16, 0.16, 12.6, {
+      material: "metal",
+      rotationX: -0.55,
+    });
+  }
+
+  for (const z of [-78, -92, -106]) {
+    builder.box(-2.3, 5.0, z, 0.1, 0.1, 0.1, {
+      material: "cool-light",
+      emissive: 0xcfe8ff,
+      emissiveIntensity: 0.8,
+    });
+  }
+
+  // High finish roof support and service kit.
+  for (const x of [-6.8, 6.8]) {
+    for (const z of [-120.5, -133.5]) {
+      builder.box(x, -12.5, z, 0.4, 37, 0.4, { material: "metal" });
+    }
+  }
+
+  builder.box(0, 5.82, -132.5, 2.2, 1.0, 1.6, { material: "metal" });
+  builder.box(0, 6.36, -132.5, 2.0, 0.1, 1.4, { material: "dark-metal" });
+  builder.box(-6.6, 6.2, -126.8, 0.16, 2.0, 0.16, {
+    material: "cool-light",
+    emissive: 0xcfe8ff,
+    emissiveIntensity: 0.8,
+  });
+
+  // A low city roof under the tower, so the climb has depth.
+  builder.box(0, -30.5, -108, 64, 0.8, 82, { material: "roof", castShadow: false });
+  builder.box(0, -30.1, -108, 64.4, 0.3, 82.4, { material: "concrete" });
+}
+
+function addBillboards(builder: CityBuilder): void {
+  // Finish-roof sign, offset from the gate's centre line on the high roof.
+  builder.box(6.4, 7.8, -129.2, 3.8, 2.6, 0.36, { material: "white", castShadow: true });
+  builder.box(6.4, 7.8, -128.98, 3.4, 2.2, 0.1, { material: "white" });
+  builder.box(6.4, 7.9, -128.9, 2.5, 0.26, 0.05, { material: "metal" });
+  builder.box(6.4, 7.05, -128.9, 2.5, 0.12, 0.04, { material: "red" });
+
+  for (const x of [5.0, 7.8]) {
+    builder.box(x, 5.8, -129.4, 0.24, 3.2, 0.24, { material: "metal" });
+  }
+
+  builder.plane(6.4, 7.8, -128.86, 3.4, 2.2, 0, {
     text: "FINISH",
-    background: 0xf4f1e9,
-    textColor: 0x14191d,
+    background: 0x14191d,
+    textColor: 0xf4f1e9,
     accentColor: 0xd52e36,
   });
 }
@@ -1222,7 +1302,8 @@ export function createPrologueCityDecorations(
   addStairBulkhead(builder);
   addMiscRoofProps(builder);
   addLowerZone(builder);
-  addFinishArea(builder, -60, -0.9);
+  addFinaleScaffold(builder);
+  addFinishArea(builder, -130, 5.2);
   addCheckpointBeacons(builder);
 
   addNearCity(builder);

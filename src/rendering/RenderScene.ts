@@ -49,7 +49,7 @@ const DEFAULT_ENVIRONMENT: Required<SceneEnvironment> = {
 };
 
 const SUN_DISTANCE = 90;
-const WORLD_FOCUS = new THREE.Vector3(0, 0, -24);
+const WORLD_FOCUS = new THREE.Vector3(0, 0, -48);
 
 function resolveEnvironment(environment: SceneEnvironment | null): Required<SceneEnvironment> {
   if (!environment) {
@@ -102,11 +102,11 @@ export class RenderScene implements Disposable {
     this.sun.shadow.bias = -0.00015;
     this.sun.shadow.normalBias = 0.035;
     this.sun.shadow.camera.near = 1;
-    this.sun.shadow.camera.far = 220;
-    this.sun.shadow.camera.left = -38;
-    this.sun.shadow.camera.right = 38;
-    this.sun.shadow.camera.top = 50;
-    this.sun.shadow.camera.bottom = -50;
+    this.sun.shadow.camera.far = 280;
+    this.sun.shadow.camera.left = -42;
+    this.sun.shadow.camera.right = 42;
+    this.sun.shadow.camera.top = 92;
+    this.sun.shadow.camera.bottom = -92;
     this.sun.shadow.camera.updateProjectionMatrix();
 
     this.sun.target.position.copy(WORLD_FOCUS);
