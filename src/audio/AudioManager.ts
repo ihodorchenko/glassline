@@ -1046,8 +1046,11 @@ export class AudioManager implements Disposable {
     const speedRatio = Math.min(1, Math.max(0, state.speed) / 8.5);
     const breath = Math.sin(this.elapsedSeconds * 0.35) * 0.0035;
     const pauseScale = state.paused ? 0.3 : 1;
-    const windTarget = (0.012 + speedRatio * 0.014 + breath * 0.5) * pauseScale;
-    const windCutoff = 250 + speedRatio * 340;
+    const altitude = Number.isFinite(state.altitude) ? (state.altitude ?? 0) : 0;
+    const altitudeRatio = Math.min(1, Math.max(0, (altitude - 1.5) / 6));
+    const windTarget =
+      (0.012 + speedRatio * 0.014 + breath * 0.5 + altitudeRatio * 0.012) * pauseScale;
+    const windCutoff = 250 + speedRatio * 340 + altitudeRatio * 220;
 
     ambience.windGain.gain.setTargetAtTime?.(windTarget, now, 0.25);
     ambience.windFilter.frequency.setTargetAtTime?.(windCutoff, now, 0.35);

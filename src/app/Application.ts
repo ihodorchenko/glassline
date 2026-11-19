@@ -1810,6 +1810,7 @@ export class Application implements Disposable {
         wallRunSide: movement.wallRunSide,
         surface: this.getPlayerSurfaceType(),
         paused: this.flowManager?.getState() !== "gameplay",
+        altitude: this.player?.getPosition().y ?? 0,
       });
     }
 

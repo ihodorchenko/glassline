@@ -701,6 +701,86 @@ keeping the five checkpoint IDs and section order unchanged.
 3. Add a mid-route safety beat without changing checkpoint IDs.
 4. Listening pass and final colour/motion calibration.
 
+---
+
+## Round 8 — finale polish and altitude wind (2026-11-19)
+
+### Scope
+
+Round 7 hit the length target with a long catwalk. This round improves the
+finale's readability and environmental sound without changing the route length,
+checkpoint IDs, or section order.
+
+### What changed
+
+**Catwalk variety**
+
+- A suspended construction load (container on four cables) hangs over the
+  outbound/return span, with a dark underside and shadow.
+- Deck seams every 6 m, a red chevron sequence and hazard plate at the turn,
+  cable drums, and work lights break the repeated rails and white deck.
+- `06 / ASCENT` replaces the premature `06 / FINISH`; `07 / TURN` remains at the
+  turn.
+
+**High roof**
+
+- AC/service box, crate cluster, mast with cool work light, solar panel, vent
+  drum, and service kit dress the high roof around the gate.
+- The finish banner stays centred in the gate; the props are placed off the
+  approach line.
+
+**Turn view**
+
+- The near east tower moved west, far-skyline boxes around the turn were
+  skipped, and the far central tower moved to z = −190 so it no longer forms a
+  wall immediately behind the turn.
+- A blank skyline face still dominates part of the south view; this is improved
+  but not fully solved.
+
+**Sound**
+
+- `AudioMovementState` now carries player altitude. The ambience wind gain and
+  cutoff rise above the lower roof (altitude ratio from ~1.5 m to ~7.5 m), so the
+  high catwalk and finish roof are audibly windier even at low movement speed.
+- This is a code-level mix change, not a human listening verdict.
+
+### Verification
+
+- `npm run validate` green: typecheck, Biome, **272 tests in 36 files**, build.
+- Captures show the suspended load, deck seams, high-roof kit, and gate.
+- Performance **60.2 fps** (16.6 ms average); start frame remains **10/13**.
+- Catwalk route/tests unchanged; no new collision surfaces were added by the
+  dressing.
+
+### Evidence
+
+| View | Image |
+|---|---|
+| Catwalk with suspended load | ![Catwalk](evidence/visual/round-8/mid.jpg) |
+| Dressed high roof and gate | ![High roof](evidence/visual/round-8/high.jpg) |
+| Finish gate | ![Finish](evidence/visual/round-8/finish.jpg) |
+| Start regression | ![Start](evidence/visual/round-8/start.jpg) |
+
+### Honest gaps
+
+- The turn still faces a mostly blank skyline wall; the view needs authored
+  towers/signage rather than only removed boxes.
+- Catwalk length/rails remain repetitive; the load and seams help but do not
+  turn it into a new traversal idea.
+- High roof is better dressed but still sparse compared with the start roof.
+- Altitude wind is unverified by ear and may need level balancing against
+  footsteps/music.
+- No mid-climb/mid-catwalk checkpoint; falls return to the beam.
+- Uniform 0.8 m jump rhythm, final menu/motion calibration, and listening pass
+  remain open.
+
+### Next
+
+1. Author the turn view: a hero tower/billboard rather than a blank wall.
+2. Add one mid-catwalk traversal variation (glass floor, gap, or crane platform).
+3. Consider a respawn-only safety beat without changing checkpoint IDs.
+4. Listening pass and final colour/motion calibration.
+
 ## Round log
 
 | Round | Date | Focus | Outcome |
@@ -712,3 +792,4 @@ keeping the five checkpoint IDs and section order unchanged.
 | 5 | 2026-11-19 | Menu city vignette | Visual-only prologue rooftop/city behind paper menu; hidden in gameplay; 270 tests |
 | 6 | 2026-11-19 | Final scaffold ascent | ~136 m route, 8.2 m vertical, 8 jump platforms, high finish roof; 271 tests |
 | 7 | 2026-11-19 | High catwalk U-turn | ~220 m route, 8.2 m vertical, exposed catwalk, high gate; 272 tests |
+| 8 | 2026-11-19 | Finale polish + altitude wind | Suspended load, deck seams, high-roof kit, altitude-scaled wind; 272 tests |

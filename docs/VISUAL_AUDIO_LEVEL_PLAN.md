@@ -12,8 +12,9 @@
 > reference's paper/ink UI, canvas signage, and speed blur (part of W1/W5), and
 > Round 5 adds a visual-only prologue city vignette behind the menu. Round 6
 > extends the playable route with a final scaffold ascent, and Round 7 adds an
-> exposed catwalk U-turn (~220 m / 8.2 m vertical), reaching the 180–220 m band.
-> Mid-route variation, listening pass, and further W1/W2 polish remain. The plan's anti-hack rule is honored: the
+> exposed catwalk U-turn (~220 m / 8.2 m vertical), reaching the 180–220 m band,
+> and Round 8 polishes the finale with catwalk/high-roof detail and altitude
+> wind. Turn-view art, mid-route safety, listening pass, and W1/W2 polish remain. The plan's anti-hack rule is honored: the
 > hard highlight clip was replaced by a gentler shoulder; the remaining
 > near-white/highlight gap is assigned to real lighting and content.
 

@@ -116,4 +116,6 @@ export interface AudioMovementState {
   readonly wallRunSide: "left" | "right" | null;
   readonly surface: string | null;
   readonly paused: boolean;
+  /** Player centre height, used to make high-roof wind stronger. */
+  readonly altitude?: number;
 }

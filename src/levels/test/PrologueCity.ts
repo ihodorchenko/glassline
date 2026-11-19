@@ -835,7 +835,7 @@ function addNearCity(builder: CityBuilder): void {
     roofProps: true,
     seed: 37,
   });
-  addBuilding(builder, 4, -160, 48, 32, {
+  addBuilding(builder, 4, -190, 48, 32, {
     material: "glass-far",
     top: 74,
     facing: "south",
@@ -1054,7 +1054,7 @@ function addLowerZone(builder: CityBuilder): void {
   });
 
   builder.plane(-1.82, 2.1, -76, 1.7, 0.55, Math.PI / 2, {
-    text: "06 / FINISH",
+    text: "06 / ASCENT",
     background: 0x14191d,
     textColor: 0xf4f1e9,
     accentColor: 0xd52e36,
@@ -1227,6 +1227,48 @@ function addCatwalk(builder: CityBuilder): void {
 
   builder.box(49, 6.3, -129.0, 2.8, 0.1, 0.1, { material: "red" });
 
+  // Deck seams and a suspended construction load break the long span.
+  for (let x = 14; x <= 44; x += 6) {
+    for (const z of [-122.8, -130.8]) {
+      builder.box(x, 5.218, z, 0.12, 0.02, 3.2, {
+        material: "dark-metal",
+        castShadow: false,
+        receiveShadow: false,
+      });
+    }
+  }
+
+  builder.box(33, 10.4, -126.8, 3.6, 2.0, 2.2, { material: "metal" });
+  builder.box(33, 11.45, -126.8, 3.4, 0.12, 2.0, { material: "dark-metal" });
+  builder.box(33, 9.35, -126.8, 3.8, 0.12, 2.4, { material: "dark-metal" });
+
+  for (const x of [31.3, 34.7]) {
+    for (const z of [-127.7, -125.9]) {
+      builder.box(x, 15.2, z, 0.06, 9.6, 0.06, { material: "dark-metal" });
+    }
+  }
+
+  for (const z of [-123.4, -129.9]) {
+    builder.cylinder(54.4, 5.75, z, 1.1, 0.8, { material: "dark-metal" });
+  }
+
+  // Chevrons and a hazard block at the turn make the 180 readable.
+  for (let offset = 0; offset < 3; offset += 1) {
+    builder.box(49 + offset * 1.4, 5.218, -124.9, 0.8, 0.02, 0.22, {
+      material: "red",
+      castShadow: false,
+      receiveShadow: false,
+    });
+  }
+
+  builder.box(47.2, 5.225, -132.0, 1.2, 0.02, 0.6, {
+    material: "red",
+    emissive: 0xc0262d,
+    emissiveIntensity: 0.4,
+    castShadow: false,
+    receiveShadow: false,
+  });
+
   // A lower city roof under the catwalk keeps the drop readable.
   builder.box(32, -24, -126.8, 58, 0.8, 30, {
     material: "roof",
@@ -1238,6 +1280,38 @@ function addCatwalk(builder: CityBuilder): void {
     builder.box(x, -22.8, -126.8, 2.2, 1.4, 1.8, { material: "metal" });
     builder.box(x, -22.05, -126.8, 2.0, 0.1, 1.6, { material: "dark-metal" });
   }
+}
+
+function addHighRoofDressing(builder: CityBuilder): void {
+  builder.box(-5.6, 5.9, -121.4, 2.2, 1.4, 1.6, { material: "metal" });
+  builder.box(-5.6, 6.65, -121.4, 2.0, 0.12, 1.4, { material: "dark-metal" });
+  builder.box(-6.6, 6.2, -121.4, 0.2, 0.5, 0.2, {
+    material: "red",
+    emissive: 0xc0262d,
+    emissiveIntensity: 0.4,
+  });
+
+  for (const [x, z] of [
+    [5.4, -122.2],
+    [6.2, -123.4],
+    [4.9, -123.8],
+  ] as const) {
+    builder.box(x, 5.62, z, 0.8, 0.8, 0.8, { material: "dark-metal" });
+  }
+
+  builder.box(6.8, 7.0, -127.4, 0.18, 3.6, 0.18, { material: "metal" });
+  builder.box(6.8, 8.8, -127.4, 2.8, 0.12, 0.12, { material: "metal" });
+  builder.box(8.1, 8.6, -127.4, 0.4, 0.24, 0.24, {
+    material: "cool-light",
+    emissive: 0xcfe8ff,
+    emissiveIntensity: 0.8,
+  });
+
+  builder.box(-6.9, 5.45, -127.8, 2.8, 0.5, 1.8, { material: "dark-metal" });
+  builder.box(-6.9, 5.78, -127.8, 2.6, 0.08, 1.6, { material: "glass" });
+
+  builder.cylinder(7.0, 5.7, -132.7, 0.9, 1.0, { material: "metal" });
+  builder.cylinder(7.0, 6.25, -132.7, 1.0, 0.1, { material: "dark-metal" });
 }
 
 function addBillboards(builder: CityBuilder): void {
@@ -1367,6 +1441,7 @@ export function createPrologueCityDecorations(
   addLowerZone(builder);
   addFinaleScaffold(builder);
   addCatwalk(builder);
+  addHighRoofDressing(builder);
   addFinishArea(builder, -133, 5.2);
   addCheckpointBeacons(builder);
 
