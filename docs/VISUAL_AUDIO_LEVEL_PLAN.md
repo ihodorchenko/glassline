@@ -25,7 +25,8 @@
 > Round 18 adds an overhead canyon bridge; Round 19 rebalances atmosphere/grade
 > and reaches 13/13 start-frame reference metrics; Round 20 restyles the Training
 > yard parapets/city/signage; Round 21 adds authored Training facade grids and
-> balances the Prologue billboard/helipad. The plan's anti-hack rule is honored: the
+> balances the Prologue billboard/helipad; Round 22 adds glass Training windows
+> and a MOVEMENT YARD banner. The plan's anti-hack rule is honored: the
 > hard highlight clip was replaced by a gentler shoulder; the remaining
 > near-white/highlight gap is assigned to real lighting and content.
 

@@ -203,13 +203,13 @@ function trainingTower(
         position: { x: x + inward - Math.sign(x) * 0.02, y: y + 1.5, z: z + zOffset },
         size: { x: 0.06, y: 1.7, z: 2.2 },
         material:
-          (row + column) % 5 === 0
+          (row + column) % 7 === 0
             ? "warm-light"
             : (row + column) % 3 === 0
               ? "glass"
-              : "cool-light",
-        emissive: (row + column) % 5 === 0 ? 0xffd9a5 : 0xbfe6ff,
-        emissiveIntensity: 0.1,
+              : "glass-far",
+        emissive: (row + column) % 7 === 0 ? 0xffd9a5 : 0x000000,
+        emissiveIntensity: (row + column) % 7 === 0 ? 0.16 : 0,
         castShadow: false,
       });
     }
@@ -256,13 +256,13 @@ function trainingTower(
         position: { x: x + xOffset, y: y + 1.5, z: southZ - 0.02 },
         size: { x: 2.2, y: 1.7, z: 0.06 },
         material:
-          (row + column) % 5 === 0
+          (row + column) % 7 === 0
             ? "warm-light"
             : (row + column) % 3 === 0
               ? "glass"
-              : "cool-light",
-        emissive: (row + column) % 5 === 0 ? 0xffd9a5 : 0xbfe6ff,
-        emissiveIntensity: 0.1,
+              : "glass-far",
+        emissive: (row + column) % 7 === 0 ? 0xffd9a5 : 0x000000,
+        emissiveIntensity: (row + column) % 7 === 0 ? 0.16 : 0,
         castShadow: false,
       });
     }
@@ -291,6 +291,29 @@ function trainingTower(
     material: "metal",
     castShadow: true,
   });
+
+  decorations.push(
+    {
+      id: `${prefix}_mast`,
+      sectionId,
+      shape: "box",
+      position: { x: x + inward * 0.7, y: top + 3.4, z },
+      size: { x: 0.16, y: 5.8, z: 0.16 },
+      material: "metal",
+      castShadow: true,
+    },
+    {
+      id: `${prefix}_beacon`,
+      sectionId,
+      shape: "box",
+      position: { x: x + inward * 0.7, y: top + 6.4, z },
+      size: { x: 0.38, y: 0.38, z: 0.38 },
+      material: "red",
+      emissive: 0xd52e36,
+      emissiveIntensity: 0.5,
+      castShadow: false,
+    },
+  );
 
   return decorations;
 }
@@ -594,6 +617,38 @@ export function createTrainingDecorations(
       size: { x: 44, y: 0.35, z: 0.35 },
       material: "metal",
       castShadow: true,
+    },
+    {
+      id: "training_yard_banner",
+      sectionId: mid,
+      shape: "plane",
+      position: { x: 0, y: 4.35, z: -13.82 },
+      size: { x: 7.0, y: 1.05, z: 0.02 },
+      rotationY: 0,
+      text: "MOVEMENT YARD",
+      color: 0x14191d,
+      textColor: 0xf4f1e9,
+      accentColor: 0xd52e36,
+      castShadow: false,
+      receiveShadow: false,
+    },
+    {
+      id: "training_yard_banner_hanger_w",
+      sectionId: mid,
+      shape: "box",
+      position: { x: -3.2, y: 4.95, z: -13.85 },
+      size: { x: 0.06, y: 0.5, z: 0.06 },
+      material: "metal",
+      castShadow: false,
+    },
+    {
+      id: "training_yard_banner_hanger_e",
+      sectionId: mid,
+      shape: "box",
+      position: { x: 3.2, y: 4.95, z: -13.85 },
+      size: { x: 0.06, y: 0.5, z: 0.06 },
+      material: "metal",
+      castShadow: false,
     },
     {
       id: "training_overhead_pipe_red",

@@ -1557,6 +1557,60 @@ oversized. This round adds real facade grids and balances the Prologue accents.
 3. Human listening and final camera/menu calibration.
 4. Continue Prologue highlight recovery without losing 13/13.
 
+---
+
+## Round 22 — Training glass windows + yard banner (2026-11-19)
+
+### Scope
+
+Round 21's Training windows were emissive boxes that read as white panels. This
+round moves them to semantic glass materials, adds tower masts/beacons, and puts
+the `MOVEMENT YARD` name into the initial view.
+
+### What changed
+
+- **Window pass:** window grids now use `glass`/`glass-far` with warm lights only
+  every seventh cell; emissive intensity is limited to warm cells. The facades
+  read as blue reflective glazing instead of white checkerboard panels.
+- **Rooftop masts:** each Training tower gets a metal mast and red beacon above
+  its roof mechanical unit.
+- **Movement Yard banner:** a 7 × 1.05 m dark banner with red accent hangs from
+  the overhead pipe at z = −13.8, facing the start lane; it is readable in the
+  initial camera.
+- **No route/collision/audio changes.**
+
+### Verification
+
+- `npm run validate`: typecheck, Biome, **275 tests in 36 files**, build.
+- Prologue start remains **13/13** reference metrics.
+- Prologue performance **60.3 fps**; Training/Prologue integration tests green.
+- Captures: Training glass facades, start regression.
+
+### Evidence
+
+| View | Image |
+|---|---|
+| Training with glass windows and banner | ![Training](evidence/visual/round-22/training.jpg) |
+| Start regression | ![Start](evidence/visual/round-22/start.jpg) |
+| Metrics | [`metrics.json`](evidence/visual/round-22/metrics.json) |
+
+### Honest gaps
+
+- Windows remain box geometry; glass is reflective but not a true window/curtain
+  wall shader, and some warm cells still read as white panels.
+- Training still has no reference metric suite; parity is visual.
+- Banner is small at distance and the yard sign on the east wall is still outside
+  the initial frustum.
+- Human listening, clipped-highlight recovery, and final motion/menu calibration
+  remain open.
+
+### Next
+
+1. Add reflective curtain-wall variation and interior depth to Training windows.
+2. Bring the yard sign/banner into a stronger composition.
+3. Human listening and final camera/menu calibration.
+4. Continue Prologue highlight recovery without losing 13/13.
+
 ## Round log
 
 | Round | Date | Focus | Outcome |
