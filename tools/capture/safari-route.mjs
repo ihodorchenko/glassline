@@ -123,7 +123,7 @@ console.log(
   "inject",
   JSON.stringify(await tool("evaluate_javascript", { expression: `return ${autopilot};` })),
 );
-await sleep(30000);
+await sleep(45000);
 console.log(
   "status",
   JSON.stringify(

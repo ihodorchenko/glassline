@@ -13,12 +13,16 @@ Safari **27.2**, macOS **27.2.1**, real browser via `safaridriver --mcp`
 | `start-metrics.json` | Safari start: **13/13** metrics |
 | `fps-probe.json` | rAF probe caveat (remote automation throttling) |
 | `prologue-report.json` | Prologue state + **5.85 m movement** probe |
-| `full-run-results.png` | Full Prologue results: **00:33.542**, **0 respawns** |
+| `full-run-results.png` | Earlier full Prologue results: **00:33.542**, 0 respawns |
+| `full-run-results-final.png` | Final visual pass: **00:27.037**, **0 respawns** |
+| `full-run-report-final.json` | Final Safari state/flow report, 0 console errors |
 | `full-run-report.json` | Autopilot state, flow `results`, no console errors |
 | `prologue-audio.png` / `audio-report.json` | Safari audio context **running**, 44.1 kHz, 6.33 m movement |
 
 The full run used the same waypoint/jump thresholds as the Chromium clean run.
-Safari completed with 0 respawns but slower wall-clock time (33.5 s vs 24.0 s),
+Final visual-pass rerun: **0 respawns, Results 00:27.037**, 0 console errors.
+Safari wall-clock varies between runs (33.5 s earlier, 27.0 s final) due
+automation/window timing;
 which reflects Safari/WebGL timing, not a different route.
 
 The earlier Playwright WebKit `rawcolliderset_createCollider` trap did **not**

@@ -3813,6 +3813,31 @@ Carry the reference red rail line onto the main stair flight.
 
 - Thin rails; low-poly geometry remains.
 
+---
+
+## Round 97 — final Safari regression (2026-11-19)
+
+### Scope
+
+Re-run the full Safari route after the final visual pass (red rails, stronger
+microrelief).
+
+### Result
+
+- **0 respawns**, waypoint 23, Results **00:27.037**.
+- 0 console errors.
+- Wall-clock varies (33.5 s earlier, 27.0 s now) due Safari automation/window
+  timing; no FPS claim.
+
+### Evidence
+
+- [`full-run-results-final.png`](evidence/cross-browser/safari/full-run-results-final.png)
+- [`full-run-report-final.json`](evidence/cross-browser/safari/full-run-report-final.json)
+
+### Honest gaps
+
+- Automated run; Safari wall-clock/FPS not stable enough for a performance claim.
+
 ## Round log
 
 | Round | Date | Focus | Outcome |

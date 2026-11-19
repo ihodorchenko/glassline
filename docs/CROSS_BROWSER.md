@@ -7,7 +7,8 @@
 
 В **Safari 27.2 / macOS 27.2.1** Training запускался вручную, затем через
 `safaridriver --mcp` проверены Production Training, Prologue и **полный
-Problue-забег**: **0 респавнов, Results 00:33.542**, консоль без ошибок.
+Problue-забег**: **0 респавнов, Results 00:33.542**, финальный повтор после
+визуальных правок — **00:27.037**, консоль без ошибок.
 Ошибка `rawcolliderset_createCollider` в Playwright WebKit не воспроизвелась —
 это артефакт headless-Playwright, а не Safari.
 
