@@ -2110,6 +2110,52 @@ This round adds small, non-routing utility details to break it up.
 2. Balance the bypass using physical/route geometry.
 3. Human review of video/audio.
 
+---
+
+## Round 33 — worn concrete patches (2026-11-19)
+
+### Scope
+
+Round 32 added utility geometry, but the foreground concrete still read clean
+and flat. This round adds faint wear patches and re-tunes them against the 13/13
+metric gate.
+
+### What changed
+
+- Five translucent gray concrete patches (0.9–1.7 m) at 28% opacity/`0x8a867d`,
+  1.2 cm above the deck, placed off the route lane.
+- Initial 16% opacity was visually invisible; 28% is visible without failing
+  metrics.
+- No colliders/route/audio changes.
+
+### Verification
+
+- `npm run validate`: typecheck, Biome, **276 tests in 36 files**, build.
+- Start **13/13**: luma 0.598, p25 0.352, near-white 19.2%, deep-shadow 3.48%
+  (delta 2.80, limit 3.0), local contrast 0.268.
+- Performance **60.3 fps**.
+
+### Evidence
+
+| View | Image |
+|---|---|
+| Start with wear patches | ![Start](evidence/visual/round-33/start.jpg) |
+| Metrics | [`metrics.json`](evidence/visual/round-33/metrics.json) |
+
+### Honest gaps
+
+- Patches are flat translucent boxes, not a real grunge/wear shader; at 720p they
+  read as soft stains, and the roof is still far from photographic concrete.
+- Deep-shadow margin is now thin (2.80 of 3.0); further foreground darkening
+  needs re-tuning.
+- Human listening, bypass tradeoff, and final motion/menu calibration remain.
+
+### Next
+
+1. Replace patches with a subtle grunge material if metrics allow.
+2. Physical bypass tradeoff.
+3. Human review.
+
 ## Round log
 
 | Round | Date | Focus | Outcome |

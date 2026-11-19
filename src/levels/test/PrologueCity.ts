@@ -323,6 +323,23 @@ function addMiscRoofProps(builder: CityBuilder): void {
   builder.box(9.6, 9.9, 5.2, 0.38, 0.16, 0.38, { material: "red" });
   builder.cylinder(9.6, 0.2, 5.2, 1.0, 0.4, { material: "concrete" });
 
+  // Faint worn concrete patches add mottling without darkening the deck.
+  for (const [x, z, width, depth] of [
+    [-2.8, 2.8, 1.7, 1.0],
+    [2.2, -1.4, 1.2, 0.8],
+    [-1.8, -4.0, 1.4, 0.9],
+    [4.4, 4.6, 1.2, 1.3],
+    [-4.6, 0.8, 0.9, 1.2],
+  ] as const) {
+    builder.box(x, 0.055, z, width, 0.012, depth, {
+      material: "concrete",
+      color: 0x8a867d,
+      opacity: 0.28,
+      castShadow: false,
+      receiveShadow: false,
+    });
+  }
+
   // Foreground roof utility: drains, a hatch, and a conduit run break up the
   // high-key deck without adding route obstacles.
   for (const [x, z] of [
