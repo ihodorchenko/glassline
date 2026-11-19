@@ -233,3 +233,111 @@ reference lens and keeps the "readable first-person parkour" feel.
   `w0-baseline-metrics-fov65.{md,json}`, archived images
   `docs/evidence/w0-baseline/fov65/`, and git commit `2442b54`. Revision-1 and
   revision-2 metric values are **not comparable** — different lens and poses.
+
+## D-12 — W1 iteration 1: scope, ownership map, gate policy (2026-11-19)
+
+**Trigger.** Owner approved starting W1 ("идём, запускай W1 итерацию") after
+confirming FOV 50 and the band policy (D-11).
+
+**Scope of iteration W1.1** (bounded: one measurement→review loop, no feature
+creep):
+1. Remove the plan-banned "photographic highlight clip" grade hack and replace
+   it with a monotonic ACES shoulder + calibrated exposure (exec-look).
+2. Colour script: neutral white balance, cobalt zenith sky gradient, neutral
+   sun, no warm paper grade (exec-look + exec-content).
+3. Glass/materials: dark reflective glass, neutral roof paint with seam detail,
+   reference red, steel/concrete recipes (exec-materials).
+4. Emissive hygiene and prop colours: signage ≤ 0.15, window cells ≤ 0.10,
+   route markers ≤ 0.10, muted foliage, sun elevation 59°, haze (exec-content).
+5. Measurement: perceptual guardrail diagnostics — sky mask, near-white seam
+   energy, red continuity/HSV (exec-metrics, D-09) — plus the FPS probe for the
+   W1 exit gate ≥ 55 fps (exec-perf).
+
+**Ownership map (one writer per file, enforced by task cards):**
+
+| Owner | Files |
+|---|---|
+| exec-look | `src/rendering/PostPipeline.ts`, `SkyDome.ts`, `Renderer.ts`, `RenderScene.ts` |
+| exec-content | `src/levels/test/ReleaseArenaPolish.ts` (environment + emissive + prop colours), `src/levels/test/PrologueCity.ts` |
+| exec-materials | `src/rendering/MaterialLibrary.ts` |
+| exec-metrics | `tools/capture/metrics.py`, `METRIC_SPEC.md` |
+| exec-perf | `tools/capture/perf.mjs`, README perf section |
+| lead | integration captures, all `docs/reports/*`, commits, branches |
+
+`src/levels/test/PrologueArena.ts` (route geometry, colliders, trigger volumes)
+is off-limits in W1.1 — no level geometry changes in a look iteration.
+
+**Gate policy for the iteration.**
+- Measurement is the lead's integrated six-shot capture at FOV 50 after the
+  three visual writers land; per-writer captures are smoke tests only.
+- The iteration is reviewed by the art director in two steps: guided (non-blind)
+  review to remove obvious breakage, then the blind 4/6 pass counts only for a
+  W1 *exit* claim.
+- No claim may be made from a metric that is structurally inapplicable to a
+  shot (e.g. `sky-blue`/`near-white` on the interior duct shot); the guardrails
+  are diagnostics, never substitutes for the 13 metrics or blind review.
+- Performance gate: measured headless; the "≥ 55 fps at 1600×900 high" claim is
+  only made with the probe output and its headless caveat attached.
+- Nothing merges to `main`.
+
+## D-13 — Determinism contract: LSB tolerance for GPU rasterisation (2026-11-19)
+
+**Finding.** After W1.1 look changes the byte-identical capture check flaked on
+exactly one shot: `finish-roof` differs in **1 pixel of 1,440,000** by
+**±1/255** on the hard edge of the FINISH glyph (MSAA resolve / rasterisation
+LSB). Both variants are stable within a page and swap between browser
+instances; scene state, camera matrices, stats and all 25 generated canvas
+textures are identical across launches (verified independently by `exec-look`
+and `exec-boot`). Flake rate ≈ 1 in 3 full runs; the other five shots are
+byte-identical in every run.
+
+**Decision.**
+1. The determinism contract becomes: **byte-identical, or (max channel delta
+   ≤ 1/255 AND differing pixels ≤ 0.01 % of the frame, i.e. ≤ 144 px) with
+   identical scene stats**. Byte-identical remains the preferred result and is
+   reported (`byteIdentical`).
+2. The capture harness records `byteIdentical`, `differingPixels`,
+   `differingShare`, `maxChannelDelta` and a per-shot `passed` flag in
+   `manifest.determinism`; `--determinism-tolerance 0` restores the strict
+   byte-identity gate for anyone who needs it.
+3. **Rejected:** disabling MSAA in capture mode. It changes edge/AA energy —
+   the very art metrics the captures exist to measure — so review frames would
+   stop representing the build. A warm-up pass is not required once tolerance
+   is in place.
+4. Any change that alters the scene, grade or content produces thousands of
+   differing pixels and/or deltas > 1 LSB and still fails, so the tolerance
+   cannot mask a look regression. This is a rasterisation-noise allowance, not
+   a loosening of the "one fixed capture per iteration" rule.
+
+**Evidence:** `captures/w1/manifest.json` determinism block; task W0-E/W1.1-D2
+(`task-17`); both executors' pixel diagnostics (1 px, coordinate 683,396,
+A=(223,224,224) vs B=(222,224,225)); 3-run reproduction matrix.
+
+## D-14 — W1 iteration 1 outcome: blind 4/6 reached, gate still open (2026-11-19)
+
+**What closed.** The look foundation landed and was reviewed blind on six
+unlabeled pairs: **4/6 PASS** (`start-roof`, `wallrun-corridor`,
+`service-block`, `finish-roof`); the two remaining FAILs are content/geometry
+(skybridge solid parapets/vista, first-gap stair/underside), explicitly W2/W3.
+The plan's blind threshold is met for the first time. Full records:
+[`W1_ITERATION.md`](W1_ITERATION.md), [`BLIND_REVIEW_W1.md`](BLIND_REVIEW_W1.md).
+
+**Why the gate is not closed yet.**
+1. Plan §2.1 rule "no shot may regress more than one band to gain another" is
+   violated between the mid-iteration and the final capture: skybridge 11→8,
+   wallrun 9→7, finish 9→8 shifted-band passes; causes are the blue-shifted
+   glass sheen (sky-blue over-count, split/saturation out of band) and the
+   less-contrasty metal deck joints (local contrast).
+2. The fps ≥ 55 proof is not taken: the only 6-shot probe ran under host load
+   7–16 (parallel agent harnesses) and read a worst pose of 47.87 fps; it is a
+   harness smoke test, not a gate number. A single isolated `perf.mjs --strict`
+   run is required.
+3. Sky-mask guardrail windows were calibrated by the art director for
+   pose-limited iteration-1 frames (start 12–35, finish 4–20; service ≤5);
+   these are review windows, not metric gates — recorded in
+   `W1_TARGETS.md` §6, no code change.
+
+**Decision.** Run one bounded fix round (W1.1b, five points in
+`W1_ITERATION.md` §6), then repeat capture + metrics + full blind set and take
+the isolated fps measurement. No merge to `main`; the red-baseline rule still
+holds (no metric may be improved by a framing or exposure hack).
