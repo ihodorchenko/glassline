@@ -169,6 +169,17 @@ const MATERIAL_SPECS: Record<MaterialKey, MaterialSpec> = {
 
 const TEXTURE_SIZE = 512;
 
+const TEXTURE_BUMP_SCALE: Record<TextureKind, number> = {
+  plaster: 0.09,
+  concrete: 0.2,
+  roof: 0.15,
+  facade: 0.1,
+  metal: 0.06,
+  asphalt: 0.22,
+  red: 0.05,
+  stain: 0,
+};
+
 export interface SignMaterialOptions {
   readonly text: string;
   readonly background: number;
@@ -448,6 +459,7 @@ const TRIPLANAR_PATCH = /* glsl */ `
 
 const TRIPLANAR_SAMPLE = /* glsl */ `
   uniform float uTriplanarScale;
+  uniform float uBumpScale;
 
   vec4 sampleTriplanar(sampler2D source, vec3 position, vec3 weights) {
     vec3 scaled = position * uTriplanarScale;
@@ -457,9 +469,14 @@ const TRIPLANAR_SAMPLE = /* glsl */ `
   }
 `;
 
-function applyTriplanar(material: THREE.MeshStandardMaterial, scale: number): void {
+function applyTriplanar(
+  material: THREE.MeshStandardMaterial,
+  scale: number,
+  bumpScale: number,
+): void {
   material.onBeforeCompile = (shader) => {
     shader.uniforms.uTriplanarScale = { value: scale };
+    shader.uniforms.uBumpScale = { value: bumpScale };
 
     shader.vertexShader = shader.vertexShader
       .replace("#include <common>", `#include <common>\n${TRIPLANAR_PATCH}`)
@@ -500,6 +517,34 @@ function applyTriplanar(material: THREE.MeshStandardMaterial, scale: number): vo
         `#include <roughnessmap_fragment>
         #if defined( USE_MAP ) && ! defined( USE_ROUGHNESSMAP )
           roughnessFactor *= mix(0.84, 1.12, triplanarLuma);
+        #endif`,
+      )
+      .replace(
+        "#include <normal_fragment_maps>",
+        `#include <normal_fragment_maps>
+        #if defined( USE_MAP ) && defined( USE_BUMPMAP )
+          // Triplanar bump: derive a world-space gradient from the same
+          // procedural map, then convert the perturbed normal back to view
+          // space for Three's lighting stage.
+          vec3 bumpWeights = pow(abs(normalize(vTriplanarNormal)), vec3(4.0));
+          bumpWeights /= (bumpWeights.x + bumpWeights.y + bumpWeights.z);
+          float bumpHeight = dot(
+            sampleTriplanar(map, vTriplanarPosition, bumpWeights).rgb,
+            vec3(0.299, 0.587, 0.114)
+          );
+          vec3 bumpDpdx = dFdx(vTriplanarPosition);
+          vec3 bumpDpdy = dFdy(vTriplanarPosition);
+          float bumpDhdx = dFdx(bumpHeight);
+          float bumpDhdy = dFdy(bumpHeight);
+          vec3 bumpN = normalize(vTriplanarNormal);
+          vec3 bumpR1 = cross(bumpDpdy, bumpN);
+          vec3 bumpR2 = cross(bumpN, bumpDpdx);
+          float bumpDet = dot(bumpDpdx, bumpR1);
+          if (abs(bumpDet) > 1e-8) {
+            vec3 bumpGrad = sign(bumpDet) * (bumpDhdx * bumpR1 + bumpDhdy * bumpR2);
+            vec3 bumpedWorld = normalize(abs(bumpDet) * bumpN - uBumpScale * bumpGrad);
+            normal = normalize(mat3(viewMatrix) * bumpedWorld);
+          }
         #endif`,
       );
   };
@@ -546,8 +591,10 @@ export class MaterialLibrary implements Disposable {
       texture.anisotropy = 8;
       texture.needsUpdate = true;
       material.map = texture;
+      material.bumpScale = 1;
+      material.bumpMap = texture;
       this.textures.push(texture);
-      applyTriplanar(material, spec.uvScale);
+      applyTriplanar(material, spec.uvScale, TEXTURE_BUMP_SCALE[spec.texture]);
     }
 
     this.materials.set(key, material);

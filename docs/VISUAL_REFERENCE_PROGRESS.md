@@ -3111,6 +3111,35 @@ and the decision options.
 - No human perceptual verdict; stylized art; section-run finish; no cross-browser/
   AT testing.
 
+---
+
+## Round 61 — procedural material relief (2026-11-19)
+
+### Scope
+
+First step of the new +40 cap: push materials beyond flat color maps.
+
+### What changed
+
+- Added triplanar **bump/normal perturbation** derived from the procedural
+  texture luma (no new assets): dFdx/dFdy gradient, world-to-view normal.
+- Tuned per-material bump strength (concrete 0.20, roof 0.15, asphalt 0.22,
+  metal 0.06, plaster 0.09, facade 0.10, red 0.05).
+- Shader compiles in Chromium; no console errors; ~60.1 fps.
+- Start metrics remain **13/13**; tests **280**.
+
+### Evidence
+
+- [`material-closeup.jpg`](evidence/visual/round-61/material-closeup.jpg)
+- [`start-bump.jpg`](evidence/visual/round-61/start-bump.jpg)
+- [`metrics.json`](evidence/visual/round-61/metrics.json)
+
+### Honest gaps
+
+- Relief is subtle; panel repetition/low-poly silhouettes remain.
+- WebKit gameplay still blocked by the Rapier WASM trap (see CROSS_BROWSER.md).
+- No human visual verdict.
+
 ## Round log
 
 | Round | Date | Focus | Outcome |
