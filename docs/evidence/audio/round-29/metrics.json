@@ -1,0 +1,147 @@
+{
+  "clips": [
+    {
+      "name": "high-10s",
+      "sampleRate": 44100,
+      "channels": 2,
+      "durationSeconds": 10.31,
+      "peakDb": -3.7,
+      "rmsDb": -23.78,
+      "perSecondRmsDb": [
+        -25.4, -23.6, -24.9, -23.4, -25.9, -23.5, -25.3, -23.4, -25.6, -23.6, -16.9
+      ]
+    },
+    {
+      "name": "ground-8s",
+      "sampleRate": 44100,
+      "channels": 2,
+      "durationSeconds": 8.27,
+      "peakDb": -3.55,
+      "rmsDb": -24.74,
+      "perSecondRmsDb": [-26.8, -24.5, -27.4, -24.6, -26.2, -24.2, -26.6, -24.6, -17.2]
+    }
+  ],
+  "note": "Live in-engine recordings; synthetic footstep/landing triggers, no human listening verdict.",
+  "spectral": {
+    "high-10s": {
+      "wav": "docs/evidence/audio/round-29/high-10s.wav",
+      "values": {
+        "durationSeconds": 10.309659863945578,
+        "sampleRate": 44100,
+        "peak": 0.6529541015625,
+        "peak_db": -3.70234691473477,
+        "rms": 0.06473475085022842,
+        "rms_db": -23.777250383254675,
+        "short_term_range": 0.47918830949583935,
+        "lufs": -24.672786340693644,
+        "low_share": 0.8674349820082433,
+        "mid_share": 0.09499772556359248,
+        "high_share": 0.03756729242816399
+      },
+      "targets": [
+        {
+          "metric": "low_share",
+          "label": "Energy < 500 Hz",
+          "value": 0.8674349820082433,
+          "min": 0.85,
+          "max": 0.94,
+          "pass": true
+        },
+        {
+          "metric": "high_share",
+          "label": "Energy > 2 kHz",
+          "value": 0.03756729242816399,
+          "min": 0.03,
+          "max": 0.08,
+          "pass": true
+        },
+        {
+          "metric": "lufs",
+          "label": "Integrated loudness (approx K-weighted)",
+          "value": -24.672786340693644,
+          "min": -31.0,
+          "max": -26.0,
+          "pass": false
+        },
+        {
+          "metric": "peak_db",
+          "label": "Sample peak",
+          "value": -3.70234691473477,
+          "min": -60.0,
+          "max": -3.0,
+          "pass": true
+        },
+        {
+          "metric": "short_term_range",
+          "label": "Short-term range",
+          "value": 0.47918830949583935,
+          "min": 18.0,
+          "max": 26.0,
+          "pass": false
+        }
+      ],
+      "passed": 3,
+      "total": 5
+    },
+    "ground-8s": {
+      "wav": "docs/evidence/audio/round-29/ground-8s.wav",
+      "values": {
+        "durationSeconds": 8.266303854875284,
+        "sampleRate": 44100,
+        "peak": 0.664520263671875,
+        "peak_db": -3.5498354256003424,
+        "rms": 0.057960720540432865,
+        "rms_db": -24.737324484448973,
+        "short_term_range": 1.0306348596535138,
+        "lufs": -26.520875223299146,
+        "low_share": 0.9518411708861428,
+        "mid_share": 0.01067110229262637,
+        "high_share": 0.03748772682123098
+      },
+      "targets": [
+        {
+          "metric": "low_share",
+          "label": "Energy < 500 Hz",
+          "value": 0.9518411708861428,
+          "min": 0.85,
+          "max": 0.94,
+          "pass": false
+        },
+        {
+          "metric": "high_share",
+          "label": "Energy > 2 kHz",
+          "value": 0.03748772682123098,
+          "min": 0.03,
+          "max": 0.08,
+          "pass": true
+        },
+        {
+          "metric": "lufs",
+          "label": "Integrated loudness (approx K-weighted)",
+          "value": -26.520875223299146,
+          "min": -31.0,
+          "max": -26.0,
+          "pass": true
+        },
+        {
+          "metric": "peak_db",
+          "label": "Sample peak",
+          "value": -3.5498354256003424,
+          "min": -60.0,
+          "max": -3.0,
+          "pass": true
+        },
+        {
+          "metric": "short_term_range",
+          "label": "Short-term range",
+          "value": 1.0306348596535138,
+          "min": 18.0,
+          "max": 26.0,
+          "pass": false
+        }
+      ],
+      "passed": 3,
+      "total": 5
+    }
+  }
+}

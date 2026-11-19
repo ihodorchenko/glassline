@@ -13,7 +13,15 @@ import { dirname } from "node:path";
 import { setTimeout as delay } from "node:timers/promises";
 
 function parseArgs(argv) {
-  const args = { port: 9222, json: null, highRoute: false, record: null, seconds: 6 };
+  const args = {
+    port: 9222,
+    json: null,
+    highRoute: false,
+    record: null,
+    seconds: 10,
+    cadence: 650,
+    at: "high",
+  };
 
   for (let index = 0; index < argv.length; index += 1) {
     const flag = argv[index];
@@ -30,9 +38,13 @@ function parseArgs(argv) {
       args.highRoute = true;
     } else if (flag === "--seconds") {
       args.seconds = Number(value());
+    } else if (flag === "--cadence") {
+      args.cadence = Number(value());
+    } else if (flag === "--at") {
+      args.at = value();
     } else if (flag === "--help") {
       console.log(
-        "Usage: node tools/capture/audio-probe.mjs [--port 9222] [--json report.json] [--high-route] [--record file.wav] [--seconds 6]",
+        "Usage: node tools/capture/audio-probe.mjs [--port 9222] [--json report.json] [--high-route] [--record file.wav] [--seconds 10] [--cadence 650] [--at high|ground]",
       );
       process.exit(0);
     } else {
@@ -180,7 +192,9 @@ async function main() {
             return { error: "Audio is not running after the trusted click." };
           }
 
-          app.player.teleportTo({ x: 0, y: 6.1, z: -121 });
+          const onGround = ${JSON.stringify(args.at)} === "ground";
+
+          app.player.teleportTo(onGround ? { x: 0, y: 0.93, z: 6 } : { x: 0, y: 6.1, z: -121 });
           app.cameraSystem.resetForRespawn(0);
           await wait(1500);
 
@@ -203,12 +217,12 @@ async function main() {
           sink.connect(context.destination);
 
           const steps = setInterval(() => {
-            audio.playFootstep(0.9, "metal");
-          }, 320);
+            audio.playFootstep(0.9, onGround ? "concrete" : "metal");
+          }, ${Math.max(150, args.cadence)});
 
           await wait(${Math.max(1, args.seconds) * 1000});
           clearInterval(steps);
-          audio.playLanding(10, "metal");
+          audio.playLanding(onGround ? 6 : 10, onGround ? "concrete" : "metal");
           await wait(350);
 
           processor.onaudioprocess = null;
@@ -310,7 +324,7 @@ async function main() {
             await wait(130);
           }
 
-          audio.playLanding(10, "metal");
+          audio.playLanding(onGround ? 6 : 10, onGround ? "concrete" : "metal");
 
           const high = await highOutput;
 
@@ -337,7 +351,7 @@ async function main() {
             await new Promise((resolve) => setTimeout(resolve, 130));
           }
 
-          audio.playLanding(10, "metal");
+          audio.playLanding(onGround ? 6 : 10, onGround ? "concrete" : "metal");
 
           return {
             measurement: await output,

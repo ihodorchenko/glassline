@@ -1918,6 +1918,56 @@ listened to outside the browser.
 3. Balance the high-route loudness against the prologue mix.
 4. Final visual/motion calibration.
 
+---
+
+## Round 29 — normal-cadence high vs ground live recordings (2026-11-19)
+
+### Scope
+
+Round 28's live clip was intentionally dense (steps every 320 ms) and short.
+This round records a cleaner high/ground pair at normal cadence so the mix can be
+judged and compared.
+
+### What changed
+
+- **Probe options:** `--cadence` (default 650 ms) and `--at high|ground`; the
+  recording selects metal/concrete footsteps and landing intensity, and teleports
+  to the high finish roof or the start roof.
+- **Evidence:** high roof 10.31 s and ground 8.27 s, both 44.1 kHz stereo PCM.
+- **Measured:** high RMS −23.78 dBFS / LUFS −24.67 / low share 0.867; ground
+  RMS −24.74 / LUFS −26.52 / low share 0.952. High is ~1.0 dB louder in RMS and
+  has less low-band dominance.
+- **No game/mix/route changes**; tooling/docs only.
+
+### Verification
+
+- `npm run validate`: typecheck, Biome, **275 tests in 36 files**, build.
+- Both WAVs valid PCM; probe reports have no errors.
+- Prologue/offline metrics unchanged.
+
+### Evidence
+
+- [`high-10s.wav`](evidence/audio/round-29/high-10s.wav)
+- [`ground-8s.wav`](evidence/audio/round-29/ground-8s.wav)
+- [`live-waveforms.png`](evidence/audio/round-29/live-waveforms.png)
+- [`metrics.json`](evidence/audio/round-29/metrics.json)
+- [`README.md`](evidence/audio/round-29/README.md)
+
+### Honest gaps
+
+- Footsteps/landing are synthetic triggers; the clips are not continuous player
+  traversal.
+- No human listening verdict; clips are short and still dense relative to normal
+  play.
+- Bypass tradeoff, clipped highlights, and final motion/menu calibration remain.
+
+### Next
+
+1. Record a continuous full-route traversal at normal play cadence.
+2. Human listening verdict on high/ground pair.
+3. Balance high-route loudness/wind against the prologue mix if needed.
+4. Final visual/motion calibration.
+
 ## Round log
 
 | Round | Date | Focus | Outcome |

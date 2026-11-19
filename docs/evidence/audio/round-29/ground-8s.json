@@ -1,0 +1,35 @@
+{
+  "profile": "live-high-route-recording",
+  "sampleRate": 44100,
+  "durationSeconds": 8.266303854875284,
+  "peak": 0.6645672917366028,
+  "rms": 0.05797031452717844,
+  "snapshot": {
+    "state": "running",
+    "buses": {
+      "environment": 0.800000011920929,
+      "movement": 0.8999999761581421,
+      "parkour": 1,
+      "ui": 0.800000011920929,
+      "music": 0.25239428877830505,
+      "radio": 0.800000011920929
+    },
+    "ambienceActive": true,
+    "ambienceSources": 3,
+    "musicActive": true,
+    "slideActive": false,
+    "wallRunActive": false,
+    "activeVoices": 2,
+    "paused": false,
+    "profile": "prologue",
+    "surface": "concrete",
+    "windGain": 0.012959218584001064,
+    "windCutoff": 250.1177520751953
+  },
+  "position": {
+    "x": 0,
+    "y": 0.8949999809265137,
+    "z": 6
+  },
+  "errors": []
+}
