@@ -31,6 +31,15 @@
 > hard highlight clip was replaced by a gentler shoulder; the remaining
 > near-white/highlight gap is assigned to real lighting and content.
 
+> **W0 execution note (2026-11-19):** the measurement harness was rebuilt on
+> Playwright (Edge channel), the six fixed Prologue capture points are
+> deterministic (byte-identical PNGs across independent loads), the reference
+> bands were recomputed with our own script, and the baseline report with real
+> numbers plus a blind art-director verdict landed on `feat/art-audio-level`.
+> See [`reports/BASELINE.md`](reports/BASELINE.md),
+> [`reports/BLIND_REVIEW_W0.md`](reports/BLIND_REVIEW_W0.md) and
+> [`reports/DECISIONS.md`](reports/DECISIONS.md). Nothing is merged to `main`.
+
 **Status:** Draft for owner approval (W0–W2 partially executed, W4 foundation landed)
 **Date:** 2026-11-19
 **Scope:** Prologue route and Training arenas, renderer/post-processing, materials and city content, audio mix.
