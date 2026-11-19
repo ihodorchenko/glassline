@@ -127,16 +127,18 @@ function addParapetCoping(builder: CityBuilder): void {
 
 function addRoofExpansionJoints(builder: CityBuilder): void {
   // Flush metal expansion joints break up the roof panels at human scale.
+  // Brushed steel reads as a seam; the old dark-metal strips read as black
+  // holes in the deck.
   for (const z of [-16, -8, 0, 8, 16]) {
     builder.box(-3.2, 0.018, z, 15.6, 0.024, 0.05, {
-      material: "dark-metal",
+      material: "metal",
       castShadow: false,
     });
   }
 
   for (const z of [-16, -8, 0, 8, 16]) {
     builder.box(10, 0.018, z, 2, 0.024, 0.05, {
-      material: "dark-metal",
+      material: "metal",
       castShadow: false,
     });
   }
@@ -516,8 +518,6 @@ function addFinishArea(builder: CityBuilder, z: number, deckY: number): void {
   builder.box(0, deckY + 4.2, z, 7.9, 0.26, 0.38, { material: "white" });
   builder.box(0, deckY + 4.02, z, 6.2, 0.08, 0.08, {
     material: "red",
-    emissive: 0xc0262d,
-    emissiveIntensity: 0.7,
   });
   builder.box(0, deckY + 0.016, z + 0.5, 5.2, 0.02, 0.16, {
     material: "red",
@@ -530,7 +530,7 @@ function addFinishArea(builder: CityBuilder, z: number, deckY: number): void {
     material: "cool-light",
     rotationY: -0.4,
     emissive: 0xbfe6ff,
-    emissiveIntensity: 0.8,
+    emissiveIntensity: 0.2,
   });
   builder.box(2.5, deckY + 1.55, z + 1.8, 0.78, 0.08, 0.14, {
     material: "dark-metal",
@@ -539,7 +539,7 @@ function addFinishArea(builder: CityBuilder, z: number, deckY: number): void {
   builder.box(2.5, deckY + 0.62, z + 2.12, 0.5, 0.42, 0.04, {
     material: "cool-light",
     emissive: 0xbfe6ff,
-    emissiveIntensity: 0.9,
+    emissiveIntensity: 0.2,
   });
 }
 
@@ -556,13 +556,9 @@ function addCheckpointBeacons(builder: CityBuilder): void {
     for (const side of [-1, 1]) {
       builder.box(side * offset, deckY + 0.38, z, 0.06, 0.76, 0.06, {
         material: "red",
-        emissive: 0xc0262d,
-        emissiveIntensity: 0.3,
       });
       builder.box(side * offset, deckY + 0.78, z, 0.22, 0.04, 0.22, {
         material: "red",
-        emissive: 0xc0262d,
-        emissiveIntensity: 0.25,
       });
     }
   }
@@ -695,7 +691,7 @@ function addBuilding(
         const along = frame.start + resolvedBay * (bay + 0.5);
         const y = baseY + Math.floor(random() * floors) * floorHeight + 1.8;
 
-        addFaceBox(builder, frame, along, y, resolvedBay * 0.72, 1.8, 0.1, "warm-light", 0.05);
+        addFaceBox(builder, frame, along, y, resolvedBay * 0.72, 1.8, 0.1, "glass", 0.05);
       }
     }
   } else if (style === "punched") {
@@ -727,7 +723,7 @@ function addBuilding(
           resolvedBay * widthRatio,
           2.1,
           0.12,
-          random() > 0.93 ? "warm-light" : "glass",
+          random() > 0.93 ? "glass-far" : "glass",
           0.02,
         );
       }
@@ -830,7 +826,7 @@ function addWestTowerWall(builder: CityBuilder): void {
   builder.box(-7.6, 5.5, -4.6, 0.04, 0.14, 2.9, { material: "red" });
   builder.plane(-7.54, 7.2, -4.6, 3.0, 3.0, Math.PI / 2, {
     text: "RUN",
-    background: 0xdd5d1b,
+    background: 0xf08a2a,
     textColor: 0xfff6ea,
     accentColor: 0x111418,
   });
@@ -865,11 +861,17 @@ function addWestTowerWall(builder: CityBuilder): void {
     builder.box(-7.55, 0.55, z, 0.05, 1.05, 0.05, { material: "metal" });
   }
 
-  // Base plinth and service vents along the wall.
+  // Base plinth and steel louver vents along the wall. The vents are a dark
+  // recess plus three light steel slats, so they read as a grille in the glass
+  // wall rather than a flat black void panel.
   builder.box(-7.9, 0.42, -8, 0.28, 0.84, 35.8, { material: "concrete" });
 
   for (const z of [4.5, -3.5, -10.5, -19]) {
-    builder.box(-7.72, 0.82, z, 0.12, 0.5, 1.8, { material: "dark-metal" });
+    builder.box(-7.76, 0.82, z, 0.06, 0.5, 1.78, { material: "dark-metal" });
+
+    for (const y of [0.63, 0.82, 1.01]) {
+      builder.box(-7.71, y, z, 0.14, 0.055, 1.78, { material: "metal" });
+    }
   }
 
   // Tower roof above the glass wall.
@@ -1025,7 +1027,7 @@ function addOverheadBridge(builder: CityBuilder): void {
     builder.box(x, 10.48, -6, 0.5, 0.08, 0.08, {
       material: "cool-light",
       emissive: 0xcfe8ff,
-      emissiveIntensity: 0.7,
+      emissiveIntensity: 0.25,
       castShadow: false,
     });
   }
@@ -1041,7 +1043,7 @@ function addOverheadBridge(builder: CityBuilder): void {
   ] as const) {
     builder.plane(x, 9.45, -5.55, 1.3, 1.9, 0, {
       text,
-      background: 0xb3212a,
+      background: 0xd52e36,
       textColor: 0xf8f2e8,
       accentColor: 0x14191d,
     });
@@ -1052,15 +1054,11 @@ function addOverheadBridge(builder: CityBuilder): void {
   }
   builder.box(0, 10.26, -3.74, 27, 0.12, 0.1, {
     material: "red",
-    emissive: 0xc0262d,
-    emissiveIntensity: 0.3,
     castShadow: false,
   });
 
   builder.box(0, 11.62, -3.72, 27, 0.12, 0.05, {
     material: "red",
-    emissive: 0xc0262d,
-    emissiveIntensity: 0.4,
     castShadow: false,
   });
 }
@@ -1082,7 +1080,7 @@ function addSkybridge(builder: CityBuilder): void {
     castShadow: false,
     receiveShadow: false,
   });
-  builder.box(0, 23.5, -118, 58.4, 0.18, 3.7, { material: "dark-metal" });
+  builder.box(0, 23.5, -118, 58.4, 0.18, 0.6, { material: "dark-metal" });
 }
 
 function addCrane(builder: CityBuilder): void {
@@ -1203,7 +1201,7 @@ function addLowerZone(builder: CityBuilder): void {
     builder.box(x, 0.35, -24.8, 0.5, 0.18, 0.5, {
       material: "cool-light",
       emissive: 0xcfe8ff,
-      emissiveIntensity: 0.7,
+      emissiveIntensity: 0.25,
     });
   }
 
@@ -1250,7 +1248,7 @@ function addLowerZone(builder: CityBuilder): void {
       builder.box(side * 1.92, -0.2, z, 0.12, 0.12, 0.12, {
         material: "red",
         emissive: 0xc0262d,
-        emissiveIntensity: 0.5,
+        emissiveIntensity: 0.08,
       });
     }
   }
@@ -1285,12 +1283,22 @@ function addLowerZone(builder: CityBuilder): void {
     });
   }
 
+  // Continuous route line: one unbroken 0.15 m red paint stripe along the deck
+  // centreline from the skybridge landing (z=-42) to the final-beam gap
+  // (z=-61.9). Decorative only: no collider, section or trigger; the route red
+  // comes from albedo, so there is no emissive.
+  builder.box(0, -0.885, -51.95, 0.15, 0.02, 19.9, {
+    material: "red",
+    castShadow: false,
+    receiveShadow: false,
+  });
+
   for (const x of [-7.8, 7.8]) {
     builder.box(x, 1.6, -61.2, 0.14, 5.0, 0.14, { material: "metal" });
     builder.box(x, 4.1, -61.2, 0.4, 0.2, 0.4, {
       material: "cool-light",
       emissive: 0xcfe8ff,
-      emissiveIntensity: 0.8,
+      emissiveIntensity: 0.25,
     });
   }
 
@@ -1375,7 +1383,7 @@ function addFinaleScaffold(builder: CityBuilder): void {
     builder.box(-2.3, 5.0, z, 0.1, 0.1, 0.1, {
       material: "cool-light",
       emissive: 0xcfe8ff,
-      emissiveIntensity: 0.8,
+      emissiveIntensity: 0.25,
     });
   }
 
@@ -1391,7 +1399,7 @@ function addFinaleScaffold(builder: CityBuilder): void {
   builder.box(-6.6, 6.2, -126.8, 0.16, 2.0, 0.16, {
     material: "cool-light",
     emissive: 0xcfe8ff,
-    emissiveIntensity: 0.8,
+    emissiveIntensity: 0.25,
   });
 
   // A low city roof under the tower, so the climb has depth.
@@ -1437,7 +1445,7 @@ function addCatwalk(builder: CityBuilder): void {
     builder.box(x, 5.5, -126.8, 1.2, 0.06, 0.06, {
       material: "cool-light",
       emissive: 0xcfe8ff,
-      emissiveIntensity: 0.7,
+      emissiveIntensity: 0.25,
       castShadow: false,
     });
   }
@@ -1470,8 +1478,6 @@ function addCatwalk(builder: CityBuilder): void {
   // visible landmark.
   builder.cylinder(0, 2.02, -98.7, 2.1, 0.02, {
     material: "red",
-    emissive: 0xc0262d,
-    emissiveIntensity: 0.35,
     castShadow: false,
     receiveShadow: false,
   });
@@ -1481,7 +1487,7 @@ function addCatwalk(builder: CityBuilder): void {
     builder.box(side * 1.55, 3.22, -98.7, 0.24, 0.08, 0.24, {
       material: "cool-light",
       emissive: 0xcfe8ff,
-      emissiveIntensity: 0.8,
+      emissiveIntensity: 0.25,
     });
   }
 
@@ -1521,8 +1527,6 @@ function addCatwalk(builder: CityBuilder): void {
 
   builder.box(47.2, 5.225, -132.0, 1.2, 0.02, 0.6, {
     material: "red",
-    emissive: 0xc0262d,
-    emissiveIntensity: 0.4,
     castShadow: false,
     receiveShadow: false,
   });
@@ -1532,8 +1536,6 @@ function addCatwalk(builder: CityBuilder): void {
   for (const x of [39, 34]) {
     builder.box(x + 0.27, 5.45, -130.8, 0.03, 0.36, 3.0, {
       material: "red",
-      emissive: 0xc0262d,
-      emissiveIntensity: 0.35,
       castShadow: false,
     });
   }
@@ -1555,8 +1557,6 @@ function addCatwalk(builder: CityBuilder): void {
   for (const side of [-1, 1]) {
     builder.box(11.4 + side * 0.42, 5.218, -131.9, 0.74, 0.02, 0.16, {
       material: "red",
-      emissive: 0xc0262d,
-      emissiveIntensity: 0.3,
       rotationY: side * 0.52,
       castShadow: false,
       receiveShadow: false,
@@ -1578,16 +1578,12 @@ function addCatwalk(builder: CityBuilder): void {
   }
   builder.box(34, 5.215, -132.32, 8.0, 0.02, 0.14, {
     material: "red",
-    emissive: 0xc0262d,
-    emissiveIntensity: 0.25,
     castShadow: false,
     receiveShadow: false,
   });
   for (const side of [-1, 1]) {
     builder.box(34 + side * 0.42, 5.218, -131.9, 0.74, 0.02, 0.16, {
       material: "red",
-      emissive: 0xc0262d,
-      emissiveIntensity: 0.3,
       rotationY: side * 0.52,
       castShadow: false,
       receiveShadow: false,
@@ -1626,7 +1622,7 @@ function addCatwalk(builder: CityBuilder): void {
   builder.box(50, 97.3, -300, 0.5, 2.0, 0.5, {
     material: "red",
     emissive: 0xc0262d,
-    emissiveIntensity: 0.8,
+    emissiveIntensity: 0.1,
     castShadow: false,
   });
 
@@ -1660,8 +1656,6 @@ function addCatwalk(builder: CityBuilder): void {
   for (const x of [31, 37]) {
     builder.box(x, 4.815, -135.0, 1.4, 0.02, 0.44, {
       material: "red",
-      emissive: 0xc0262d,
-      emissiveIntensity: 0.35,
       castShadow: false,
       receiveShadow: false,
     });
@@ -1673,7 +1667,7 @@ function addCatwalk(builder: CityBuilder): void {
     builder.box(x, 5.5, -136.7, 0.18, 0.18, 0.18, {
       material: "cool-light",
       emissive: 0xcfe8ff,
-      emissiveIntensity: 0.7,
+      emissiveIntensity: 0.25,
       castShadow: false,
     });
   }
@@ -1685,7 +1679,7 @@ function addHighRoofDressing(builder: CityBuilder): void {
   builder.box(-6.6, 6.2, -121.4, 0.2, 0.5, 0.2, {
     material: "red",
     emissive: 0xc0262d,
-    emissiveIntensity: 0.4,
+    emissiveIntensity: 0.1,
   });
 
   for (const [x, z] of [
@@ -1701,7 +1695,7 @@ function addHighRoofDressing(builder: CityBuilder): void {
   builder.box(8.1, 8.6, -127.4, 0.4, 0.24, 0.24, {
     material: "cool-light",
     emissive: 0xcfe8ff,
-    emissiveIntensity: 0.8,
+    emissiveIntensity: 0.25,
   });
 
   builder.box(-6.9, 5.45, -127.8, 2.8, 0.5, 1.8, { material: "dark-metal" });
@@ -1738,7 +1732,7 @@ function addHighRoofDressing(builder: CityBuilder): void {
     builder.box(x, 5.36, z, 0.22, 0.3, 0.22, {
       material: "cool-light",
       emissive: 0xcfe8ff,
-      emissiveIntensity: 0.8,
+      emissiveIntensity: 0.25,
     });
   }
 
@@ -1799,25 +1793,25 @@ function addFarSkyline(builder: CityBuilder): void {
 
         if (face === 0) {
           builder.box(x + width / 2 + 0.05, y, z, 0.1, 1.4, depth * 0.8, {
-            material: random() > 0.7 ? "warm-light" : "glass-far",
+            material: random() > 0.7 ? "glass" : "glass-far",
             castShadow: false,
             receiveShadow: false,
           });
         } else if (face === 1) {
           builder.box(x - width / 2 - 0.05, y, z, 0.1, 1.4, depth * 0.8, {
-            material: random() > 0.7 ? "warm-light" : "glass-far",
+            material: random() > 0.7 ? "glass" : "glass-far",
             castShadow: false,
             receiveShadow: false,
           });
         } else if (face === 2) {
           builder.box(x, y, z + depth / 2 + 0.05, width * 0.8, 1.4, 0.1, {
-            material: random() > 0.7 ? "warm-light" : "glass-far",
+            material: random() > 0.7 ? "glass" : "glass-far",
             castShadow: false,
             receiveShadow: false,
           });
         } else {
           builder.box(x, y, z - depth / 2 - 0.05, width * 0.8, 1.4, 0.1, {
-            material: random() > 0.7 ? "warm-light" : "glass-far",
+            material: random() > 0.7 ? "glass" : "glass-far",
             castShadow: false,
             receiveShadow: false,
           });

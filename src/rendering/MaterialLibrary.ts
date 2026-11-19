@@ -78,71 +78,72 @@ function createWaterAlphaMap(): THREE.Texture {
 
 const MATERIAL_SPECS: Record<MaterialKey, MaterialSpec> = {
   white: {
-    color: 0xf4f1e9,
-    roughness: 0.74,
+    color: 0xf8f8f8,
+    roughness: 0.62,
     metalness: 0.02,
     uvScale: 0.24,
     texture: "plaster",
   },
   concrete: {
-    color: 0xe1ded5,
-    roughness: 0.84,
-    metalness: 0.02,
+    color: 0xc7c9c7,
+    roughness: 0.9,
+    metalness: 0,
     uvScale: 0.2,
     texture: "concrete",
   },
   roof: {
-    color: 0xf3f0e7,
-    roughness: 0.9,
-    metalness: 0.03,
+    color: 0xf1f1ed,
+    roughness: 0.6,
+    metalness: 0,
     uvScale: 0.13,
     texture: "roof",
   },
   facade: {
-    color: 0xe8e5dd,
-    roughness: 0.68,
+    color: 0xd8d6d0,
+    roughness: 0.7,
     metalness: 0.05,
     uvScale: 0.16,
     texture: "facade",
   },
   glass: {
-    color: 0x6b879b,
-    roughness: 0.14,
-    metalness: 0.72,
+    color: 0x1a2530,
+    roughness: 0.13,
+    metalness: 0.6,
+    uvScale: 0.4,
+    envMapIntensity: 1.7,
+  },
+  "glass-far": {
+    color: 0x283038,
+    roughness: 0.2,
+    metalness: 0.5,
     uvScale: 0.4,
     envMapIntensity: 1.35,
   },
-  "glass-far": {
-    color: 0x7f9aab,
-    roughness: 0.24,
-    metalness: 0.5,
-    uvScale: 0.4,
-    envMapIntensity: 0.95,
-  },
   metal: {
-    color: 0xb4b8ba,
-    roughness: 0.45,
-    metalness: 0.58,
+    color: 0x747a7d,
+    roughness: 0.4,
+    metalness: 0.85,
     uvScale: 0.34,
     texture: "metal",
     envMapIntensity: 1.05,
   },
   "dark-metal": {
-    color: 0x5b6268,
-    roughness: 0.55,
-    metalness: 0.42,
+    color: 0x33393d,
+    roughness: 0.5,
+    metalness: 0.8,
     uvScale: 0.3,
     texture: "metal",
+    envMapIntensity: 0.85,
   },
   red: {
-    color: 0xc0262d,
-    roughness: 0.48,
-    metalness: 0.08,
+    color: 0xd52e36,
+    roughness: 0.45,
+    metalness: 0,
     uvScale: 0.3,
     texture: "red",
   },
   orange: {
-    color: 0xdd5d1b,
+    color: 0xf08a2a,
     roughness: 0.62,
     metalness: 0.04,
     uvScale: 0.3,
@@ -177,7 +178,7 @@ const MATERIAL_SPECS: Record<MaterialKey, MaterialSpec> = {
     emissiveIntensity: 0.18,
   },
   foliage: {
-    color: 0x4f6b45,
+    color: 0x4a5a40,
     roughness: 0.96,
     metalness: 0,
     uvScale: 0.28,
@@ -219,9 +220,9 @@ const MATERIAL_SPECS: Record<MaterialKey, MaterialSpec> = {
 const TEXTURE_SIZE = 512;
 
 const TEXTURE_BUMP_SCALE: Record<TextureKind, number> = {
-  plaster: 0.16,
+  plaster: 0.08,
   concrete: 0.34,
-  roof: 0.26,
+  roof: 0.4,
   facade: 0.17,
   metal: 0.1,
   asphalt: 0.36,
@@ -466,45 +467,69 @@ function paintTexture(kind: TextureKind): HTMLCanvasElement {
 
   switch (kind) {
     case "plaster": {
-      fillBase(context, "#e9e6de");
-      addMottle(context, random, 90, 0.05, "#ffffff", "#b9b5aa", 64);
-      addCracks(context, random, 9, "#8f8a80", 0.16);
-      addSpeckle(context, random, 2400, ["#ffffff", "#c9c5bb", "#a8a49a"], 1.2);
+      // Neutral plaster: the white albedo lives in MATERIAL_SPECS, the map only
+      // carries grain, cracks and a faint panel tint, so walls stay #F8F8F8
+      // instead of the warm paper tone of W0.
+      fillBase(context, "#f9f9f7");
+      addMottle(context, random, 90, 0.05, "#ffffff", "#e0e0dd", 64);
+      addCracks(context, random, 9, "#b4b4b0", 0.1);
+      addSpeckle(context, random, 2000, ["#ffffff", "#e8e8e5", "#d6d6d2"], 1.2);
       break;
     }
     case "concrete": {
-      fillBase(context, "#d7d4cb");
-      addMottle(context, random, 110, 0.07, "#f4f1e9", "#a8a49a", 80);
-      addCracks(context, random, 16, "#77736a", 0.2);
-      addSpeckle(context, random, 4200, ["#f6f2ea", "#b7b3a8", "#8d897f"], 1.4);
+      fillBase(context, "#f4f5f4");
+      addMottle(context, random, 110, 0.06, "#ffffff", "#c2c7c8", 80);
+      // Faint formwork joints read as cast concrete without darkening the mass.
+      drawSeams(context, 128, "#cfd3d4", 1.4, 0.24, 2);
+      drawSeams(context, 128, "#ffffff", 1, 0.16, -2);
+      addCracks(context, random, 16, "#9a9fa0", 0.18);
+      addSpeckle(context, random, 4200, ["#ffffff", "#dcdfe0", "#b9bec0"], 1.4);
+
+      for (let index = 0; index < 20; index += 1) {
+        const x = random() * TEXTURE_SIZE;
+        const y = random() * TEXTURE_SIZE;
+        const radius = 30 + random() * 80;
+        const gradient = context.createRadialGradient(x, y, 0, x, y, radius);
+
+        gradient.addColorStop(0, `rgba(168, 173, 174, ${0.05 + random() * 0.09})`);
+        gradient.addColorStop(1, "rgba(168, 173, 174, 0)");
+        context.fillStyle = gradient;
+        context.beginPath();
+        context.arc(x, y, radius, 0, Math.PI * 2);
+        context.fill();
+      }
       break;
     }
     case "roof": {
-      fillBase(context, "#ddd9cf");
-      addMottle(context, random, 110, 0.09, "#fdfaf2", "#a8a49a", 120);
-      addSpeckle(context, random, 7000, ["#fbf7ee", "#bdb8ad", "#8b877e"], 1.4);
+      fillBase(context, "#f8f8f5");
+      addMottle(context, random, 90, 0.06, "#ffffff", "#eaeae6", 110);
+      addSpeckle(context, random, 1600, ["#fbfbf9", "#f0f0ed", "#e6e6e2"], 1.4);
 
-      for (let y = 0; y < TEXTURE_SIZE; y += 96) {
-        for (let x = 0; x < TEXTURE_SIZE; x += 96) {
-          context.fillStyle = random() > 0.5 ? "#f2eee5" : "#cac6bc";
-          context.globalAlpha = 0.012 + random() * 0.028;
-          context.fillRect(x + 1, y + 1, 94, 94);
+      // Painted sheet panels aligned to the seam grid: 64 px at the roof UV
+      // scale is the 0.6-1.2 m seam language from the art brief.
+      for (let y = 32; y < TEXTURE_SIZE; y += 64) {
+        for (let x = 32; x < TEXTURE_SIZE; x += 64) {
+          context.fillStyle = random() > 0.5 ? "#ffffff" : "#deded9";
+          context.globalAlpha = 0.012 + random() * 0.03;
+          context.fillRect(x + 1, y + 1, 62, 62);
         }
       }
 
       context.globalAlpha = 1;
-      drawSeams(context, 96, "#f8f4ea", 1, 0.22, 1.4);
-      drawSeams(context, 96, "#7d7970", 1.4, 0.52);
-      addCracks(context, random, 10, "#6f6b62", 0.14);
+      // Raised seam contrast (dark groove + mid lip) plus a stronger bump so
+      // the near-white deck keeps edge detail instead of reading as chalk.
+      drawSeams(context, 64, "#b0b0ab", 1.9, 0.66, -32);
+      drawSeams(context, 64, "#dcdcd7", 1.1, 0.55, -29.9);
+      addCracks(context, random, 10, "#948f89", 0.1);
 
-      for (let index = 0; index < 36; index += 1) {
+      for (let index = 0; index < 30; index += 1) {
         const x = random() * TEXTURE_SIZE;
         const y = random() * TEXTURE_SIZE;
         const radius = 8 + random() * 34;
         const gradient = context.createRadialGradient(x, y, 0, x, y, radius);
 
-        gradient.addColorStop(0, `rgba(92, 88, 79, ${0.04 + random() * 0.08})`);
-        gradient.addColorStop(1, "rgba(92, 88, 79, 0)");
+        gradient.addColorStop(0, `rgba(118, 117, 112, ${0.05 + random() * 0.08})`);
+        gradient.addColorStop(1, "rgba(118, 117, 112, 0)");
         context.fillStyle = gradient;
         context.beginPath();
         context.arc(x, y, radius, 0, Math.PI * 2);
@@ -513,31 +538,33 @@ function paintTexture(kind: TextureKind): HTMLCanvasElement {
       break;
     }
     case "facade": {
-      fillBase(context, "#dedbd3");
-      addMottle(context, random, 60, 0.04, "#ffffff", "#aaa69c", 90);
-      drawSeams(context, 170, "#96928a", 2, 0.32);
-      drawSeams(context, 85, "#b9b5aa", 1, 0.14);
-      addCracks(context, random, 7, "#8f8b82", 0.12);
+      fillBase(context, "#f6f5f3");
+      addMottle(context, random, 60, 0.04, "#ffffff", "#cfcfcb", 90);
+      drawSeams(context, 170, "#b9b8b4", 2, 0.28);
+      drawSeams(context, 85, "#d7d6d2", 1, 0.16);
+      addCracks(context, random, 7, "#a4a39f", 0.1);
 
       for (let index = 0; index < 26; index += 1) {
         const x = random() * TEXTURE_SIZE;
         const y = random() * TEXTURE_SIZE;
         const length = 30 + random() * 120;
 
-        context.globalAlpha = 0.03 + random() * 0.05;
-        context.fillStyle = "#6f6b62";
+        context.globalAlpha = 0.02 + random() * 0.04;
+        context.fillStyle = "#90908c";
         context.fillRect(x, y, 1 + random() * 2, length);
       }
 
       context.globalAlpha = 1;
-      addSpeckle(context, random, 2200, ["#ffffff", "#c6c2b8", "#9c988e"], 1);
+      addSpeckle(context, random, 2200, ["#ffffff", "#deddda", "#cbcac6"], 1);
       break;
     }
     case "metal": {
-      fillBase(context, "#a9adaf");
+      // Bright neutral base so the steel albedo comes from MATERIAL_SPECS; the
+      // map only carries the directional brush and sparse rust.
+      fillBase(context, "#edeff0");
       for (let index = 0; index < 2600; index += 1) {
-        context.strokeStyle = random() > 0.5 ? "#c7cbcd" : "#85898b";
-        context.globalAlpha = 0.08 + random() * 0.16;
+        context.strokeStyle = random() > 0.5 ? "#fbfdfd" : "#c8cccd";
+        context.globalAlpha = 0.06 + random() * 0.14;
         context.lineWidth = 0.6 + random();
         const x = random() * TEXTURE_SIZE;
         const length = 12 + random() * 90;
@@ -547,7 +574,7 @@ function paintTexture(kind: TextureKind): HTMLCanvasElement {
         context.stroke();
       }
       context.globalAlpha = 1;
-      addRust(context, random, 52);
+      addRust(context, random, 26);
       break;
     }
     case "stain": {
@@ -573,9 +600,27 @@ function paintTexture(kind: TextureKind): HTMLCanvasElement {
       break;
     }
     case "red": {
-      fillBase(context, "#c2262c");
-      addMottle(context, random, 40, 0.08, "#e4555a", "#7d151a", 70);
-      addSpeckle(context, random, 1800, ["#e0555a", "#8e171c"], 1.2);
+      // Neutral wear mask, not a red gradient: the saturated route red is the
+      // material colour (#D52E36), and wear darkens <=15 % of the surface
+      // locally instead of fading the whole panel towards salmon in the light.
+      fillBase(context, "#f5f5f5");
+
+      for (let index = 0; index < 16; index += 1) {
+        const x = random() * TEXTURE_SIZE;
+        const y = random() * TEXTURE_SIZE;
+        const radius = 14 + random() * 26;
+        const gradient = context.createRadialGradient(x, y, 0, x, y, radius);
+
+        gradient.addColorStop(0, `rgba(196, 196, 192, ${0.16 + random() * 0.2})`);
+        gradient.addColorStop(0.7, `rgba(196, 196, 192, ${0.06 + random() * 0.1})`);
+        gradient.addColorStop(1, "rgba(196, 196, 192, 0)");
+        context.fillStyle = gradient;
+        context.beginPath();
+        context.arc(x, y, radius, 0, Math.PI * 2);
+        context.fill();
+      }
+
+      addSpeckle(context, random, 900, ["#d0d0cc", "#ffffff"], 1.1);
       break;
     }
   }
@@ -623,8 +668,8 @@ function applyTriplanar(
     shader.uniforms.uTriplanarScale = { value: scale };
     shader.uniforms.uBumpScale = { value: bumpScale };
     shader.uniforms.uDetailScale = { value: 3.3 };
-    shader.uniforms.uDetailMix = { value: 0.16 };
-    shader.uniforms.uParallaxDepth = { value: 0.06 };
+    shader.uniforms.uDetailMix = { value: 0.12 };
+    shader.uniforms.uParallaxDepth = { value: 0.03 };
 
     shader.vertexShader = shader.vertexShader
       .replace("#include <common>", `#include <common>\n${TRIPLANAR_PATCH}`)
@@ -664,7 +709,9 @@ function applyTriplanar(
         "#include <roughnessmap_fragment>",
         `#include <roughnessmap_fragment>
         #if defined( USE_MAP ) && ! defined( USE_ROUGHNESSMAP )
-          roughnessFactor *= mix(0.84, 1.12, triplanarLuma);
+          // Keep the authored roughness (paint is 0.6, concrete 0.9): the map
+          // only adds +-6 % of local variation, not a +-14 % bias.
+          roughnessFactor *= mix(0.94, 1.06, triplanarLuma);
         #endif`,
       )
       .replace(
@@ -699,6 +746,57 @@ function applyTriplanar(
   material.customProgramCacheKey = () => "glassline-triplanar";
 }
 
+const GLASS_SHEEN_TINT = 0x3a4a56;
+
+/**
+ * Grazing sheen for the dark glass masses.
+ *
+ * With `metalness` 0.6 the specular lobe is tinted by the dark albedo, so a
+ * large facade seen close to normal reads as flat near-black instead of a
+ * reflective mass. This adds a view-dependent blue-grey term to the indirect
+ * specular (pure ALU: one dot, one pow, one add in the glass fragment shaders;
+ * no extra texture fetch, so the `low` tier cost is unchanged). At normal
+ * incidence it is ~0, at grazing angles it restores the sky-gradient sheen
+ * without brightening the albedo.
+ */
+function applyGlassSheen(
+  material: THREE.MeshStandardMaterial,
+  tint: number,
+  strength: number,
+  base: number,
+): void {
+  const linearTint = new THREE.Color(tint);
+
+  material.onBeforeCompile = (shader) => {
+    shader.uniforms.uGlassSheenTint = {
+      value: new THREE.Vector3(linearTint.r, linearTint.g, linearTint.b),
+    };
+    shader.uniforms.uGlassSheenStrength = { value: strength };
+    shader.uniforms.uGlassSheenBase = { value: base };
+
+    shader.fragmentShader = shader.fragmentShader
+      .replace(
+        "#include <common>",
+        `#include <common>
+        uniform vec3 uGlassSheenTint;
+        uniform float uGlassSheenStrength;
+        uniform float uGlassSheenBase;`,
+      )
+      .replace(
+        "#include <aomap_fragment>",
+        `#include <aomap_fragment>
+        {
+          float glassNdotV = clamp(dot(normalize(vViewPosition), normal), 0.0, 1.0);
+          float glassGrazing = min(1.0 - glassNdotV, 0.62);
+          float glassSheen = uGlassSheenBase
+            + (1.0 - uGlassSheenBase) * pow(glassGrazing, 1.4);
+          reflectedLight.indirectSpecular += uGlassSheenTint * glassSheen * uGlassSheenStrength;
+        }`,
+      );
+  };
+  material.customProgramCacheKey = () => "glassline-glass-sheen";
+}
+
 /**
  * Shared PBR material set for level surfaces and decorations. All textures are
  * generated at runtime, so the game ships no image assets.
@@ -726,6 +824,16 @@ export class MaterialLibrary implements Disposable {
       depthWrite: spec.depthWrite ?? true,
       opacity: spec.opacity ?? 1,
     });
+
+    if (key === "glass" || key === "glass-far") {
+      // Env sheen is a pure fragment-shader term; see applyGlassSheen.
+      applyGlassSheen(
+        material,
+        GLASS_SHEEN_TINT,
+        key === "glass" ? 1.35 : 1.45,
+        key === "glass" ? 0.1 : 0.2,
+      );
+    }
 
     if (key === "water" && typeof document !== "undefined") {
       const alphaMap = createWaterAlphaMap();
@@ -770,8 +878,9 @@ export class MaterialLibrary implements Disposable {
 
     const material = new THREE.MeshStandardMaterial({
       color: 0xffffff,
-      roughness: 0.62,
-      metalness: 0.03,
+      // Matte print: the canvas albedo must carry the sign, not a glossy sheen.
+      roughness: 0.78,
+      metalness: 0,
       emissive: 0xffffff,
       emissiveIntensity: 0.12,
     });

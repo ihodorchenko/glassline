@@ -35,8 +35,6 @@ function skyline(
       position: { x, y: height / 2 - 0.1, z },
       size: { x: width, y: height, z: depth },
       color,
-      emissive: color,
-      emissiveIntensity: 0.06,
     });
 
     const inwardX = x - Math.sign(x) * (width / 2 + 0.03);
@@ -101,8 +99,6 @@ function gate(
       position: { x: 0, y: 3.86, z: z - 0.17 },
       size: { x: 5.2, y: 0.06, z: 0.04 },
       color: accent,
-      emissive: accent,
-      emissiveIntensity: 0.7,
     },
   ];
 }
@@ -126,23 +122,31 @@ export const TRAINING_ENVIRONMENT: LevelEnvironmentDefinition = {
   sunElevation: 0.82,
 };
 
-/** Prologue atmosphere: clear high-summer daylight over the city. */
+/**
+ * Prologue atmosphere: neutral high-summer daylight over the city.
+ * Palette/light anchors from docs/reports/ART_BRIEF.md §2: cobalt zenith
+ * #2050D8, horizon haze #E8F0F8/#DCEAF6, neutral sun (#FFF8F0), sun
+ * elevation 59° (shadows 0.5–0.8× object height), low hemisphere fill so
+ * shadows stay cool and readable. sunAzimuth 2.25 rad was kept: it puts the
+ * sun 51° off the +Z (behind) axis, i.e. behind-right of the route view, so
+ * the key reads as side/back light without changing shot framing.
+ */
 export const PROLOGUE_ENVIRONMENT: LevelEnvironmentDefinition = {
-  skyColor: 0xa9d3ee,
-  fogColor: 0xe8f2fa,
-  fogNear: 45,
-  fogFar: 340,
-  sunColor: 0xfff2dc,
-  sunIntensity: 5.8,
-  hemisphereIntensity: 0.36,
-  zenithColor: 0x5f97c8,
-  horizonColor: 0xe6f2fa,
-  groundColor: 0xc4d8e3,
-  cloudColor: 0xffffff,
-  cloudShadowColor: 0xc2d2de,
-  cloudCover: 0.58,
+  skyColor: 0x8fbde0,
+  fogColor: 0xdceaf6,
+  fogNear: 60,
+  fogFar: 380,
+  sunColor: 0xfff8f0,
+  sunIntensity: 7.4,
+  hemisphereIntensity: 0.23,
+  zenithColor: 0x2050d8,
+  horizonColor: 0xe8f0f8,
+  groundColor: 0xb9cbd8,
+  cloudColor: 0xf8f8f8,
+  cloudShadowColor: 0xb8c8d8,
+  cloudCover: 0.5,
   sunAzimuth: 2.25,
-  sunElevation: 0.83,
+  sunElevation: 1.03,
 };
 
 function trainingTower(
@@ -202,14 +206,7 @@ function trainingTower(
         shape: "box",
         position: { x: x + inward - Math.sign(x) * 0.02, y: y + 1.5, z: z + zOffset },
         size: { x: 0.06, y: 1.7, z: 2.2 },
-        material:
-          (row + column) % 7 === 0
-            ? "warm-light"
-            : (row + column) % 3 === 0
-              ? "glass"
-              : "glass-far",
-        emissive: (row + column) % 7 === 0 ? 0xffd9a5 : 0x000000,
-        emissiveIntensity: (row + column) % 7 === 0 ? 0.16 : 0,
+        material: (row + column) % 3 === 0 ? "glass" : "glass-far",
         castShadow: false,
       });
     }
@@ -268,9 +265,7 @@ function trainingTower(
         shape: "box",
         position: { x: x + inward + side * 0.06, y: y + 1.4, z: z + depth * 0.18 },
         size: { x: 0.06, y: 0.9, z: 0.42 },
-        material: "warm-light",
-        emissive: 0xffd9a5,
-        emissiveIntensity: 0.22,
+        material: "glass",
         castShadow: false,
       },
     );
@@ -302,14 +297,7 @@ function trainingTower(
         shape: "box",
         position: { x: x + xOffset, y: y + 1.5, z: southZ - 0.02 },
         size: { x: 2.2, y: 1.7, z: 0.06 },
-        material:
-          (row + column) % 7 === 0
-            ? "warm-light"
-            : (row + column) % 3 === 0
-              ? "glass"
-              : "glass-far",
-        emissive: (row + column) % 7 === 0 ? 0xffd9a5 : 0x000000,
-        emissiveIntensity: (row + column) % 7 === 0 ? 0.16 : 0,
+        material: (row + column) % 3 === 0 ? "glass" : "glass-far",
         castShadow: false,
       });
     }
@@ -366,9 +354,7 @@ function trainingTower(
         shape: "box",
         position: { x: x + width * 0.18, y: y + 1.4, z: southZ + 0.06 },
         size: { x: 0.42, y: 0.9, z: 0.06 },
-        material: "warm-light",
-        emissive: 0xffd9a5,
-        emissiveIntensity: 0.22,
+        material: "glass",
         castShadow: false,
       },
     );
@@ -402,7 +388,7 @@ function trainingTower(
       size: { x: 0.38, y: 0.38, z: 0.38 },
       material: "red",
       emissive: 0xd52e36,
-      emissiveIntensity: 0.5,
+      emissiveIntensity: 0.1,
       castShadow: false,
     },
   );
@@ -453,7 +439,7 @@ export function createTrainingDecorations(
 
   return [
     ...trainingTowers,
-    ...skyline("training", (z) => sectionForPosition(z), TRAINING_SKYLINE, 10, 0xdcecf2, 0.2),
+    ...skyline("training", (z) => sectionForPosition(z), TRAINING_SKYLINE, 10, 0xdcecf2, 0.06),
     ...gate("training_start", start, 5.9, 0xd7d9d4, 0xd52e36),
     ...gate("training_finish", finish, -19.6, 0x3c444b, 0xd52e36),
     {
@@ -533,8 +519,6 @@ export function createTrainingDecorations(
       position: { x: -5.6, y: 2.1, z: -5 },
       size: { x: 2.4, y: 1.3, z: 0.15 },
       color: 0x343b40,
-      emissive: 0xd52e36,
-      emissiveIntensity: 0.12,
     },
     {
       id: "training_board_finish",
@@ -543,8 +527,6 @@ export function createTrainingDecorations(
       position: { x: 5.6, y: 2.1, z: -16.6 },
       size: { x: 2.4, y: 1.3, z: 0.15 },
       color: 0x343b40,
-      emissive: 0xd52e36,
-      emissiveIntensity: 0.12,
     },
     {
       id: "training_board_traversal_sign",
@@ -638,7 +620,7 @@ export function createTrainingDecorations(
       size: { x: 0.1, y: 2.1, z: 0.1 },
       color: 0xd52e36,
       emissive: 0xd52e36,
-      emissiveIntensity: 0.5,
+      emissiveIntensity: 0.1,
     },
     // Red coping turns the boundary into a rooftop parapet rather than a black wall.
     ...[
@@ -653,8 +635,6 @@ export function createTrainingDecorations(
       position: { x: x as number, y: y as number, z: z as number },
       size: { x: sx as number, y: sy as number, z: sz as number },
       color: 0xd52e36,
-      emissive: 0xd52e36,
-      emissiveIntensity: 0.25,
       castShadow: false,
     })),
     {
@@ -787,8 +767,6 @@ export function createTrainingDecorations(
       position: { x: 0, y: 5.55, z: -14 },
       size: { x: 44, y: 0.1, z: 0.1 },
       color: 0xd52e36,
-      emissive: 0xd52e36,
-      emissiveIntensity: 0.3,
       castShadow: false,
     },
   ];
@@ -802,8 +780,8 @@ export function createPrologueDecorations(
   const finish = sectionForPosition(-18);
 
   return [
-    ...skyline("prologue", (z) => sectionForPosition(z), PROLOGUE_SKYLINE, 14, 0xffd6a0, 0.5),
-    ...gate("prologue_finish", finish, -19.6, 0x30373d, 0x9fcfdf),
+    ...skyline("prologue", (z) => sectionForPosition(z), PROLOGUE_SKYLINE, 14, 0xffd6a0, 0.06),
+    ...gate("prologue_finish", finish, -19.6, 0x30373d, 0xd52e36),
     {
       id: "prologue_crane_mast",
       sectionId: start,
@@ -877,8 +855,6 @@ export function createPrologueDecorations(
       position: { x: -5.4, y: 2.15, z: -2.4 },
       size: { x: 2.2, y: 1.2, z: 0.12 },
       color: 0x293239,
-      emissive: 0x9fcfdf,
-      emissiveIntensity: 0.1,
     },
     {
       id: "prologue_section_board_skybridge",
@@ -887,8 +863,6 @@ export function createPrologueDecorations(
       position: { x: 5.4, y: 2.15, z: -12.8 },
       size: { x: 2.2, y: 1.2, z: 0.12 },
       color: 0x293239,
-      emissive: 0x9fcfdf,
-      emissiveIntensity: 0.1,
     },
     {
       id: "prologue_beacon_rooftop_w",
@@ -896,9 +870,9 @@ export function createPrologueDecorations(
       shape: "box",
       position: { x: -3.4, y: 1.1, z: 3 },
       size: { x: 0.1, y: 2.2, z: 0.1 },
-      color: 0x9fcfdf,
-      emissive: 0x9fcfdf,
-      emissiveIntensity: 0.6,
+      color: 0xd52e36,
+      emissive: 0xd52e36,
+      emissiveIntensity: 0.1,
     },
     {
       id: "prologue_beacon_industrial_w",
@@ -906,9 +880,9 @@ export function createPrologueDecorations(
       shape: "box",
       position: { x: -3.4, y: 1.1, z: -2.5 },
       size: { x: 0.1, y: 2.2, z: 0.1 },
-      color: 0x9fcfdf,
-      emissive: 0x9fcfdf,
-      emissiveIntensity: 0.6,
+      color: 0xd52e36,
+      emissive: 0xd52e36,
+      emissiveIntensity: 0.1,
     },
     {
       id: "prologue_beacon_construction_w",
@@ -916,9 +890,9 @@ export function createPrologueDecorations(
       shape: "box",
       position: { x: -3.4, y: 1.1, z: -8.5 },
       size: { x: 0.1, y: 2.2, z: 0.1 },
-      color: 0x9fcfdf,
-      emissive: 0x9fcfdf,
-      emissiveIntensity: 0.6,
+      color: 0xd52e36,
+      emissive: 0xd52e36,
+      emissiveIntensity: 0.1,
     },
     {
       id: "prologue_beacon_skybridge_w",
@@ -926,9 +900,9 @@ export function createPrologueDecorations(
       shape: "box",
       position: { x: -3.4, y: 1.1, z: -14.5 },
       size: { x: 0.1, y: 2.2, z: 0.1 },
-      color: 0x9fcfdf,
-      emissive: 0x9fcfdf,
-      emissiveIntensity: 0.6,
+      color: 0xd52e36,
+      emissive: 0xd52e36,
+      emissiveIntensity: 0.1,
     },
     {
       id: "prologue_beacon_finish_w",
@@ -936,9 +910,9 @@ export function createPrologueDecorations(
       shape: "box",
       position: { x: -3.4, y: 1.1, z: -18.5 },
       size: { x: 0.1, y: 2.2, z: 0.1 },
-      color: 0x9fcfdf,
-      emissive: 0x9fcfdf,
-      emissiveIntensity: 0.6,
+      color: 0xd52e36,
+      emissive: 0xd52e36,
+      emissiveIntensity: 0.1,
     },
     {
       id: "prologue_edge_west",
@@ -962,9 +936,7 @@ export function createPrologueDecorations(
       shape: "box",
       position: { x: 0, y: 0.02, z: -19.1 },
       size: { x: 5.2, y: 0.02, z: 1.1 },
-      color: 0x9fcfdf,
-      emissive: 0x9fcfdf,
-      emissiveIntensity: 0.15,
+      color: 0xd52e36,
     },
   ];
 }

@@ -44,6 +44,10 @@ export class Renderer implements Disposable {
     this.renderer.outputColorSpace = THREE.SRGBColorSpace;
     this.renderer.toneMapping = THREE.NoToneMapping;
     this.renderer.shadowMap.enabled = options.shadowsEnabled;
+    // Three r187 removed PCFSoftShadowMap (it warns and falls back to PCF), so
+    // PCF + a light-space Vogel-disk radius on the sun is the equivalent path:
+    // the penumbra is controlled by `DirectionalLightShadow.radius` in
+    // RenderScene, not by a deprecated shadow-map type.
     this.renderer.shadowMap.type = THREE.PCFShadowMap;
     // All shadow casters are static (level props/billboards); birds and the
     // viewmodel do not cast. Refresh explicitly on level/quality changes.
