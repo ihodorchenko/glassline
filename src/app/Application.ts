@@ -1858,7 +1858,9 @@ export class Application implements Disposable {
 
     if (showMenuVignette) {
       const presentationTime = performance.now() * 0.001;
-      const driftScale = this.cameraSystem?.reducedMotionEnabled ? 0 : 1;
+      const driftScale = this.cameraSystem?.reducedMotionEnabled
+        ? 0
+        : Math.max(0, Math.min(1, this.cameraSystem?.motionIntensity ?? 1));
       const driftX = Math.sin(presentationTime * 0.055) * 0.22 * driftScale;
       const driftY = Math.sin(presentationTime * 0.09) * 0.035 * driftScale;
       const driftYaw = Math.sin(presentationTime * 0.07) * 0.025 * driftScale;

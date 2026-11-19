@@ -190,6 +190,29 @@ describe("CameraSystem posture and response", () => {
     expect(landing.camera.position.y).toBeLessThan(standing.camera.position.y);
   });
 
+  it("scales landing camera impact by motion intensity", () => {
+    const normal = createCamera();
+    const muted = createCamera();
+
+    for (const camera of [normal, muted]) {
+      camera.setViewConfiguration({
+        baseFov: 75,
+        sprintFov: 82,
+        bobIntensity: 1,
+        motionIntensity: camera === normal ? 1 : 0,
+        reducedMotion: false,
+      });
+    }
+
+    const landing = movement({ landingIntensity: 1, moving: true, speed: 2 });
+
+    renderFrames(normal, landing, 8);
+    renderFrames(muted, landing, 8);
+
+    expect(Math.abs(normal.camera.rotation.z)).toBeGreaterThan(0.001);
+    expect(Math.abs(muted.camera.rotation.z)).toBeLessThan(0.0001);
+  });
+
   it("disables bob under reduced motion", () => {
     const camera = createCamera();
 

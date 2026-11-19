@@ -2421,6 +2421,46 @@ landing impact to the camera for feel.
 2. Audio/video review.
 3. Final highlight/menu calibration.
 
+---
+
+## Round 40 — motion-intensity coherence (2026-11-19)
+
+### Scope
+
+`camera.motion_intensity` previously affected bob/FOV but not the new landing
+camera or menu drift. This round makes the setting consistent and test-locked.
+
+### What changed
+
+- Landing impact multiplies `landingIntensity` by clamped `motionIntensity`.
+- Menu presentation drift scales by clamped `motionIntensity`; reduced motion
+  still forces zero.
+- New camera test proves roll at intensity 1 vs 0.
+- No route/visual-asset/audio changes.
+
+### Verification
+
+- `npm run validate`: typecheck, Biome, **279 tests in 37 files**, build.
+- Camera suite 18/18; start metrics unchanged (13/13).
+- Performance **60.1 fps**.
+
+### Evidence
+
+- [`motion.json`](evidence/settings/round-40/motion.json)
+- [`README.md`](evidence/settings/round-40/README.md)
+- [`camera.test.ts`](tests/unit/camera.test.ts)
+
+### Honest gaps
+
+- This is settings coherence, not human feel calibration; the shake strength is
+  still untuned.
+- Human listening, clipped highlights, and final menu/motion remain.
+
+### Next
+
+1. Human camera/audio review.
+2. Final highlight/menu calibration.
+
 ## Round log
 
 | Round | Date | Focus | Outcome |

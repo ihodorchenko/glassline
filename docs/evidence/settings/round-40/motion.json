@@ -1,0 +1,11 @@
+{
+  "setting": "camera.motion_intensity",
+  "appliesTo": ["landing camera lift/roll", "menu presentation camera drift"],
+  "landingRoll": {
+    "motionIntensity1": "> 0.001 rad after 8 frames",
+    "motionIntensity0": "< 0.0001 rad after 8 frames"
+  },
+  "menuDriftScale": "clamp(motionIntensity, 0, 1); 0 when reduced motion is on",
+  "test": "tests/unit/camera.test.ts > scales landing camera impact by motion intensity",
+  "note": "Settings coherence only; no human feel calibration yet."
+}

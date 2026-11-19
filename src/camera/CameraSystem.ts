@@ -174,7 +174,9 @@ export class CameraSystem implements Disposable {
     this.updateRoll(input.movement, deltaSeconds);
 
     const bobOffset = this.computeBobOffset(input.movement, deltaSeconds);
-    const impact = this.view.reducedMotion ? 0 : input.movement.landingIntensity;
+    const impact = this.view.reducedMotion
+      ? 0
+      : input.movement.landingIntensity * clamp(this.view.motionIntensity, 0, 1);
     const landingDip = impact * LANDING_DIP_METERS;
     const landingLift = Math.sin(this.bobPhase * 3.7) * impact * 0.008;
     const landingRoll = Math.sin(this.bobPhase * 4.5) * impact * 0.012;
@@ -203,6 +205,10 @@ export class CameraSystem implements Disposable {
 
   get reducedMotionEnabled(): boolean {
     return this.view.reducedMotion;
+  }
+
+  get motionIntensity(): number {
+    return this.view.motionIntensity;
   }
 
   /** World-space direction the camera is looking along. */
