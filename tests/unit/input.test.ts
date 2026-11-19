@@ -118,6 +118,14 @@ describe("InputActionResolver", () => {
     expect(resolved.navigate.y).toBe(-1);
   });
 
+  it("binds crouch/slide to C instead of Ctrl", () => {
+    expect(DEFAULT_ACTION_BINDINGS.keyboard.crouch).toEqual(["KeyC"]);
+    expect(resolve(rawInput({ heldKeys: new Set(["KeyC"]) })).actionValues.get("Crouch")).toBe(1);
+    expect(
+      resolve(rawInput({ heldKeys: new Set(["ControlLeft"]) })).actionValues.has("Crouch"),
+    ).toBe(false);
+  });
+
   it("maps gamepad A to Confirm in menus", () => {
     const resolved = resolve(
       rawInput({ context: "main-menu", gamepad: makeGamepad([0, 0, 0, 0], [0]) }),
