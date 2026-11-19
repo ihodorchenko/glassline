@@ -3587,6 +3587,28 @@ performance changes.
   deterministic**. A deterministic jump/landing controller is still needed for
   repeatable 0-respawn verification.
 
+---
+
+## Round 83 — 16× texture anisotropy (2026-11-19)
+
+### Scope
+
+Sharpen material detail at grazing angles.
+
+### What changed
+
+- Procedural textures: anisotropy 8 → **16**.
+- No new draw calls; start 13/13, 60.3 fps, 282 tests.
+
+### Evidence
+
+- [`graze-anisotropy.jpg`](evidence/visual/round-83/graze-anisotropy.jpg)
+- [`start.jpg`](evidence/visual/round-83/start.jpg)
+
+### Honest gaps
+
+- Subtle on distant views; low-poly shapes remain.
+
 ## Round log
 
 | Round | Date | Focus | Outcome |

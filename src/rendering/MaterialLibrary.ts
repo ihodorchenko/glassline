@@ -745,7 +745,7 @@ export class MaterialLibrary implements Disposable {
       texture.colorSpace = THREE.SRGBColorSpace;
       texture.wrapS = THREE.RepeatWrapping;
       texture.wrapT = THREE.RepeatWrapping;
-      texture.anisotropy = 8;
+      texture.anisotropy = 16;
       texture.needsUpdate = true;
       material.map = texture;
       material.bumpScale = 1;
@@ -780,7 +780,7 @@ export class MaterialLibrary implements Disposable {
       const texture = new THREE.CanvasTexture(paintSign(options));
 
       texture.colorSpace = THREE.SRGBColorSpace;
-      texture.anisotropy = 8;
+      texture.anisotropy = 16;
       texture.needsUpdate = true;
       material.map = texture;
       material.emissiveMap = texture;
