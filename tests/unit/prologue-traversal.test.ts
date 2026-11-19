@@ -282,6 +282,17 @@ describe("Prologue lower-route traversal", () => {
     expect(back.y).toBeGreaterThan(4.8);
   });
 
+  it("climbs the lower bypass steps back to the return catwalk", async () => {
+    const harness = await createHarness({ x: 31, y: 5.675, z: -135 });
+
+    step(harness, input(), 60);
+    step(harness, input({ move: { x: 0, y: 1 } }), 240, Math.PI);
+
+    const position = harness.player.getPosition();
+    expect(position.y).toBeGreaterThan(5.9);
+    expect(position.z).toBeGreaterThan(-132.4);
+  });
+
   it("crosses the bridge and reaches the finish roof", async () => {
     const harness = await createHarness({ x: 0, y: 0.03, z: -43 });
 

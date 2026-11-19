@@ -1344,6 +1344,42 @@ function addCatwalk(builder: CityBuilder): void {
     builder.box(x, -22.8, -126.8, 2.2, 1.4, 1.8, { material: "metal" });
     builder.box(x, -22.05, -126.8, 2.0, 0.1, 1.6, { material: "dark-metal" });
   }
+
+  // Barrier face plates and the lower bypass entrance.
+  for (let index = 0; index < 4; index += 1) {
+    builder.box(34.27, 5.45, -132.1 + index * 0.9, 0.04, 0.4, 0.7, {
+      material: index % 2 === 0 ? "red" : "white",
+      castShadow: false,
+    });
+  }
+
+  builder.plane(34, 6.65, -136.92, 1.8, 0.55, 0, {
+    text: "BYPASS",
+    background: 0x14191d,
+    textColor: 0xf4f1e9,
+    accentColor: 0xd52e36,
+  });
+
+  for (const x of [31, 37]) {
+    builder.box(x, 4.815, -135.0, 1.4, 0.02, 0.44, {
+      material: "red",
+      emissive: 0xc0262d,
+      emissiveIntensity: 0.35,
+      castShadow: false,
+      receiveShadow: false,
+    });
+    builder.box(x, 5.02, -133.1, 1.6, 0.02, 0.18, {
+      material: "red",
+      castShadow: false,
+      receiveShadow: false,
+    });
+    builder.box(x, 5.5, -136.7, 0.18, 0.18, 0.18, {
+      material: "cool-light",
+      emissive: 0xcfe8ff,
+      emissiveIntensity: 0.7,
+      castShadow: false,
+    });
+  }
 }
 
 function addHighRoofDressing(builder: CityBuilder): void {

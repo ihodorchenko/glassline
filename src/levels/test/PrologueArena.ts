@@ -366,8 +366,42 @@ export const PROLOGUE_ARENA_BOXES: readonly PrologueArenaBox[] = [
     ["geo_catwalk_rail_out_north", 27, 5.75, -121.2, 38, 1.1, 0.16],
     ["geo_catwalk_rail_out_south", 27, 5.75, -124.4, 38, 1.1, 0.16],
     ["geo_catwalk_rail_return_north", 27, 5.75, -129.2, 38, 1.1, 0.16],
-    ["geo_catwalk_rail_return_south", 32, 5.75, -132.4, 48, 1.1, 0.16],
+    ["geo_catwalk_rail_return_south_west", 19, 5.75, -132.4, 22, 1.1, 0.16],
+    ["geo_catwalk_rail_return_south_east", 47, 5.75, -132.4, 18, 1.1, 0.16],
     ["geo_catwalk_rail_turn_east", 56.1, 5.75, -126.8, 0.16, 1.1, 11.2],
+  ].map(([id, x, y, z, sx, sy, sz]) => ({
+    id: id as string,
+    position: { x: x as number, y: y as number, z: z as number },
+    size: { x: sx as number, y: sy as number, z: sz as number },
+    surfaceId: "surface_boundary",
+    material: "glass" as const,
+  })),
+  // Optional lower bypass around the return barrier, with 0.2 m steps back up.
+  {
+    id: "geo_catwalk_bypass",
+    position: { x: 34, y: 4.7, z: -135.3 },
+    size: { x: 8, y: 0.2, z: 3.0 },
+    surfaceId: "surface_catwalk",
+    material: "metal",
+  },
+  {
+    id: "geo_bypass_step_west",
+    position: { x: 31, y: 4.9, z: -133.1 },
+    size: { x: 2, y: 0.2, z: 1.4 },
+    surfaceId: "surface_catwalk",
+    material: "metal",
+  },
+  {
+    id: "geo_bypass_step_east",
+    position: { x: 37, y: 4.9, z: -133.1 },
+    size: { x: 2, y: 0.2, z: 1.4 },
+    surfaceId: "surface_catwalk",
+    material: "metal",
+  },
+  ...[
+    ["geo_bypass_rail_south", 34, 5.35, -136.85, 8, 1.1, 0.16],
+    ["geo_bypass_rail_west", 29.9, 5.35, -134.3, 0.16, 1.1, 2.8],
+    ["geo_bypass_rail_east", 38.1, 5.35, -134.3, 0.16, 1.1, 2.8],
   ].map(([id, x, y, z, sx, sy, sz]) => ({
     id: id as string,
     position: { x: x as number, y: y as number, z: z as number },

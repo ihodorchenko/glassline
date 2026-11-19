@@ -1032,6 +1032,64 @@ safe-retry pad, without adding checkpoint IDs or changing speedrun splits.
 3. Run the listening pass; balance metal catwalk steps/altitude wind.
 4. Final menu/motion/colour calibration.
 
+---
+
+## Round 13 — return-catwalk bypass choice (2026-11-19)
+
+### Scope
+
+The return catwalk had a single mandatory barrier jump. This round adds an
+optional lower bypass under it, giving the catwalk a real route choice while
+keeping the same length, checkpoints, and triggers.
+
+### What changed
+
+- **Lower bypass:** an 8 × 3 m metal deck at y=4.8 sits under the return span
+  (x 30…38, z −136.8…−133.8), reached through a 8 m opening in the return south
+  rail. Two 2 m step ledges (top y=5.0) climb back to the catwalk in 0.2 m steps.
+- **Choice:** the direct line stays the 0.5 m barrier jump at x=34; the bypass is
+  a drop/run/step-up alternative. Both converge on the return catwalk.
+- **Marking:** red pad strips on the bypass floor, step-edge paint, and a
+  `BYPASS` rail sign. The direct barrier retains its stripe plates.
+- **Physical test:** new test spawns on the bypass, walks up the west step
+  (0.2 m autostep) and confirms return to catwalk height; existing gap/turn/
+  barrier test remains.
+- **No route/checkpoint changes:** ~220 m, 8.2 m vertical, five IDs/triggers;
+  high/mid anchors and metal surface unchanged.
+
+### Verification
+
+- `npm run validate`: typecheck, Biome, **275 tests in 36 files**, build.
+- Five physical catwalk tests: gap, turn, barrier, bypass step, return.
+- Integration route unchanged.
+- Performance **60.1 fps**; start frame **10/13**.
+
+### Evidence
+
+| View | Image |
+|---|---|
+| Barrier and lower bypass choice | ![Choice](evidence/visual/round-13/choice.jpg) |
+| Bypass deck looking back to the catwalk | ![Bypass](evidence/visual/round-13/bypass.jpg) |
+| Start regression | ![Start](evidence/visual/round-13/start.jpg) |
+
+### Honest gaps
+
+- The bypass looks like a fall/void from the catwalk; the BYPASS sign is not
+  visible early enough and needs a stronger entrance marker.
+- There is no speed/reward difference between the two lines; the direct jump is
+  likely always faster.
+- Bypass geometry is plain, with no dedicated handrail detail beyond glass.
+- Listening pass, closer turn landmark, high-roof density, and final
+  menu/motion/colour calibration remain open.
+
+### Next
+
+1. Make the bypass entrance legible (arrow/light/rail cut) and give it a
+   time/risk tradeoff.
+2. Add a closer landmark at the turn.
+3. Listening pass and final calibration.
+4. Continue world-detail parity.
+
 ## Round log
 
 | Round | Date | Focus | Outcome |
