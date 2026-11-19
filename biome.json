@@ -6,7 +6,14 @@
     "useIgnoreFile": true
   },
   "files": {
-    "includes": ["**", "!dist", "!.npm-cache", "!package-lock.json", "!**/*.md"]
+    "includes": [
+      "**",
+      "!dist",
+      "!.npm-cache",
+      "!package-lock.json",
+      "!**/*.md",
+      "!docs/reports/*.json"
+    ]
   },
   "formatter": {
     "enabled": true,

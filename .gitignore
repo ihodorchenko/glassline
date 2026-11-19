@@ -23,3 +23,6 @@ glassline-final-build.zip
 
 # W0 capture output (deterministic screenshots are regenerated on demand)
 captures/
+
+# Image-tool scratch output (regenerated locally)
+.omni-workstation/
