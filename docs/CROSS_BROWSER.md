@@ -81,7 +81,8 @@ Can't find profile directory
    (`tools/capture/safari-smoke.mjs`, `tools/capture/safari-route.mjs`).
    Визуал старта прошёл **13/13** метрик; rAF-FPS в Safari через safaridriver
 недостоверен (троттлинг автоматизации), поэтому производительность Safari
-не заявляется. Осталось прослушать звук в Safari.
+не заявляется. Safari Web Audio: контекст `running`, 44.1 kHz, ~2.9 ms base latency; это
+техническая проверка, человеческое прослушивание ещё не проводилось.
 2. Firefox: запуск вне sandbox или через реальный профиль.
 3. Playwright WebKit оставить только как известный false-positive, не как
    блокер Safari.

@@ -18,6 +18,7 @@ const modeLabel = modeArg.toLowerCase() === "prologue" ? "Prologue" : "Training"
 const modeSlug = modeLabel.toLowerCase();
 const probeMovement = args.includes("--probe-movement");
 const probeFps = args.includes("--probe-fps");
+const probeAudio = args.includes("--probe-audio");
 const viewportArg = args.find((value, index) => args[index - 1] === "--viewport") ?? null;
 const [viewportWidth, viewportHeight] = (viewportArg ?? "").split("x").map(Number);
 
@@ -130,6 +131,14 @@ async function main() {
       };
     }
 
+    let audio = null;
+
+    if (probeAudio) {
+      audio = await tool("evaluate_javascript", {
+        expression: `const manager = window.__glassline?.audioManager; if (!manager) return null; const context = manager.context; return { state: manager.state, context: context?.state ?? null, sampleRate: context?.sampleRate ?? null, baseLatency: context?.baseLatency ?? null };`,
+      });
+    }
+
     let fps = null;
 
     if (probeFps) {
@@ -154,10 +163,10 @@ async function main() {
     const consoleState = await tool("browser_console_messages", { limit: 40 });
     await writeFile(
       join(outDir, "report.json"),
-      JSON.stringify({ url, mode: modeLabel, state, movement, fps, consoleState }, null, 2),
+      JSON.stringify({ url, mode: modeLabel, state, movement, audio, fps, consoleState }, null, 2),
     );
 
-    console.log(JSON.stringify({ ok: true, outDir, state, movement, fps }, null, 2));
+    console.log(JSON.stringify({ ok: true, outDir, state, movement, audio, fps }, null, 2));
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
     console.error(message);

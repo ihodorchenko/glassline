@@ -3666,6 +3666,31 @@ Make the procedural surface relief read at normal camera height.
 - Current host FPS is contaminated by concurrent Safari/GPU state; no new fps
   claim is made.
 
+---
+
+## Round 87 — Safari audio runtime check (2026-11-19)
+
+### Scope
+
+Verify that Safari actually starts the Web Audio graph during gameplay.
+
+### What changed
+
+- `safari-smoke.mjs --probe-audio` reads `AudioManager` state.
+- Safari 27.2: **state running**, context **running**, 44.1 kHz, ~2.9 ms base
+  latency, movement probe 6.33 m.
+- No game/audio code changes; 282 tests.
+
+### Evidence
+
+- [`audio-report.json`](evidence/cross-browser/safari/audio-report.json)
+- [`prologue-audio.png`](evidence/cross-browser/safari/prologue-audio.png)
+
+### Honest gaps
+
+- Technical context check, **not** a human listening verdict; Safari mix balance
+  remains unjudged.
+
 ## Round log
 
 | Round | Date | Focus | Outcome |

@@ -1,0 +1,189 @@
+{
+  "url": "http://127.0.0.1:5199/",
+  "mode": "Prologue",
+  "state": {
+    "body": "Speed 0.0 m/sESC PAUSE",
+    "canvas": true,
+    "hud": true,
+    "flow": "gameplay",
+    "player": {
+      "x": 0,
+      "y": 0.8949981927871704,
+      "z": 6
+    }
+  },
+  "movement": {
+    "before": {
+      "x": 0,
+      "y": 0.8949981927871704,
+      "z": 6
+    },
+    "after": {
+      "x": 0.00011355430433468428,
+      "y": 0.8950632559790392,
+      "z": -0.3299001189880073
+    },
+    "distance": 6.3299001200065526
+  },
+  "audio": {
+    "state": "running",
+    "context": "running",
+    "sampleRate": 44100,
+    "baseLatency": 0.0029024943310657597
+  },
+  "fps": null,
+  "consoleState": [
+    {
+      "text": "[vite] connecting...",
+      "method": "log",
+      "browsingContextHandle": "page-2D7A3334-A61C-4403-8254-155E6EDA00D9",
+      "type": "console",
+      "level": "debug",
+      "timestamp": 1795100195.16794,
+      "stackTrace": {
+        "callFrames": [
+          {
+            "lineNumber": 934,
+            "columnNumber": 14,
+            "url": "http://127.0.0.1:5199/@vite/client",
+            "scriptId": "2",
+            "functionName": "module code"
+          }
+        ]
+      },
+      "args": [
+        {
+          "value": "[vite] connecting...",
+          "type": "string"
+        }
+      ]
+    },
+    {
+      "text": "[vite] connected.",
+      "method": "log",
+      "browsingContextHandle": "page-2D7A3334-A61C-4403-8254-155E6EDA00D9",
+      "type": "console",
+      "level": "debug",
+      "timestamp": 1795100195.247385,
+      "stackTrace": {
+        "callFrames": [
+          {
+            "lineNumber": 1043,
+            "columnNumber": 17,
+            "scriptId": "2",
+            "url": "http://127.0.0.1:5199/@vite/client",
+            "functionName": "handleMessage"
+          },
+          {
+            "lineNumber": 687,
+            "columnNumber": 15,
+            "url": "http://127.0.0.1:5199/@vite/client",
+            "scriptId": "2",
+            "functionName": "dequeue"
+          },
+          {
+            "lineNumber": 679,
+            "columnNumber": 16,
+            "scriptId": "2",
+            "url": "http://127.0.0.1:5199/@vite/client",
+            "functionName": ""
+          },
+          {
+            "lineNumber": 1,
+            "columnNumber": 11,
+            "url": "",
+            "scriptId": "3",
+            "functionName": "Promise"
+          },
+          {
+            "lineNumber": 673,
+            "columnNumber": 21,
+            "scriptId": "2",
+            "url": "http://127.0.0.1:5199/@vite/client",
+            "functionName": "enqueue"
+          },
+          {
+            "lineNumber": 106,
+            "columnNumber": 15,
+            "scriptId": "2",
+            "url": "http://127.0.0.1:5199/@vite/client",
+            "functionName": "onMessage"
+          },
+          {
+            "lineNumber": 224,
+            "columnNumber": 14,
+            "scriptId": "2",
+            "url": "http://127.0.0.1:5199/@vite/client",
+            "functionName": ""
+          }
+        ]
+      },
+      "args": [
+        {
+          "value": "[vite] connected.",
+          "type": "string"
+        }
+      ]
+    },
+    {
+      "text": "[Glassline] Checkpoint activated: cp_rooftop",
+      "method": "log",
+      "browsingContextHandle": "page-2D7A3334-A61C-4403-8254-155E6EDA00D9",
+      "type": "console",
+      "level": "info",
+      "timestamp": 1795100210.988047,
+      "stackTrace": {
+        "callFrames": [
+          {
+            "lineNumber": 975,
+            "columnNumber": 17,
+            "scriptId": "4",
+            "url": "http://127.0.0.1:5199/src/app/Application.ts?t=1795100112957",
+            "functionName": "handleTriggerEnter"
+          },
+          {
+            "lineNumber": 23,
+            "columnNumber": 25,
+            "scriptId": "5",
+            "url": "http://127.0.0.1:5199/src/core/EventBus.ts",
+            "functionName": "emit"
+          },
+          {
+            "lineNumber": 320,
+            "columnNumber": 20,
+            "scriptId": "6",
+            "url": "http://127.0.0.1:5199/src/levels/LevelRuntimeManager.ts?t=1795098875341",
+            "functionName": "update"
+          },
+          {
+            "lineNumber": 1346,
+            "columnNumber": 29,
+            "scriptId": "4",
+            "url": "http://127.0.0.1:5199/src/app/Application.ts?t=1795100112957",
+            "functionName": "fixedUpdate"
+          },
+          {
+            "lineNumber": 1283,
+            "columnNumber": 21,
+            "url": "http://127.0.0.1:5199/src/app/Application.ts?t=1795100112957",
+            "scriptId": "4",
+            "functionName": "onFixedUpdate"
+          },
+          {
+            "lineNumber": 97,
+            "columnNumber": 32,
+            "url": "http://127.0.0.1:5199/src/core/GameLoop.ts",
+            "scriptId": "7",
+            "functionName": "onFrame"
+          }
+        ]
+      },
+      "args": [
+        {
+          "value": "[Glassline] Checkpoint activated: cp_rooftop",
+          "type": "string"
+        }
+      ]
+    }
+  ]
+}
