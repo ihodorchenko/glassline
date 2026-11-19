@@ -12,9 +12,19 @@ const application = new Application({
 
 async function bootstrap(): Promise<void> {
   try {
+    // Dev-only deterministic screenshot boot (`?capture=1&level=prologue&shot=<id>`).
+    // The dynamic import keeps CaptureMode out of the production bundle entirely.
+    const capture = import.meta.env.DEV
+      ? (await import("./diagnostics/CaptureMode")).prepareCaptureMode()
+      : null;
+
     await application.initialize();
     bootLoader.complete();
     application.start();
+
+    if (capture) {
+      await capture.activate(application);
+    }
   } catch (error) {
     bootLoader.fail(error);
     console.error("[Glassline] Fatal startup error.", error);
