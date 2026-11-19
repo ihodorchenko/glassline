@@ -12,7 +12,7 @@ import { writeFile } from "node:fs/promises";
 import { setTimeout as delay } from "node:timers/promises";
 
 function parseArgs(argv) {
-  const args = { port: 9222, json: null };
+  const args = { port: 9222, json: null, highRoute: false };
 
   for (let index = 0; index < argv.length; index += 1) {
     const flag = argv[index];
@@ -22,8 +22,12 @@ function parseArgs(argv) {
       args.port = Number(value());
     } else if (flag === "--json") {
       args.json = value();
+    } else if (flag === "--high-route") {
+      args.highRoute = true;
     } else if (flag === "--help") {
-      console.log("Usage: node tools/capture/audio-probe.mjs [--port 9222] [--json report.json]");
+      console.log(
+        "Usage: node tools/capture/audio-probe.mjs [--port 9222] [--json report.json] [--high-route]",
+      );
       process.exit(0);
     } else {
       throw new Error(`Unknown argument: ${flag}`);
@@ -158,32 +162,74 @@ async function main() {
   }
 
   const result = await session.evaluate(
-    `(async () => {
-      const app = window.__glassline;
-      const audio = app.audioManager;
+    args.highRoute
+      ? `(async () => {
+          const app = window.__glassline;
+          const audio = app.audioManager;
+          const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
-      if (audio.state !== "running") {
-        return { error: "Audio is not running after the trusted click." };
-      }
+          if (audio.state !== "running") {
+            return { error: "Audio is not running after the trusted click." };
+          }
 
-      const output = audio.measureOutput(1600);
+          app.player.teleportTo({ x: 0, y: 0.93, z: 6 });
+          app.cameraSystem.resetForRespawn(0);
+          await wait(900);
 
-      for (let index = 0; index < 10; index += 1) {
-        audio.playFootstep(0.9, "metal");
-        await new Promise((resolve) => setTimeout(resolve, 130));
-      }
+          const groundOutput = audio.measureOutput(1100);
+          const groundSnapshot = audio.getDebugSnapshot();
+          const ground = await groundOutput;
 
-      audio.playLanding(10, "metal");
+          app.player.teleportTo({ x: 0, y: 6.1, z: -121 });
+          app.cameraSystem.resetForRespawn(0);
+          await wait(1400);
 
-      return {
-        measurement: await output,
-        snapshot: audio.getDebugSnapshot(),
-      };
-    })()`,
+          const highOutput = audio.measureOutput(1800);
+
+          for (let index = 0; index < 11; index += 1) {
+            audio.playFootstep(0.85, "metal");
+            await wait(130);
+          }
+
+          audio.playLanding(10, "metal");
+
+          const high = await highOutput;
+
+          return {
+            ground,
+            groundSnapshot,
+            high,
+            snapshot: audio.getDebugSnapshot(),
+            position: app.player.getPosition(),
+          };
+        })()`
+      : `(async () => {
+          const app = window.__glassline;
+          const audio = app.audioManager;
+
+          if (audio.state !== "running") {
+            return { error: "Audio is not running after the trusted click." };
+          }
+
+          const output = audio.measureOutput(1600);
+
+          for (let index = 0; index < 10; index += 1) {
+            audio.playFootstep(0.9, "metal");
+            await new Promise((resolve) => setTimeout(resolve, 130));
+          }
+
+          audio.playLanding(10, "metal");
+
+          return {
+            measurement: await output,
+            snapshot: audio.getDebugSnapshot(),
+          };
+        })()`,
     true,
   );
 
   const report = {
+    profile: args.highRoute ? "live-high-route" : "live-prologue",
     ...result,
     errors: session.errors,
   };

@@ -83,6 +83,11 @@ in its custom bands while the prologue mix keeps 5/5 reference targets.
 [metrics](docs/evidence/audio/round-15/metrics.json) ·
 ![High-route waveform](docs/evidence/audio/round-15/high-route-waveform.png)
 
+A live in-engine probe confirms the altitude path: wind gain/cutoff rise from
+0.0131/263 Hz at the start roof to 0.0197/418 Hz on the high roof, with metal
+footsteps adding mid-band energy
+([report](docs/evidence/audio/round-16/live-high-route.json)).
+
 ---
 
 ## Gameplay

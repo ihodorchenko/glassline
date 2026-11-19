@@ -1,0 +1,69 @@
+{
+  "profile": "live-high-route",
+  "ground": {
+    "rms": 0.023810435746491086,
+    "peak": 0.09301640838384628,
+    "lowShare": 0.838827556192355,
+    "midShare": 0.00846647530262029,
+    "highShare": 0.11566893146798748,
+    "samples": 55296
+  },
+  "groundSnapshot": {
+    "state": "running",
+    "buses": {
+      "environment": 0.800000011920929,
+      "movement": 0.8999999761581421,
+      "parkour": 1,
+      "ui": 0.800000011920929,
+      "music": 0.25239428877830505,
+      "radio": 0.800000011920929
+    },
+    "ambienceActive": true,
+    "ambienceSources": 3,
+    "musicActive": true,
+    "slideActive": false,
+    "wallRunActive": false,
+    "activeVoices": 1,
+    "paused": false,
+    "profile": "prologue",
+    "surface": "concrete",
+    "windGain": 0.013101184740662575,
+    "windCutoff": 263.3077087402344
+  },
+  "high": {
+    "rms": 0.12404276531725732,
+    "peak": 0.656619668006897,
+    "lowShare": 0.8352618550906133,
+    "midShare": 0.11365325703100405,
+    "highShare": 0.02835761515110975,
+    "samples": 90112
+  },
+  "snapshot": {
+    "state": "running",
+    "buses": {
+      "environment": 0.800000011920929,
+      "movement": 0.8999999761581421,
+      "parkour": 1,
+      "ui": 0.800000011920929,
+      "music": 0.25239428877830505,
+      "radio": 0.800000011920929
+    },
+    "ambienceActive": true,
+    "ambienceSources": 3,
+    "musicActive": true,
+    "slideActive": false,
+    "wallRunActive": false,
+    "activeVoices": 2,
+    "paused": false,
+    "profile": "prologue",
+    "surface": "concrete",
+    "windGain": 0.019704006612300873,
+    "windCutoff": 418.22857666015625
+  },
+  "position": {
+    "x": 0,
+    "y": 6.094474792480469,
+    "z": -121
+  },
+  "errors": []
+}

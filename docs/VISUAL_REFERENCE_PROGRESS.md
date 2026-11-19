@@ -1213,6 +1213,57 @@ measurement**, not a human listening verdict or a live gameplay recording.
 3. Balance billboard/helipad and bypass tradeoff.
 4. Final menu/motion/colour calibration.
 
+---
+
+## Round 16 — live high-route audio probe (2026-11-19)
+
+### Scope
+
+Round 15 measured a synthesized high-route demo. This round measures the **live
+in-engine** mixer at the start roof and on the high finish roof, including the
+altitude-wind update and metal catwalk footsteps.
+
+### What changed
+
+- **Live probe:** `audio-probe.mjs --high-route` resets to the start roof,
+  measures 1.1 s of live ambience, teleports to the high roof, waits 1.4 s, then
+  measures 1.8 s while triggering 11 metal footsteps and a landing.
+- **Exposed wind state:** `AudioManager.getDebugSnapshot()` now reports live
+  `windGain` and `windCutoff`, making the altitude response auditable.
+- **Measured result:** ground wind gain/cutoff 0.0131 / 263 Hz; high roof
+  0.0197 / 418 Hz. Ground RMS 0.0238, high (with footsteps/landing) 0.1240;
+  mid-band share rises 0.008 → 0.114, high share falls 0.116 → 0.028.
+- No route/gameplay or audio-mix code changed; this is verification of the
+  existing altitude/wind and metal-surface paths.
+
+### Verification
+
+- `npm run validate`: typecheck, Biome, **275 tests in 36 files**, build.
+- Live probe errors: none.
+- Prologue and high-route offline profiles from Round 15 remain unchanged.
+
+### Evidence
+
+- [`live-high-route.json`](evidence/audio/round-16/live-high-route.json)
+- [`README.md`](evidence/audio/round-16/README.md)
+
+### Honest gaps
+
+- Analyser RMS/peak only; no WAV recording and no human listening.
+- High segment includes footsteps/landing, so it is not an ambience-only
+  comparison.
+- Wind gain difference is modest in absolute gain but the cutoff rise is clear;
+  needs ear balancing against music/radio.
+- Visual billboard/helipad balance, bypass tradeoff, and final motion/menu
+  calibration remain open.
+
+### Next
+
+1. Human listening pass on the live probe and offline profiles.
+2. Balance wind vs music/radio and catwalk footsteps.
+3. Visual balance (billboard/helipad) and bypass tradeoff.
+4. Final menu/motion/colour calibration.
+
 ## Round log
 
 | Round | Date | Focus | Outcome |

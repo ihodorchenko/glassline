@@ -748,6 +748,8 @@ export class AudioManager implements Disposable {
     readonly paused: boolean;
     readonly profile: string | null;
     readonly surface: string;
+    readonly windGain: number;
+    readonly windCutoff: number;
   } {
     const buses: Record<string, number> = {};
 
@@ -767,6 +769,8 @@ export class AudioManager implements Disposable {
       paused: this.paused,
       profile: this.ambienceProfile,
       surface: this.lastSurface.type,
+      windGain: this.ambience?.windGain.gain.value ?? 0,
+      windCutoff: this.ambience?.windFilter.frequency.value ?? 0,
     };
   }
 
