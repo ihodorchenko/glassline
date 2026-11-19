@@ -81,6 +81,10 @@ score) through an `OfflineAudioContext` in the running dev build:
 npm run audio:render -- --out docs/evidence/audio/round-2/mix.wav --seconds 24
 npm run audio:metrics -- --wav docs/evidence/audio/round-2/mix.wav \
   --json docs/evidence/audio/round-2/metrics.json
+
+# High-route finale profile: altitude wind, metal catwalk steps, landings, finish hit.
+npm run audio:render -- --high-route --seconds 14 \
+  --out docs/evidence/audio/round-15/high-route.wav
 ```
 
 `audio:metrics` computes spectral band shares, BS.1770-style gated loudness,

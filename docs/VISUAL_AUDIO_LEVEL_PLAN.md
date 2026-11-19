@@ -19,7 +19,8 @@
 > Round 11 authors those facades/billboard and adds a return barrier; Round 12
 > adds a mid-ascent safety pad; Round 13 adds a return-catwalk bypass. Bypass
 > signposting/tradeoff, listening pass, and W1/W2 polish remain; Round 14 adds a
-> turn billboard and high-roof helipad. The plan's anti-hack rule is honored: the
+> turn billboard and high-roof helipad; Round 15 adds a measured high-route
+> audio profile (wind, metal catwalk steps, landings, finish hit). The plan's anti-hack rule is honored: the
 > hard highlight clip was replaced by a gentler shoulder; the remaining
 > near-white/highlight gap is assigned to real lighting and content.
 

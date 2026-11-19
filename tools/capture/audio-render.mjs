@@ -14,7 +14,12 @@ import { dirname } from "node:path";
 import { setTimeout as delay } from "node:timers/promises";
 
 function parseArgs(argv) {
-  const args = { port: 9222, out: "docs/evidence/audio/round-2/mix.wav", seconds: 24 };
+  const args = {
+    port: 9222,
+    out: "docs/evidence/audio/round-2/mix.wav",
+    seconds: 24,
+    highRoute: false,
+  };
 
   for (let index = 0; index < argv.length; index += 1) {
     const flag = argv[index];
@@ -26,8 +31,12 @@ function parseArgs(argv) {
       args.out = value();
     } else if (flag === "--seconds") {
       args.seconds = Number(value());
+    } else if (flag === "--high-route") {
+      args.highRoute = true;
     } else if (flag === "--help") {
-      console.log("Usage: node tools/capture/audio-render.mjs --out <file.wav> [--seconds 24]");
+      console.log(
+        "Usage: node tools/capture/audio-render.mjs --out <file.wav> [--seconds 24] [--high-route]",
+      );
       process.exit(0);
     } else {
       throw new Error(`Unknown argument: ${flag}`);
@@ -119,7 +128,13 @@ async function main() {
   let ready = false;
 
   for (let attempt = 0; attempt < 80; attempt += 1) {
-    ready = await session.evaluate("Boolean(window.__glasslineAudioDemo)").catch(() => false);
+    ready = await session
+      .evaluate(
+        args.highRoute
+          ? "Boolean(window.__glasslineHighRouteAudioDemo)"
+          : "Boolean(window.__glasslineAudioDemo)",
+      )
+      .catch(() => false);
 
     if (ready) {
       break;
@@ -132,7 +147,12 @@ async function main() {
     throw new Error("Audio demo is not available. Is the dev server running?");
   }
 
-  const result = await session.evaluate(`window.__glasslineAudioDemo(${args.seconds})`, true);
+  const result = await session.evaluate(
+    args.highRoute
+      ? `window.__glasslineHighRouteAudioDemo(${args.seconds})`
+      : `window.__glasslineAudioDemo(${args.seconds})`,
+    true,
+  );
 
   await mkdir(dirname(args.out), { recursive: true });
   await writeFile(args.out, Buffer.from(result.wavBase64, "base64"));
@@ -142,6 +162,7 @@ async function main() {
     JSON.stringify(
       {
         out: args.out,
+        profile: args.highRoute ? "high-route" : "prologue",
         durationSeconds: result.durationSeconds,
         sampleRate: result.sampleRate,
         peak: result.peak,

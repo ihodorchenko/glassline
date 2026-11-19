@@ -1,0 +1,76 @@
+{
+  "profile": "high-route",
+  "wav": "docs/evidence/audio/round-15/high-route.wav",
+  "values": {
+    "durationSeconds": 14.0,
+    "sampleRate": 48000,
+    "peak": 0.57318115234375,
+    "peak_db": -4.834161974973404,
+    "rms": 0.06541075083452419,
+    "rms_db": -23.687017313517504,
+    "short_term_range": 3.4163110164626076,
+    "lufs": -23.856333306577323,
+    "low_share": 0.8528276326478215,
+    "mid_share": 0.10704529210992283,
+    "high_share": 0.040127075242255596,
+    "per_second_rms_db": [
+      -46.1, -25.0, -24.6, -21.7, -24.2, -24.1, -21.8, -32.7, -40.3, -24.2, -24.1, -24.0, -25.9,
+      -22.8
+    ],
+    "per_second_range_db": 24.4
+  },
+  "layers": [
+    "altitude wind bed with lull/gust",
+    "metal catwalk footsteps",
+    "jump whoosh",
+    "metal landings",
+    "cable creak",
+    "low hum",
+    "finish impact boom"
+  ],
+  "targets": {
+    "low_share": [0.82, 0.92],
+    "high_share": [0.025, 0.09],
+    "lufs": [-26.0, -23.0],
+    "peak_db": [-6.0, -3.0],
+    "per_second_range_db": [12.0, 26.0]
+  },
+  "note": "High-route profile targets are separate from the prologue mix targets; not a human listening verdict.",
+  "results": [
+    {
+      "metric": "low_share",
+      "value": 0.8528276326478215,
+      "low": 0.82,
+      "high": 0.92,
+      "pass": true
+    },
+    {
+      "metric": "high_share",
+      "value": 0.040127075242255596,
+      "low": 0.025,
+      "high": 0.09,
+      "pass": true
+    },
+    {
+      "metric": "lufs",
+      "value": -23.856333306577323,
+      "low": -26.0,
+      "high": -23.0,
+      "pass": true
+    },
+    {
+      "metric": "peak_db",
+      "value": -4.834161974973404,
+      "low": -6.0,
+      "high": -3.0,
+      "pass": true
+    },
+    {
+      "metric": "per_second_range_db",
+      "value": 24.4,
+      "low": 12.0,
+      "high": 26.0,
+      "pass": true
+    }
+  ]
+}

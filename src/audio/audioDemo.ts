@@ -289,12 +289,183 @@ function scheduleMusic(
   }
 }
 
-/**
- * Renders a deterministic 24-second demonstration of the ambient, movement,
- * parkour, and score layers through an OfflineAudioContext. Used by the audio
- * measurement tool; it exercises the same synthesis code as live gameplay.
- */
-export async function renderAudioDemo(durationSeconds = 24): Promise<AudioDemoResult> {
+function scheduleHighRoute(
+  context: AudioContextLike,
+  buffers: ReturnType<typeof createNoiseBuffers>,
+  environment: AudioNodeLike,
+  movement: AudioNodeLike,
+  parkour: AudioNodeLike,
+  reverbSend: AudioNodeLike,
+  durationSeconds: number,
+): void {
+  // High-altitude wind bed: filtered pink/brown noise with a slow swell.
+  const wind = context.createGain();
+
+  wind.gain.value = 0.001;
+  wind.gain.setValueAtTime?.(0.001, 0);
+  wind.gain.linearRampToValueAtTime?.(0.024, 2.5);
+  wind.gain.linearRampToValueAtTime?.(0.0006, 6.4);
+  wind.gain.linearRampToValueAtTime?.(0.0006, 8.3);
+  wind.gain.linearRampToValueAtTime?.(0.05, 9.2);
+  wind.gain.linearRampToValueAtTime?.(0.018, 10.2);
+  wind.gain.linearRampToValueAtTime?.(0.03, Math.max(11, durationSeconds * 0.85));
+  wind.connect(environment);
+
+  for (const [bufferKey, filterType, frequency, gainValue] of [
+    ["brown", "highpass", 480, 0.014],
+    ["pink", "bandpass", 980, 0.018],
+    ["pink", "highpass", 3200, 0.004],
+  ] as const) {
+    const source = context.createBufferSource();
+    const filter = context.createBiquadFilter();
+    const gain = context.createGain();
+
+    source.buffer = buffers[bufferKey];
+    source.loop = true;
+    filter.type = filterType;
+    filter.frequency.value = frequency;
+    gain.gain.value = gainValue;
+    source.connect(filter);
+    filter.connect(gain);
+    gain.connect(wind);
+    source.start();
+  }
+
+  // Low structural hum and a cable-creak sweep.
+  const hum = context.createGain();
+
+  hum.gain.value = 0.002;
+  hum.gain.setValueAtTime?.(0.002, 0);
+  hum.gain.linearRampToValueAtTime?.(0.0004, 6.4);
+  hum.gain.linearRampToValueAtTime?.(0.0004, 8.3);
+  hum.gain.linearRampToValueAtTime?.(0.002, 9.2);
+  hum.connect(environment);
+
+  for (const frequency of [58, 87]) {
+    const oscillator = context.createOscillator();
+
+    oscillator.type = "triangle";
+    oscillator.frequency.value = frequency;
+    oscillator.connect(hum);
+    oscillator.start();
+  }
+
+  const creak = context.createOscillator();
+  const creakGain = context.createGain();
+
+  creak.type = "sawtooth";
+  creak.frequency.setValueAtTime?.(94, 4.4);
+  creak.frequency.linearRampToValueAtTime?.(68, 6.8);
+  applyEnvelope(creakGain.gain, 0.001, 4.4, 0.35, 2.4);
+  creak.connect(creakGain);
+  creakGain.connect(environment);
+  creak.start(4.4);
+  creak.stop(7.0);
+
+  // Metal catwalk cadence.
+  let step = 0;
+
+  for (let time = 1.3; time < durationSeconds - 1.2; time += 0.34) {
+    if (time > 6.5 && time < 8.9) {
+      continue;
+    }
+
+    renderFootstep(
+      context,
+      buffers,
+      SURFACE_AUDIO_PRESETS.metal,
+      { dry: movement, reverbSend },
+      {
+        when: time,
+        intensity: 0.62 + (step % 3) * 0.1,
+        variation: (step % 4) / 4,
+      },
+    );
+    step += 1;
+  }
+
+  renderWhoosh(
+    context,
+    buffers,
+    { dry: parkour, reverbSend },
+    {
+      when: 2.6,
+      intensity: 1,
+      startFrequency: 520,
+      endFrequency: 1200,
+      duration: 0.2,
+      gain: 0.22,
+    },
+  );
+  renderLanding(
+    context,
+    buffers,
+    { dry: parkour, reverbSend },
+    {
+      when: 3.35,
+      impactSpeed: 7,
+      surfacePreset: SURFACE_AUDIO_PRESETS.metal,
+    },
+  );
+  renderLanding(
+    context,
+    buffers,
+    { dry: parkour, reverbSend },
+    {
+      when: 6.9,
+      impactSpeed: 10,
+      surfacePreset: SURFACE_AUDIO_PRESETS.metal,
+    },
+  );
+  renderWhoosh(
+    context,
+    buffers,
+    { dry: parkour, reverbSend },
+    {
+      when: 8.9,
+      intensity: 0.9,
+      startFrequency: 780,
+      endFrequency: 1800,
+      duration: 0.16,
+      gain: 0.18,
+    },
+  );
+  renderLanding(
+    context,
+    buffers,
+    { dry: parkour, reverbSend },
+    {
+      when: durationSeconds - 0.9,
+      impactSpeed: 12,
+      surfacePreset: SURFACE_AUDIO_PRESETS.metal,
+    },
+  );
+
+  const finishBoom = context.createOscillator();
+  const finishGain = context.createGain();
+
+  finishBoom.type = "sine";
+  finishBoom.frequency.setValueAtTime?.(52, durationSeconds - 0.9);
+  finishBoom.frequency.exponentialRampToValueAtTime?.(34, durationSeconds - 0.1);
+  applyEnvelope(finishGain.gain, 0.001, durationSeconds - 0.9, 0.18, 1.6);
+  finishBoom.connect(finishGain);
+  finishGain.connect(parkour);
+  finishBoom.start(durationSeconds - 0.9);
+  finishBoom.stop(durationSeconds + 0.2);
+}
+
+async function renderScheduledDemo(
+  durationSeconds: number,
+  masterGain: number,
+  limiterThreshold: number,
+  schedule: (
+    context: AudioContextLike,
+    buffers: ReturnType<typeof createNoiseBuffers>,
+    buses: Record<string, GainNodeLike>,
+    reverbSend: AudioNodeLike,
+    master: AudioNodeLike,
+  ) => void,
+): Promise<AudioDemoResult> {
   const OfflineContext = getOfflineContext();
 
   if (!OfflineContext) {
@@ -306,7 +477,7 @@ export async function renderAudioDemo(durationSeconds = 24): Promise<AudioDemoRe
   const audioContext = context as unknown as AudioContextLike;
   const limiter = audioContext.createDynamicsCompressor();
 
-  limiter.threshold.value = -20;
+  limiter.threshold.value = limiterThreshold;
   limiter.knee.value = 4;
   limiter.ratio.value = 20;
   limiter.attack.value = 0.002;
@@ -315,7 +486,7 @@ export async function renderAudioDemo(durationSeconds = 24): Promise<AudioDemoRe
 
   const master = audioContext.createGain();
 
-  master.gain.value = 2.15;
+  master.gain.value = masterGain;
   master.connect(limiter);
 
   const buses = wireBus(audioContext, master);
@@ -337,10 +508,7 @@ export async function renderAudioDemo(durationSeconds = 24): Promise<AudioDemoRe
 
   const buffers = createNoiseBuffers(audioContext);
 
-  scheduleAmbience(audioContext, buffers, buses.environment ?? master, reverbSend);
-  scheduleFootsteps(audioContext, buffers, buses.movement ?? master, reverbSend, durationSeconds);
-  scheduleParkour(audioContext, buffers, buses.parkour ?? master, reverbSend);
-  scheduleMusic(audioContext, buses.music ?? master, durationSeconds);
+  schedule(audioContext, buffers, buses, reverbSend, master);
 
   const buffer = await context.startRendering();
   const left = buffer.getChannelData(0);
@@ -363,4 +531,39 @@ export async function renderAudioDemo(durationSeconds = 24): Promise<AudioDemoRe
     peak,
     rms: Math.sqrt(sum / left.length),
   };
+}
+
+/** Deterministic prologue mix demo (existing reference profile). */
+export async function renderAudioDemo(durationSeconds = 24): Promise<AudioDemoResult> {
+  return renderScheduledDemo(
+    durationSeconds,
+    2.15,
+    -20,
+    (context, buffers, buses, reverb, master) => {
+      scheduleAmbience(context, buffers, buses.environment ?? master, reverb);
+      scheduleFootsteps(context, buffers, buses.movement ?? master, reverb, durationSeconds);
+      scheduleParkour(context, buffers, buses.parkour ?? master, reverb);
+      scheduleMusic(context, buses.music ?? master, durationSeconds);
+    },
+  );
+}
+
+/** Deterministic high-route demo: wind, metal catwalk steps, landing/finish hits. */
+export async function renderHighRouteAudioDemo(durationSeconds = 14): Promise<AudioDemoResult> {
+  return renderScheduledDemo(
+    durationSeconds,
+    1.4,
+    -18,
+    (context, buffers, buses, reverb, master) => {
+      scheduleHighRoute(
+        context,
+        buffers,
+        buses.environment ?? master,
+        buses.movement ?? master,
+        buses.parkour ?? master,
+        reverb,
+        durationSeconds,
+      );
+    },
+  );
 }

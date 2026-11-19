@@ -32,8 +32,16 @@ if (import.meta.env.DEV) {
 
   void import("./audio/audioDemo").then((module) => {
     (
-      window as Window & { __glasslineAudioDemo?: typeof module.renderAudioDemo }
+      window as Window & {
+        __glasslineAudioDemo?: typeof module.renderAudioDemo;
+        __glasslineHighRouteAudioDemo?: typeof module.renderHighRouteAudioDemo;
+      }
     ).__glasslineAudioDemo = module.renderAudioDemo;
+    (
+      window as Window & {
+        __glasslineHighRouteAudioDemo?: typeof module.renderHighRouteAudioDemo;
+      }
+    ).__glasslineHighRouteAudioDemo = module.renderHighRouteAudioDemo;
   });
 }
 

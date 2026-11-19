@@ -1144,6 +1144,75 @@ billboard and a helipad/service detail set.
 3. Run the listening pass and balance catwalk metal/altitude wind.
 4. Final menu/motion/colour calibration; world-detail parity on the start roofs.
 
+---
+
+## Round 15 — high-route sound profile (2026-11-19)
+
+### Scope
+
+The prologue mix was measured in Round 2, but the catwalk/finale had no separate
+audio verification. This round adds a deterministic high-route profile to the
+offline demo: altitude wind with a lull/gust, metal catwalk footsteps, jump and
+landing hits, cable creak, low hum, and a finish impact.
+
+### What changed
+
+- **Audio demo profiles:** `renderAudioDemo` keeps the existing prologue profile;
+  new `renderHighRouteAudioDemo` renders 14 s of finale sound through the same
+  synthesis/bus/limiter/reverb code.
+- **High-route layers:** wind bed swell with a 6.4–8.3 s lull and 9.2 s gust;
+  metal catwalk footstep cadence; jump whoosh; metal landings; cable-creak sweep;
+  58/87 Hz structural hum; low finish boom.
+- **Tooling:** `audio-render.mjs --high-route` selects the new profile;
+  `window.__glasslineHighRouteAudioDemo` is exposed in dev.
+- **Prologue regression:** the original 24 s prologue render still passes **5/5**
+  mix targets (peak −5.26 dBFS, LUFS −26.00, short-term range 22.86).
+
+### Measured high-route result
+
+| Metric | Value | Band |
+|---|---:|---:|
+| Low-band share | 0.853 | 0.82–0.92 |
+| High-band share | 0.040 | 0.025–0.09 |
+| LUFS | −23.86 | −26…−23 |
+| Peak | −4.83 dBFS | −6…−3 |
+| Per-second RMS range | 24.4 dB | 12–26 |
+
+All five high-route bands pass in the custom profile; per-second RMS drops from
+about −21.7 dB to −40.3 dB during the wind lull. This is a **demo/render
+measurement**, not a human listening verdict or a live gameplay recording.
+
+### Evidence
+
+| File | Content |
+|---|---|
+| [`high-route.wav`](evidence/audio/round-15/high-route.wav) | 14 s high-route render |
+| [`high-route-waveform.png`](evidence/audio/round-15/high-route-waveform.png) | waveform with 1 s markers |
+| [`metrics.json`](evidence/audio/round-15/metrics.json) | values, bands, per-second RMS |
+
+### Verification
+
+- `npm run validate`: typecheck, Biome, **275 tests in 36 files**, build.
+- Prologue audio regression 5/5; high-route custom profile 5/5.
+- No route/gameplay changes.
+
+### Honest gaps
+
+- No human listening pass; the high-route profile is synthesized in isolation,
+  not recorded from live gameplay with radio/music ducking.
+- Custom high-route bands are authored here, not derived from the reference
+  audio; they need listening validation.
+- Visual billboard/helipad balance, bypass tradeoff, and final menu/motion
+  calibration remain open.
+
+### Next
+
+1. Record a live high-route probe (wind/metal steps in-engine) and compare it to
+   the offline profile.
+2. Human listening pass on prologue + high-route profiles.
+3. Balance billboard/helipad and bypass tradeoff.
+4. Final menu/motion/colour calibration.
+
 ## Round log
 
 | Round | Date | Focus | Outcome |
