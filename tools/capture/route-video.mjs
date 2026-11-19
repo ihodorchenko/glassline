@@ -579,11 +579,9 @@ async function main() {
   }
 
   const frames = [];
-  let frameIndex = 0;
 
   session.on("Page.screencastFrame", (params) => {
     frames.push(params.data);
-    frameIndex += 1;
     session.send("Page.screencastFrameAck", { sessionId: params.sessionId }).catch(() => {});
   });
 

@@ -3015,6 +3015,33 @@ Re-run every gate against the current code after the finish/cue/review changes.
 
 - Human perception, full-level run, cross-browser/AT remain.
 
+---
+
+## Round 57 — evidence freeze/cleanup (2026-11-19)
+
+### Scope
+
+Before the final decision rounds, freeze the key evidence and remove a dead
+capture variable.
+
+### What changed
+
+- Added `docs/evidence/MANIFEST.md` + `MANIFEST.sha256` for start/metrics/audio/
+  review/finish/training artifacts.
+- Removed an unused `frameIndex` from `route-video`.
+- No game/visual/route/audio changes.
+
+### Verification
+
+- `npm run validate`: **279 tests in 37 files**, build.
+- `shasum -a 256 -c` manifest passes.
+- Start 13/13; 0 broken relative links.
+
+### Honest gaps
+
+- Manifest hashes are a snapshot; docs are excluded to avoid self-reference.
+- Human verdict still pending.
+
 ## Round log
 
 | Round | Date | Focus | Outcome |
