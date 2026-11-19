@@ -1,0 +1,7 @@
+{
+  "capturedAt": "2026-11-19",
+  "status": "not representative",
+  "reason": "Safari was driven through safaridriver --mcp; rAF callbacks were heavily throttled (14 frames / 2.17 s, then 20 / 2.03 s even after activating Safari). This measures remote-automation/background throttling, not GPU fps.",
+  "safariFullRunWallClockSeconds": 33.542,
+  "chromiumFullRunWallClockSeconds": 24.014
+}

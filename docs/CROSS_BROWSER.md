@@ -79,7 +79,9 @@ Can't find profile directory
 
 1. Safari Remote Automation уже включён; smoke и полный забег пройдены
    (`tools/capture/safari-smoke.mjs`, `tools/capture/safari-route.mjs`).
-   Осталось прослушать звук в Safari и сравнить визуал вручную.
+   Визуал старта прошёл **13/13** метрик; rAF-FPS в Safari через safaridriver
+недостоверен (троттлинг автоматизации), поэтому производительность Safari
+не заявляется. Осталось прослушать звук в Safari.
 2. Firefox: запуск вне sandbox или через реальный профиль.
 3. Playwright WebKit оставить только как известный false-positive, не как
    блокер Safari.

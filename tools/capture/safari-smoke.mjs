@@ -17,6 +17,9 @@ const modeArg = args.find((value, index) => args[index - 1] === "--mode") ?? "tr
 const modeLabel = modeArg.toLowerCase() === "prologue" ? "Prologue" : "Training";
 const modeSlug = modeLabel.toLowerCase();
 const probeMovement = args.includes("--probe-movement");
+const probeFps = args.includes("--probe-fps");
+const viewportArg = args.find((value, index) => args[index - 1] === "--viewport") ?? "1280x720";
+const [viewportWidth, viewportHeight] = viewportArg.split("x").map(Number);
 
 await mkdir(outDir, { recursive: true });
 
@@ -86,6 +89,10 @@ async function main() {
     );
 
     await tool("navigate_to_url", { url });
+    await tool("set_viewport_size", {
+      width: Number.isFinite(viewportWidth) ? viewportWidth : 1280,
+      height: Number.isFinite(viewportHeight) ? viewportHeight : 720,
+    });
     await new Promise((resolve) => setTimeout(resolve, 3000));
     await tool("screenshot", { savePath: join(outDir, "menu.png") });
 
@@ -123,13 +130,34 @@ async function main() {
       };
     }
 
+    let fps = null;
+
+    if (probeFps) {
+      await tool("evaluate_javascript", {
+        expression: `window.__safariFps = { frames: 0, startedAt: performance.now(), done: false };
+          const tick = () => {
+            const state = window.__safariFps;
+            state.frames += 1;
+            if (performance.now() - state.startedAt < 2000) requestAnimationFrame(tick);
+            else { state.done = true; state.elapsed = performance.now() - state.startedAt; }
+          };
+          requestAnimationFrame(tick);
+          return true;`,
+      });
+      await new Promise((resolve) => setTimeout(resolve, 2400));
+      const result = await tool("evaluate_javascript", {
+        expression: "return window.__safariFps ?? null;",
+      });
+      fps = result;
+    }
+
     const consoleState = await tool("browser_console_messages", { limit: 40 });
     await writeFile(
       join(outDir, "report.json"),
-      JSON.stringify({ url, mode: modeLabel, state, movement, consoleState }, null, 2),
+      JSON.stringify({ url, mode: modeLabel, state, movement, fps, consoleState }, null, 2),
     );
 
-    console.log(JSON.stringify({ ok: true, outDir, state, movement }, null, 2));
+    console.log(JSON.stringify({ ok: true, outDir, state, movement, fps }, null, 2));
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
     console.error(message);
