@@ -22,7 +22,8 @@
 > turn billboard and high-roof helipad; Round 15 adds a measured high-route
 > audio profile (wind, metal catwalk steps, landings, finish hit); Round 16 adds
 > a live ground-vs-high analyser probe; Round 17 adds rooftop amenity planting;
-> Round 18 adds an overhead canyon bridge that brings sky composition into band. The plan's anti-hack rule is honored: the
+> Round 18 adds an overhead canyon bridge; Round 19 rebalances atmosphere/grade
+> and reaches 13/13 start-frame reference metrics. The plan's anti-hack rule is honored: the
 > hard highlight clip was replaced by a gentler shoulder; the remaining
 > near-white/highlight gap is assigned to real lighting and content.
 

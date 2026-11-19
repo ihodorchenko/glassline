@@ -1370,6 +1370,78 @@ across the start canyon to frame the view and bring sky coverage into band.
 3. Human listening and final motion/menu calibration.
 4. Continue facade/world detail parity.
 
+---
+
+## Round 19 — atmosphere and highlight balance (2026-11-19)
+
+### Scope
+
+After Round 18 the start frame had only `p95` and `near_white` open; those are
+highlight-headroom metrics. This round rebalances atmosphere and grade toward the
+reference's bright, hazy prologue look rather than clipping the exposure up.
+
+### What changed
+
+- **Atmosphere:** prologue environment moved to a pale/hazy sky:
+  `skyColor 0xa9d3ee`, fog `0xe8f2fa` near 45 / far 340, zenith `0x5f97c8`,
+  horizon `0xe6f2fa`, ground `0xc4d8e3`, cloud cover 0.58, sun intensity 5.8.
+- **Grade:** exposure 1.0 (down from 1.22), contrast 0.22 (down from 0.29 peak
+  trial), saturation 1.30; keeps roof detail while letting sky/cloud highlights
+  reach near-white.
+- **Visual result:** the start roof no longer clips to a flat white; the sky and
+  distant facades are hazier/whiter, closer to the reference frame. The lower
+  route/catwalk also read brighter without losing structure.
+- **No geometry/route/audio changes.**
+
+### Metrics
+
+All **13/13** start-frame metrics now pass:
+
+| Metric | Candidate | Reference |
+|---|---:|---:|
+| Luma | 0.6126 | 0.6152 |
+| p25 | 0.3714 | 0.3710 |
+| p95 | 0.9879 | 0.9806 |
+| Near-white % | 21.1 | 34.5 |
+| Deep shadow % | 3.17 | 0.68 |
+| Saturation | 0.308 | 0.300 |
+| Local contrast | 0.269 | 0.285 |
+| Sky % | 34.5 | 43.3 |
+| Red | 2.22 | 2.39 |
+
+### Verification
+
+- `npm run validate`: typecheck, Biome, **275 tests in 36 files**, build.
+- Performance **60.2 fps**.
+- Captures: start, lower route, catwalk under the final atmosphere.
+
+### Evidence
+
+| View | Image |
+|---|---|
+| Start | ![Start](evidence/visual/round-19/start.jpg) |
+| Lower route | ![Lower](evidence/visual/round-19/lower.jpg) |
+| Catwalk | ![Catwalk](evidence/visual/round-19/catwalk.jpg) |
+| Metrics | [`metrics.json`](evidence/visual/round-19/metrics.json) |
+
+### Honest gaps
+
+- The image is deliberately high-key; some roof/route detail is still clipped or
+  washed out. Near-white is 21% vs 34.5% reference, inside tolerance but not a
+  like-for-like highlight distribution.
+- Fog/haze reduces distant-city readability; reference is hazy but has more
+  architectural contrast.
+- No human listening this round; billboard/helipad balance, bypass tradeoff,
+  high-roof density, and final menu/motion calibration remain open.
+
+### Next
+
+1. Recover clipped roof/route detail while keeping 13/13 (selective highlight,
+   not global exposure).
+2. Balance billboard/helipad and bypass risk/time.
+3. Human listening and final motion/menu calibration.
+4. Continue facade/world detail parity.
+
 ## Round log
 
 | Round | Date | Focus | Outcome |
