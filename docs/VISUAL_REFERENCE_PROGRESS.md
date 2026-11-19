@@ -2249,6 +2249,48 @@ the two lines legible.
 2. Human playtest of the choice.
 3. Continue highlight/motion calibration.
 
+---
+
+## Round 36 — bypass entrance cue (2026-11-19)
+
+### Scope
+
+Round 35 made the bypass a real alternative, but its entrance was only a rail
+gap with a sign on the lower deck. This round makes the choice legible from the
+return catwalk.
+
+### What changed
+
+- East-facing `BYPASS` sign at x=37, y=6.55 on two posts, visible on approach.
+- Red painted lip along the x=30–38 rail opening and two red chevrons on deck.
+- Lower-deck BYPASS sign retained.
+- Visual only; no route/collision/audio changes.
+
+### Verification
+
+- `npm run validate`: typecheck, Biome, **276 tests in 36 files**, build.
+- Prologue start 13/13 unaffected.
+- Performance **60.1 fps**.
+
+### Evidence
+
+| View | Image |
+|---|---|
+| Bypass entrance cue | ![Barriers](evidence/visual/round-36/barriers.jpg) |
+
+### Honest gaps
+
+- Sign/ chevrons are simple canvas/box craft; the drop opening still requires the
+  player to look down.
+- No timed A/B proof or human playtest of the choice.
+- Human listening, clipped highlights, final motion/menu remain.
+
+### Next
+
+1. Timed A/B or playtest of direct vs bypass.
+2. Human review of video/audio.
+3. Highlight/motion calibration.
+
 ## Round log
 
 | Round | Date | Focus | Outcome |

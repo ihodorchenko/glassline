@@ -1431,6 +1431,37 @@ function addCatwalk(builder: CityBuilder): void {
     });
   }
 
+  // Entrance cue for the lower bypass: sign, edge paint, and a floor chevron.
+  builder.plane(37, 6.55, -131.85, 2.1, 0.58, Math.PI / 2, {
+    text: "BYPASS",
+    background: 0x14191d,
+    textColor: 0xf4f1e9,
+    accentColor: 0xd52e36,
+  });
+  for (const z of [-131.55, -132.15]) {
+    builder.box(37, 5.85, z, 0.06, 2.1, 0.06, {
+      material: "metal",
+      castShadow: false,
+    });
+  }
+  builder.box(34, 5.215, -132.32, 8.0, 0.02, 0.14, {
+    material: "red",
+    emissive: 0xc0262d,
+    emissiveIntensity: 0.25,
+    castShadow: false,
+    receiveShadow: false,
+  });
+  for (const side of [-1, 1]) {
+    builder.box(34 + side * 0.42, 5.218, -131.9, 0.74, 0.02, 0.16, {
+      material: "red",
+      emissive: 0xc0262d,
+      emissiveIntensity: 0.3,
+      rotationY: side * 0.52,
+      castShadow: false,
+      receiveShadow: false,
+    });
+  }
+
   // A distant hero skyline closes the open turn view without forming a wall.
   addBuilding(builder, 50, -300, 26, 18, {
     material: "glass-far",
