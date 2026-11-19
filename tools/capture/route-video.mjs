@@ -634,6 +634,8 @@ async function main() {
     const jumpedZ = new Set();
     let lastLogAt = 0;
     let lastStateZ = 6;
+    let stuckSince = 0;
+    let lastRecoveryAt = 0;
 
     while (Date.now() - started < args.seconds * 1000) {
       const state = await session.evaluate(`(() => {
@@ -645,6 +647,7 @@ async function main() {
           done: false,
           x: app.player.getPosition().x,
           z: app.player.getPosition().z,
+          speed: app.player.model.getSnapshot().speed,
           grounded: app.player.model.getSnapshot().grounded,
         };
       })()`);
@@ -706,6 +709,22 @@ async function main() {
             break;
           }
         }
+      }
+
+      if (state.grounded && state.speed < 0.7) {
+        if (stuckSince === 0) {
+          stuckSince = Date.now();
+        } else if (Date.now() - stuckSince > 450 && Date.now() - lastRecoveryAt > 900) {
+          lastRecoveryAt = Date.now();
+          stuckSince = 0;
+          await session.evaluate("window.__glassline.input.heldKeys.delete('Space'); true");
+          await delay(40);
+          await session.evaluate("window.__glassline.input.heldKeys.add('Space'); true");
+          await delay(320);
+          await session.evaluate("window.__glassline.input.heldKeys.delete('Space'); true");
+        }
+      } else {
+        stuckSince = 0;
       }
 
       if (state.z < -128 && state.grounded) {

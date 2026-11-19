@@ -8,6 +8,7 @@
 [Финальный отчёт](docs/FINAL_REPORT.md) — что достигнуто и что осталось.
 [Решение на раунде 60](docs/DECISION_AT_60.md) — статус и варианты A/B/C.
 [Нормализованный реальный финиш/результаты](docs/evidence/review/finish-results-run-review.mp4) — физический забег по catwalk.
+[Чистый полный забег](docs/evidence/video/round-65/clean-full-run.mp4) — спавн → FINISH, 24,014 с, 0 респавнов.
 
 **A first-person parkour game focused on movement, momentum, and mastery.**
 

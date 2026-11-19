@@ -3200,6 +3200,32 @@ Reduce checkpoint respawns in the spawn-to-finish autopilot.
 - Clean no-respawn run not yet captured; current best is 1 respawn.
 - WebKit Playwright remains false-positive only; real Safari Training passes.
 
+---
+
+## Round 65 — clean full run, 0 respawns (2026-11-19)
+
+### Scope
+
+Turn the spawn→finish autopilot into a deterministic clean run.
+
+### What changed
+
+- Per-jump hold tuning: finish parapet 300 ms, beam→pad0 **250 ms**, ascent pads
+ 300 ms, early vault/gap 110 ms.
+- Stuck recovery re-presses jump when grounded speed <0.7 for 450 ms.
+- **0 checkpoint respawns**, **24.014 s**, no unlock/teleport.
+
+### Evidence
+
+- [`clean-full-run.mp4`](evidence/video/round-65/clean-full-run.mp4) — 23.13 s
+- [`results.png`](evidence/video/round-65/results.png) — Results 00:24.014
+- [`README.md`](evidence/video/round-65/README.md)
+
+### Honest gaps
+
+- Automated waypoint run, not a human/speedrun-valid record.
+- WebKit Playwright false positive; real Safari Training passes.
+
 ## Round log
 
 | Round | Date | Focus | Outcome |

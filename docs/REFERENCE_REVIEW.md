@@ -52,7 +52,8 @@ deep-shadow 1,72% · sky 39,8% · split −16,69 · red 3,28**.
    - [gameplay-route.mp4](evidence/video/round-31/gameplay-route.mp4)
    - [finish-terminal-run.mp4](evidence/video/round-49/finish-terminal-run.mp4) — 14,40 с, catwalk + терминал FINISH
    - [finish-results-run.mp4](evidence/video/round-53/finish-results-run.mp4) — 13,7 с, физический финиш + Results (15,594 с)
-   - [full-run.mp4](evidence/video/round-62/full-run.mp4) — **полный забег от спавна**, 32,7 с, без unlock/телепорта
+   - [full-run.mp4](evidence/video/round-62/full-run.mp4) — полный забег от спавна, 32,7 с (ранний)
+   - [clean-full-run.mp4](evidence/video/round-65/clean-full-run.mp4) — **чистый полный забег, 24,014 с, 0 респавнов**
    - [cinematic-route.mp4](evidence/video/round-30/cinematic-route.mp4)
 3. **Посмотреть стартовый кадр и Training**:
    - [start.jpg](evidence/visual/round-42/start.jpg)

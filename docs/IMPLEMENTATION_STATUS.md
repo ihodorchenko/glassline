@@ -102,7 +102,7 @@ Only `Verified` means that the applicable acceptance criteria have been checked 
 | Statistics | Defined | Implemented | Integrated | Verified |
 | Reference Presentation | Defined | In Progress | Integrated | Partially Verified |
 
-**Full run:** spawn → FINISH in **32.739 s** (no unlock/teleport, automated; checkpoint respawns occurred — clean run pending). Tuned autopilot now reaches **25.449 s with 1 respawn**; 0-respawn remains flaky — [Round 64](VISUAL_REFERENCE_PROGRESS.md).
+**Full run:** **clean spawn → FINISH in 24.014 s with 0 respawns**, no unlock/teleport (automated) — [Round 65](VISUAL_REFERENCE_PROGRESS.md).
 
 **Materials:** triplanar procedural bump/normal relief across concrete/roof/metal/asphalt ([Round 61](VISUAL_REFERENCE_PROGRESS.md)); start remains 13/13.
 
