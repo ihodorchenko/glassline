@@ -104,11 +104,17 @@ export class MenuBackdrop implements Disposable {
     // Central service duct and route paint, read as a parkour line from above.
     this.addBox(-1.9, 1.3, -7.6, 0.4, 2.6, 4, "white");
     this.addBox(1.9, 1.3, -7.6, 0.4, 2.6, 4, "white");
-    this.addBox(0, 1.15, -7.6, 4, 0.2, 4, "metal");
+    this.addBox(0, 1.45, -7.6, 4, 0.2, 4, "metal");
 
     for (let z = 4.6; z > -20; z -= 2.6) {
       this.addBox(0, 0.014, z, 0.16, 0.02, 1.15, "red", false);
     }
+
+    // Match the gameplay roof utility so the menu vignette reads as the same place.
+    this.addBox(-3.6, 0.045, 3.4, 0.86, 0.06, 0.86, "metal", false);
+    this.addBox(2.6, 0.045, 2.0, 0.86, 0.06, 0.86, "metal", false);
+    this.addBox(-5.4, 0.14, 4.3, 1.4, 0.16, 1.4, "metal", false);
+    this.addBox(-4.95, 0.24, 4.3, 0.5, 0.06, 0.08, "red", false);
 
     this.addBox(-8.6, 0.9, 2.2, 2.4, 1.6, 1.8, "metal");
     this.addBox(8.4, 1.0, -2.6, 2.4, 1.6, 1.8, "metal");

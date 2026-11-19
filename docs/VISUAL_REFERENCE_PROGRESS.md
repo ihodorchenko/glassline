@@ -2616,6 +2616,39 @@ edges and scales them down, opening the canyon composition.
 2. Longer gameplay capture.
 3. Human audio/video review before round 60.
 
+---
+
+## Round 45 — menu/level consistency (2026-11-19)
+
+### Scope
+
+The menu vignette still had the old 1.15 m tunnel ceiling and an empty roof
+foreground after gameplay changed. This round aligns the same place.
+
+### What changed
+
+- Menu tunnel ceiling 1.15→1.45 m (matches gameplay).
+- Menu roof gets two drain grates and an access hatch/red handle.
+- No gameplay/route/metrics changes.
+
+### Verification
+
+- `npm run validate`: typecheck, Biome, **279 tests in 37 files**, build.
+- Menu capture; performance **60.3 fps**.
+- Start gameplay remains 13/13.
+
+### Evidence
+
+| View | Image |
+|---|---|
+| Menu/level consistency | ![Menu](evidence/visual/round-45/menu.jpg) |
+
+### Honest gaps
+
+- This is visual consistency, not a perceptual improvement; the menu remains a
+  stylized vignette.
+- Human audio/video verdict still pending before round 60.
+
 ## Round log
 
 | Round | Date | Focus | Outcome |
