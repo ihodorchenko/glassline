@@ -37,7 +37,7 @@ export class Renderer implements Disposable {
     this.renderer.outputColorSpace = THREE.SRGBColorSpace;
     this.renderer.toneMapping = THREE.NoToneMapping;
     this.renderer.shadowMap.enabled = options.shadowsEnabled;
-    this.renderer.shadowMap.type = THREE.PCFShadowMap;
+    this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
     this.renderer.info.autoReset = true;
 
     this.post = options.postProcessing === false ? null : this.createPostPipeline();

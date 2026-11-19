@@ -3251,6 +3251,29 @@ Add believable wear without new assets or geometry.
 - Micro-detail only; repeated panels/low-poly silhouettes remain.
 - No human visual verdict.
 
+---
+
+## Round 67 — soft 4K sun shadows (2026-11-19)
+
+### Scope
+
+Harden the lighting realism without changing composition.
+
+### What changed
+
+- PCFShadowMap → **PCFSoftShadowMap**.
+- Shadow map 2048 → **4096**; normalBias 0.025; radius 2.
+- Start metrics **13/13**; **60.4 fps**; 280 tests.
+
+### Evidence
+
+- [`start-soft-shadows.jpg`](evidence/visual/round-67/start-soft-shadows.jpg)
+- [`metrics.json`](evidence/visual/round-67/metrics.json)
+
+### Honest gaps
+
+- Still a stylized low-poly city; no human visual verdict.
+
 ## Round log
 
 | Round | Date | Focus | Outcome |

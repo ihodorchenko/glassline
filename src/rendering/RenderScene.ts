@@ -101,9 +101,10 @@ export class RenderScene implements Disposable {
     this.rim = new THREE.DirectionalLight(0xbcd8f0, 0.42);
 
     this.sun.castShadow = true;
-    this.sun.shadow.mapSize.set(2048, 2048);
+    this.sun.shadow.mapSize.set(4096, 4096);
     this.sun.shadow.bias = -0.00015;
-    this.sun.shadow.normalBias = 0.035;
+    this.sun.shadow.normalBias = 0.025;
+    this.sun.shadow.radius = 2;
     this.sun.shadow.camera.near = 1;
     this.sun.shadow.camera.far = 280;
     this.sun.shadow.camera.left = -60;
