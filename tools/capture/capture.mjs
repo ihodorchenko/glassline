@@ -10,7 +10,9 @@
  * through Playwright's `msedge` channel at 1600x900 dpr 1, captures each shot as
  * a PNG into `captures/<iteration>/`, records sha256 + renderer stats in
  * `captures/<iteration>/manifest.json`, and optionally captures every shot
- * twice to prove byte-level determinism.
+ * twice to prove determinism. Byte-identical frames are the preferred outcome;
+ * when hashes differ, the accepted rule is "at most 1/255 channel delta on at
+ * most 0.01% of pixels" (see README §3), measured by decoding both PNGs.
  *
  * Legacy one-off mode keeps the old flag surface (`--out`, `--mode`, `--pos`,
  * `--yaw`, `--pitch`, `--wait`, `--menu`, `--run`) and drives
@@ -43,6 +45,7 @@ import {
 import { parseArgs, printHelp, UsageError } from "./lib/cli.mjs";
 import * as evidence from "./lib/evidence.mjs";
 import { runLegacyCapture } from "./lib/legacy-capture.mjs";
+import { comparePngFiles } from "./lib/pixel-diff.mjs";
 import { createServerManager } from "./lib/vite-server.mjs";
 
 const ROOT_DIR = resolve(dirname(fileURLToPath(import.meta.url)), "..", "..");
@@ -68,6 +71,22 @@ function createLogger() {
 
 function firstLine(text) {
   return String(text).split("\n")[0];
+}
+
+const SHOT_TIMEOUT_MS = 240_000;
+const BROWSER_CLOSE_TIMEOUT_MS = 20_000;
+
+/** Races a promise against a timeout so a wedged Chromium cannot hang the run. */
+function withTimeout(promise, timeoutMs, label) {
+  let timer;
+
+  const timeout = new Promise((_, reject) => {
+    timer = setTimeout(() => {
+      reject(new Error(`${label} timed out after ${timeoutMs} ms`));
+    }, timeoutMs);
+  });
+
+  return Promise.race([promise, timeout]).finally(() => clearTimeout(timer));
 }
 
 function printLegacyReport(report) {
@@ -133,10 +152,8 @@ async function resolveShotIds({ browser, options, baseUrl, log }) {
 
 async function captureShot({ browser, options, baseUrl, log, id }) {
   const url = buildCaptureUrl(baseUrl, { level: options.level, shot: id });
-  const captured = await withIsolatedPage(
-    browser,
-    options.viewport,
-    async ({ page, diagnostics }) => {
+  const captured = await withTimeout(
+    withIsolatedPage(browser, options.viewport, async ({ page, diagnostics }) => {
       await waitForCaptureReady(page, {
         url,
         timeoutMs: options.readyTimeout,
@@ -161,6 +178,7 @@ async function captureShot({ browser, options, baseUrl, log, id }) {
         type: "png",
         animations: "disabled",
         caret: "hide",
+        timeout: 60_000,
       });
       const diagnosticsSnapshot = diagnostics.snapshot();
 
@@ -171,7 +189,9 @@ async function captureShot({ browser, options, baseUrl, log, id }) {
         viewport,
         ...diagnosticsSnapshot,
       };
-    },
+    }),
+    SHOT_TIMEOUT_MS,
+    `shot "${id}" capture`,
   );
 
   const png = evidence.pngSize(captured.buffer);
@@ -309,6 +329,14 @@ function buildManifest({ options, baseUrl, browserInfo, shots, determinism }) {
   };
 }
 
+function formatChannelDelta(delta) {
+  return typeof delta === "number" ? `${delta}/255` : "?";
+}
+
+function formatShare(share) {
+  return typeof share === "number" ? `${(share * 100).toFixed(4)}%` : "?";
+}
+
 async function verifyDeterminism({ options, baseUrl, log, shotIds, firstShots, outputDir }) {
   const tempDir = resolve(outputDir, ".determinism");
   await rm(tempDir, { recursive: true, force: true });
@@ -334,35 +362,111 @@ async function verifyDeterminism({ options, baseUrl, log, shotIds, firstShots, o
       label: "determinism",
     });
   } finally {
-    await secondBrowser.browser.close().catch(() => {
-      // already closed
+    await withTimeout(
+      secondBrowser.browser.close().catch(() => undefined),
+      BROWSER_CLOSE_TIMEOUT_MS,
+      "closing the determinism browser",
+    ).catch(() => {
+      // already closed or wedged; process exit cleans up the rest
     });
   }
 
-  const comparisons = firstShots.map((first, index) => {
-    const second = secondShots[index];
-    const byteDiff = evidence.compareBuffers(first.buffer, second.buffer);
+  const comparisons = [];
 
-    return {
+  for (const [index, first] of firstShots.entries()) {
+    const second = secondShots[index];
+    const byteIdentical = first.sha256 === second.sha256;
+    const byteDiff = evidence.compareBuffers(first.buffer, second.buffer);
+    let pixel = null;
+    let pixelError = null;
+
+    // Only pay for the PNG decode when the byte streams actually differ.
+    if (!byteIdentical) {
+      try {
+        pixel = await comparePngFiles(first.file, second.file, { log });
+      } catch (error) {
+        pixelError = error instanceof Error ? error.message : String(error);
+        log(`determinism: pixel diff unavailable for "${first.id}": ${firstLine(pixelError)}`);
+      }
+    }
+
+    const differingPixels = byteIdentical ? 0 : (pixel?.differingPixels ?? null);
+    const differingShare = byteIdentical ? 0 : (pixel?.differingShare ?? null);
+    const maxChannelDelta = byteIdentical ? 0 : (pixel?.maxChannelDelta ?? null);
+
+    let passed;
+    let reason = null;
+
+    if (byteIdentical) {
+      passed = true;
+    } else if (options.determinismTolerance === 0) {
+      passed = false;
+      reason = "byte-identical required (--determinism-tolerance 0)";
+    } else if (pixel === null) {
+      passed = false;
+      reason = `pixel diff unavailable: ${firstLine(pixelError ?? "unknown error")}`;
+    } else {
+      passed =
+        pixel.maxChannelDelta <= options.determinismTolerance &&
+        pixel.differingShare <= options.determinismMaxShare;
+
+      if (!passed) {
+        reason =
+          `exceeds tolerance: maxChannelDelta ${formatChannelDelta(pixel.maxChannelDelta)} ` +
+          `(allowed <= ${formatChannelDelta(options.determinismTolerance)}), ` +
+          `differing share ${formatShare(pixel.differingShare)} ` +
+          `(allowed <= ${formatShare(options.determinismMaxShare)})`;
+      }
+    }
+
+    comparisons.push({
       id: first.id,
       sha256First: first.sha256,
       sha256Second: second.sha256,
-      identical: first.sha256 === second.sha256,
-      sizes: { first: first.buffer.length, second: second.buffer.length },
+      byteIdentical,
+      passed,
+      differingPixels,
+      differingShare,
+      maxChannelDelta,
       differingBytes: byteDiff.differingBytes,
       firstDifference: byteDiff.firstDifference,
+      boundingBox: pixel?.boundingBox ?? null,
+      samples: pixel?.samples ?? [],
       statsIdentical: JSON.stringify(first.stats) === JSON.stringify(second.stats),
-    };
-  });
+      reason,
+    });
+  }
 
-  const mismatches = comparisons.filter((comparison) => !comparison.identical);
+  const passed = comparisons.every((comparison) => comparison.passed);
+  const byteMatches = comparisons.filter((comparison) => comparison.byteIdentical).length;
+  const passedShots = comparisons.filter((comparison) => comparison.passed).length;
+  const differingPixels = comparisons.reduce(
+    (total, comparison) => total + (comparison.differingPixels ?? 0),
+    0,
+  );
+  const maxChannelDelta = comparisons.reduce(
+    (maximum, comparison) => Math.max(maximum, comparison.maxChannelDelta ?? 0),
+    0,
+  );
+  const maxAllowedPixels = Math.floor(
+    options.viewport.width * options.viewport.height * options.determinismMaxShare,
+  );
 
-  if (mismatches.length === 0) {
+  if (passed) {
     await rm(tempDir, { recursive: true, force: true });
-    log(`determinism: PASS (${comparisons.length}/${comparisons.length} shots byte-identical)`);
+
+    if (byteMatches === comparisons.length) {
+      log(`determinism: PASS (${byteMatches}/${comparisons.length} shots byte-identical)`);
+    } else {
+      log(
+        `determinism: PASS within tolerance (${byteMatches}/${comparisons.length} byte-identical, ` +
+          `${passedShots}/${comparisons.length} accepted, max channel delta ${formatChannelDelta(maxChannelDelta)}, ` +
+          `${differingPixels} differing px)`,
+      );
+    }
   } else {
     log(
-      `determinism: FAIL (${mismatches.length}/${comparisons.length} shots differ); second-pass frames kept in ${evidence.toRepoPath(ROOT_DIR, tempDir)}`,
+      `determinism: FAIL (${passedShots}/${comparisons.length} shots within rule); second-pass frames kept in ${evidence.toRepoPath(ROOT_DIR, tempDir)}`,
     );
   }
 
@@ -370,25 +474,52 @@ async function verifyDeterminism({ options, baseUrl, log, shotIds, firstShots, o
     comparison.id,
     `${comparison.sha256First.slice(0, 16)}…`,
     `${comparison.sha256Second.slice(0, 16)}…`,
-    comparison.identical ? "PASS" : "FAIL",
-    comparison.identical
-      ? ""
-      : `${comparison.differingBytes} B differ @${comparison.firstDifference}`,
+    comparison.byteIdentical ? "yes" : "no",
+    comparison.differingPixels === null ? "?" : String(comparison.differingPixels),
+    formatChannelDelta(comparison.maxChannelDelta),
+    formatShare(comparison.differingShare),
+    comparison.byteIdentical ? "BYTE" : comparison.passed ? "PASS" : "FAIL",
   ]);
 
   console.log("");
   console.log(
-    evidence.renderTable(["id", "run1 sha256", "run2 sha256", "verdict", "delta"], rows, {
-      aligns: ["left", "left", "left", "left", "right"],
-    }),
+    evidence.renderTable(
+      [
+        "id",
+        "run1 sha256",
+        "run2 sha256",
+        "byte-identical",
+        "diff px",
+        "max delta",
+        "share",
+        "verdict",
+      ],
+      rows,
+      { aligns: ["left", "left", "left", "left", "right", "right", "right", "left"] },
+    ),
+  );
+  console.log("");
+  console.log(
+    `determinism rule: byte-identical preferred; tolerance = max channel delta <= ${formatChannelDelta(options.determinismTolerance)} ` +
+      `on <= ${formatShare(options.determinismMaxShare)} of pixels (${maxAllowedPixels} px at ${options.viewport.width}x${options.viewport.height})`,
   );
   console.log("");
 
   return {
     verified: true,
-    matches: comparisons.length - mismatches.length,
+    passed,
+    byteIdentical: byteMatches === comparisons.length,
+    byteMatches,
+    // `matches` kept as a backward-compatible alias for byte-identical shots.
+    matches: byteMatches,
+    passedShots,
     total: comparisons.length,
-    keptSecondPassDir: mismatches.length > 0 ? evidence.toRepoPath(ROOT_DIR, tempDir) : null,
+    tolerance: options.determinismTolerance,
+    maxShare: options.determinismMaxShare,
+    maxAllowedPixels,
+    differingPixels,
+    maxChannelDelta,
+    keptSecondPassDir: passed ? null : evidence.toRepoPath(ROOT_DIR, tempDir),
     shots: comparisons,
   };
 }
@@ -482,11 +613,22 @@ async function runCaptureMode({ browser, browserInfo, options, baseUrl, log }) {
   console.log("");
   printShotTable(firstPass, options);
 
-  if (determinism !== null && determinism.matches !== determinism.total) {
+  if (determinism !== null && !determinism.passed) {
     console.error("");
-    console.error("determinism check FAILED — per-shot sha256 differs between two identical runs.");
     console.error(
-      "This means the capture mode is not frozen enough (time-driven animation, random seeds, camera drift).",
+      "determinism check FAILED — the two passes do not match within the accepted tolerance.",
+    );
+    console.error(
+      `rule: max channel delta <= ${determinism.tolerance}/255 on <= ${determinism.maxShare} of pixels ` +
+        `(${determinism.maxAllowedPixels} px at ${options.viewport.width}x${options.viewport.height})`,
+    );
+
+    for (const shot of determinism.shots.filter((comparison) => !comparison.passed)) {
+      console.error(`  - ${shot.id}: ${shot.reason}`);
+    }
+
+    console.error(
+      "Byte-identical output is the preferred outcome; a tolerance pass means GPU LSB jitter (MSAA resolve), not a look/scene change.",
     );
     console.error(`Second-pass frames: ${determinism.keptSecondPassDir}`);
     return { exitCode: 1, manifestPath, manifest };
@@ -624,9 +766,15 @@ async function main() {
     process.exitCode = result.exitCode;
   } finally {
     try {
-      await browser?.close();
+      await withTimeout(
+        Promise.resolve()
+          .then(() => browser?.close())
+          .catch(() => undefined),
+        BROWSER_CLOSE_TIMEOUT_MS,
+        "closing the browser",
+      );
     } catch {
-      // already closed by the signal path
+      // already closed (or wedged) by the signal path
     }
 
     const stopResult = await server.stop().catch((error) => {

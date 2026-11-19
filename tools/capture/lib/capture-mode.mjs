@@ -18,8 +18,32 @@
 import { navigate } from "./browser-session.mjs";
 
 const READY_POLL_INTERVAL_MS = 100;
+const EVALUATE_TIMEOUT_MS = 30_000;
+const SETTLE_TIMEOUT_MS = 60_000;
 
 export class CaptureModeError extends Error {}
+
+/**
+ * `page.evaluate` has no built-in timeout; under heavy host load a stalled
+ * renderer could hang the harness forever. Every contract call goes through
+ * this guard so a stuck page fails with a diagnostic instead.
+ */
+function evaluateWithTimeout(page, fn, arg, { label, timeoutMs = EVALUATE_TIMEOUT_MS }) {
+  const evaluation = page.evaluate(fn, arg);
+  let timer;
+
+  const timeout = new Promise((_, reject) => {
+    timer = setTimeout(() => {
+      reject(
+        new CaptureModeError(
+          `${label} did not finish within ${timeoutMs} ms (renderer stalled or page hung)`,
+        ),
+      );
+    }, timeoutMs);
+  });
+
+  return Promise.race([evaluation, timeout]).finally(() => clearTimeout(timer));
+}
 
 /** Builds the capture URL without dropping query parameters already in `baseUrl`. */
 export function buildCaptureUrl(baseUrl, { level, shot }) {
@@ -42,8 +66,9 @@ export function buildCaptureUrl(baseUrl, { level, shot }) {
 
 /** Reads a compact, safe diagnostics snapshot of the page for failure reports. */
 async function describeCaptureState(page) {
-  return page
-    .evaluate(() => {
+  return evaluateWithTimeout(
+    page,
+    () => {
       const app = window.__glassline;
       const capture = window.__glasslineCapture;
       const bootStage =
@@ -68,8 +93,10 @@ async function describeCaptureState(page) {
           dpr: window.devicePixelRatio,
         },
       };
-    })
-    .catch((error) => ({ probeFailed: error.message }));
+    },
+    undefined,
+    { label: "describeCaptureState()", timeoutMs: 10_000 },
+  ).catch((error) => ({ probeFailed: error.message }));
 }
 
 export async function waitForCaptureReady(page, { url, timeoutMs, log, diagnostics }) {
@@ -112,19 +139,24 @@ export async function waitForCaptureReady(page, { url, timeoutMs, log, diagnosti
 
 /** Reads shot ids from the contract; throws with a precise message when malformed. */
 export async function readShotIds(page) {
-  const entries = await page.evaluate(() => {
-    const capture = window.__glasslineCapture;
+  const entries = await evaluateWithTimeout(
+    page,
+    () => {
+      const capture = window.__glasslineCapture;
 
-    if (!capture || !Array.isArray(capture.shots)) {
-      return null;
-    }
+      if (!capture || !Array.isArray(capture.shots)) {
+        return null;
+      }
 
-    return capture.shots.map((entry) =>
-      typeof entry === "string"
-        ? { id: entry }
-        : { id: typeof entry?.id === "string" ? entry.id : null },
-    );
-  });
+      return capture.shots.map((entry) =>
+        typeof entry === "string"
+          ? { id: entry }
+          : { id: typeof entry?.id === "string" ? entry.id : null },
+      );
+    },
+    undefined,
+    { label: "readShotIds()" },
+  );
 
   if (entries === null) {
     throw new CaptureModeError("window.__glasslineCapture.shots is missing or not an array");
@@ -155,28 +187,36 @@ export async function readShotIds(page) {
 }
 
 export async function applyShot(page, id) {
-  const result = await page.evaluate(async (shotId) => {
-    const capture = window.__glasslineCapture;
+  const result = await evaluateWithTimeout(
+    page,
+    async (shotId) => {
+      const capture = window.__glasslineCapture;
 
-    if (typeof capture?.apply !== "function") {
-      return { ok: false, reason: "window.__glasslineCapture.apply is not a function" };
-    }
-
-    try {
-      const returned = await capture.apply(shotId);
-
-      if (returned === false) {
-        return {
-          ok: false,
-          reason: `apply("${shotId}") returned false (unknown shot or no camera)`,
-        };
+      if (typeof capture?.apply !== "function") {
+        return { ok: false, reason: "window.__glasslineCapture.apply is not a function" };
       }
 
-      return { ok: true };
-    } catch (error) {
-      return { ok: false, reason: `apply("${shotId}") threw: ${error?.message ?? String(error)}` };
-    }
-  }, id);
+      try {
+        const returned = await capture.apply(shotId);
+
+        if (returned === false) {
+          return {
+            ok: false,
+            reason: `apply("${shotId}") returned false (unknown shot or no camera)`,
+          };
+        }
+
+        return { ok: true };
+      } catch (error) {
+        return {
+          ok: false,
+          reason: `apply("${shotId}") threw: ${error?.message ?? String(error)}`,
+        };
+      }
+    },
+    id,
+    { label: `apply("${id}")` },
+  );
 
   if (!result?.ok) {
     throw new CaptureModeError(
@@ -191,15 +231,29 @@ export async function waitSettleFrames(page, frames) {
     return;
   }
 
-  await page.evaluate(
-    (count) =>
-      new Promise((resolve) => {
+  const timeoutMs = Math.max(SETTLE_TIMEOUT_MS, frames * 500);
+  const evaluation = page.evaluate(
+    ({ count, budgetMs }) =>
+      new Promise((resolve, reject) => {
         let remaining = count;
+        const started = performance.now();
+
+        const fail = () => {
+          reject(
+            new Error(
+              `rAF settle stalled: ${count - remaining}/${count} frames after ${Math.round(performance.now() - started)} ms ` +
+                `(visibility=${document.visibilityState}, hidden=${document.hidden})`,
+            ),
+          );
+        };
+
+        const timer = setTimeout(fail, budgetMs);
 
         const tick = () => {
           remaining -= 1;
 
           if (remaining <= 0) {
+            clearTimeout(timer);
             resolve(count);
             return;
           }
@@ -209,24 +263,43 @@ export async function waitSettleFrames(page, frames) {
 
         requestAnimationFrame(tick);
       }),
-    frames,
+    { count: frames, budgetMs: timeoutMs },
   );
+
+  let timer;
+
+  const timeout = new Promise((_, reject) => {
+    timer = setTimeout(() => {
+      reject(
+        new CaptureModeError(
+          `waitSettleFrames(${frames}) did not finish within ${timeoutMs} ms (renderer stalled or page hung)`,
+        ),
+      );
+    }, timeoutMs + 5_000);
+  });
+
+  await Promise.race([evaluation, timeout]).finally(() => clearTimeout(timer));
 }
 
 export async function readStats(page) {
-  const stats = await page.evaluate(() => {
-    const capture = window.__glasslineCapture;
+  const stats = await evaluateWithTimeout(
+    page,
+    () => {
+      const capture = window.__glasslineCapture;
 
-    if (typeof capture?.stats !== "function") {
-      return null;
-    }
+      if (typeof capture?.stats !== "function") {
+        return null;
+      }
 
-    try {
-      return capture.stats();
-    } catch (error) {
-      return { error: error?.message ?? String(error) };
-    }
-  });
+      try {
+        return capture.stats();
+      } catch (error) {
+        return { error: error?.message ?? String(error) };
+      }
+    },
+    undefined,
+    { label: "stats()" },
+  );
 
   if (stats === null) {
     throw new CaptureModeError("window.__glasslineCapture.stats() is not available");
@@ -240,9 +313,14 @@ export async function readStats(page) {
 }
 
 export async function readPageViewport(page) {
-  return page.evaluate(() => ({
-    width: window.innerWidth,
-    height: window.innerHeight,
-    devicePixelRatio: window.devicePixelRatio,
-  }));
+  return evaluateWithTimeout(
+    page,
+    () => ({
+      width: window.innerWidth,
+      height: window.innerHeight,
+      devicePixelRatio: window.devicePixelRatio,
+    }),
+    undefined,
+    { label: "readPageViewport()" },
+  );
 }

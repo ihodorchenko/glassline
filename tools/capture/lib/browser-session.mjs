@@ -9,7 +9,22 @@
 import { chromium } from "playwright";
 
 const NAVIGATION_TIMEOUT_MS = 60_000;
+const CONTEXT_CLOSE_TIMEOUT_MS = 15_000;
 const MAX_DIAGNOSTIC_ENTRIES = 40;
+
+function withTimeout(promise, timeoutMs, label) {
+  let timer;
+
+  const timeout = new Promise((resolve) => {
+    timer = setTimeout(() => {
+      resolve({ timedOut: true, label });
+    }, timeoutMs);
+  });
+
+  return Promise.race([promise.then(() => ({ timedOut: false })), timeout]).finally(() =>
+    clearTimeout(timer),
+  );
+}
 
 function pushBounded(list, entry) {
   list.push(entry);
@@ -131,14 +146,34 @@ export async function withIsolatedPage(browser, { width, height }, callback) {
 
   try {
     const page = await context.newPage();
+
+    // Another agent saving a file under src/ must not reload this page in the
+    // middle of a capture (Vite HMR full reloads destroy the execution context
+    // and make the frame incomparable). Mock the HMR websocket: the page still
+    // boots from the current on-disk tree over plain HTTP.
+    await page.routeWebSocket(/^wss?:\/\/(127\.0\.0\.1|localhost)(:\d+)?\//, () => {
+      // Intentionally mocked: no server forwarding, no HMR reloads.
+    });
+
     const diagnostics = attachDiagnostics(page);
 
     return await callback({ page, diagnostics });
   } finally {
-    await context.close().catch(() => {
-      // closing a crashed page can reject; nothing useful to do here
-    });
+    await closedWithin(context, "context");
   }
+}
+
+/** Closes a browser object without letting a wedged Chromium hang the harness. */
+async function closedWithin(target, label) {
+  const result = await withTimeout(
+    Promise.resolve()
+      .then(() => target.close())
+      .catch(() => undefined),
+    CONTEXT_CLOSE_TIMEOUT_MS,
+    label,
+  );
+
+  return result;
 }
 
 export { NAVIGATION_TIMEOUT_MS };

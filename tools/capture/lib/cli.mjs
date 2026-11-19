@@ -25,8 +25,10 @@ const HELP_LINES = [
   "  --level <id>           Level query parameter (default prologue)",
   "  --frames <n>           Extra requestAnimationFrame frames after apply() (default 30)",
   "  --json <path>          Also write the machine-readable report to <path>",
-  "  --verify-determinism   Capture twice and require identical sha256 per shot",
+  "  --verify-determinism   Capture twice and check the determinism rule per shot",
   "  --no-verify-determinism  Disable the double capture (on by default for --shot all)",
+  "  --determinism-tolerance <n>   Max channel delta accepted when hashes differ (default 1; 0 = byte identity only)",
+  "  --determinism-max-share <f>   Max share of differing pixels when hashes differ (default 0.0001 = 144 px at 1600x900)",
   "",
   "Legacy one-off mode:",
   "  --out <file>           Write a single PNG frame and exit (no manifest)",
@@ -124,6 +126,8 @@ export function parseArgs(argv) {
     width: DEFAULT_WIDTH,
     height: DEFAULT_HEIGHT,
     verifyDeterminism: null,
+    determinismTolerance: 1,
+    determinismMaxShare: 0.0001,
     readyTimeout: DEFAULT_READY_TIMEOUT_MS,
     serverTimeout: DEFAULT_SERVER_TIMEOUT_MS,
     strictConsole: false,
@@ -241,6 +245,16 @@ export function parseArgs(argv) {
         break;
       case "--no-verify-determinism":
         options.verifyDeterminism = false;
+        break;
+      case "--determinism-tolerance":
+        options.determinismTolerance = readNumber(value(), flag, {
+          integer: true,
+          min: 0,
+          max: 255,
+        });
+        break;
+      case "--determinism-max-share":
+        options.determinismMaxShare = readNumber(value(), flag, { min: 0, max: 1 });
         break;
       case "--ready-timeout":
         options.readyTimeout = readNumber(value(), flag, { integer: true, min: 1000 });
