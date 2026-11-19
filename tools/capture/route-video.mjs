@@ -40,6 +40,7 @@ function parseArgs(argv) {
     pos: [0, 0.93, 6],
     yaw: 0,
     cinematic: false,
+    unlock: false,
   };
 
   for (let index = 0; index < argv.length; index += 1) {
@@ -85,6 +86,9 @@ function parseArgs(argv) {
         break;
       case "--cinematic":
         args.cinematic = true;
+        break;
+      case "--unlock":
+        args.unlock = true;
         break;
       case "--verbose":
         args.verbose = true;
@@ -517,6 +521,11 @@ async function main() {
       const app = window.__glassline;
       if (app.flowManager.getState() !== "gameplay") {
         await app.startGameplay(${JSON.stringify(args.mode)});
+      }
+      if (${args.unlock}) {
+        for (const section of ["sec_industrial", "sec_construction", "sec_skybridge", "sec_finish"]) {
+          await app.levelRuntime.activateSection(section);
+        }
       }
       app.player.teleportTo({ x: ${args.pos[0]}, y: ${args.pos[1]}, z: ${args.pos[2]} });
       app.cameraSystem.resetForRespawn(${args.yaw});

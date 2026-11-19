@@ -2649,6 +2649,40 @@ foreground after gameplay changed. This round aligns the same place.
   stylized vignette.
 - Human audio/video verdict still pending before round 60.
 
+---
+
+## Round 46 — section-unlocked catwalk capture (2026-11-19)
+
+### Scope
+
+High-route capture previously required walking the whole level. This round adds
+a section-unlock capture path and records a clean catwalk sprint.
+
+### What changed
+
+- `route-video --unlock` activates `sec_industrial → sec_construction →
+  sec_skybridge → sec_finish` before teleporting.
+- 2.8 s catwalk sprint (8.5 m/s, RUN billboard/turn) with live audio; trimmed
+  before the un-steered 180° turn.
+- No game/route/visual changes.
+
+### Verification
+
+- `npm run validate`: **279 tests in 37 files**, build.
+- Clip 2.8 s/1280×720/30 fps; audio peak −3.79 dBFS / LUFS ≈ −21.20.
+- Start metrics unchanged (13/13); performance unchanged.
+
+### Evidence
+
+- [`catwalk-sprint.mp4`](evidence/video/round-46/catwalk-sprint.mp4)
+- [`catwalk-sprint.wav`](evidence/video/round-46/catwalk-sprint.wav)
+- [`README.md`](evidence/video/round-46/README.md)
+
+### Honest gaps
+
+- Only 2.8 s; no turn/return/barriers; audio loud.
+- Human audio/video verdict still pending before round 60.
+
 ## Round log
 
 | Round | Date | Focus | Outcome |
