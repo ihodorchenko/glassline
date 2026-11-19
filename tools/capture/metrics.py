@@ -26,6 +26,12 @@ Usage:
     # 4. Discover metric keys / units / bands
     $GLASSLINE_PYTHON tools/capture/metrics.py --list-metrics
 
+    # 5. W1 perceptual guardrails (diagnostic only, NOT a gate)
+    $GLASSLINE_PYTHON tools/capture/metrics.py --candidate captures/w0 --bands --guardrails
+    # horizon override for a known shot, in source-image pixels
+    $GLASSLINE_PYTHON tools/capture/metrics.py --candidate captures/w0/wallrun-corridor.png \
+        --guardrails --horizon-px wallrun-corridor.png:300
+
 Interpreter: the system python3 has no numpy/Pillow. Use the workspace runtime
 (numpy 2.3.5, Pillow 12.3.0):
     /Users/igorhodorchenko/.dsh/dsh-runtimes/dsh-primary-runtime/dependencies/python/bin/python3
@@ -149,21 +155,32 @@ TOLERANCES = {
 # ---------------------------------------------------------------------------
 
 
-def load_image(path: str) -> np.ndarray:
-    """Load an image as 0..1 float RGB, resizing so max(width, height) == 960."""
+def load_image_with_meta(path: str) -> tuple[np.ndarray, dict[str, int]]:
+    """Load a frame as 0..1 float RGB, resizing so max(width, height) == 960."""
     image = Image.open(path).convert("RGB")
+    source_width, source_height = image.size
     width, height = image.size
     scale = 960 / max(width, height)
 
     if scale < 1:
         image = image.resize((int(width * scale), int(height * scale)), Image.LANCZOS)
 
-    return np.asarray(image).astype(np.float32) / 255.0
+    pixels = np.asarray(image).astype(np.float32) / 255.0
+    meta = {
+        "sourceWidth": source_width,
+        "sourceHeight": source_height,
+        "width": int(pixels.shape[1]),
+        "height": int(pixels.shape[0]),
+    }
+    return pixels, meta
 
 
-def metrics(path: str) -> dict[str, float]:
-    """Compute the 13 metrics for one frame. Formulas are v1-identical."""
-    pixels = load_image(path)
+def load_image(path: str) -> np.ndarray:
+    return load_image_with_meta(path)[0]
+
+
+def metrics_from_pixels(pixels: np.ndarray) -> dict[str, float]:
+    """Compute the 13 §2.1 metrics for one already-loaded frame."""
     red, green, blue = pixels[..., 0], pixels[..., 1], pixels[..., 2]
     luma = 0.2126 * red + 0.7152 * green + 0.0722 * blue
     maximum = pixels.max(axis=2)
@@ -205,6 +222,410 @@ def metrics(path: str) -> dict[str, float]:
         "split": split,
         "red": float(red_accent.mean() * 100),
     }
+
+
+def metrics(path: str) -> dict[str, float]:
+    """Compute the 13 §2.1 metrics for one frame. Formulas are v1-identical."""
+    return metrics_from_pixels(load_image(path))
+
+
+# ---------------------------------------------------------------------------
+# Perceptual guardrails (W1, diagnostic only)
+# ---------------------------------------------------------------------------
+# These do NOT modify, replace or gate the 13 §2.1 metrics above. They are
+# review inputs that expose "passing the metric while losing the look":
+#   - sky_mask_share      blue pixels that actually look like sky (bright,
+#                         desaturated, above the scene horizon) vs the primary
+#                         sky-blue share, which also counts blue glass facades;
+#   - near_white_seam_energy  detail/seam energy inside near-white areas, so a
+#                         flat clipped white cannot pass as detailed white;
+#   - red_route_share / red_route_saturation  largest connected red component
+#                         and how saturated it is, so a salmon or confetti route
+#                         is visible in the numbers.
+# Full definitions and limitations: docs/reports/METRIC_SPEC.md.
+
+GUARDRAIL_KEYS = [
+    "sky_mask_share",
+    "near_white_seam_energy",
+    "red_route_share",
+    "red_route_saturation",
+]
+
+GUARDRAIL_INFO = {
+    "sky_mask_share": (
+        "Sky mask share",
+        "%",
+        "bright desaturated blue pixels above the horizon",
+    ),
+    "near_white_seam_energy": (
+        "Near-white seam energy",
+        "gradient",
+        "mean |grad L| inside the eroded near-white mask",
+    ),
+    "red_route_share": (
+        "Red route share",
+        "%",
+        "largest 8-connected red component, % of frame",
+    ),
+    "red_route_saturation": (
+        "Red route saturation",
+        "0..1",
+        "mean HSV-style saturation of that component",
+    ),
+}
+
+SKY_LUMA_MIN = 0.55
+SKY_SATURATION_MAX = 0.45
+# Lit white walls are bright *and* nearly achromatic. Calibration for
+# service-block (W1.1-FIX-G, 2026-11-19): a pixel brighter than 0.75 with
+# HSV-style saturation below 0.20 is treated as a lit wall, not sky. Accepted
+# trade-off: a genuinely pale sky patch with luma > 0.75 and S < 0.20 is also
+# excluded (documented in METRIC_SPEC.md).
+WHITE_WALL_LUMA_MIN = 0.75
+WHITE_WALL_SATURATION_MAX = 0.20
+HORIZON_SEARCH_LOW = 0.05
+HORIZON_SEARCH_HIGH = 0.70
+HORIZON_FALLBACK = 0.40
+HORIZON_ACCEPT_RATIO = 1.5
+NEAR_WHITE_LUMA = 0.9
+RED_CHANNEL_MIN = 0.30
+RED_DOMINANCE = 1.30
+RED_COMPONENT_MIN_SHARE = 0.0002  # 0.02 % of frame
+DEFAULT_MAX_COMPONENT_PIXELS = 400_000
+
+
+def detect_horizon(luma: np.ndarray) -> tuple[int, float, str]:
+    """Detect the dominant horizontal edge used as the horizon row.
+
+    Returns (row, edge_strength_ratio, source). The search band is rows
+    [5 %, 70 %] of the frame; if no edge is at least 1.5x the median row-edge
+    energy, the documented fallback is the 40 % line (i.e. "top 40 % is
+    potential sky").
+    """
+    height = luma.shape[0]
+    row_energy = np.abs(np.gradient(luma, axis=0)).mean(axis=1)
+    window = max(3, (height // 60) | 1)
+    smoothed = np.convolve(row_energy, np.ones(window, dtype=np.float64) / window, mode="same")
+
+    low = int(HORIZON_SEARCH_LOW * height)
+    high = int(HORIZON_SEARCH_HIGH * height)
+    if high <= low + 1:
+        return int(HORIZON_FALLBACK * height), 1.0, "fallback"
+
+    segment = smoothed[low:high]
+    index = low + int(np.argmax(segment))
+    median = float(np.median(segment))
+    ratio = float(smoothed[index] / median) if median > 1e-9 else 0.0
+    if ratio >= HORIZON_ACCEPT_RATIO:
+        return index, ratio, "edge"
+    return int(HORIZON_FALLBACK * height), ratio, "fallback"
+
+
+def erode4(mask: np.ndarray) -> np.ndarray:
+    """4-neighbour erosion by one pixel (no scipy)."""
+    eroded = mask.copy()
+    eroded[1:, :] &= mask[:-1, :]
+    eroded[:-1, :] &= mask[1:, :]
+    eroded[:, 1:] &= mask[:, :-1]
+    eroded[:, :-1] &= mask[:, 1:]
+    return eroded
+
+
+def _row_runs(mask: np.ndarray) -> tuple[list[list[int]], list[int], list[int], list[int]]:
+    """Run-length encode a boolean mask by row.
+
+    Returns (runs_per_row, run_rows, run_starts, run_ends) with end exclusive.
+    """
+    height = mask.shape[0]
+    runs_per_row: list[list[int]] = []
+    run_rows: list[int] = []
+    run_starts: list[int] = []
+    run_ends: list[int] = []
+    for y in range(height):
+        padded = np.concatenate(([False], mask[y], [False]))
+        delta = np.diff(padded.astype(np.int8))
+        starts = np.flatnonzero(delta == 1)
+        ends = np.flatnonzero(delta == -1)
+        indices: list[int] = []
+        for start, end in zip(starts.tolist(), ends.tolist()):
+            indices.append(len(run_rows))
+            run_rows.append(y)
+            run_starts.append(start)
+            run_ends.append(end)
+        runs_per_row.append(indices)
+    return runs_per_row, run_rows, run_starts, run_ends
+
+
+def _largest_component(mask: np.ndarray, min_area_px: int) -> tuple[int, np.ndarray | None]:
+    """Largest 8-connected component of a boolean mask, numpy-only.
+
+    Runs are union-found row by row, so cost is O(rows + runs), not O(pixels);
+    components smaller than min_area_px are ignored (noise guard).
+    """
+    height, width = mask.shape
+    runs_per_row, run_rows, run_starts, run_ends = _row_runs(mask)
+    total_runs = len(run_rows)
+    if total_runs == 0:
+        return 0, None
+
+    parent = list(range(total_runs))
+
+    def find(index: int) -> int:
+        root = index
+        while parent[root] != root:
+            root = parent[root]
+        while parent[index] != root:
+            parent[index], index = root, parent[index]
+        return root
+
+    def union(left: int, right: int) -> None:
+        root_left, root_right = find(left), find(right)
+        if root_left != root_right:
+            parent[root_right] = root_left
+
+    for y in range(height - 1):
+        previous = runs_per_row[y]
+        following = runs_per_row[y + 1]
+        i = j = 0
+        while i < len(previous) and j < len(following):
+            left, right = previous[i], following[j]
+            if run_starts[left] < run_ends[right] and run_starts[right] < run_ends[left]:
+                union(left, right)
+            if run_ends[left] < run_ends[right]:
+                i += 1
+            else:
+                j += 1
+
+    sizes: dict[int, int] = {}
+    for index in range(total_runs):
+        root = find(index)
+        sizes[root] = sizes.get(root, 0) + run_ends[index] - run_starts[index]
+
+    best_root: int | None = None
+    best_size = 0
+    for root, size in sizes.items():
+        if size >= min_area_px and size > best_size:
+            best_root, best_size = root, size
+    if best_root is None:
+        return 0, None
+
+    component = np.zeros((height, width), dtype=bool)
+    for index in range(total_runs):
+        if find(index) == best_root:
+            component[run_rows[index], run_starts[index] : run_ends[index]] = True
+    return best_size, component
+
+
+def guardrails_from_pixels(
+    pixels: np.ndarray,
+    meta: dict[str, int],
+    horizon_override: int | None = None,
+    max_component_pixels: int = DEFAULT_MAX_COMPONENT_PIXELS,
+) -> dict[str, float | int | str | None]:
+    """Compute the W1 perceptual guardrails on an already-loaded frame."""
+    red, green, blue = pixels[..., 0], pixels[..., 1], pixels[..., 2]
+    luma = 0.2126 * red + 0.7152 * green + 0.0722 * blue
+    maximum = pixels.max(axis=2)
+    minimum = pixels.min(axis=2)
+    saturation = np.where(maximum > 1e-5, (maximum - minimum) / np.maximum(maximum, 1e-5), 0)
+    gradient_y, gradient_x = np.gradient(luma)
+    gradient_magnitude = np.hypot(gradient_x, gradient_y)
+
+    horizon_row, horizon_ratio, horizon_source = detect_horizon(luma)
+    horizon_source_px: int | None = None
+    if horizon_override is not None:
+        source_height = max(1, int(meta["sourceHeight"]))
+        horizon_row = int(round(horizon_override * luma.shape[0] / source_height))
+        horizon_row = max(0, min(luma.shape[0] - 1, horizon_row))
+        horizon_source = "override"
+        horizon_source_px = int(horizon_override)
+
+    rows = np.arange(luma.shape[0])[:, None]
+    blue_mask = (blue > red * 1.05) & (blue > 0.45) & (blue > green * 1.02)
+    sky_like = (
+        blue_mask
+        & (saturation <= SKY_SATURATION_MAX)
+        & (luma >= SKY_LUMA_MIN)
+        & (rows < horizon_row)
+    )
+    lit_wall = (luma > WHITE_WALL_LUMA_MIN) & (saturation < WHITE_WALL_SATURATION_MAX)
+    sky_mask = sky_like & ~lit_wall
+    sky_share = float(sky_mask.mean() * 100.0)
+    lit_wall_share = float((sky_like & lit_wall).mean() * 100.0)
+
+    near_white = luma > NEAR_WHITE_LUMA
+    if near_white.any():
+        interior = erode4(near_white)
+        if not interior.any():
+            interior = near_white  # small highlight: fall back to the raw mask
+        seam_energy = float(gradient_magnitude[interior].mean())
+    else:
+        seam_energy = 0.0
+
+    red_mask = (
+        (red > RED_CHANNEL_MIN)
+        & (red > green * RED_DOMINANCE)
+        & (red > blue * RED_DOMINANCE)
+    )
+    height, width = luma.shape
+    min_area_px = max(1, int(round(RED_COMPONENT_MIN_SHARE * height * width)))
+    component_guard = "none"
+    component_mask: np.ndarray | None
+    if int(red_mask.sum()) > max_component_pixels:
+        # Pathological frame (huge red area): decimate 2x for connectivity.
+        component_guard = "decimated_x2"
+        decimated = red_mask[::2, ::2]
+        _, component_decimated = _largest_component(decimated, max(1, min_area_px // 4))
+        if component_decimated is None:
+            component_mask = None
+        else:
+            upscaled = np.repeat(np.repeat(component_decimated, 2, axis=0), 2, axis=1)
+            component_mask = upscaled[:height, :width]
+    else:
+        _, component_mask = _largest_component(red_mask, min_area_px)
+
+    if component_mask is not None and bool(component_mask.any()):
+        area = int(component_mask.sum())
+        red_route_share = float(100.0 * area / (height * width))
+        red_route_saturation = float(saturation[component_mask].mean())
+    else:
+        red_route_share = 0.0
+        red_route_saturation = 0.0
+
+    return {
+        "sky_mask_share": sky_share,
+        "near_white_seam_energy": seam_energy,
+        "red_route_share": red_route_share,
+        "red_route_saturation": red_route_saturation,
+        "sky_horizon_row": int(horizon_row),
+        "sky_horizon_source_px": horizon_source_px,
+        "sky_horizon_source": horizon_source,
+        "sky_horizon_edge_ratio": float(horizon_ratio),
+        "sky_lit_wall_pct": lit_wall_share,
+        "component_guard": component_guard,
+    }
+
+
+def guardrails(
+    path: str,
+    horizon_override: int | None = None,
+    max_component_pixels: int = DEFAULT_MAX_COMPONENT_PIXELS,
+) -> dict[str, float | int | str | None]:
+    """Convenience wrapper: load one frame and compute the guardrails."""
+    pixels, meta = load_image_with_meta(path)
+    return guardrails_from_pixels(pixels, meta, horizon_override, max_component_pixels)
+
+
+def parse_horizon_overrides(values: list[str] | None) -> dict[str, object]:
+    """Parse --horizon-px values: `Y` or `file:Y` tokens (comma-separated)."""
+    default: int | None = None
+    by_name: dict[str, int] = {}
+    for value in values or []:
+        for token in str(value).split(","):
+            token = token.strip()
+            if not token:
+                continue
+            if ":" in token:
+                name, _, raw_y = token.rpartition(":")
+                name = name.strip()
+                if not name:
+                    fail(f"error: malformed --horizon-px entry: {token!r}")
+                try:
+                    y = int(raw_y)
+                except ValueError:
+                    fail(f"error: --horizon-px expects an integer pixel row: {token!r}")
+                if y < 0:
+                    fail(f"error: --horizon-px must be >= 0: {token!r}")
+                by_name[name] = y
+                by_name[os.path.basename(name)] = y
+                by_name[os.path.splitext(os.path.basename(name))[0]] = y
+            else:
+                try:
+                    y = int(token)
+                except ValueError:
+                    fail(f"error: --horizon-px expects Y or file:Y: {token!r}")
+                if y < 0:
+                    fail(f"error: --horizon-px must be >= 0: {token!r}")
+                default = y
+    return {"default": default, "by_name": by_name}
+
+
+def resolve_horizon_override(path: str, overrides: dict[str, object] | None) -> int | None:
+    if not overrides:
+        return None
+    by_name = overrides.get("by_name") or {}
+    if not isinstance(by_name, dict):
+        return None
+    base = os.path.basename(path)
+    stem = os.path.splitext(base)[0]
+    for candidate_key in (path, base, stem):
+        if candidate_key in by_name:
+            return int(by_name[candidate_key])
+    default = overrides.get("default")
+    return int(default) if isinstance(default, int) else None
+
+
+def aggregate_series(
+    per_frame: list[dict[str, object]], keys: list[str], field: str
+) -> dict[str, dict[str, float]]:
+    """mean / sample sd / min / p10 / p50 / p90 / max for a list of per-frame dicts."""
+    aggregate: dict[str, dict[str, float]] = {}
+    for key in keys:
+        values = np.array(
+            [float(frame[field][key]) for frame in per_frame], dtype=np.float64
+        )
+        aggregate[key] = {
+            "mean": float(values.mean()),
+            "sd": float(values.std(ddof=1)) if values.size > 1 else 0.0,
+            "min": float(values.min()),
+            "p10": float(np.percentile(values, 10)),
+            "p50": float(np.percentile(values, 50)),
+            "p90": float(np.percentile(values, 90)),
+            "max": float(values.max()),
+        }
+    return aggregate
+
+
+def guardrail_rows(
+    measured_guardrails: dict[str, object],
+    guardrail_aggregate: dict[str, dict[str, float]],
+    primary_sky: float | None,
+) -> tuple[list[dict[str, object]], dict[str, float]]:
+    """Rows for JSON/markdown plus the primary-sky vs sky-mask context."""
+    rows: list[dict[str, object]] = []
+    for key in GUARDRAIL_KEYS:
+        label, unit, _ = GUARDRAIL_INFO[key]
+        reference = guardrail_aggregate[key]
+        value = float(measured_guardrails[key])
+        if value < reference["p10"]:
+            position = "below p10-p90"
+        elif value > reference["p90"]:
+            position = "above p10-p90"
+        else:
+            position = "inside p10-p90"
+        rows.append(
+            {
+                "guardrail": key,
+                "label": label,
+                "unit": unit,
+                "value": value,
+                "referenceMean": reference["mean"],
+                "referenceSd": reference["sd"],
+                "referenceP10": reference["p10"],
+                "referenceP90": reference["p90"],
+                "position": position,
+            }
+        )
+    context: dict[str, float] = {}
+    if primary_sky is not None:
+        sky_mask = float(measured_guardrails["sky_mask_share"])
+        context = {
+            "primarySkyBlue": float(primary_sky),
+            "skyMaskShare": sky_mask,
+            "skyMaskOfPrimaryPct": (100.0 * sky_mask / primary_sky) if primary_sky > 0 else 0.0,
+            "skyLitWallPct": float(measured_guardrails.get("sky_lit_wall_pct", 0.0)),
+        }
+    return rows, context
 
 
 # ---------------------------------------------------------------------------
@@ -281,30 +702,39 @@ def resolve_reference(args: argparse.Namespace) -> tuple[str, str | None]:
     return relative, set_name
 
 
-def compute_reference(path: str) -> tuple[list[dict[str, object]], dict[str, dict[str, float]]]:
-    """Per-frame metrics plus aggregate mean/sd/min/p10/p50/p90/max per metric."""
+def compute_reference(
+    path: str,
+    with_guardrails: bool = False,
+    horizon_overrides: dict[str, object] | None = None,
+    max_component_pixels: int = DEFAULT_MAX_COMPONENT_PIXELS,
+) -> tuple[
+    list[dict[str, object]],
+    dict[str, dict[str, float]],
+    dict[str, dict[str, float]],
+]:
+    """Per-frame metrics (and optional guardrails) plus aggregate spread statistics."""
     files = expand_patterns([path])
     per_frame: list[dict[str, object]] = []
     for file in files:
-        frame = metrics(file)
-        per_frame.append(
-            {"file": os.path.relpath(file, REPO_ROOT), "metrics": frame}
-        )
-
-    aggregate: dict[str, dict[str, float]] = {}
-    for key in METRIC_KEYS:
-        values = np.array([frame["metrics"][key] for frame in per_frame], dtype=np.float64)
-        aggregate[key] = {
-            "mean": float(values.mean()),
-            "sd": float(values.std(ddof=1)) if values.size > 1 else 0.0,
-            "min": float(values.min()),
-            "p10": float(np.percentile(values, 10)),
-            "p50": float(np.percentile(values, 50)),
-            "p90": float(np.percentile(values, 90)),
-            "max": float(values.max()),
+        pixels, meta = load_image_with_meta(file)
+        entry: dict[str, object] = {
+            "file": os.path.relpath(file, REPO_ROOT),
+            "metrics": metrics_from_pixels(pixels),
         }
+        if with_guardrails:
+            entry["guardrails"] = guardrails_from_pixels(
+                pixels,
+                meta,
+                resolve_horizon_override(file, horizon_overrides),
+                max_component_pixels,
+            )
+        per_frame.append(entry)
 
-    return per_frame, aggregate
+    aggregate = aggregate_series(per_frame, METRIC_KEYS, "metrics")
+    guardrail_aggregate = (
+        aggregate_series(per_frame, GUARDRAIL_KEYS, "guardrails") if with_guardrails else {}
+    )
+    return per_frame, aggregate, guardrail_aggregate
 
 
 # ---------------------------------------------------------------------------
@@ -644,6 +1074,57 @@ def print_candidate(
     print(f"  {summary_line(summary, mode)}")
 
 
+def print_guardrail_reference(
+    path: str, frames: int, aggregate: dict[str, dict[str, float]]
+) -> None:
+    print(
+        f"\nPerceptual guardrails (W1, diagnostic only, not PASS/FAIL) — "
+        f"reference: {path} ({frames} frames)"
+    )
+    print(f"  {'guardrail':<24} {'mean':>9} {'sd':>9} {'p10':>9} {'p90':>9}")
+    for key in GUARDRAIL_KEYS:
+        label, unit, _ = GUARDRAIL_INFO[key]
+        stats = aggregate[key]
+        print(
+            f"  {label:<24} {fmt(stats['mean']):>9} {fmt(stats['sd']):>9} "
+            f"{fmt(stats['p10']):>9} {fmt(stats['p90']):>9}"
+        )
+    print("  these numbers are review inputs; they do not gate anything")
+
+
+def print_candidate_guardrails(
+    measured_guardrails: dict[str, object],
+    aggregate: dict[str, dict[str, float]],
+    primary_sky: float | None,
+) -> None:
+    print("  guardrails (W1, diagnostic only):")
+    print(f"    {'guardrail':<24} {'value':>9} {'ref mean':>9} {'ref p10..p90':>19}")
+    for key in GUARDRAIL_KEYS:
+        label, unit, _ = GUARDRAIL_INFO[key]
+        stats = aggregate[key]
+        band = f"{fmt(stats['p10'])}..{fmt(stats['p90'])}"
+        print(
+            f"    {label:<24} {fmt(float(measured_guardrails[key])):>9} "
+            f"{fmt(stats['mean']):>9} {band:>19}"
+        )
+    if primary_sky is not None:
+        sky_mask = float(measured_guardrails["sky_mask_share"])
+        ratio = (100.0 * sky_mask / primary_sky) if primary_sky > 0 else 0.0
+        horizon_px = measured_guardrails["sky_horizon_source_px"]
+        horizon_note = (
+            f"override {horizon_px}px (source)"
+            if horizon_px is not None
+            else f"row {measured_guardrails['sky_horizon_row']} ({measured_guardrails['sky_horizon_source']})"
+        )
+        print(
+            f"    sky check: primary sky-blue {primary_sky:.1f} % -> sky mask {sky_mask:.1f} % "
+            f"({ratio:.0f} % of the primary share looks like sky; lit-wall exclusion removed "
+            f"{float(measured_guardrails.get('sky_lit_wall_pct', 0.0)):.1f} pp); horizon {horizon_note}"
+        )
+    if measured_guardrails.get("component_guard") not in (None, "none"):
+        print(f"    component guard: {measured_guardrails['component_guard']}")
+
+
 def print_metric_list() -> None:
     print(f"{'metric':<16} {'unit':<9} {'legacy':>8}  {'legacy band':<12} definition")
     for key in METRIC_KEYS:
@@ -656,6 +1137,11 @@ def print_metric_list() -> None:
     print(
         "Shifted bands are derived at runtime: shifted = legacy + (measured_ref_mean - legacy_ref)."
     )
+    print()
+    print("Perceptual guardrails (W1, diagnostic only; require --guardrails, no PASS/FAIL):")
+    for key in GUARDRAIL_KEYS:
+        label, unit, definition = GUARDRAIL_INFO[key]
+        print(f"  {key:<24} {unit:<9} {definition}")
 
 
 # ---------------------------------------------------------------------------
@@ -673,7 +1159,7 @@ def markdown_reference(
     lines = [
         "# Glassline metrics report",
         "",
-        "Script: `tools/capture/metrics.py` (v2.1; formulas unchanged from v1). "
+        "Script: `tools/capture/metrics.py` (v2.2; formulas unchanged from v1). "
         "Band policy: `docs/reports/METRIC_SPEC.md` (shifted bands = plan §2.1 + "
         "`delta = measured_ref_mean - legacy_ref`).",
         f"Reference: `{path}` ({frames} frames" + (f", set `{set_name}`)" if set_name else ")") + ".",
@@ -708,6 +1194,40 @@ def markdown_reference(
                 f"{fmt(row['legacy'])} | {row['delta']:+.4f} | {row['deltaPct']:+.1f} % |"
             )
     lines.append("")
+    return lines
+
+
+def markdown_guardrails_reference(
+    path: str, frames: int, aggregate: dict[str, dict[str, float]]
+) -> list[str]:
+    lines = [
+        "## Perceptual guardrails (W1, diagnostic only)",
+        "",
+        "These are **not** part of the 13 §2.1 metrics and **not** PASS/FAIL gates. "
+        "They are review inputs that expose blue-glass-sky, flat-clipped-white and "
+        "salmon/fragmented-route failure modes. Definitions and limitations: "
+        "`docs/reports/METRIC_SPEC.md`.",
+        "",
+        f"Measured on the same reference set (`{path}`, {frames} frames):",
+        "",
+        "| Guardrail | Ref mean | SD | p10 | p90 |",
+        "|---|---:|---:|---:|---:|",
+    ]
+    for key in GUARDRAIL_KEYS:
+        label, _unit, _definition = GUARDRAIL_INFO[key]
+        stats = aggregate[key]
+        lines.append(
+            f"| {label} | {fmt(stats['mean'])} | {fmt(stats['sd'])} | "
+            f"{fmt(stats['p10'])} | {fmt(stats['p90'])} |"
+        )
+    lines += [
+        "",
+        "Reading: read `Sky mask share` next to the primary `Sky-blue area` row — "
+        "a large gap means most blue pixels are not sky. `Near-white seam energy` "
+        "near 0 means flat clipped white. A small `Red route share` with low "
+        "`Red route saturation` means a fragmented or salmon route.",
+        "",
+    ]
     return lines
 
 
@@ -766,6 +1286,27 @@ def markdown_candidates(
         lines.append("")
         lines.append(f"**{summary_line(summary, mode)}**")
         lines.append("")
+        guardrail_rows_data = candidate.get("guardrailRows")
+        if guardrail_rows_data:
+            lines.append("#### Perceptual guardrails (diagnostic only, not a PASS/FAIL gate)")
+            lines.append("")
+            lines.append("| Guardrail | Value | Ref mean | Ref p10–p90 | Position |")
+            lines.append("|---|---:|---:|---|---|")
+            for row in guardrail_rows_data:
+                lines.append(
+                    f"| {row['label']} | {fmt(row['value'])} | {fmt(row['referenceMean'])} | "
+                    f"{fmt(row['referenceP10'])}..{fmt(row['referenceP90'])} | {row['position']} |"
+                )
+            context = candidate.get("guardrailContext") or {}
+            if context:
+                lines.append("")
+                lines.append(
+                    f"sky check: primary sky-blue {context['primarySkyBlue']:.1f} % -> "
+                    f"sky mask {context['skyMaskShare']:.1f} % "
+                    f"({context['skyMaskOfPrimaryPct']:.0f} % of the primary share looks like sky; "
+                    f"lit-wall exclusion removed {context.get('skyLitWallPct', 0.0):.1f} pp)."
+                )
+            lines.append("")
     return lines
 
 
@@ -862,6 +1403,27 @@ def build_parser() -> argparse.ArgumentParser:
         "legacy in legacy mode; WATCH in tolerance mode)",
     )
     parser.add_argument(
+        "--guardrails",
+        action="store_true",
+        help="Add the W1 perceptual guardrail layer (diagnostic only; separate from the "
+        "13 §2.1 metrics, never a PASS/FAIL gate)",
+    )
+    parser.add_argument(
+        "--horizon-px",
+        action="append",
+        metavar="Y|FILE:Y[,...]",
+        help="Horizon row for the sky-mask guardrail, in source-image pixels. "
+        "Per-file overrides as file:Y (comma-separated or repeatable). "
+        "Default: scene-derived horizontal edge, fallback top 40%%.",
+    )
+    parser.add_argument(
+        "--max-component-pixels",
+        type=int,
+        default=DEFAULT_MAX_COMPONENT_PIXELS,
+        help=f"Safety guard for red-component analysis (default {DEFAULT_MAX_COMPONENT_PIXELS}); "
+        "larger red masks are decimated 2x",
+    )
+    parser.add_argument(
         "--list-metrics",
         action="store_true",
         help="Print the 13 metric keys, units, legacy reference and bands, then exit",
@@ -901,12 +1463,23 @@ def main(argv: list[str] | None = None) -> int:
     # Without --bands keep the v1 tolerance-only report; --bands defaults to "all".
     mode = args.bands_mode or (DEFAULT_BANDS_MODE if with_bands else "tolerance")
 
+    horizon_overrides = parse_horizon_overrides(args.horizon_px)
+    if args.max_component_pixels <= 0:
+        fail("error: --max-component-pixels must be > 0")
+
     reference_path, set_name = resolve_reference(args)
-    per_frame, aggregate = compute_reference(reference_path)
+    per_frame, aggregate, guardrail_aggregate = compute_reference(
+        reference_path,
+        with_guardrails=bool(args.guardrails),
+        horizon_overrides=horizon_overrides,
+        max_component_pixels=args.max_component_pixels,
+    )
     shifted = compute_shifted_bands(aggregate)
     ref_rows = reference_rows(aggregate, shifted, with_bands)
 
     print_reference(reference_path, len(per_frame), set_name, ref_rows, with_bands)
+    if args.guardrails:
+        print_guardrail_reference(reference_path, len(per_frame), guardrail_aggregate)
 
     reference_doc = reference_document(reference_path, set_name, per_frame, aggregate)
     if args.reference_json:
@@ -951,8 +1524,23 @@ def main(argv: list[str] | None = None) -> int:
             ),
             "appliesTo": "the six fixed capture shots, not arbitrary gameplay frames",
         },
-        "candidates": [],
+                "candidates": [],
     }
+
+    if args.guardrails:
+        report["guardrails"] = {
+            "note": "W1 perceptual guardrail layer; diagnostic only, not part of the 13 §2.1 "
+            "metrics and not a PASS/FAIL gate",
+            "referencePolicy": "measured reference is truth; bands are the p10-p90 of the "
+            "20-frame reference set (same D-02 policy as the main table)",
+            "referenceFrames": len(per_frame),
+            "reference": guardrail_aggregate,
+            "referencePerFrame": [
+                {"file": frame["file"], "guardrails": frame["guardrails"]}
+                for frame in per_frame
+                if "guardrails" in frame
+            ],
+        }
 
     markdown_candidates_payload: list[dict[str, object]] = []
     strict_fail = False
@@ -960,10 +1548,26 @@ def main(argv: list[str] | None = None) -> int:
     scheme = primary_scheme(mode)
 
     for candidate_path in candidate_paths:
-        measured = metrics(candidate_path)
+        pixels, meta = load_image_with_meta(candidate_path)
+        measured = metrics_from_pixels(pixels)
         rows = candidate_rows(measured, aggregate, shifted)
         summary = summarize(rows)
         print_candidate(candidate_path, rows, summary, mode)
+
+        guardrail_values = None
+        guardrail_row_data = None
+        guardrail_context = None
+        if args.guardrails:
+            guardrail_values = guardrails_from_pixels(
+                pixels,
+                meta,
+                resolve_horizon_override(candidate_path, horizon_overrides),
+                args.max_component_pixels,
+            )
+            print_candidate_guardrails(guardrail_values, guardrail_aggregate, measured["sky"])
+            guardrail_row_data, guardrail_context = guardrail_rows(
+                guardrail_values, guardrail_aggregate, measured["sky"]
+            )
 
         if scheme == "tolerance":
             strict_fail = strict_fail or summary["tolerance"]["watch"] > 0
@@ -971,24 +1575,34 @@ def main(argv: list[str] | None = None) -> int:
             strict_fail = strict_fail or summary[scheme]["fail"] > 0
         tolerance_all_pass = tolerance_all_pass and summary["tolerance"]["pass"] >= len(rows) - 3
 
-        report["candidates"].append(
-            {
-                "path": candidate_path,
-                "metrics": measured,
-                "rows": rows,
-                "passed": summary["tolerance"]["pass"],
-                "watch": summary["tolerance"]["watch"],
-                "failed": summary["tolerance"]["fail"],
-                "total": len(rows),
-                "shiftedPassed": summary["shifted"]["pass"],
-                "legacyPassed": summary["legacy"]["pass"],
-                "accepted": summary["shifted"]["pass"] == len(rows),
-                "summary": summary,
-            }
-        )
-        markdown_candidates_payload.append(
-            {"path": candidate_path, "rows": rows, "summary": summary}
-        )
+        candidate_entry: dict[str, object] = {
+            "path": candidate_path,
+            "metrics": measured,
+            "rows": rows,
+            "passed": summary["tolerance"]["pass"],
+            "watch": summary["tolerance"]["watch"],
+            "failed": summary["tolerance"]["fail"],
+            "total": len(rows),
+            "shiftedPassed": summary["shifted"]["pass"],
+            "legacyPassed": summary["legacy"]["pass"],
+            "accepted": summary["shifted"]["pass"] == len(rows),
+            "summary": summary,
+        }
+        if args.guardrails:
+            candidate_entry["guardrails"] = guardrail_values
+            candidate_entry["guardrailRows"] = guardrail_row_data
+            candidate_entry["guardrailContext"] = guardrail_context
+        report["candidates"].append(candidate_entry)
+
+        markdown_entry: dict[str, object] = {
+            "path": candidate_path,
+            "rows": rows,
+            "summary": summary,
+        }
+        if args.guardrails:
+            markdown_entry["guardrailRows"] = guardrail_row_data
+            markdown_entry["guardrailContext"] = guardrail_context
+        markdown_candidates_payload.append(markdown_entry)
 
     if args.json:
         write_json(args.json, report)
@@ -996,6 +1610,8 @@ def main(argv: list[str] | None = None) -> int:
 
     if args.markdown:
         lines = markdown_reference(reference_path, len(per_frame), set_name, ref_rows, with_bands)
+        if args.guardrails:
+            lines += markdown_guardrails_reference(reference_path, len(per_frame), guardrail_aggregate)
         lines += markdown_candidates(markdown_candidates_payload, mode)
         parent = os.path.dirname(args.markdown)
         if parent:

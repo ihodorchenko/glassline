@@ -1,6 +1,6 @@
 # Metric spec — image acceptance bands (W0)
 
-Status: implemented in `tools/capture/metrics.py` v2.1 (W0-C2, `feat/art-audio-level`).
+Status: implemented in `tools/capture/metrics.py` v2.3 (W0-C2 + W1.1-G guardrails + sky-mask calibration, `feat/art-audio-level`).
 Supersedes the informal description in `docs/VISUAL_REFERENCE_PROGRESS.md`; the
 plan itself (`docs/VISUAL_AUDIO_LEVEL_PLAN.md` §2.1) stays the source of the
 acceptance bands.
@@ -245,13 +245,184 @@ recomputed reference mean, i.e. the same check the previous 24 rounds used):
 |---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
 | 0.08 | 0.05 | 0.10 | 0.05 | 18.0 | 3.0 | 0.08 | 0.04 | 0.012 | 12.0 | 0.05 | 15.0 | 2.5 |
 
+## Perceptual guardrails (W1, diagnostic only)
+
+Decision D-09 / W1.1. The 13 §2.1 metrics above remain the primary gate and are
+**unchanged**. The guardrails below are a separate opt-in layer (`--guardrails`)
+that exposes "passing the metric while losing the look". They never replace a
+§2.1 row, never produce PASS/FAIL, and never affect `--strict` or the exit code.
+They are review inputs, not gates.
+
+Reference values are measured on the same 20 prologue frames with the same
+script (D-02 policy: the measured reference is the truth). "Position" in the
+outputs is informational only (`inside p10-p90` / `above p10-p90` /
+`below p10-p90`); it is not a verdict.
+
+| Guardrail | Ref mean | SD | p10 | p50 | p90 | Unit |
+|---|---:|---:|---:|---:|---:|---|
+| `sky_mask_share` | 5.0636 | 4.3917 | 0.5925 | 4.4859 | 11.1641 | % of frame |
+| `near_white_seam_energy` | 0.0029 | 0.0018 | 0.0011 | 0.0024 | 0.0047 | mean gradient |
+| `red_route_share` | 2.8745 | 4.9466 | 0.0836 | 1.4950 | 6.7469 | % of frame |
+| `red_route_saturation` | 0.6682 | 0.2448 | 0.3897 | 0.7306 | 0.9428 | 0..1 |
+
+`sky_mask_share` reference stats are post-calibration (W1.1-FIX-G, lit-white-wall
+exclusion). Before the calibration they were mean 7.5742 / sd 5.9853 / p10
+1.2131 / p50 6.9024 / p90 16.9322; the other three series are unchanged.
+
+### Formulas
+
+Same loader as the primary metrics: Pillow RGB, resize so
+`max(width, height) == 960` (LANCZOS), 0..1 gamma-encoded sRGB floats. No
+per-image normalisation.
+
+**1. `sky_mask_share` (%) — "blue pixels that actually look like sky".**
+
+```
+blue      = B > 1.05*R and B > 0.45 and B > 1.02*G      # same blue test as §2.1 sky
+sky_like  = blue and luma >= 0.55 and saturation <= 0.45
+horizon   = dominant horizontal edge row (see below)
+lit_wall  = luma > 0.75 and saturation < 0.20          # bright + nearly achromatic
+sky_mask  = sky_like and row < horizon and not lit_wall
+share     = 100 * mean(sky_mask)                        # % of the whole frame
+```
+
+- Horizon heuristic: row profile of `|dL/dy|` (mean over x), smoothed with a box
+  window of `max(3, H//60)|1` rows; search band rows `[5 %, 70 %]`; the strongest
+  row is accepted when its smoothed energy is `>= 1.5x` the median of the search
+  band; otherwise the documented fallback is the 40 % line (i.e. "top 40 % is
+  potential sky"). The output records the horizon row, its source
+  (`edge`/`fallback`/`override`) and the edge ratio.
+- `--horizon-px Y` overrides the horizon row in **source-image pixels** (scaled
+  to the analysis height). Per-file overrides: `--horizon-px
+  file:Y` (basename or stem match), comma-separated or repeated:
+  `--horizon-px wallrun-corridor.png:200,start-roof.png:350`. Use it for known
+  fixed shots; the image-only heuristic cannot know the camera pitch.
+- Why the extra luma/saturation tests: the §2.1 `sky` metric counts any
+  blue-dominant pixel in the upper 66 %, including dark saturated glass facades
+  (saturation ~0.99, luma ~0.3), while sky is bright and comparatively
+  desaturated (saturation < ~0.5, luma 0.5-0.9).
+- Lit-white-wall calibration (W1.1-FIX-G, 2026-11-19): lit white walls are bright
+  and nearly achromatic, so they can sit inside the sky envelope by a faint blue
+  ambient tint (guided review flagged `service-block` at 30.4 % sky mask with no
+  sky in frame). Pixels with `luma > 0.75` **and** HSV-style `saturation < 0.20`
+  are excluded; the constants are `WHITE_WALL_LUMA_MIN = 0.75` and
+  `WHITE_WALL_SATURATION_MAX = 0.20` at the top of the guardrail block. The
+  output reports the removed share as `sky_lit_wall_pct` / "lit-wall exclusion
+  removed X pp". Accepted trade-off: a genuinely pale sky patch that is both
+  brighter than 0.75 and less saturated than 0.20 is also excluded, so this mask
+  under-counts pale/hazy sky by design.
+- Limits: it measures **blue sky only** — white clouds/haze and non-blue sky are
+  not counted, so read it as a ratio against the primary `Sky-blue area`, not as
+  a literal sky percentage. Bright, desaturated blue haze/reflections can still
+  pass (the residual after the lit-wall rule is exactly that on interior shots);
+  a strong horizontal ledge can be chosen as the horizon (override available);
+  the heuristic is FOV/pitch dependent. Interior shots have **no sky by
+  construction** — read their sky mask as "how much of the frame still looks
+  sky-like to the mask", not as a sky estimate.
+
+**2. `near_white_seam_energy` (mean gradient magnitude).**
+
+```
+near_white = luma > 0.9
+interior   = erode4(near_white)            # one 4-neighbour pixel; if empty use near_white
+seam       = mean( hypot(dL/dx, dL/dy)[interior] )
+           = 0.0 if near_white is empty
+```
+
+Flat clipped white (no detail) yields ~0; reference white surfaces carry panel
+seams/edges and measure 0.001-0.005. Higher is not automatically better:
+compression noise, dither and AA also raise it, so compare with the reference
+p10-p90 band and the image itself.
+
+**3. `red_route_share` (%) and `red_route_saturation` (0..1).**
+
+```
+red = R > 0.30 and R > 1.30*G and R > 1.30*B     # broader than §2.1 red accent: salmon counts
+components = 8-connected components of `red`     # numpy-only run-length union-find
+drop components smaller than 0.02 % of the frame
+largest = biggest remaining component
+share   = 100 * largest_area / (H*W)
+saturation = mean( (max(R,G,B) - min(R,G,B)) / max(R,G,B) ) over the component
+```
+
+Reads as: continuity of the main red route element (`share`) and whether it is
+saturated red or salmon (`saturation`). A small share means a fragmented /
+confetti route; low saturation means the route is salmon even when the strict
+`Red accent share` passes because of saturated banners/signs. The largest
+component can legitimately be a banner or a railing, so always read it next to
+the frame. `--max-component-pixels` (default 400000) is a safety guard: a
+pathological frame whose red mask exceeds it is analysed on a 2x-decimated mask
+(approximation, flagged in the output).
+
+### How to read it (rule)
+
+These are **inputs to the blurry art-direction review, not PASS/FAIL**. A run
+with `--guardrails` still gates only on the 13 §2.1 metrics. Guardrail numbers
+are not compared automatically to acceptance bands; they make failure modes
+visible in the report:
+
+| Guardrail | Catches | Read next to |
+|---|---|---|
+| `sky_mask_share` | blue glass/facades counted as "sky" | primary `Sky-blue area` (large gap = facade, not sky) |
+| `near_white_seam_energy` | flat clipped white that passes near-white share | `Near-white share`, highlight rows |
+| `red_route_share` / `red_route_saturation` | fragmented route / salmon route despite banners passing the accent share | primary `Red accent share` |
+
+### Calibration: lit-white-wall exclusion (W1.1-FIX-G, 2026-11-19)
+
+Before → after `sky_mask_share` on the six FOV-50 W1 frames
+(`captures/w1`, 1600x900; heuristic horizon unless noted):
+
+| Frame | primary sky | sky mask before | sky mask after | Δ | lit-wall removed | note |
+|---|---:|---:|---:|---:|---:|---|
+| `service-block.png` | 64.9 % | 30.37 % | 12.42 % | -17.95 pp | 17.9 pp | interior shot: no sky by construction; residual is shadowed bluish-white wall (luma 0.55-0.75, S 0.09-0.27), still above the art-director's structural 0-5 % target |
+| `start-roof.png` | 46.6 % | 20.28 % | 13.62 % | -6.66 pp | 6.7 pp | pale sky/cloud patches are excluded by design (accepted trade-off) |
+| `first-gap.png` | 32.9 % | 10.17 % | 5.95 % | -4.21 pp | 4.2 pp | canyon: pale sky strip + white facades removed |
+| `skybridge.png` | 34.5 % | 5.24 % | 3.16 % | -2.08 pp | 2.1 pp | mostly unaffected; no lit wall in the sky band |
+| `finish-roof.png` | 32.2 % | 7.08 % | 4.25 % | -2.83 pp | 2.8 pp | pale towers/white parapet removed |
+| `wallrun-corridor.png` | 24.0 % | 5.38 % | 4.22 % | -1.16 pp | 1.2 pp | dark glass already excluded by the luma cap |
+
+Reference (20 frames): `sky_mask_share` mean 7.57 → **5.06 %**, sd 5.99 → 4.39,
+p10 1.21 → 0.59, p90 16.93 → 11.16. The other guardrails are untouched
+(`near_white_seam_energy` 0.0029, `red_route_share` 2.87 %, `red_route_saturation`
+0.668 reference means).
+
+Reading notes:
+
+- `service-block` is an **interior** shot: the correct reading is "structurally no
+  sky"; 30.4 % (before) was a clear false positive, 12.4 % (after) is the
+  shadowed-wall residual that the specified `luma > 0.75` cutoff does not reach.
+  This is above the ≤10 % hoped for in W1.1-FIX-G; the measured options are in
+  "Open questions" (threshold is one constant).
+- `start-roof` and `skybridge` lose some pale-sky pixels too — the documented
+  trade-off of an achromatic-white filter. Read them against the primary
+  `Sky-blue area` and the reference p10-p90, not as literal sky percentages.
+- Reference frames after the change: `0824` 18.18 → 11.66 %, `0916` 10.30 →
+  7.48 %; our near-white seam energy (0.0053-0.0092 across the six W1 frames) is
+  still above the reference p90 (0.0047), i.e. the bright roofs are not flat
+  clipped white. `first-gap` remains the lowest-saturation red component
+  (0.39 → salmon-route case).
+- For fixed shots where the horizon heuristic is wrong (all six currently use
+  the `edge` heuristic), record `--horizon-px` per shot; interior shots in
+  particular should be read structurally.
+
+### JSON / Markdown
+
+`--guardrails` adds a top-level `guardrails` block: `reference` (4 aggregate
+series), `referencePerFrame` (20 frames), `referencePolicy`, and per-candidate
+`guardrails` (values + horizon/component metadata), `guardrailRows`
+(reference mean/sd/p10/p90 + informational position) and `guardrailContext`
+(primary sky-blue vs sky mask, ratio, `skyLitWallPct`). Markdown gets a reference guardrail table
+and, per candidate, a guardrail table plus the sky-mask check line. Nothing is
+added to the 13 primary rows or to the exit-code logic.
+
 ## CLI
 
 ```
 metrics.py [--reference-set {prolog}] [--reference DIR] [--reference-json PATH]
            [--candidate PATH ...] [--json PATH] [--markdown PATH]
            [--bands] [--bands-mode {all,shifted,legacy,tolerance}]
-           [--strict] [--list-metrics]
+           [--guardrails] [--horizon-px Y|FILE:Y[,...]]
+           [--max-component-pixels N] [--strict] [--list-metrics]
 ```
 
 | Flag | Meaning |
@@ -265,12 +436,16 @@ metrics.py [--reference-set {prolog}] [--reference DIR] [--reference-json PATH]
 | `--bands` | Enable acceptance-band comparison; defaults to `--bands-mode all` (shifted + tolerance + legacy verdicts). |
 | `--bands-mode {all,shifted,legacy,tolerance}` | `all` = three verdicts (default with `--bands`); `shifted` = W0 acceptance; `legacy` = raw plan §2.1 traceability; `tolerance` = v1 gauge. Also implies `--bands`. |
 | `--strict` | Exit 1 on `FAIL` in the selected acceptance scheme (`shifted` by default, `legacy` in legacy mode, any `WATCH` in tolerance mode). |
-| `--list-metrics` | Print keys, units, legacy reference and bands; exit 0. |
+| `--guardrails` | Add the W1 perceptual guardrail layer (`sky_mask_share`, `near_white_seam_energy`, `red_route_share`, `red_route_saturation`); diagnostic only, never a gate. |
+| `--horizon-px Y\|FILE:Y[,...]` | Horizon row for the sky mask, in source-image pixels; per-file overrides comma-separated or repeated. Default: scene-derived horizontal edge, fallback top 40 %. |
+| `--max-component-pixels N` | Safety guard for red-component analysis (default 400000); larger red masks are decimated 2x. |
+| `--list-metrics` | Print keys, units, legacy reference and bands (and the guardrail keys); exit 0. |
 
 Exit codes: `0` ok (with `--bands` and without `--strict` the run is report-only);
 `1` strict gate triggered, or (without `--bands`) the v1 "more than 3 metrics
 outside tolerance" rule; `2` missing numpy/Pillow, missing reference set, missing
-candidate, empty glob, or a broken shifted-band invariant.
+candidate, empty glob, a broken shifted-band invariant, or a malformed
+`--horizon-px`. Guardrails never affect the exit code or `--strict`.
 
 Backward compatibility: `metrics.py --candidate a.jpg --json out.json` still
 works and still uses the default reference set and the v1 tolerance table; the
@@ -281,6 +456,8 @@ per-row `bands` (legacy/shifted min/max/label), `gaps`, `verdicts`
 (shifted/tolerance/legacy), `referenceSd/P10/P50/P90`, `shift`, `pass`
 (= tolerance PASS, v1 meaning) and `accepted` (= shifted PASS), plus per-candidate
 `shiftedPassed`, `legacyPassed`, `watch`, `failed`, `summary` (per-scheme counts).
+With `--guardrails` the report additionally carries the `guardrails` block and
+per-candidate `guardrails`/`guardrailRows`/`guardrailContext`.
 
 Batch mode:
 
@@ -349,9 +526,37 @@ Remaining:
    `p25` and `sky` (legacy widths narrower than the reference spread). If the six
    fixed shots need looser margins, that is a policy decision; no code change is
    made here.
+4. Guardrail reference bands are wide, especially `red_route_share`
+   (p10 0.08 % .. p90 6.75 %, sd 4.95) and `sky_mask_share` (0.6 % .. 11.2 %):
+   read them as context, never as thresholds. The sky-mask luma/saturation
+   constants (0.55 / 0.45) were chosen to separate dark saturated glass
+   (saturation ~0.99) from bright sky and should be revisited after the W1 blind
+   review; the image-only horizon is FOV/pitch dependent — for the six fixed
+   shots, record a per-shot `--horizon-px` in the capture manifest if the
+   heuristic is not good enough.
+5. Lit-wall calibration landed at 12.4 % on `service-block` (expected <=10 %):
+   the specified `luma > 0.75` cutoff only removes the brightest wall, the
+   residual sits at luma 0.55-0.75. Measured options if a tighter gate is wanted:
+   `WHITE_WALL_LUMA_MIN = 0.70` (service 6.5 %, start-roof 6.7 %),
+   `V > 0.75` in HSV terms (service 5.5 %, start-roof 6.2 %), or capping the
+   horizon at the 40 % line (service 6.2 %, start-roof 8.0 %). Every option also
+   lowers outdoor pale-sky values, so this is a policy/art-director decision,
+   not a code fix.
 
 ## Changelog
 
+- **v2.3** (W1.1-FIX-G): sky-mask chromatic calibration — pixels with
+  `luma > 0.75` and HSV saturation `< 0.20` are excluded from `sky_mask_share`
+  (lit white walls), reference stats recomputed (mean 7.57 → 5.06 %), output
+  reports the removed share (`sky_lit_wall_pct` / "lit-wall exclusion removed
+  X pp"), METRIC_SPEC calibration section added. The 13 §2.1 metrics and the
+  other guardrails are unchanged.
+- **v2.2** (W1.1-G): added the opt-in `--guardrails` diagnostic layer
+  (`sky_mask_share`, `near_white_seam_energy`, `red_route_share`,
+  `red_route_saturation`) with a scene-derived horizon heuristic, per-file
+  `--horizon-px` overrides, numpy-only 8-connected red components with a
+  `--max-component-pixels` guard, measured reference bands and JSON/Markdown
+  sections. The 13 §2.1 formulas, bands and verdict logic are unchanged.
 - **v2.1** (W0-C2): added `--bands-mode {all,shifted,legacy,tolerance}`, the
   data-derived shifted band table (`delta = measured_ref_mean - legacy_ref`,
   widths preserved, reference mean inside 13/13 asserted), three verdicts per
