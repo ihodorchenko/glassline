@@ -102,9 +102,9 @@ Only `Verified` means that the applicable acceptance criteria have been checked 
 | Statistics | Defined | Implemented | Integrated | Verified |
 | Reference Presentation | Defined | In Progress | Integrated | Partially Verified |
 
-**Current phase:** Phases 0–7 and Phase 8 (stabilization) are complete. A post-roadmap **Release Polish** pass has also been completed: initial release content presentation, HUD tutorial guidance, atmosphere, and procedural ambience/footsteps. A **Reference Presentation Pass** is in progress to bring design, graphics, and sound up to the *Mirror's Edge* prologue reference. Round 1 (HDR rendering, sky, materials, rooftop city, first-person arms) is complete and measured. Round 2 (procedural audio architecture, surface-aware movement, parkour set, ambience, score, radio) is implemented and measured. Round 3 extends the Prologue from a 25 m flat corridor to a ~66 m route with a roof drop, sprint gap, stair climb, narrow skybridge, and finish roof. Round 4 applies the reference's editorial UI language (paper panels, ink type, red rules, minimal HUD), canvas signage (`RUN`, section indices, `FINISH`), and a speed-reactive radial blur. A human listening pass, route extension toward the 180–220 m reference scale, a menu backdrop, and motion-blur calibration remain.
+**Current phase:** Phases 0–7 and Phase 8 (stabilization) are complete. A post-roadmap **Release Polish** pass has also been completed: initial release content presentation, HUD tutorial guidance, atmosphere, and procedural ambience/footsteps. A **Reference Presentation Pass** is in progress to bring design, graphics, and sound up to the *Mirror's Edge* prologue reference. Round 1 (HDR rendering, sky, materials, rooftop city, first-person arms) is complete and measured. Round 2 (procedural audio architecture, surface-aware movement, parkour set, ambience, score, radio) is implemented and measured. Round 3 extends the Prologue from a 25 m flat corridor to a ~66 m route with a roof drop, sprint gap, stair climb, narrow skybridge, and finish roof. Round 4 applies the reference's editorial UI language (paper panels, ink type, red rules, minimal HUD), canvas signage (`RUN`, section indices, `FINISH`), and a speed-reactive radial blur. Round 5 adds a visual-only Prologue city vignette behind the paper menu, shown only outside gameplay. A human listening pass, route extension toward the 180–220 m reference scale, and further world/motion detail remain.
 
-**Implementation readiness:** The game is feature-complete for the initial release scope, stabilized, and visually/audio-polished: core gameplay, Training/Prologue sessions, Speedrun validation and local records, persistent progression/achievements/statistics/tutorial, HUD tutorial guidance, level atmosphere and ambience, UI/accessibility/localization, Save System recovery, and the fixed-step loop are implemented, integrated, and covered by automated and browser checks. The reference pass has added an HDR post pipeline, procedural sky/reflections, PBR materials, a dense Prologue city, a first-person body, a procedural audio mix with surface-aware movement, parkour loops, ambience, and a sparse score, a vertical Prologue route with drop, gap, stair climb, skybridge, and finish roof, and a reference-style paper/ink UI with canvas signage and speed blur. The measured start frame is inside the reference tolerance band on 10/13 image metrics (highlight headroom and sky area are open gaps); the offline audio demo is inside all five planned audio bands (5/5). Remaining limitations are compatibility verification depth (Firefox/Safari gameplay, actual assistive-technology testing), reference-level sound and route design, asset-level art polish, and intentionally deferred features.
+**Implementation readiness:** The game is feature-complete for the initial release scope, stabilized, and visually/audio-polished: core gameplay, Training/Prologue sessions, Speedrun validation and local records, persistent progression/achievements/statistics/tutorial, HUD tutorial guidance, level atmosphere and ambience, UI/accessibility/localization, Save System recovery, and the fixed-step loop are implemented, integrated, and covered by automated and browser checks. The reference pass has added an HDR post pipeline, procedural sky/reflections, PBR materials, a dense Prologue city, a first-person body, a procedural audio mix with surface-aware movement, parkour loops, ambience, and a sparse score, a vertical Prologue route with drop, gap, stair climb, skybridge, and finish roof, a reference-style paper/ink UI with canvas signage and speed blur, and a visual-only menu city vignette. The measured start frame is inside the reference tolerance band on 10/13 image metrics (highlight headroom and sky area are open gaps); the offline audio demo is inside all five planned audio bands (5/5). Remaining limitations are compatibility verification depth (Firefox/Safari gameplay, actual assistive-technology testing), reference-level sound and route design, asset-level art polish, and intentionally deferred features.
 
 ### 3.1. Documentation Reconciliation (2026-11-17)
 
@@ -1129,6 +1129,43 @@ Known limitations:
 - Motion blur is implemented but not separately calibrated at sustained sprint
   speed; headless moving-HUD captures need a more reliable input-focus path.
 - Route length, stair climb, and the audio listening pass remain open.
+
+---
+### Reference Presentation Pass — Round 5 (2026-11-19)
+
+**Goal:** replace the empty menu sky with a reference-like prologue vignette
+without coupling the menu to gameplay or level runtime.
+
+**Status:** Implemented, captured, verified; final colour/parallax polish remains.
+
+Implemented:
+
+- **MenuBackdrop:** visual-only rooftop + glass tower + city, with parapets,
+  mullions, diagonal braces, orange RUN signs, window grids, roof route paint,
+  AC units, and layered skyline. No physics, colliders, or level runtime.
+- **Flow integration:** `RenderScene` owns the group and toggles it for boot,
+  main menu, loading, results, and error; gameplay and pause keep it hidden.
+- **Camera:** `CameraSystem.setPresentationPose` frames the vignette at
+  `(0, 2.1, 11)`; the application applies the pose outside gameplay and leaves
+  the gameplay camera untouched during pause/resume. First-person body remains
+  hidden outside gameplay.
+- **Menu contrast:** paper gradient fades by 66–72% rather than 100%, exposing
+  the city instead of washing it out.
+
+Verification:
+
+- `npm run validate`: typecheck, Biome, **270 tests in 36 files**, build.
+- Menu capture shows the city vignette and retains the paper/ink hierarchy;
+  gameplay capture confirms the backdrop is hidden.
+- Start-frame metrics unchanged at 10/13.
+
+Known limitations:
+
+- Static simplified set, not the real loaded Prologue; no animated character,
+  traffic, or camera drift.
+- Lighting/colour at the paper-to-city transition is still bright and needs a
+  final reference comparison.
+- Route length, stair climb, listening pass, and world detail remain open.
 
 ---
 

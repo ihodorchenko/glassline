@@ -479,6 +479,61 @@ motion blur.
 3. Extend the route toward 180–220 m and replace the stair grind.
 4. Listening pass on the Round 2 mix.
 
+---
+
+## Round 5 — menu city vignette (2026-11-19)
+
+### Scope
+
+Round 4 left the menu's right side as empty procedural sky. This round adds a
+purpose-built prologue city vignette behind the paper panel without loading the
+playable level or duplicating gameplay state.
+
+### What changed
+
+- New `MenuBackdrop` owns a visual-only rooftop/city group: prologue roof deck,
+  parapets, glass tower with mullions and braces, orange **RUN** sign, roof route
+  paint, near AC units, a layered city with window grids, and a second orange
+  **RUN** billboard on the near right tower.
+- `RenderScene` owns the backdrop and exposes `setMenuBackdropVisible`; the group
+  is hidden in gameplay and shown for boot, main menu, loading, results, and
+  error states.
+- `CameraSystem.setPresentationPose` places the menu camera at
+  `(0, 2.1, 11)` with a slight left look; `Application` re-applies that pose
+  whenever the flow is not gameplay, and leaves the gameplay camera untouched
+  during pause/resume.
+- The menu paper gradient now fades out by 66–72% instead of 100%, so the city
+  vignette is not washed out across the open side.
+- The first-person body remains hidden outside gameplay.
+
+### Result
+
+![Main menu with city vignette](evidence/visual/round-5/menu.jpg)
+
+- The menu now reads as a designed prologue frame rather than a menu floating on
+  empty sky.
+- `npm run validate` green: typecheck, Biome, **270 tests in 36 files**, build.
+- Start-frame metrics are unchanged at **10/13**; gameplay captures confirm the
+  backdrop group is hidden during play.
+- Menu render is lightweight: no colliders, no level runtime, no physics; the
+  backdrop's small mesh set adds ~3.9k triangles to the menu frame.
+
+### Honest gaps
+
+- The vignette is a simplified static set, not the real loaded Prologue, and has
+  no animated character, traffic, or camera drift.
+- The menu city lighting is still bright/washed at the transition edge; it needs
+  a final colour/contrast pass against the paper panel.
+- Route length (~66 m), the stair climb, audio listening, and deeper world
+  detail remain open.
+
+### Next
+
+1. Add gentle menu camera drift/parallax and a skyline silhouette layer.
+2. Extend the playable route toward the 180–220 m target.
+3. Tune menu colour/contrast and motion blur against the reference frames.
+4. Listening pass on the Round 2 mix.
+
 ## Round log
 
 | Round | Date | Focus | Outcome |
@@ -487,3 +542,4 @@ motion blur.
 | 2 | 2026-11-19 | Procedural audio: buses, ambience, movement/parkour, score, radio | 5/5 audio targets in band; live post-limiter peak −3.7 dBFS; 30 audio tests |
 | 3 | 2026-11-19 | Vertical Prologue extension: drop, gap, stair climb, skybridge, finish roof | Route ~66 m / 5.1 m vertical; 270 tests; physical traversal verified |
 | 4 | 2026-11-19 | Reference UI, canvas signage, speed blur | Paper/ink menu, minimalist HUD, RUN/section signs, radial blur; 270 tests |
+| 5 | 2026-11-19 | Menu city vignette | Visual-only prologue rooftop/city behind paper menu; hidden in gameplay; 270 tests |

@@ -76,6 +76,9 @@ import { type ApplicationConfig, DEFAULT_APPLICATION_CONFIG } from "./Applicatio
 
 export type ApplicationState = "idle" | "initializing" | "ready" | "running" | "stopped" | "failed";
 
+const MENU_CAMERA_POSITION = { x: 0, y: 2.1, z: 11 } as const;
+const MENU_CAMERA_YAW = 0.16;
+const MENU_CAMERA_PITCH = 0.03;
 const STATUS_WINDOW_MS = 500;
 const TRAINING_LEVEL_ID = "training_test";
 const PROLOGUE_LEVEL_ID = "prologue_test";
@@ -384,6 +387,12 @@ export class Application implements Disposable {
 
     if (this.renderScene) {
       this.renderScene.addObject(this.cameraSystem.camera);
+      this.cameraSystem.setPresentationPose(
+        MENU_CAMERA_POSITION,
+        MENU_CAMERA_YAW,
+        MENU_CAMERA_PITCH,
+      );
+      this.renderScene.setMenuBackdropVisible(true);
       this.viewModel = new ViewModel(this.cameraSystem.camera);
       this.resources.push(this.viewModel);
     }
@@ -1766,6 +1775,23 @@ export class Application implements Disposable {
 
   private renderFrame(alpha: number, frameDeltaSeconds: number): void {
     const movement = this.player?.getMovementSnapshot() ?? null;
+    const flowState = this.flowManager?.getState() ?? "boot";
+    const showMenuVignette =
+      flowState === "boot" ||
+      flowState === "main-menu" ||
+      flowState === "loading" ||
+      flowState === "results" ||
+      flowState === "error";
+
+    if (showMenuVignette) {
+      this.cameraSystem?.setPresentationPose(
+        MENU_CAMERA_POSITION,
+        MENU_CAMERA_YAW,
+        MENU_CAMERA_PITCH,
+      );
+    }
+
+    this.renderScene?.setMenuBackdropVisible(showMenuVignette);
 
     if (this.cameraSystem && this.player && movement) {
       this.cameraSystem.renderUpdate({
@@ -1788,7 +1814,7 @@ export class Application implements Disposable {
     }
 
     if (this.renderer && this.renderScene && this.cameraSystem) {
-      const inGameplay = this.flowManager?.getState() === "gameplay";
+      const inGameplay = flowState === "gameplay";
 
       this.viewModel?.setVisible(inGameplay);
 

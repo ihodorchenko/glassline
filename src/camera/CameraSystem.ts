@@ -108,6 +108,18 @@ export class CameraSystem implements Disposable {
     return this.pitch;
   }
 
+  /** Places the camera for the non-gameplay menu vignette. */
+  setPresentationPose(
+    position: { readonly x: number; readonly y: number; readonly z: number },
+    yaw = 0,
+    pitch = 0,
+  ): void {
+    this.camera.position.set(position.x, position.y, position.z);
+    this.yaw = yaw;
+    this.pitch = pitch;
+    this.camera.rotation.set(pitch, yaw, 0);
+  }
+
   setLookConfiguration(configuration: CameraLookConfiguration): void {
     this.look = configuration;
   }

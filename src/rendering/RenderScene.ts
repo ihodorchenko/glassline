@@ -2,6 +2,7 @@ import * as THREE from "three";
 
 import type { Disposable } from "../core/Disposable";
 import { MaterialLibrary } from "./MaterialLibrary";
+import { MenuBackdrop } from "./MenuBackdrop";
 import { SkyDome, type SkyState } from "./SkyDome";
 
 /**
@@ -74,6 +75,7 @@ function sunDirectionFromAngles(azimuth: number, elevation: number): THREE.Vecto
 export class RenderScene implements Disposable {
   readonly scene = new THREE.Scene();
   readonly materials = new MaterialLibrary();
+  readonly menuBackdrop: MenuBackdrop;
 
   private readonly hemisphere: THREE.HemisphereLight;
   private readonly ambient: THREE.AmbientLight;
@@ -118,7 +120,8 @@ export class RenderScene implements Disposable {
     );
 
     this.sky = new SkyDome(this.createSkyState(this.resolvedEnvironment));
-    this.scene.add(this.sky.mesh);
+    this.menuBackdrop = new MenuBackdrop(this.materials);
+    this.scene.add(this.sky.mesh, this.menuBackdrop.group);
 
     this.setEnvironment(null);
 
@@ -129,6 +132,10 @@ export class RenderScene implements Disposable {
 
   get skyDome(): SkyDome {
     return this.sky;
+  }
+
+  setMenuBackdropVisible(visible: boolean): void {
+    this.menuBackdrop.setVisible(visible);
   }
 
   /** Connects the renderer so the scene can build its sky reflection probe. */
@@ -185,6 +192,7 @@ export class RenderScene implements Disposable {
 
     this.disposed = true;
     this.sky.dispose();
+    this.menuBackdrop.dispose();
     this.materials.dispose();
     this.environmentTarget?.dispose();
     this.environmentTarget = null;
