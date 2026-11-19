@@ -3691,6 +3691,32 @@ Verify that Safari actually starts the Web Audio graph during gameplay.
 - Technical context check, **not** a human listening verdict; Safari mix balance
   remains unjudged.
 
+---
+
+## Round 89 — reproducible clean run (2026-11-19)
+
+### Scope
+
+Fix the non-deterministic full-run autopilot from Round 82.
+
+### What changed
+
+- New `--in-page` autopilot: waypoint/jump/slide logic runs in a rAF loop in
+  the page, not via 80 ms CDP polling.
+- **4 consecutive runs with 0 respawns**, waypoint 23, Results 21.8–23.1 s.
+- Video + Results + audio captured; 282 tests.
+
+### Evidence
+
+- [`clean-full-run.mp4`](evidence/video/round-89/clean-full-run.mp4)
+- [`results.png`](evidence/video/round-89/results.png)
+- [`README.md`](evidence/video/round-89/README.md)
+
+### Honest gaps
+
+- In-page autopilot still automated; not a human speedrun.
+- Safari full-run wall clock remains ~33.5 s.
+
 ## Round log
 
 | Round | Date | Focus | Outcome |

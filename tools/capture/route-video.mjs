@@ -47,6 +47,7 @@ function parseArgs(argv) {
     jumpHold: 110,
     slideRange: null,
     interact: false,
+    inPage: false,
     pollMs: 80,
   };
 
@@ -102,6 +103,9 @@ function parseArgs(argv) {
             return Number.isFinite(z) ? { z, hold } : null;
           })
           .filter(Boolean);
+        break;
+      case "--in-page":
+        args.inPage = true;
         break;
       case "--poll-ms":
         args.pollMs = Math.max(15, Number(argv[++index] ?? 80) || 80);
@@ -162,6 +166,7 @@ function parseArgs(argv) {
             "  --jump-z <list>    Jump at z thresholds; optional hold ms: z[:hold],...",
             "  --jump-hold <ms>   Hold jump longer for full-height jumps (default 110)",
             "  --poll-ms <ms>     Waypoint/jump polling interval (default 80)",
+            "  --in-page          Run the autopilot inside the page via rAF",
             "  --slide-range <a,b> Hold crouch/slide between z=a and z=b",
           ].join("\n"),
         );
@@ -625,7 +630,92 @@ async function main() {
     everyNthFrame: 1,
   });
 
-  if (args.cinematic) {
+  if (args.inPage) {
+    const wps = args.waypoints && args.waypoints.length > 0 ? args.waypoints : [];
+    const jumps = args.jumpZ.map((jump) => ({
+      z: jump.z,
+      hold: jump.hold ?? args.jumpHold,
+    }));
+
+    await session.evaluate(
+      `(() => {
+        const app = window.__glassline;
+        if (!app?.player) return false;
+        const wps = ${JSON.stringify(wps)};
+        const jumps = ${JSON.stringify(jumps)};
+        const slideRange = ${JSON.stringify(args.slideRange)};
+        const state = window.__captureBot = { done: false, respawns: 0, waypoint: 0, z: 0, flow: null };
+        const jumped = new Set();
+        let lastZ = app.player.getPosition().z;
+        let jumpUntil = 0;
+
+        const frame = () => {
+          if (!app.player) { state.done = true; state.flow = "disposed"; return; }
+          state.flow = app.flowManager.getState();
+          if (state.flow === "results") { state.done = true; return; }
+
+          const p = app.player.getPosition();
+          const snap = app.player.model.getSnapshot();
+          state.z = p.z;
+
+          if (p.z > lastZ + 5) { state.respawns += 1; jumped.clear(); }
+          lastZ = p.z;
+
+          let target = wps[state.waypoint];
+          if (target && Math.hypot(target.x - p.x, target.z - p.z) < 1.0 && state.waypoint < wps.length - 1) {
+            state.waypoint += 1;
+            target = wps[state.waypoint];
+          }
+
+          if (target) {
+            app.cameraSystem.yaw = Math.atan2(-(target.x - p.x), -(target.z - p.z));
+            app.cameraSystem.pitch = 0;
+          }
+
+          const held = app.input.heldKeys;
+          held.add("KeyW");
+          held.add("ShiftLeft");
+
+          if (slideRange) {
+            if (p.z <= slideRange[0] && p.z >= slideRange[1]) held.add("KeyC");
+            else held.delete("KeyC");
+          }
+
+          if (snap.grounded) {
+            for (const jump of jumps) {
+              if (!jumped.has(jump.z) && p.z <= jump.z + 0.45 && p.z >= jump.z - 2.2) {
+                jumped.add(jump.z);
+                held.add("Space");
+                jumpUntil = performance.now() + jump.hold;
+                break;
+              }
+            }
+          }
+
+          if (performance.now() > jumpUntil) held.delete("Space");
+          requestAnimationFrame(frame);
+        };
+
+        requestAnimationFrame(frame);
+        return true;
+      })()`,
+      true,
+    );
+
+    const botStarted = Date.now();
+
+    while (Date.now() - botStarted < args.seconds * 1000) {
+      const botState = await session.evaluate("window.__captureBot ?? null").catch(() => null);
+
+      if (!botState || botState.done) {
+        break;
+      }
+
+      await delay(250);
+    }
+
+    await delay(500);
+  } else if (args.cinematic) {
     await session.evaluate(CINEMATIC_SETUP);
     await delay(args.seconds * 1000);
   } else if (args.waypoints && args.waypoints.length > 0) {
@@ -920,6 +1010,9 @@ async function main() {
         peak: audio.peak,
         rms: audio.rms,
         respawns: respawnCount,
+        bot: args.inPage
+          ? await session.evaluate("window.__captureBot ?? null").catch(() => null)
+          : null,
         errors: session.errors,
       },
       null,
