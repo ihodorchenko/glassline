@@ -18,7 +18,7 @@
 
 Хэши ключевых файлов: [`evidence/MANIFEST.md`](evidence/MANIFEST.md).
 
-Сводный прогон: [`VERIFICATION.md`](VERIFICATION.md) — 279 тестов, 13/13 старта,
+Сводный прогон: [`VERIFICATION.md`](VERIFICATION.md) — 280 тестов, 13/13 старта,
 5/5 звука, ~60 fps, 0 битых ссылок.
 
 ## 1. Что уже проверено автоматически
@@ -28,7 +28,7 @@
 | Стартовый кадр против референса | **13/13** метрик | [`round-42/metrics.json`](evidence/visual/round-42/metrics.json) |
 | Офлайн-звук Пролога | **5/5** полос | [`round-2`](evidence/audio/round-2/) |
 | High-route звук | **5/5** полос | [`round-15`](evidence/audio/round-15/) |
-| Тесты | **279 в 37 файлах** | `npm run validate` |
+| Тесты | **280 в 37 файлах** | `npm run validate` |
 | Typecheck / Biome / build | зелёные | `npm run validate` |
 | Производительность | **~60 fps** | `npm run perf` |
 | Маршрут | ~220 м, 5 секций/чекпоинтов | `docs/VISUAL_REFERENCE_PROGRESS.md` |
