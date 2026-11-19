@@ -76,7 +76,10 @@ Can't find profile directory
 
 ## Следующие шаги
 
-1. Проверить в Safari полный маршрут/управление/звук (Training уже PASS).
+1. Включить Safari → Settings → Advanced → Show features for web developers →
+   Develop → Allow Remote Automation, затем запустить
+   `node tools/capture/safari-smoke.mjs` (см. SAFARI_TESTING.md) и проверить
+   полный маршрут/управление/звук (Training уже PASS вручную).
 2. Firefox: запуск вне sandbox или через реальный профиль.
 3. Playwright WebKit оставить только как известный false-positive, не как
    блокер Safari.

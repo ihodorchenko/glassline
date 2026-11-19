@@ -108,3 +108,5 @@ npm run audio:probe -- --record docs/evidence/audio/round-29/ground-8s.wav \
 
 The probe triggers a deterministic footstep/landing sequence, then reports
 post-limiter RMS, peak, and band shares plus the debug bus/ambience/music state.
+
+- `safari-smoke.mjs` — real Safari via `safaridriver --mcp` (requires Allow Remote Automation).
