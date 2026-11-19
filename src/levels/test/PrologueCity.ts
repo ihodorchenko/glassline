@@ -1236,6 +1236,25 @@ function addCatwalk(builder: CityBuilder): void {
     accentColor: 0xd52e36,
   });
 
+  // The upper scaffold's safe-retry pad is marked so the fall anchor has a
+  // visible landmark.
+  builder.cylinder(0, 2.02, -98.7, 2.1, 0.02, {
+    material: "red",
+    emissive: 0xc0262d,
+    emissiveIntensity: 0.35,
+    castShadow: false,
+    receiveShadow: false,
+  });
+
+  for (const side of [-1, 1]) {
+    builder.box(side * 1.55, 2.6, -98.7, 0.08, 1.2, 0.08, { material: "metal" });
+    builder.box(side * 1.55, 3.22, -98.7, 0.24, 0.08, 0.24, {
+      material: "cool-light",
+      emissive: 0xcfe8ff,
+      emissiveIntensity: 0.8,
+    });
+  }
+
   // Deck seams and a suspended construction load break the long span.
   for (let x = 14; x <= 44; x += 6) {
     for (const z of [-122.8, -130.8]) {

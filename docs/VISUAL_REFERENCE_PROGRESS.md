@@ -976,6 +976,62 @@ return span.
 3. Listening pass and final UI/motion calibration.
 4. Continue world-detail parity on the start/industrial roofs.
 
+---
+
+## Round 12 — mid-ascent safety pad (2026-11-19)
+
+### Scope
+
+Round 10/11 safety covered the high roof and catwalk but not the scaffold climb.
+This round adds a second fall-only anchor on the upper scaffold and a visible
+safe-retry pad, without adding checkpoint IDs or changing speedrun splits.
+
+### What changed
+
+- **Mid-ascent anchor:** when the player is grounded on platform 5 (top y=2.0,
+  centre z=-98.7), the application sets an emergency anchor at (0, 2.875, -98.7).
+  Failing on the higher platforms or the catwalk now retries from platform 5
+  instead of the beam. The high-route anchor still overrides it on the high roof;
+  both clear when the player is grounded below y=1 at z > -112.
+- **Visible pad:** a red disc, two cyan-capped posts, and a rail frame mark the
+  safe-retry platform. The first oversized SAFE sign was removed because it
+  blocked the jump sightline; the pad itself is the landmark.
+- **No route changes:** ~220 m, 8.2 m vertical, five checkpoint IDs, same
+  triggers. `RespawnManager` anchor semantics/high-route anchor from Round 10
+  remain.
+- **Tests:** the emergency-anchor unit tests cover precedence and non-fall
+  behavior; in-browser probe verifies mid → high → cleared transitions.
+
+### Verification
+
+- `npm run validate`: typecheck, Biome, **274 tests in 36 files**, build.
+- Browser probe: mid anchor destination `respawn_mid_ascent` (0, 2.875, -98.7);
+  high roof destination `respawn_high_route`; both clear on the beam.
+- Physical catwalk test (gap + turn + barrier + return) unchanged and green.
+- Start frame **10/13**; performance ~60 fps.
+
+### Evidence
+
+| View | Image |
+|---|---|
+| Safe-retry pad on platform 5 | ![Safe pad](evidence/visual/round-12/safe-pad.jpg) |
+| Start regression | ![Start](evidence/visual/round-12/start.jpg) |
+
+### Honest gaps
+
+- Anchor starts at platform 5; falls on platforms 1–4 still return to the beam.
+- The red pad may read as hazard rather than safety; no text marker remains.
+- Catwalk lateral choice, listening pass, final menu/motion calibration, and
+  high-roof density remain open.
+- The anchor is application state, not a checkpoint; session restart resets it.
+
+### Next
+
+1. Add a lateral catwalk choice/detour and one more climb variation.
+2. Add a closer turn landmark and dress the high roof further.
+3. Run the listening pass; balance metal catwalk steps/altitude wind.
+4. Final menu/motion/colour calibration.
+
 ## Round log
 
 | Round | Date | Focus | Outcome |
