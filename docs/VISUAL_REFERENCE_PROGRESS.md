@@ -2752,6 +2752,42 @@ thresholds and captures the full return line.
 - Ends before the finish trigger; no finish-screen capture.
 - Audio is loud/live, not normalized; human verdict pending.
 
+---
+
+## Round 49 — full run to finish terminal (2026-11-19)
+
+### Scope
+
+Round 48 ended at the finish approach. This round adds terminal interaction and
+captures the FINISH gate/terminal sequence.
+
+### What changed
+
+- `--interact` sends E at the last waypoint; player prompt/achievement captured.
+- 14.40 s run: start x=32 → catwalk → 180° turn → jump x=39/x=34 → FINISH
+  gate/terminal → “Making Contact”.
+- Live audio peak −3.86 dBFS / LUFS ≈ −22.03.
+- Capture robustness: waypoint loop exits on results/player disposal instead of
+  hanging; process exits after encoding.
+- No game/route/visual changes.
+
+### Verification
+
+- `npm run validate`: **279 tests in 37 files**, build.
+- 14.40 s/1280×720/30 fps; terminal achievement visible; no probe errors.
+- Start 13/13 unchanged.
+
+### Evidence
+
+- [`finish-terminal-run.mp4`](evidence/video/round-49/finish-terminal-run.mp4)
+- [`finish-terminal-run.wav`](evidence/video/round-49/finish-terminal-run.wav)
+- [`poster.png`](evidence/video/round-49/poster.png)
+
+### Honest gaps
+
+- Results screen is **not** captured; clip ends on the FINISH banner/achievement.
+- Live audio is loud; human verdict pending.
+
 ## Round log
 
 | Round | Date | Focus | Outcome |

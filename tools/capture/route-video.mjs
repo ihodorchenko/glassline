@@ -43,6 +43,7 @@ function parseArgs(argv) {
     unlock: false,
     waypoints: null,
     jumpX: [],
+    interact: false,
   };
 
   for (let index = 0; index < argv.length; index += 1) {
@@ -91,6 +92,9 @@ function parseArgs(argv) {
         break;
       case "--unlock":
         args.unlock = true;
+        break;
+      case "--interact":
+        args.interact = true;
         break;
       case "--jump-x":
         args.jumpX = value()
@@ -606,7 +610,9 @@ async function main() {
     while (Date.now() - started < args.seconds * 1000) {
       const state = await session.evaluate(`(() => {
         const app = window.__glassline;
+        if (!app.player) return { done: true };
         return {
+          done: false,
           x: app.player.getPosition().x,
           z: app.player.getPosition().z,
           grounded: app.player.model.getSnapshot().grounded,
@@ -614,7 +620,7 @@ async function main() {
       })()`);
       const target = waypoints[index] ?? waypoints[waypoints.length - 1];
 
-      if (!state || !target) break;
+      if (!state || state.done || !target) break;
 
       const distance = Math.hypot(target.x - state.x, target.z - state.z);
 
@@ -643,7 +649,15 @@ async function main() {
         }
       }
 
-      if (index === waypoints.length - 1 && distance < 1.2) break;
+      if (index === waypoints.length - 1 && distance < 1.2) {
+        if (args.interact) {
+          await sendKey(session, "rawKeyDown", "KeyE", "e", 69);
+          await delay(80);
+          await sendKey(session, "keyUp", "KeyE", "e", 69);
+          await delay(2600);
+        }
+        break;
+      }
 
       await delay(80);
     }
@@ -815,9 +829,10 @@ async function main() {
     ),
   );
   session.close();
+  process.exit(0);
 }
 
 main().catch((error) => {
   console.error(error);
-  process.exitCode = 1;
+  process.exit(1);
 });
