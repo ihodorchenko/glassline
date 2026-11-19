@@ -1090,6 +1090,60 @@ keeping the same length, checkpoints, and triggers.
 3. Listening pass and final calibration.
 4. Continue world-detail parity.
 
+---
+
+## Round 14 — turn billboard and high-roof helipad (2026-11-19)
+
+### Scope
+
+Round 13 added a route choice but the turn still lacked a close foreground
+landmark, and the high roof remained sparse. This round adds a branded turn
+billboard and a helipad/service detail set.
+
+### What changed
+
+- **RUN billboard at the turn:** a 8.7 × 2.9 m sign on a steel frame on the turn's
+  outer east rail, facing the outbound approach. It gives the catwalk a close
+  graphic endpoint instead of only distant towers; the `07 / TURN` sign remains
+  below it.
+- **High-roof helipad:** a dark 5.4 m pad with white H bars and four cool edge
+  lights north of the finish gate, off the approach line. It adds scale and a
+  corporate/construction rooftop read without changing collision.
+- **No route/checkpoint changes:** ~220 m, 8.2 m vertical, five IDs; bypass,
+  anchors, and catwalk surfaces unchanged.
+- **No new tests:** all 275 remain green; the additions are visual-only.
+
+### Verification
+
+- `npm run validate`: typecheck, Biome, **275 tests in 36 files**, build.
+- Physical catwalk bypass/gap/barrier tests unchanged.
+- Performance **60.3 fps**; start frame **10/13**.
+- Captures: approach with RUN billboard, high roof with helipad/gate.
+
+### Evidence
+
+| View | Image |
+|---|---|
+| RUN billboard on catwalk approach | ![Billboard](evidence/visual/round-14/billboard.jpg) |
+| High roof with helipad and gate | ![High roof](evidence/visual/round-14/high.jpg) |
+| Start regression | ![Start](evidence/visual/round-14/start.jpg) |
+
+### Honest gaps
+
+- The billboard is very close/dominant and renders red rather than orange in
+  shade; it can obscure the skyline on approach.
+- The helipad is oversized in the entry frame and is decorative only.
+- No gameplay/timing difference for the bypass; no new checkpoint/climb beat.
+- Listening pass, high-roof density beyond the pad, and final menu/motion/colour
+  calibration remain open.
+
+### Next
+
+1. Balance the billboard size/colour and frame the turn rather than block it.
+2. Add a second catwalk vantage/choice with a real time/risk tradeoff.
+3. Run the listening pass and balance catwalk metal/altitude wind.
+4. Final menu/motion/colour calibration; world-detail parity on the start roofs.
+
 ## Round log
 
 | Round | Date | Focus | Outcome |

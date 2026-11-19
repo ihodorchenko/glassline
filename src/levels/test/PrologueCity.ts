@@ -1236,6 +1236,22 @@ function addCatwalk(builder: CityBuilder): void {
     accentColor: 0xd52e36,
   });
 
+  // A close RUN billboard gives the turn a designed foreground landmark.
+  for (const z of [-131.2, -122.4]) {
+    builder.box(56.2, 7.4, z, 0.28, 4.4, 0.28, { material: "metal" });
+  }
+
+  builder.box(56.2, 9.55, -126.8, 0.28, 0.28, 9.2, { material: "metal" });
+  builder.box(56.32, 8.35, -126.8, 0.28, 3.4, 9.4, { material: "white" });
+  builder.box(56.12, 8.35, -126.8, 0.04, 3.1, 8.9, { material: "orange" });
+
+  builder.plane(56.06, 8.35, -126.8, 8.7, 2.9, -Math.PI / 2, {
+    text: "RUN",
+    background: 0xdd5d1b,
+    textColor: 0xfff6ea,
+    accentColor: 0x111418,
+  });
+
   // The upper scaffold's safe-retry pad is marked so the fall anchor has a
   // visible landmark.
   builder.cylinder(0, 2.02, -98.7, 2.1, 0.02, {
@@ -1409,6 +1425,41 @@ function addHighRoofDressing(builder: CityBuilder): void {
 
   builder.box(-6.9, 5.45, -127.8, 2.8, 0.5, 1.8, { material: "dark-metal" });
   builder.box(-6.9, 5.78, -127.8, 2.6, 0.08, 1.6, { material: "glass" });
+
+  // Helipad marking north of the gate, off the finish approach.
+  builder.cylinder(-4.2, 5.215, -123.6, 5.4, 0.02, {
+    material: "dark-metal",
+    castShadow: false,
+    receiveShadow: false,
+  });
+  builder.box(-5.2, 5.23, -123.6, 0.35, 0.02, 2.4, {
+    material: "white",
+    castShadow: false,
+    receiveShadow: false,
+  });
+  builder.box(-3.2, 5.23, -123.6, 0.35, 0.02, 2.4, {
+    material: "white",
+    castShadow: false,
+    receiveShadow: false,
+  });
+  builder.box(-4.2, 5.23, -123.6, 2.0, 0.02, 0.35, {
+    material: "white",
+    castShadow: false,
+    receiveShadow: false,
+  });
+
+  for (const [x, z] of [
+    [-7.1, -121.0],
+    [-1.3, -121.0],
+    [-7.1, -126.2],
+    [-1.3, -126.2],
+  ] as const) {
+    builder.box(x, 5.36, z, 0.22, 0.3, 0.22, {
+      material: "cool-light",
+      emissive: 0xcfe8ff,
+      emissiveIntensity: 0.8,
+    });
+  }
 
   builder.cylinder(7.0, 5.7, -132.7, 0.9, 1.0, { material: "metal" });
   builder.cylinder(7.0, 6.25, -132.7, 1.0, 0.1, { material: "dark-metal" });
