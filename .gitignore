@@ -20,3 +20,6 @@ ref/
 
 # Local release bundle (generated, 4.4 MB)
 glassline-final-build.zip
+
+# W0 capture output (deterministic screenshots are regenerated on demand)
+captures/
