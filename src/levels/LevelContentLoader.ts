@@ -112,7 +112,7 @@ export class BoxLevelContentLoader {
     definition: LevelDefinition,
     dependencies: LevelContentDependencies,
   ): Promise<LoadedLevelContent> {
-    const unitBox = new THREE.BoxGeometry(1, 1, 1);
+    const unitBevelBox = new RoundedBoxGeometry(1, 1, 1, 2, 0.03);
     const unitCylinder = new THREE.CylinderGeometry(0.5, 0.5, 1, 16);
     const boxGeometries = new Map<string, THREE.BufferGeometry>();
     const getBoxGeometry = (size: { x: number; y: number; z: number }): THREE.BufferGeometry => {
@@ -243,7 +243,7 @@ export class BoxLevelContentLoader {
           emissive: decoration.emissive ?? 0x000000,
           emissiveIntensity: decoration.emissiveIntensity ?? 0,
         });
-        const geometry = decoration.shape === "cylinder" ? unitCylinder : unitBox;
+        const geometry = decoration.shape === "cylinder" ? unitCylinder : unitBevelBox;
         const mesh = new THREE.Mesh(geometry, material);
 
         mesh.position.set(decoration.position.x, decoration.position.y, decoration.position.z);
@@ -284,7 +284,7 @@ export class BoxLevelContentLoader {
     }
 
     for (const batch of batches.values()) {
-      const geometry = batch.shape === "cylinder" ? unitCylinder : unitBox;
+      const geometry = batch.shape === "cylinder" ? unitCylinder : unitBevelBox;
       const mesh = new THREE.InstancedMesh(geometry, batch.material, batch.matrices.length);
 
       batch.matrices.forEach((matrix, index) => {
@@ -388,7 +388,7 @@ export class BoxLevelContentLoader {
         }
 
         boxGeometries.clear();
-        unitBox.dispose();
+        unitBevelBox.dispose();
         unitCylinder.dispose();
 
         meshes.length = 0;

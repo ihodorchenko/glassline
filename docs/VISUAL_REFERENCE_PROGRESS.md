@@ -3367,6 +3367,29 @@ Break razor-sharp low-poly edges on the route.
 
 - 3.5 cm bevel is subtle at distance; low-poly silhouettes remain.
 
+---
+
+## Round 72 — beveled props/decorations (2026-11-19)
+
+### Scope
+
+Carry the static bevel treatment into instanced props.
+
+### What changed
+
+- Decoration box instances use a rounded unit box (2 segments, 3 cm).
+- Transparent decorations use the same geometry.
+- Start **13/13**, **60.1 fps**, 280 tests.
+
+### Evidence
+
+- [`props-closeup.jpg`](evidence/visual/round-72/props-closeup.jpg)
+- [`start.jpg`](evidence/visual/round-72/start.jpg)
+
+### Honest gaps
+
+- Bevel is scale-dependent on instanced props; thin rails get little visible change.
+
 ## Round log
 
 | Round | Date | Focus | Outcome |
