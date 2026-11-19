@@ -946,11 +946,6 @@ function addOverheadBridge(builder: CityBuilder): void {
     emissiveIntensity: 0.4,
     castShadow: false,
   });
-
-  // Hanging maintenance hoist under the span.
-  builder.box(4.2, 7.6, -6, 0.1, 2.4, 0.1, { material: "dark-metal" });
-  builder.box(4.2, 6.25, -6, 1.2, 0.45, 1.0, { material: "red" });
-  builder.box(4.2, 5.75, -6, 0.8, 0.25, 0.7, { material: "dark-metal" });
 }
 
 function addSkybridge(builder: CityBuilder): void {

@@ -64,7 +64,7 @@ The shell uses a paper-and-ink editorial language: ivory panels, black uppercase
 type, hard red rules, a minimal HUD, and canvas-rendered `RUN` / section /
 `FINISH` signage in the world.
 
-![Main menu](docs/evidence/visual/round-5/menu.jpg)
+![Main menu](docs/evidence/visual/round-25/menu.jpg)
 
 The Training yard shares the same white/red rooftop language and city backdrop.
 

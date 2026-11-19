@@ -21,6 +21,9 @@ export class CityLife implements Disposable {
   private readonly mesh: THREE.InstancedMesh;
   private readonly geometry: THREE.BufferGeometry;
   private readonly material: THREE.MeshBasicMaterial;
+  private readonly hoistPivot = new THREE.Group();
+  private readonly hoistGeometries: THREE.BufferGeometry[] = [];
+  private readonly hoistMaterials: THREE.Material[] = [];
   private readonly orbits: BirdOrbit[] = [];
   private readonly matrix = new THREE.Matrix4();
   private readonly position = new THREE.Vector3();
@@ -49,6 +52,7 @@ export class CityLife implements Disposable {
     this.mesh.castShadow = false;
     this.mesh.receiveShadow = false;
     this.group.add(this.mesh);
+    this.buildHoist();
 
     for (let index = 0; index < count; index += 1) {
       const angle = (index / count) * Math.PI * 2;
@@ -76,6 +80,9 @@ export class CityLife implements Disposable {
     }
 
     this.elapsedSeconds += Math.max(0, deltaSeconds);
+
+    this.hoistPivot.rotation.z = Math.sin(this.elapsedSeconds * 0.62) * 0.045;
+    this.hoistPivot.rotation.x = Math.cos(this.elapsedSeconds * 0.47) * 0.028;
 
     for (const [index, orbit] of this.orbits.entries()) {
       const angle = this.elapsedSeconds * orbit.speed + orbit.phase;
@@ -105,5 +112,41 @@ export class CityLife implements Disposable {
     this.geometry.dispose();
     this.material.dispose();
     this.mesh.dispose();
+
+    for (const geometry of this.hoistGeometries) {
+      geometry.dispose();
+    }
+
+    for (const material of this.hoistMaterials) {
+      material.dispose();
+    }
+  }
+
+  private buildHoist(): void {
+    const cable = new THREE.Mesh(
+      new THREE.CylinderGeometry(0.035, 0.035, 2.2, 5),
+      new THREE.MeshStandardMaterial({ color: 0x2e3439, roughness: 0.7, metalness: 0.4 }),
+    );
+    const load = new THREE.Mesh(
+      new THREE.BoxGeometry(1.2, 0.5, 1.0),
+      new THREE.MeshStandardMaterial({ color: 0xc0262d, roughness: 0.55, metalness: 0.12 }),
+    );
+    const cap = new THREE.Mesh(
+      new THREE.BoxGeometry(0.8, 0.22, 0.7),
+      new THREE.MeshStandardMaterial({ color: 0x30363a, roughness: 0.8, metalness: 0.25 }),
+    );
+
+    cable.position.y = -1.1;
+    load.position.y = -2.35;
+    cap.position.y = -2.71;
+    this.hoistPivot.position.set(4.2, 8.3, -6);
+    this.hoistPivot.add(cable, load, cap);
+    this.hoistGeometries.push(cable.geometry, load.geometry, cap.geometry);
+    this.hoistMaterials.push(
+      cable.material as THREE.Material,
+      load.material as THREE.Material,
+      cap.material as THREE.Material,
+    );
+    this.group.add(this.hoistPivot);
   }
 }

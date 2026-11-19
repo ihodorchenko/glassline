@@ -1713,6 +1713,57 @@ puts a small animated bird flock over the city.
 3. Human listening and final camera/menu calibration.
 4. Continue world-detail parity.
 
+---
+
+## Round 25 — ambient motion: menu drift and swinging hoist (2026-11-19)
+
+### Scope
+
+The menu backdrop and start canyon were static apart from birds/clouds. This
+round adds slow presentation-camera drift and an animated suspended hoist under
+the overhead bridge.
+
+### What changed
+
+- **Menu drift:** presentation camera position/yaw/pitch now follow slow
+  sinusoids (±0.22 m, ±0.035 m, ±0.025 rad) while a menu/result/loading vignette
+  is visible. Gameplay camera and pause behavior are untouched.
+- **Swinging hoist:** the static red hoist under the overhead bridge was removed;
+  `CityLife` now owns a pendulum group (cable, red load, dark cap) pivoted at
+  (4.2, 8.3, −6), swaying ±0.045 rad around Z and ±0.028 around X. One extra
+  group/draw calls, no collider.
+- Birds/clouds/menu city continue to animate.
+- **No route/collision/audio changes.**
+
+### Verification
+
+- `npm run validate`: typecheck, Biome, **275 tests in 36 files**, build.
+- Prologue start remains **13/13** metrics; performance **60.1 fps**.
+- Captures: menu with drifting camera/hoist/birds, start with swinging hoist.
+
+### Evidence
+
+| View | Image |
+|---|---|
+| Main menu with ambient motion | ![Menu](evidence/visual/round-25/menu.jpg) |
+| Start with swinging hoist | ![Start](evidence/visual/round-25/start.jpg) |
+| Metrics | [`metrics.json`](evidence/visual/round-25/metrics.json) |
+
+### Honest gaps
+
+- Drift is subtle and not user-configurable; reduced-motion only affects gameplay
+  camera features, not the menu drift.
+- Hoist is a simple pendulum without cable flex/impact audio.
+- Human listening, clipped-highlight recovery, bypass tradeoff, and final
+  menu/motion calibration remain open.
+
+### Next
+
+1. Respect reduced-motion for menu drift and add optional menu parallax.
+2. Add cable/hoist sound or wind creak at the bridge.
+3. Human listening and final camera/menu calibration.
+4. Continue highlight/world-detail parity.
+
 ## Round log
 
 | Round | Date | Focus | Outcome |

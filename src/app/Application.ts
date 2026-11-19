@@ -1857,10 +1857,20 @@ export class Application implements Disposable {
       flowState === "error";
 
     if (showMenuVignette) {
+      const presentationTime = performance.now() * 0.001;
+      const driftX = Math.sin(presentationTime * 0.055) * 0.22;
+      const driftY = Math.sin(presentationTime * 0.09) * 0.035;
+      const driftYaw = Math.sin(presentationTime * 0.07) * 0.025;
+      const driftPitch = Math.sin(presentationTime * 0.11) * 0.008;
+
       this.cameraSystem?.setPresentationPose(
-        MENU_CAMERA_POSITION,
-        MENU_CAMERA_YAW,
-        MENU_CAMERA_PITCH,
+        {
+          x: MENU_CAMERA_POSITION.x + driftX,
+          y: MENU_CAMERA_POSITION.y + driftY,
+          z: MENU_CAMERA_POSITION.z,
+        },
+        MENU_CAMERA_YAW + driftYaw,
+        MENU_CAMERA_PITCH + driftPitch,
       );
     }
 
