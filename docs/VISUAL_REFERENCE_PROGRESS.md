@@ -1316,6 +1316,60 @@ start view more colour/life.
 3. Human listening pass and final motion/colour calibration.
 4. Continue facade/world detail parity.
 
+---
+
+## Round 18 — overhead canyon bridge (2026-11-19)
+
+### Scope
+
+The start frame's open-sky share was the main remaining composition metric
+(+14.5% vs reference). This round adds an overhead utility/pedestrian bridge
+across the start canyon to frame the view and bring sky coverage into band.
+
+### What changed
+
+- **Overhead bridge:** a 27 m white deck at y=9 spans the canyon at z=−6, with
+  glass side rails, two support posts at x ±12.6, light-metal floor ribs,
+  longitudinal girders, cool underside lights, a red fascia strip, and a hanging
+  maintenance hoist at x=4.2. It sits above the tunnel/route with no collider.
+- **Visual read:** the light-metal ribs keep the underside legible without
+  turning the frame into a dark ceiling; the bridge frames the distant skyline
+  and billboard instead of hiding it.
+- **No route/checkpoint/audio changes:** visual-only; ~220 m/8.2 m preserved.
+- **Metrics:** sky share falls from ~57.7% to ~47.5% (reference 43.3%, tolerance
+  ±12), so the sky metric is now **PASS**. Start frame improves from **10/13** to
+  **11/13**. The remaining watches are `p95` highlight and `near_white` (the
+  long-standing highlight headroom gap).
+
+### Verification
+
+- `npm run validate`: typecheck, Biome, **275 tests in 36 files**, build.
+- Performance **60.1 fps**; start frame 11/13.
+- Catwalk/integration tests unchanged.
+
+### Evidence
+
+| View | Image |
+|---|---|
+| Start with overhead bridge | ![Start](evidence/visual/round-18/start.jpg) |
+| Metrics | [`metrics.json`](evidence/visual/round-18/metrics.json) |
+
+### Honest gaps
+
+- The bridge is visually dominant and reduces visible skyline; it may read as a
+  ceiling at first glance.
+- p95/near-white highlights remain the only open start-frame metrics.
+- No gameplay purpose/collision on the bridge; no human listening.
+- Billboard/helipad balance, bypass tradeoff, high-roof density, and final
+  menu/motion calibration remain.
+
+### Next
+
+1. Add specular/near-white highlights to lift p95/near_white without clipping.
+2. Balance the bridge mass and billboard/helipad framing.
+3. Human listening and final motion/menu calibration.
+4. Continue facade/world detail parity.
+
 ## Round log
 
 | Round | Date | Focus | Outcome |

@@ -905,6 +905,54 @@ function addNearCity(builder: CityBuilder): void {
   });
 }
 
+function addOverheadBridge(builder: CityBuilder): void {
+  // A local pedestrian bridge frames the start canyon and breaks the open sky.
+  builder.box(0, 9.0, -6, 27, 1.2, 4.0, { material: "white", castShadow: true });
+  builder.box(0, 9.65, -8.15, 27, 1.3, 0.14, {
+    material: "glass-far",
+    castShadow: false,
+  });
+  builder.box(0, 9.65, -3.85, 27, 1.3, 0.14, {
+    material: "glass-far",
+    castShadow: false,
+  });
+
+  for (const x of [-12.6, 12.6]) {
+    builder.box(x, 4.6, -6, 0.5, 9.2, 0.5, { material: "metal", castShadow: true });
+    builder.box(x, 1.0, -6, 1.1, 0.3, 1.1, { material: "concrete" });
+  }
+
+  for (const z of [-8.2, -3.8]) {
+    builder.box(0, 8.95, z, 27.2, 0.2, 0.2, { material: "dark-metal" });
+  }
+
+  for (let x = -11; x <= 11; x += 2.75) {
+    builder.box(x, 8.42, -6, 0.18, 0.18, 4.0, { material: "metal" });
+    builder.box(x, 8.48, -6, 0.5, 0.08, 0.08, {
+      material: "cool-light",
+      emissive: 0xcfe8ff,
+      emissiveIntensity: 0.7,
+      castShadow: false,
+    });
+  }
+
+  for (const z of [-8.05, -3.95]) {
+    builder.box(0, 8.36, z, 27, 0.22, 0.22, { material: "metal" });
+  }
+
+  builder.box(0, 9.62, -3.72, 27, 0.12, 0.05, {
+    material: "red",
+    emissive: 0xc0262d,
+    emissiveIntensity: 0.4,
+    castShadow: false,
+  });
+
+  // Hanging maintenance hoist under the span.
+  builder.box(4.2, 7.6, -6, 0.1, 2.4, 0.1, { material: "dark-metal" });
+  builder.box(4.2, 6.25, -6, 1.2, 0.45, 1.0, { material: "red" });
+  builder.box(4.2, 5.75, -6, 0.8, 0.25, 0.7, { material: "dark-metal" });
+}
+
 function addSkybridge(builder: CityBuilder): void {
   // Distant skybridge linking the far skyline; the playable bridge is part of
   // the level geometry.
@@ -1628,6 +1676,7 @@ export function createPrologueCityDecorations(
   addCheckpointBeacons(builder);
 
   addNearCity(builder);
+  addOverheadBridge(builder);
   addSkybridge(builder);
   addCrane(builder);
   addBillboards(builder);

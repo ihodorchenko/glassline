@@ -21,7 +21,8 @@
 > signposting/tradeoff, listening pass, and W1/W2 polish remain; Round 14 adds a
 > turn billboard and high-roof helipad; Round 15 adds a measured high-route
 > audio profile (wind, metal catwalk steps, landings, finish hit); Round 16 adds
-> a live ground-vs-high analyser probe; Round 17 adds rooftop amenity planting. The plan's anti-hack rule is honored: the
+> a live ground-vs-high analyser probe; Round 17 adds rooftop amenity planting;
+> Round 18 adds an overhead canyon bridge that brings sky composition into band. The plan's anti-hack rule is honored: the
 > hard highlight clip was replaced by a gentler shoulder; the remaining
 > near-white/highlight gap is assigned to real lighting and content.
 

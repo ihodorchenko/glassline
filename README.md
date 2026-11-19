@@ -58,7 +58,7 @@ vertical).
 
 ![Final scaffold ascent](docs/evidence/visual/round-6/ascent.jpg)
 
-![Start roof amenity](docs/evidence/visual/round-17/start.jpg)
+![Start roof with overhead bridge](docs/evidence/visual/round-18/start.jpg)
 
 The shell uses a paper-and-ink editorial language: ivory panels, black uppercase
 type, hard red rules, a minimal HUD, and canvas-rendered `RUN` / section /
