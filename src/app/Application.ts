@@ -1788,12 +1788,21 @@ export class Application implements Disposable {
     }
 
     if (this.renderer && this.renderScene && this.cameraSystem) {
-      if (movement) {
+      const inGameplay = this.flowManager?.getState() === "gameplay";
+
+      this.viewModel?.setVisible(inGameplay);
+
+      if (movement && inGameplay) {
         this.viewModel?.update(frameDeltaSeconds, movement);
       }
 
       this.renderScene.update(frameDeltaSeconds);
-      this.renderer.render(this.renderScene.scene, this.cameraSystem.camera, frameDeltaSeconds);
+      this.renderer.render(
+        this.renderScene.scene,
+        this.cameraSystem.camera,
+        frameDeltaSeconds,
+        movement ? Math.min(1, Math.max(0, movement.speed / 8.5)) : 0,
+      );
     }
 
     this.updateStatus();

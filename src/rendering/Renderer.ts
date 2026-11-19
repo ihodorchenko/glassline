@@ -71,13 +71,13 @@ export class Renderer implements Disposable {
     this.post?.setSize(safeWidth, safeHeight);
   }
 
-  render(scene: THREE.Scene, camera: THREE.Camera, deltaSeconds = 1 / 60): void {
+  render(scene: THREE.Scene, camera: THREE.Camera, deltaSeconds = 1 / 60, speedRatio = 0): void {
     if (this.disposed) {
       return;
     }
 
     if (this.post) {
-      this.post.render(scene, camera, deltaSeconds);
+      this.post.render(scene, camera, deltaSeconds, speedRatio);
 
       return;
     }

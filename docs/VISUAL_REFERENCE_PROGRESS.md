@@ -386,6 +386,99 @@ the updated route integration. The start frame remains at 10/13 image metrics
    decals, animated props.
 4. Listening pass on the Round 2 mix.
 
+---
+
+## Round 4 — reference UI, signage, and speed feedback (2026-11-19)
+
+### Scope
+
+The world had a reference-grade HDR pass but the interface and in-world
+typography still read as a generic prototype. This round applies the reference's
+editorial language to the shell and the street furniture, and adds speed-reactive
+motion blur.
+
+### What changed
+
+**UI art direction**
+
+- Main menu, pause, settings, results, and records use a paper-ivory split panel
+  with black uppercase type and hard red rules instead of the old dark
+  translucent cards. The selected row is solid ink with a red edge.
+- Settings and records inherit the same language: black labels, thin rules,
+  red-focused controls, ink-filled reset/back actions.
+- HUD removed the dark backdrop panels: timer, checkpoint progress, objective,
+  speed, and hints are now white type with a soft shadow over the world, marked
+  by a single red rule. A small centre dot provides a reference-style crosshair.
+- Training/tutorial copy is an ivory panel with ink text and a red edge; toasts
+  remain dark for legibility over gameplay.
+- The first-person body is hidden outside gameplay, so the menu no longer shows
+  a floating forearm on the right side.
+- High-contrast, large-text, and reduced-motion rules were updated for the new
+  paper surfaces.
+
+**In-world signage**
+
+- `LevelDecorationShape` now supports `plane` signs. `MaterialLibrary.getSign`
+  paints a 1024×512 canvas with background, accent rule, heavy uppercase text,
+  a diagonal tint, and a small `GLASSLINE / RUNNER NETWORK` line; the result is
+  used as map + emissive map.
+- The orange billboard on the west facade now reads **RUN**; section indices
+  `01 ROOFTOP`, `02 INDUSTRIAL`, `03 CONSTRUCTION` run along the facade; the
+  bridge carries `04 / SKYBRIDGE`, the finish parapet `05 / FINISH`, and the
+  finish billboard reads **FINISH**.
+- Sign planes are individual meshes with owned geometry; their materials and
+  textures are cached and disposed by the shared library.
+
+**Speed feedback**
+
+- The grade pass gained a radial speed blur driven by normalized player speed.
+  The main camera already had FOV/bob response; the post pass now smears the
+  periphery while sprinting and leaves idle frames untouched.
+- `Renderer.render` / `PostPipeline.render` accept a speed ratio; the application
+  passes `speed / 8.5` each frame.
+
+**Tooling**
+
+- `tools/capture/capture.mjs` gained `--menu`, `--settings`, and `--run <ms>` for
+  deterministic shell and moving-HUD captures.
+
+### Result
+
+| View | Image |
+|---|---|
+| Main menu | ![Main menu](evidence/visual/round-4/menu.jpg) |
+| Settings | ![Settings](evidence/visual/round-4/settings.jpg) |
+| Start with signage | ![Start](evidence/visual/round-4/start.jpg) |
+| Sprint HUD + speed blur | ![Sprint](evidence/visual/round-4/sprint.jpg) |
+| Finish roof | ![Finish](evidence/visual/round-4/finish.jpg) |
+
+- Start frame remains **10/13** image metrics in tolerance; the paper UI and
+  signs do not change the world grade.
+- `npm run validate` green: typecheck, Biome, **270 tests in 36 files**, build.
+- No new console errors from the sign material or motion-blur shader; captures
+  show the RUN/section signs and the minimal HUD.
+
+### Honest gaps
+
+- The menu backdrop is only the procedural sky; it still lacks a city/level
+  preview or authored key art on the right side.
+- Sign copy is generic placeholder text (`RUN`, section indices), not a full
+  brand/typographic system.
+- Motion blur is implemented and captured at 8.5 m/s (the sprint frame), but its
+  strength and the HUD's movement readability still need a human review.
+- The capture tool's `--run` path is not yet reliable in headless focus; the
+  sprint frame was produced with the debug held-key path.
+- Route length, the slow stair climb, and the audio listening pass remain open
+  from previous rounds.
+
+### Next
+
+1. Add a menu/level preview backdrop and a real sign/brand language.
+2. Tune motion blur strength and add camera shake/landing weight if sprint reads
+   too flat.
+3. Extend the route toward 180–220 m and replace the stair grind.
+4. Listening pass on the Round 2 mix.
+
 ## Round log
 
 | Round | Date | Focus | Outcome |
@@ -393,3 +486,4 @@ the updated route integration. The start frame remains at 10/13 image metrics
 | 1 | 2026-11-19 | HDR renderer, sky, materials, city, viewmodel | 10/13 reference metrics in band (2 highlight metrics open); 60 fps at 1600×900 |
 | 2 | 2026-11-19 | Procedural audio: buses, ambience, movement/parkour, score, radio | 5/5 audio targets in band; live post-limiter peak −3.7 dBFS; 30 audio tests |
 | 3 | 2026-11-19 | Vertical Prologue extension: drop, gap, stair climb, skybridge, finish roof | Route ~66 m / 5.1 m vertical; 270 tests; physical traversal verified |
+| 4 | 2026-11-19 | Reference UI, canvas signage, speed blur | Paper/ink menu, minimalist HUD, RUN/section signs, radial blur; 270 tests |

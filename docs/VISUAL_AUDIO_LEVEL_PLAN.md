@@ -8,8 +8,9 @@
 > [`VISUAL_REFERENCE_PROGRESS.md`](VISUAL_REFERENCE_PROGRESS.md) for measurements
 > and evidence. Round 3 advances W3: the Prologue now has a roof drop, sprint
 > gap, stair climb, narrow skybridge, and finish roof (~66 m / 5.1 m vertical).
-> W3 is still open — the 180–220 m / 8 m target is not met. A listening pass and
-> further W1/W2 polish also remain. The plan's anti-hack rule is honored: the
+> W3 is still open — the 180–220 m / 8 m target is not met. Round 4 applies the
+> reference's paper/ink UI, canvas signage, and speed blur (part of W1/W5). A
+> listening pass, menu backdrop, and further W1/W2 polish remain. The plan's anti-hack rule is honored: the
 > hard highlight clip was replaced by a gentler shoulder; the remaining
 > near-white/highlight gap is assigned to real lighting and content.
 

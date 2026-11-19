@@ -102,9 +102,9 @@ Only `Verified` means that the applicable acceptance criteria have been checked 
 | Statistics | Defined | Implemented | Integrated | Verified |
 | Reference Presentation | Defined | In Progress | Integrated | Partially Verified |
 
-**Current phase:** Phases 0–7 and Phase 8 (stabilization) are complete. A post-roadmap **Release Polish** pass has also been completed: initial release content presentation, HUD tutorial guidance, atmosphere, and procedural ambience/footsteps. A **Reference Presentation Pass** is in progress to bring design, graphics, and sound up to the *Mirror's Edge* prologue reference. Round 1 (HDR rendering, sky, materials, rooftop city, first-person arms) is complete and measured. Round 2 (procedural audio architecture, surface-aware movement, parkour set, ambience, score, radio) is implemented and measured. Round 3 extends the Prologue from a 25 m flat corridor to a ~66 m route with a roof drop, sprint gap, stair climb, narrow skybridge, and finish roof. A human listening pass, route extension toward the 180–220 m reference scale, and further graphics polish remain.
+**Current phase:** Phases 0–7 and Phase 8 (stabilization) are complete. A post-roadmap **Release Polish** pass has also been completed: initial release content presentation, HUD tutorial guidance, atmosphere, and procedural ambience/footsteps. A **Reference Presentation Pass** is in progress to bring design, graphics, and sound up to the *Mirror's Edge* prologue reference. Round 1 (HDR rendering, sky, materials, rooftop city, first-person arms) is complete and measured. Round 2 (procedural audio architecture, surface-aware movement, parkour set, ambience, score, radio) is implemented and measured. Round 3 extends the Prologue from a 25 m flat corridor to a ~66 m route with a roof drop, sprint gap, stair climb, narrow skybridge, and finish roof. Round 4 applies the reference's editorial UI language (paper panels, ink type, red rules, minimal HUD), canvas signage (`RUN`, section indices, `FINISH`), and a speed-reactive radial blur. A human listening pass, route extension toward the 180–220 m reference scale, a menu backdrop, and motion-blur calibration remain.
 
-**Implementation readiness:** The game is feature-complete for the initial release scope, stabilized, and visually/audio-polished: core gameplay, Training/Prologue sessions, Speedrun validation and local records, persistent progression/achievements/statistics/tutorial, HUD tutorial guidance, level atmosphere and ambience, UI/accessibility/localization, Save System recovery, and the fixed-step loop are implemented, integrated, and covered by automated and browser checks. The reference pass has added an HDR post pipeline, procedural sky/reflections, PBR materials, a dense Prologue city, a first-person body, a procedural audio mix with surface-aware movement, parkour loops, ambience, and a sparse score, and a vertical Prologue route with drop, gap, stair climb, skybridge, and finish roof. The measured start frame is inside the reference tolerance band on 10/13 image metrics (highlight headroom and sky area are open gaps); the offline audio demo is inside all five planned audio bands (5/5). Remaining limitations are compatibility verification depth (Firefox/Safari gameplay, actual assistive-technology testing), reference-level sound and route design, asset-level art polish, and intentionally deferred features.
+**Implementation readiness:** The game is feature-complete for the initial release scope, stabilized, and visually/audio-polished: core gameplay, Training/Prologue sessions, Speedrun validation and local records, persistent progression/achievements/statistics/tutorial, HUD tutorial guidance, level atmosphere and ambience, UI/accessibility/localization, Save System recovery, and the fixed-step loop are implemented, integrated, and covered by automated and browser checks. The reference pass has added an HDR post pipeline, procedural sky/reflections, PBR materials, a dense Prologue city, a first-person body, a procedural audio mix with surface-aware movement, parkour loops, ambience, and a sparse score, a vertical Prologue route with drop, gap, stair climb, skybridge, and finish roof, and a reference-style paper/ink UI with canvas signage and speed blur. The measured start frame is inside the reference tolerance band on 10/13 image metrics (highlight headroom and sky area are open gaps); the offline audio demo is inside all five planned audio bands (5/5). Remaining limitations are compatibility verification depth (Firefox/Safari gameplay, actual assistive-technology testing), reference-level sound and route design, asset-level art polish, and intentionally deferred features.
 
 ### 3.1. Documentation Reconciliation (2026-11-17)
 
@@ -1085,6 +1085,50 @@ Known limitations:
   from the deck edge.
 - No sound or UI changes this round; the Round 2 mix still awaits a human
   listening pass.
+
+---
+### Reference Presentation Pass — Round 4 (2026-11-19)
+
+**Goal:** align the shell and in-world typography with the reference's editorial
+design language and add speed feedback.
+
+**Status:** Implemented, integrated, captured; motion-blur calibration and menu
+backdrop remain.
+
+Implemented:
+
+- **Paper/ink UI:** ivory split-panel main menu, pause, settings, results, and
+  records; black uppercase type, hard red rules, solid-ink selected rows,
+  red-focused settings controls. High-contrast, large-text, and reduced-motion
+  rules updated for the new surfaces.
+- **Minimal HUD:** dark backdrop panels removed; timer, checkpoint progress,
+  objective, speed, and hints are white type with a soft shadow and a single red
+  rule. Added the reference-style centre dot; tutorial panel is ivory with ink
+  text.
+- **Menu cleanliness:** first-person body hidden outside gameplay.
+- **Canvas signage:** `plane` decoration shape + `MaterialLibrary.getSign`
+  (1024×512 canvas, background/accent/text, diagonal tint, small network line)
+  used for the orange **RUN** billboard, section indices `01`–`05`, and the
+  **FINISH** billboard. Cached materials/textures and owned plane geometry are
+  disposed with the level.
+- **Speed blur:** grade pass samples a radial blur driven by normalized player
+  speed; idle frames are unchanged.
+- **Tooling:** capture script supports `--menu`, `--settings`, and `--run <ms>`.
+
+Verification:
+
+- `npm run validate`: typecheck, Biome, **270 tests in 36 files**, build.
+- Captures: main menu, settings, start with visible RUN/section signs, finish
+  roof, and the lower route; no new console errors.
+- Start frame remains 10/13 image metrics in tolerance.
+
+Known limitations:
+
+- Menu right side is procedural sky only; no city/level preview or key art.
+- Sign copy is placeholder typography, not a full brand system.
+- Motion blur is implemented but not separately calibrated at sustained sprint
+  speed; headless moving-HUD captures need a more reliable input-focus path.
+- Route length, stair climb, and the audio listening pass remain open.
 
 ---
 

@@ -118,6 +118,7 @@ export class BoxLevelContentLoader {
     const decorationMeshes: THREE.InstancedMesh[] = [];
     const transparentMeshes: THREE.Mesh[] = [];
     const transparentMaterials: THREE.MeshStandardMaterial[] = [];
+    const ownedDecorationGeometries: THREE.BufferGeometry[] = [];
     const bodies: RAPIER.RigidBody[] = [];
     const world = dependencies.physics.rapierWorld;
 
@@ -190,6 +191,31 @@ export class BoxLevelContentLoader {
 
     for (const decoration of definition.decorations ?? []) {
       const opacity = decoration.opacity ?? 1;
+
+      if (decoration.shape === "plane") {
+        const material = library.getSign({
+          text: decoration.text ?? "",
+          background: decoration.color ?? 0x14191d,
+          textColor: decoration.textColor ?? 0xffffff,
+          accent: decoration.accentColor ?? 0xd52e36,
+        });
+        const geometry = new THREE.PlaneGeometry(1, 1);
+        const mesh = new THREE.Mesh(geometry, material);
+
+        ownedDecorationGeometries.push(geometry);
+        mesh.position.set(decoration.position.x, decoration.position.y, decoration.position.z);
+        mesh.scale.set(decoration.size.x, decoration.size.y, 1);
+        mesh.rotation.set(
+          decoration.rotationX ?? 0,
+          decoration.rotationY ?? 0,
+          decoration.rotationZ ?? 0,
+        );
+        mesh.castShadow = false;
+        mesh.receiveShadow = false;
+        dependencies.scene.addObject(mesh);
+        transparentMeshes.push(mesh);
+        continue;
+      }
 
       if (opacity < 1) {
         const material = new THREE.MeshStandardMaterial({
@@ -327,6 +353,10 @@ export class BoxLevelContentLoader {
           dependencies.scene.removeObject(mesh);
         }
 
+        for (const geometry of ownedDecorationGeometries) {
+          geometry.dispose();
+        }
+
         for (const material of transparentMaterials) {
           material.dispose();
         }
@@ -344,6 +374,7 @@ export class BoxLevelContentLoader {
         decorationMeshes.length = 0;
         transparentMeshes.length = 0;
         transparentMaterials.length = 0;
+        ownedDecorationGeometries.length = 0;
         bodies.length = 0;
         batches.clear();
         dependencies.scene.setEnvironment(null);

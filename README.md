@@ -54,6 +54,12 @@ sprint gap, a construction stair climb, a narrow skybridge, and a finish roof.
 
 ![Prologue lower route](docs/evidence/visual/round-3/lower.jpg)
 
+The shell uses a paper-and-ink editorial language: ivory panels, black uppercase
+type, hard red rules, a minimal HUD, and canvas-rendered `RUN` / section /
+`FINISH` signage in the world.
+
+![Main menu](docs/evidence/visual/round-4/menu.jpg)
+
 ## Sound
 
 All audio is generated procedurally at runtime: a multi-bus mix with limiter and

@@ -56,6 +56,36 @@ class CityBuilder {
     });
   }
 
+  plane(
+    x: number,
+    y: number,
+    z: number,
+    width: number,
+    height: number,
+    rotationY: number,
+    options: {
+      readonly text: string;
+      readonly background: number;
+      readonly textColor: number;
+      readonly accentColor: number;
+    },
+  ): void {
+    this.decorations.push({
+      id: `city_${this.nextId++}`,
+      sectionId: this.sectionForZ(z),
+      shape: "plane",
+      position: { x, y, z },
+      size: { x: width, y: height, z: 0.02 },
+      rotationY,
+      color: options.background,
+      text: options.text,
+      textColor: options.textColor,
+      accentColor: options.accentColor,
+      castShadow: false,
+      receiveShadow: false,
+    });
+  }
+
   cylinder(
     x: number,
     y: number,
@@ -673,6 +703,27 @@ function addWestTowerWall(builder: CityBuilder): void {
   builder.box(-7.68, 7.2, -4.6, 0.08, 3.2, 3.2, { material: "orange" });
   builder.box(-7.6, 7.2, -5.1, 0.04, 1.6, 0.9, { material: "white" });
   builder.box(-7.6, 5.5, -4.6, 0.04, 0.14, 2.9, { material: "red" });
+  builder.plane(-7.54, 7.2, -4.6, 3.0, 3.0, Math.PI / 2, {
+    text: "RUN",
+    background: 0xdd5d1b,
+    textColor: 0xfff6ea,
+    accentColor: 0x111418,
+  });
+
+  const sectionSigns: readonly (readonly [number, string])[] = [
+    [1.4, "01\nROOFTOP"],
+    [-8.2, "02\nINDUSTRIAL"],
+    [-16.2, "03\nCONSTRUCTION"],
+  ];
+
+  for (const [z, label] of sectionSigns) {
+    builder.plane(-7.9, 3.1, z, 2.2, 0.95, Math.PI / 2, {
+      text: label,
+      background: 0xf4f1e9,
+      textColor: 0x14191d,
+      accentColor: 0xd52e36,
+    });
+  }
 
   // Red maintenance ladder and handrail against the tower base.
   for (const offset of [-0.42, 0.42]) {
@@ -988,6 +1039,20 @@ function addLowerZone(builder: CityBuilder): void {
     }
   }
 
+  builder.plane(-1.66, -0.05, -45.5, 1.7, 0.55, Math.PI / 2, {
+    text: "04 / SKYBRIDGE",
+    background: 0x14191d,
+    textColor: 0xf4f1e9,
+    accentColor: 0xd52e36,
+  });
+
+  builder.plane(-9.0, 1.4, -55.5, 2.0, 0.66, Math.PI / 2, {
+    text: "05 / FINISH",
+    background: 0xf4f1e9,
+    textColor: 0x14191d,
+    accentColor: 0xd52e36,
+  });
+
   // Finish roof lines, floodlight masts, and service kit.
   for (let x = -7.5; x <= 7.5; x += 1.5) {
     builder.box(x, -0.885, -60, 0.8, 0.02, 0.12, {
@@ -1042,6 +1107,13 @@ function addBillboards(builder: CityBuilder): void {
   for (const x of [8.6, 12.2]) {
     builder.box(x, 0.6, -59.2, 0.24, 3.2, 0.24, { material: "metal" });
   }
+
+  builder.plane(10.4, 2.6, -58.66, 4.0, 2.6, 0, {
+    text: "FINISH",
+    background: 0xf4f1e9,
+    textColor: 0x14191d,
+    accentColor: 0xd52e36,
+  });
 }
 
 function addFarSkyline(builder: CityBuilder): void {

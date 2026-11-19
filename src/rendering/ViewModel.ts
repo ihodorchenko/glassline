@@ -88,6 +88,10 @@ export class ViewModel implements Disposable {
     camera.add(this.light);
   }
 
+  setVisible(visible: boolean): void {
+    this.root.visible = visible;
+  }
+
   update(deltaSeconds: number, movement: MovementModelSnapshot): void {
     if (this.disposed) {
       return;

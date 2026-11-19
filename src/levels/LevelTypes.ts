@@ -48,7 +48,7 @@ export interface LevelSurfaceDefinition {
   readonly metadata?: Readonly<Record<string, unknown>>;
 }
 
-export type LevelDecorationShape = "box" | "cylinder";
+export type LevelDecorationShape = "box" | "cylinder" | "plane";
 
 /** Semantic material family resolved by the renderer's procedural library. */
 export type LevelMaterialType =
@@ -75,6 +75,10 @@ export interface LevelDecorationDefinition {
   readonly position: LevelVector3;
   readonly size: LevelVector3;
   readonly color?: number;
+  /** Text rendered on a `plane` sign surface. Lines are separated by `\n`. */
+  readonly text?: string;
+  readonly textColor?: number;
+  readonly accentColor?: number;
   /** Semantic PBR material; falls back to the authored colour when omitted. */
   readonly material?: LevelMaterialType;
   readonly rotationX?: number;

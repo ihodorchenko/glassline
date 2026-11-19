@@ -135,6 +135,90 @@ const MATERIAL_SPECS: Record<MaterialKey, MaterialSpec> = {
 
 const TEXTURE_SIZE = 512;
 
+export interface SignMaterialOptions {
+  readonly text: string;
+  readonly background: number;
+  readonly textColor: number;
+  readonly accent: number;
+}
+
+function hexColor(value: number): string {
+  return `#${(value & 0xffffff).toString(16).padStart(6, "0")}`;
+}
+
+function paintSign(options: SignMaterialOptions): HTMLCanvasElement {
+  const canvas = document.createElement("canvas");
+
+  canvas.width = 1024;
+  canvas.height = 512;
+
+  const context = canvas.getContext("2d");
+
+  if (!context) {
+    return canvas;
+  }
+
+  context.fillStyle = hexColor(options.background);
+  context.fillRect(0, 0, 1024, 512);
+
+  // Sparse diagonal texture and bold frame keep the sign in the same graphic
+  // language as the HUD: flat colour, hard red rule, heavy uppercase type.
+  context.save();
+  context.globalAlpha = 0.08;
+  context.strokeStyle = hexColor(options.textColor);
+  context.lineWidth = 3;
+
+  for (let offset = -512; offset < 1024; offset += 38) {
+    context.beginPath();
+    context.moveTo(offset, 0);
+    context.lineTo(offset + 512, 512);
+    context.stroke();
+  }
+
+  context.restore();
+
+  context.fillStyle = hexColor(options.accent);
+  context.fillRect(0, 0, 18, 512);
+  context.fillRect(0, 452, 1024, 18);
+
+  const lines = options.text
+    .split("\n")
+    .map((line) => line.trim())
+    .filter((line) => line.length > 0);
+  const maxWidth = 860;
+  const lineHeight = lines.length > 1 ? 128 : 170;
+  let fontSize = lines.length > 1 ? 118 : 176;
+
+  context.fillStyle = hexColor(options.textColor);
+  context.textAlign = "center";
+  context.textBaseline = "middle";
+  context.font = `800 ${fontSize}px "Helvetica Neue", Arial, sans-serif`;
+
+  for (const line of lines) {
+    const width = context.measureText(line).width;
+
+    if (width > maxWidth) {
+      fontSize = Math.max(48, Math.floor(fontSize * (maxWidth / width)));
+      context.font = `800 ${fontSize}px "Helvetica Neue", Arial, sans-serif`;
+    }
+  }
+
+  const totalHeight = lines.length * lineHeight;
+  const startY = 236 - totalHeight / 2 + lineHeight / 2;
+
+  lines.forEach((line, index) => {
+    context.fillText(line, 522, startY + index * lineHeight);
+  });
+
+  context.font = '600 24px "Helvetica Neue", Arial, sans-serif';
+  context.textAlign = "left";
+  context.globalAlpha = 0.62;
+  context.fillText("GLASSLINE / RUNNER NETWORK", 48, 490);
+  context.globalAlpha = 1;
+
+  return canvas;
+}
+
 function createRandom(seed: number): () => number {
   let state = seed >>> 0;
 
@@ -409,6 +493,40 @@ export class MaterialLibrary implements Disposable {
   }
 
   /** Stable muted material for authored decoration colours without a semantic key. */
+  getSign(options: SignMaterialOptions): THREE.MeshStandardMaterial {
+    const key = `sign:${options.text}:${options.background}:${options.textColor}:${options.accent}`;
+    const cached = this.materials.get(key);
+
+    if (cached) {
+      return cached;
+    }
+
+    const material = new THREE.MeshStandardMaterial({
+      color: 0xffffff,
+      roughness: 0.62,
+      metalness: 0.03,
+      emissive: 0xffffff,
+      emissiveIntensity: 0.12,
+    });
+
+    if (typeof document !== "undefined") {
+      const texture = new THREE.CanvasTexture(paintSign(options));
+
+      texture.colorSpace = THREE.SRGBColorSpace;
+      texture.anisotropy = 8;
+      texture.needsUpdate = true;
+      material.map = texture;
+      material.emissiveMap = texture;
+      this.textures.push(texture);
+    } else {
+      material.color.setHex(options.background);
+    }
+
+    this.materials.set(key, material);
+
+    return material;
+  }
+
   getColor(color: number, roughness = 0.7, metalness = 0.1): THREE.MeshStandardMaterial {
     const key = `${color}:${roughness}:${metalness}`;
     const cached = this.materials.get(key);

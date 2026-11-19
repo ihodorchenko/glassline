@@ -47,6 +47,9 @@ function parseArgs(argv) {
     height: 900,
     launch: false,
     keepOpen: true,
+    menu: false,
+    settings: false,
+    runMs: 0,
   };
 
   for (let index = 0; index < argv.length; index += 1) {
@@ -89,6 +92,16 @@ function parseArgs(argv) {
       case "--launch":
         args.launch = true;
         break;
+      case "--menu":
+        args.menu = true;
+        break;
+      case "--settings":
+        args.menu = true;
+        args.settings = true;
+        break;
+      case "--run":
+        args.runMs = Number(value());
+        break;
       case "--close":
         args.keepOpen = false;
         break;
@@ -121,6 +134,9 @@ function printHelp() {
       "  --pitch <radians>  Camera pitch",
       "  --wait <ms>        Settle time after teleport (default 2500)",
       "  --launch           Launch a headless Edge instance automatically",
+      "  --menu             Capture the main menu instead of starting gameplay",
+      "  --settings         Open the settings screen before capture",
+      "  --run <ms>         Hold sprint while settling, for a moving HUD capture",
       "  --close            Stop the launched browser when finished",
     ].join("\n"),
   );
@@ -309,24 +325,35 @@ async function main() {
     throw new Error("Glassline did not initialize in the browser.");
   }
 
-  const flow = await session.evaluate(
-    `(async () => {
-      const app = window.__glassline;
+  let flow = "main-menu";
 
-      if (app.flowManager.getState() !== "gameplay") {
-        await app.startGameplay(${JSON.stringify(args.mode)});
-      }
+  if (!args.menu) {
+    flow = await session.evaluate(
+      `(async () => {
+        const app = window.__glassline;
 
-      return app.flowManager.getState();
-    })()`,
-    true,
-  );
+        if (app.flowManager.getState() !== "gameplay") {
+          await app.startGameplay(${JSON.stringify(args.mode)});
+        }
 
-  if (flow !== "gameplay") {
-    throw new Error(`Gameplay did not start (flow: ${flow}).`);
+        return app.flowManager.getState();
+      })()`,
+      true,
+    );
+
+    if (flow !== "gameplay") {
+      throw new Error(`Gameplay did not start (flow: ${flow}).`);
+    }
+  } else if (args.settings) {
+    await session.evaluate('window.__glassline.ui.showSettings("main-menu")', true);
   }
 
-  if (Array.isArray(args.pos) && args.pos.length === 3 && args.pos.every(Number.isFinite)) {
+  if (
+    !args.menu &&
+    Array.isArray(args.pos) &&
+    args.pos.length === 3 &&
+    args.pos.every(Number.isFinite)
+  ) {
     await session.evaluate(`(() => {
       const app = window.__glassline;
       app.player.teleportTo({ x: ${args.pos[0]}, y: ${args.pos[1]}, z: ${args.pos[2]} });
@@ -334,7 +361,7 @@ async function main() {
       app.cameraSystem.pitch = ${args.pitch};
       return true;
     })()`);
-  } else if (args.yaw !== 0 || args.pitch !== 0) {
+  } else if (!args.menu && (args.yaw !== 0 || args.pitch !== 0)) {
     await session.evaluate(`(() => {
       const app = window.__glassline;
       app.cameraSystem.resetForRespawn(${args.yaw});
@@ -343,9 +370,73 @@ async function main() {
     })()`);
   }
 
+  if (args.runMs > 0) {
+    await session.send("Input.dispatchMouseEvent", {
+      type: "mousePressed",
+      x: Math.floor(args.width / 2),
+      y: Math.floor(args.height / 2),
+      button: "left",
+      clickCount: 1,
+    });
+    await session.send("Input.dispatchMouseEvent", {
+      type: "mouseReleased",
+      x: Math.floor(args.width / 2),
+      y: Math.floor(args.height / 2),
+      button: "left",
+      clickCount: 1,
+    });
+    await delay(300);
+
+    for (const [code, key, vk] of [
+      ["KeyW", "w", 87],
+      ["ShiftLeft", "Shift", 16],
+    ]) {
+      await session.send("Input.dispatchKeyEvent", {
+        type: "rawKeyDown",
+        code,
+        key,
+        windowsVirtualKeyCode: vk,
+        nativeVirtualKeyCode: vk,
+      });
+    }
+
+    await delay(args.runMs);
+  }
+
   await delay(args.wait);
 
   const screenshot = await session.send("Page.captureScreenshot", { format: "png" });
+
+  if (args.runMs > 0) {
+    await session.send("Input.dispatchMouseEvent", {
+      type: "mousePressed",
+      x: Math.floor(args.width / 2),
+      y: Math.floor(args.height / 2),
+      button: "left",
+      clickCount: 1,
+    });
+    await session.send("Input.dispatchMouseEvent", {
+      type: "mouseReleased",
+      x: Math.floor(args.width / 2),
+      y: Math.floor(args.height / 2),
+      button: "left",
+      clickCount: 1,
+    });
+    await delay(300);
+
+    for (const [code, key, vk] of [
+      ["KeyW", "w", 87],
+      ["ShiftLeft", "Shift", 16],
+    ]) {
+      await session.send("Input.dispatchKeyEvent", {
+        type: "keyUp",
+        code,
+        key,
+        windowsVirtualKeyCode: vk,
+        nativeVirtualKeyCode: vk,
+      });
+    }
+  }
   const buffer = Buffer.from(screenshot.data, "base64");
   await mkdir(dirname(args.out), { recursive: true });
   await writeFile(args.out, buffer);
@@ -378,7 +469,7 @@ async function main() {
     return {
       flow: app.flowManager.getState(),
       mode: app.currentMode,
-      position: app.player.getInterpolatedPosition(1),
+      position: app.player ? app.player.getInterpolatedPosition(1) : null,
       quality: app.settingsManager.getValue("graphics.quality"),
       instancedMeshes,
       instances,

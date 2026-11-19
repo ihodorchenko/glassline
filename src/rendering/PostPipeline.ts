@@ -20,6 +20,7 @@ const GRADE_SHADER = {
     uVignette: { value: 0.36 },
     uGrain: { value: 0.02 },
     uChromaticAberration: { value: 0.6 },
+    uSpeed: { value: 0 },
   },
   vertexShader: /* glsl */ `
     varying vec2 vUv;
@@ -43,6 +44,7 @@ const GRADE_SHADER = {
     uniform float uVignette;
     uniform float uGrain;
     uniform float uChromaticAberration;
+    uniform float uSpeed;
 
     float hash(vec2 p) {
       vec3 p3 = fract(vec3(p.xyx) * 0.1031);
@@ -87,6 +89,17 @@ const GRADE_SHADER = {
       color.r = texture2D(tDiffuse, vUv + aberration).r;
       color.g = texture2D(tDiffuse, vUv).g;
       color.b = texture2D(tDiffuse, vUv - aberration).b;
+
+      if (uSpeed > 0.01) {
+        float blurStep = uSpeed * 0.014 * smoothstep(0.05, 0.5, length(centered));
+        vec3 blurred = color;
+
+        for (int index = 1; index <= 4; index += 1) {
+          blurred += texture2D(tDiffuse, vUv + centered * blurStep * float(index)).rgb;
+        }
+
+        color = mix(color, blurred / 5.0, clamp(uSpeed * 0.42, 0.0, 0.35));
+      }
 
       color *= uExposure;
       color = acesFilm(color);
@@ -183,7 +196,7 @@ export class PostPipeline implements Disposable {
     );
   }
 
-  render(scene: THREE.Scene, camera: THREE.Camera, deltaSeconds: number): void {
+  render(scene: THREE.Scene, camera: THREE.Camera, deltaSeconds: number, speedRatio = 0): void {
     if (this.disposed) {
       return;
     }
@@ -194,9 +207,14 @@ export class PostPipeline implements Disposable {
     this.gtaoPass.scene = scene;
     this.gtaoPass.camera = camera;
     const timeUniform = this.gradePass.uniforms.uTime;
+    const speedUniform = this.gradePass.uniforms.uSpeed;
 
     if (timeUniform) {
       timeUniform.value = this.elapsedSeconds;
+    }
+
+    if (speedUniform) {
+      speedUniform.value = Math.max(0, Math.min(1, speedRatio));
     }
     this.composer.render(deltaSeconds);
   }
