@@ -65,6 +65,25 @@ npm run audio:metrics -- --wav docs/evidence/verification/prologue-24s.wav \
 
 Файл: [`prologue-24s.wav`](evidence/verification/prologue-24s.wav).
 
+### High-route профиль
+
+```bash
+node tools/capture/audio-render.mjs   --out docs/evidence/verification/high-route-20s.wav --seconds 20 --high-route
+```
+
+**5/5** целей high-route (отдельные от Пролога):
+
+| metric | value | target band |
+|---|---:|---|
+| low share | 0.851 | 0.82–0.92 |
+| high share | 0.041 | 0.025–0.09 |
+| LUFS | −24.46 | −26…−23 |
+| peak | −4.91 dBFS | −6…−3 |
+| per-second range | 24.4 | 12–26 |
+
+Файл: [`high-route-20s.wav`](evidence/verification/high-route-20s.wav),
+метрики: [`high-route-audio.json`](evidence/verification/high-route-audio.json).
+
 ## 4. Производительность
 
 ```bash

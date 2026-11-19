@@ -3042,6 +3042,32 @@ capture variable.
 - Manifest hashes are a snapshot; docs are excluded to avoid self-reference.
 - Human verdict still pending.
 
+---
+
+## Round 58 — high-route audio final gate (2026-11-19)
+
+### Scope
+
+Verification covered the prologue mix but not the current high-route mix. This
+round re-renders and checks it.
+
+### What changed
+
+- 20 s high-route render: **5/5** custom targets (low 0.851, high 0.041,
+  LUFS −24.46, peak −4.91, per-second range 24.4).
+- Verification doc now includes both prologue 5/5 and high-route 5/5.
+- No game/visual/audio code changes.
+
+### Evidence
+
+- [`high-route-20s.wav`](evidence/verification/high-route-20s.wav)
+- [`high-route-audio.json`](evidence/verification/high-route-audio.json)
+
+### Honest gaps
+
+- High-route targets are custom, not human listening; short clips.
+- Human verdict remains.
+
 ## Round log
 
 | Round | Date | Focus | Outcome |
