@@ -542,12 +542,21 @@ const TRIPLANAR_PATCH = /* glsl */ `
 const TRIPLANAR_SAMPLE = /* glsl */ `
   uniform float uTriplanarScale;
   uniform float uBumpScale;
+  uniform float uDetailScale;
+  uniform float uDetailMix;
 
-  vec4 sampleTriplanar(sampler2D source, vec3 position, vec3 weights) {
-    vec3 scaled = position * uTriplanarScale;
+  vec4 sampleTriplanarAt(sampler2D source, vec3 scaled, vec3 weights) {
     return texture2D(source, scaled.zy) * weights.x
       + texture2D(source, scaled.xz) * weights.y
       + texture2D(source, scaled.xy) * weights.z;
+  }
+
+  vec4 sampleTriplanar(sampler2D source, vec3 position, vec3 weights) {
+    vec3 scaled = position * uTriplanarScale;
+    vec4 base = sampleTriplanarAt(source, scaled, weights);
+    vec4 detail = sampleTriplanarAt(source, scaled * uDetailScale, weights);
+
+    return mix(base, detail, uDetailMix);
   }
 `;
 
@@ -559,6 +568,8 @@ function applyTriplanar(
   material.onBeforeCompile = (shader) => {
     shader.uniforms.uTriplanarScale = { value: scale };
     shader.uniforms.uBumpScale = { value: bumpScale };
+    shader.uniforms.uDetailScale = { value: 3.3 };
+    shader.uniforms.uDetailMix = { value: 0.16 };
 
     shader.vertexShader = shader.vertexShader
       .replace("#include <common>", `#include <common>\n${TRIPLANAR_PATCH}`)

@@ -3274,6 +3274,29 @@ Harden the lighting realism without changing composition.
 
 - Still a stylized low-poly city; no human visual verdict.
 
+---
+
+## Round 68 — two-scale triplanar detail (2026-11-19)
+
+### Scope
+
+Reduce visible texture tiling without new assets.
+
+### What changed
+
+- Triplanar sampling now blends base + 3.3× detail at 16% weight.
+- Fine aggregate affects color, bump gradient and roughness.
+- Start **13/13**; ~60.1 fps; 280 tests.
+
+### Evidence
+
+- [`material-closeup.jpg`](evidence/visual/round-68/material-closeup.jpg)
+- [`start.jpg`](evidence/visual/round-68/start.jpg)
+
+### Honest gaps
+
+- Still stylized low-poly; no human visual verdict.
+
 ## Round log
 
 | Round | Date | Focus | Outcome |
