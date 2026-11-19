@@ -1,512 +1,660 @@
 #!/usr/bin/env node
 /**
- * Deterministic gameplay capture for reference review.
+ * Deterministic capture harness for Glassline.
  *
- * Connects to a Chromium-family browser running with remote debugging, starts a
- * gameplay mode, optionally teleports the player and aims the camera, then saves
- * a screenshot plus scene statistics.
+ * Capture mode (default) consumes the in-app capture contract:
+ *   http://127.0.0.1:5199/?capture=1&level=prologue&shot=<id>
+ *   window.__glasslineCapture = { ready, shots, apply(id), stats() }
+ *
+ * It boots (or attaches to) a local Vite dev server, launches Microsoft Edge
+ * through Playwright's `msedge` channel at 1600x900 dpr 1, captures each shot as
+ * a PNG into `captures/<iteration>/`, records sha256 + renderer stats in
+ * `captures/<iteration>/manifest.json`, and optionally captures every shot
+ * twice to prove byte-level determinism.
+ *
+ * Legacy one-off mode keeps the old flag surface (`--out`, `--mode`, `--pos`,
+ * `--yaw`, `--pitch`, `--wait`, `--menu`, `--run`) and drives
+ * `window.__glassline` directly instead of the capture contract.
  *
  * Usage:
- *   node tools/capture/capture.mjs --out docs/evidence/visual/round-1/start.jpg
- *   node tools/capture/capture.mjs --mode training --pos 0,0.93,6 --yaw 0 --pitch 0
- *   node tools/capture/capture.mjs --launch --out /tmp/prologue.png
+ *   node tools/capture/capture.mjs --iteration w0 --shot all
+ *   node tools/capture/capture.mjs --iteration w0 --shot start-roof --no-verify-determinism
+ *   node tools/capture/capture.mjs --out /tmp/prologue.png --mode prologue --pos 0,0.93,6
  *
- * Prerequisites: a dev server (`npm run dev`) and a browser exposing CDP:
- *   "/Applications/Microsoft Edge.app/Contents/MacOS/Microsoft Edge" \
- *     --headless=new --no-sandbox --remote-debugging-port=9222 \
- *     --user-data-dir=.npm-cache/edge-profile --window-size=1600,900 about:blank
- *
- * `--launch` starts that browser automatically. `--no-sandbox` is only acceptable
- * for local, disposable capture profiles.
+ * No commits, no browser downloads: Playwright 1.65+ and system Edge are
+ * expected to be provisioned already.
  */
 
-import { spawn } from "node:child_process";
-import { access, mkdir, writeFile } from "node:fs/promises";
-import { dirname, join } from "node:path";
-import { setTimeout as delay } from "node:timers/promises";
+import { rm, writeFile } from "node:fs/promises";
+import { dirname, resolve } from "node:path";
+import { fileURLToPath } from "node:url";
 
-const EDGE_CANDIDATES = [
-  process.env.GLASSLINE_BROWSER,
-  "/Applications/Microsoft Edge.app/Contents/MacOS/Microsoft Edge",
-  "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
-  "/usr/bin/google-chrome",
-  "/usr/bin/chromium",
-].filter(Boolean);
+import { launchBrowser, withIsolatedPage } from "./lib/browser-session.mjs";
+import {
+  applyShot,
+  buildCaptureUrl,
+  CaptureModeError,
+  readPageViewport,
+  readShotIds,
+  readStats,
+  waitForCaptureReady,
+  waitSettleFrames,
+} from "./lib/capture-mode.mjs";
+import { parseArgs, printHelp, UsageError } from "./lib/cli.mjs";
+import * as evidence from "./lib/evidence.mjs";
+import { runLegacyCapture } from "./lib/legacy-capture.mjs";
+import { createServerManager } from "./lib/vite-server.mjs";
 
-function parseArgs(argv) {
-  const args = {
-    url: process.env.GLASSLINE_URL ?? "http://127.0.0.1:5199/",
-    port: Number(process.env.GLASSLINE_CDP_PORT ?? 9222),
-    out: null,
-    mode: "prologue",
-    pos: null,
-    yaw: 0,
-    pitch: 0,
-    wait: 2500,
-    width: 1600,
-    height: 900,
-    launch: false,
-    keepOpen: true,
-    menu: false,
-    settings: false,
-    runMs: 0,
-  };
+const ROOT_DIR = resolve(dirname(fileURLToPath(import.meta.url)), "..", "..");
 
-  for (let index = 0; index < argv.length; index += 1) {
-    const flag = argv[index];
-    const value = () => argv[++index];
+/** Plan §6 fallback list, used only when shot discovery without ?shot fails. */
+const DEFAULT_SHOT_IDS = [
+  "start-roof",
+  "first-gap",
+  "wallrun-corridor",
+  "service-block",
+  "skybridge",
+  "finish-roof",
+];
 
-    switch (flag) {
-      case "--url":
-        args.url = value();
-        break;
-      case "--port":
-        args.port = Number(value());
-        break;
-      case "--out":
-        args.out = value();
-        break;
-      case "--mode":
-        args.mode = value();
-        break;
-      case "--pos":
-        args.pos = value()
-          .split(",")
-          .map((number) => Number(number.trim()));
-        break;
-      case "--yaw":
-        args.yaw = Number(value());
-        break;
-      case "--pitch":
-        args.pitch = Number(value());
-        break;
-      case "--wait":
-        args.wait = Number(value());
-        break;
-      case "--width":
-        args.width = Number(value());
-        break;
-      case "--height":
-        args.height = Number(value());
-        break;
-      case "--launch":
-        args.launch = true;
-        break;
-      case "--menu":
-        args.menu = true;
-        break;
-      case "--settings":
-        args.menu = true;
-        args.settings = true;
-        break;
-      case "--run":
-        args.runMs = Number(value());
-        break;
-      case "--close":
-        args.keepOpen = false;
-        break;
-      case "--help":
-        printHelp();
-        process.exit(0);
-        break;
-      default:
-        throw new Error(`Unknown argument: ${flag}`);
-    }
-  }
-
-  if (!args.out) {
-    throw new Error("Missing --out path.");
-  }
-
-  return args;
-}
-
-function printHelp() {
-  console.log(
-    [
-      "Usage: node tools/capture/capture.mjs --out <file.png> [options]",
-      "",
-      "  --url <url>        Dev server URL (default http://127.0.0.1:5199/)",
-      "  --port <port>      CDP port (default 9222)",
-      "  --mode <mode>      training | prologue | speedrun (default prologue)",
-      "  --pos x,y,z        Teleport the player before capture",
-      "  --yaw <radians>    Camera yaw (0 looks down the route)",
-      "  --pitch <radians>  Camera pitch",
-      "  --wait <ms>        Settle time after teleport (default 2500)",
-      "  --launch           Launch a headless Edge instance automatically",
-      "  --menu             Capture the main menu instead of starting gameplay",
-      "  --settings         Open the settings screen before capture",
-      "  --run <ms>         Hold sprint while settling, for a moving HUD capture",
-      "  --close            Stop the launched browser when finished",
-    ].join("\n"),
-  );
-}
-
-async function fileExists(path) {
-  try {
-    await access(path);
-    return true;
-  } catch {
-    return false;
-  }
-}
-
-async function fetchJson(url) {
-  const response = await fetch(url);
-
-  if (!response.ok) {
-    throw new Error(`${url} returned ${response.status}`);
-  }
-
-  return response.json();
-}
-
-async function waitForCdp(port, timeoutMs = 15000) {
+function createLogger() {
   const started = Date.now();
 
-  while (Date.now() - started < timeoutMs) {
-    try {
-      await fetchJson(`http://127.0.0.1:${port}/json/version`);
-      return;
-    } catch {
-      await delay(250);
-    }
-  }
-
-  throw new Error(`CDP endpoint on port ${port} did not become available.`);
+  return (message) => {
+    const elapsed = ((Date.now() - started) / 1000).toFixed(1);
+    console.log(`[capture ${elapsed}s] ${message}`);
+  };
 }
 
-async function launchBrowser(port, width, height) {
-  const browser = EDGE_CANDIDATES.find(Boolean);
-
-  if (!browser || !(await fileExists(browser))) {
-    throw new Error(
-      "No Chromium browser found. Set GLASSLINE_BROWSER to an executable or launch one manually.",
-    );
-  }
-
-  const profile = join(process.cwd(), ".npm-cache", "edge-capture-profile");
-  await mkdir(profile, { recursive: true });
-
-  const child = spawn(
-    browser,
-    [
-      "--headless=new",
-      "--no-sandbox",
-      "--disable-gpu-sandbox",
-      `--remote-debugging-port=${port}`,
-      `--user-data-dir=${profile}`,
-      "--no-first-run",
-      "--no-default-browser-check",
-      "--disable-background-timer-throttling",
-      "--disable-backgrounding-occluded-windows",
-      "--disable-renderer-backgrounding",
-      `--window-size=${width},${height}`,
-      "--use-angle=metal",
-      "about:blank",
-    ],
-    { detached: true, stdio: "ignore" },
-  );
-
-  child.unref();
-  await waitForCdp(port);
-
-  return child;
+function firstLine(text) {
+  return String(text).split("\n")[0];
 }
 
-class CdpSession {
-  constructor(socket) {
-    this.socket = socket;
-    this.nextId = 0;
-    this.pending = new Map();
-
-    socket.addEventListener("message", (event) => {
-      const message = JSON.parse(event.data);
-
-      if (!message.id || !this.pending.has(message.id)) {
-        return;
-      }
-
-      const { resolve, reject } = this.pending.get(message.id);
-      this.pending.delete(message.id);
-
-      if (message.error) {
-        reject(new Error(JSON.stringify(message.error)));
-      } else {
-        resolve(message.result);
-      }
-    });
-  }
-
-  static async connect(port) {
-    const targets = await fetchJson(`http://127.0.0.1:${port}/json/list`);
-    const page = targets.find((target) => target.type === "page");
-
-    if (!page) {
-      throw new Error("No page target found.");
-    }
-
-    const socket = new WebSocket(page.webSocketDebuggerUrl);
-    await new Promise((resolve, reject) => {
-      socket.addEventListener("open", resolve, { once: true });
-      socket.addEventListener("error", reject, { once: true });
-    });
-
-    return new CdpSession(socket);
-  }
-
-  send(method, params = {}) {
-    const id = ++this.nextId;
-    this.socket.send(JSON.stringify({ id, method, params }));
-
-    return new Promise((resolve, reject) => {
-      this.pending.set(id, { resolve, reject });
-    });
-  }
-
-  async evaluate(expression, awaitPromise = false) {
-    const result = await this.send("Runtime.evaluate", {
-      expression,
-      awaitPromise,
-      returnByValue: true,
-    });
-
-    if (result.exceptionDetails) {
-      throw new Error(JSON.stringify(result.exceptionDetails).slice(0, 2000));
-    }
-
-    return result.result.value;
-  }
-
-  close() {
-    this.socket.close();
-  }
-}
-
-async function main() {
-  const args = parseArgs(process.argv.slice(2));
-  const launched = args.launch ? await launchBrowser(args.port, args.width, args.height) : null;
-
-  if (!launched) {
-    await waitForCdp(args.port);
-  }
-
-  const session = await CdpSession.connect(args.port);
-
-  await session.send("Page.enable");
-  await session.send("Runtime.enable");
-  await session.send("Emulation.setFocusEmulationEnabled", { enabled: true }).catch(() => {});
-  await session.send("Emulation.setDeviceMetricsOverride", {
-    width: args.width,
-    height: args.height,
-    deviceScaleFactor: 1,
-    mobile: false,
-  });
-  await session.send("Page.navigate", { url: args.url });
-  await session.send("Page.bringToFront").catch(() => {});
-
-  const readyStarted = Date.now();
-  let ready = false;
-
-  while (Date.now() - readyStarted < 30000) {
-    const state = await session
-      .evaluate("window.__glassline ? window.__glassline.state : null")
-      .catch(() => null);
-
-    if (state === "ready" || state === "running") {
-      ready = true;
-      break;
-    }
-
-    await delay(250);
-  }
-
-  if (!ready) {
-    throw new Error("Glassline did not initialize in the browser.");
-  }
-
-  let flow = "main-menu";
-
-  if (!args.menu) {
-    flow = await session.evaluate(
-      `(async () => {
-        const app = window.__glassline;
-
-        if (app.flowManager.getState() !== "gameplay") {
-          await app.startGameplay(${JSON.stringify(args.mode)});
-        }
-
-        return app.flowManager.getState();
-      })()`,
-      true,
-    );
-
-    if (flow !== "gameplay") {
-      throw new Error(`Gameplay did not start (flow: ${flow}).`);
-    }
-  } else if (args.settings) {
-    await session.evaluate('window.__glassline.ui.showSettings("main-menu")', true);
-  }
-
-  if (
-    !args.menu &&
-    Array.isArray(args.pos) &&
-    args.pos.length === 3 &&
-    args.pos.every(Number.isFinite)
-  ) {
-    await session.evaluate(`(() => {
-      const app = window.__glassline;
-      app.player.teleportTo({ x: ${args.pos[0]}, y: ${args.pos[1]}, z: ${args.pos[2]} });
-      app.cameraSystem.resetForRespawn(${args.yaw});
-      app.cameraSystem.pitch = ${args.pitch};
-      return true;
-    })()`);
-  } else if (!args.menu && (args.yaw !== 0 || args.pitch !== 0)) {
-    await session.evaluate(`(() => {
-      const app = window.__glassline;
-      app.cameraSystem.resetForRespawn(${args.yaw});
-      app.cameraSystem.pitch = ${args.pitch};
-      return true;
-    })()`);
-  }
-
-  if (args.runMs > 0) {
-    await session.send("Input.dispatchMouseEvent", {
-      type: "mousePressed",
-      x: Math.floor(args.width / 2),
-      y: Math.floor(args.height / 2),
-      button: "left",
-      clickCount: 1,
-    });
-    await session.send("Input.dispatchMouseEvent", {
-      type: "mouseReleased",
-      x: Math.floor(args.width / 2),
-      y: Math.floor(args.height / 2),
-      button: "left",
-      clickCount: 1,
-    });
-    await delay(300);
-
-    for (const [code, key, vk] of [
-      ["KeyW", "w", 87],
-      ["ShiftLeft", "Shift", 16],
-    ]) {
-      await session.send("Input.dispatchKeyEvent", {
-        type: code === "ShiftLeft" ? "keyDown" : "rawKeyDown",
-        code,
-        key,
-        windowsVirtualKeyCode: vk,
-        nativeVirtualKeyCode: vk,
-      });
-    }
-
-    await delay(args.runMs);
-  }
-
-  await delay(args.wait);
-
-  const screenshot = await session.send("Page.captureScreenshot", { format: "png" });
-
-  if (args.runMs > 0) {
-    await session.send("Input.dispatchMouseEvent", {
-      type: "mousePressed",
-      x: Math.floor(args.width / 2),
-      y: Math.floor(args.height / 2),
-      button: "left",
-      clickCount: 1,
-    });
-    await session.send("Input.dispatchMouseEvent", {
-      type: "mouseReleased",
-      x: Math.floor(args.width / 2),
-      y: Math.floor(args.height / 2),
-      button: "left",
-      clickCount: 1,
-    });
-    await delay(300);
-
-    for (const [code, key, vk] of [
-      ["KeyW", "w", 87],
-      ["ShiftLeft", "Shift", 16],
-    ]) {
-      await session.send("Input.dispatchKeyEvent", {
-        type: "keyUp",
-        code,
-        key,
-        windowsVirtualKeyCode: vk,
-        nativeVirtualKeyCode: vk,
-      });
-    }
-  }
-  const buffer = Buffer.from(screenshot.data, "base64");
-  await mkdir(dirname(args.out), { recursive: true });
-  await writeFile(args.out, buffer);
-
-  const info = await session.evaluate(`(() => {
-    const app = window.__glassline;
-    const scene = app.renderScene.scene;
-    const renderer = app.renderer.threeRenderer;
-    let instancedMeshes = 0;
-    let instances = 0;
-    let triangles = 0;
-
-    scene.traverse((object) => {
-      if (!object.isMesh) {
-        return;
-      }
-
-      const geometry = object.geometry;
-      const triangleCount = (geometry.index ? geometry.index.count : geometry.attributes.position.count) / 3;
-
-      if (object.isInstancedMesh) {
-        instancedMeshes += 1;
-        instances += object.count;
-        triangles += triangleCount * object.count;
-      } else {
-        triangles += triangleCount;
-      }
-    });
-
-    return {
-      flow: app.flowManager.getState(),
-      mode: app.currentMode,
-      position: app.player ? app.player.getInterpolatedPosition(1) : null,
-      quality: app.settingsManager.getValue("graphics.quality"),
-      instancedMeshes,
-      instances,
-      triangles: Math.round(triangles),
-      textures: renderer.info.memory.textures,
-      programs: renderer.info.programs?.length ?? null,
-      canvas: [renderer.domElement.width, renderer.domElement.height],
-    };
-  })()`);
-
-  session.close();
+function printLegacyReport(report) {
+  const stats = report.stats ?? {};
 
   console.log(
     JSON.stringify(
       {
-        out: args.out,
-        flow,
-        mode: args.mode,
-        position: info.position,
-        instancedMeshes: info.instancedMeshes,
-        instances: info.instances,
-        triangles: info.triangles,
-        textures: info.textures,
-        programs: info.programs,
-        canvas: info.canvas,
+        out: report.out,
+        mode: report.mode,
+        flow: report.flow,
+        sha256: report.sha256,
+        png: report.png,
+        bytes: report.bytes,
+        position: stats.position ?? null,
+        instancedMeshes: stats.instancedMeshes ?? null,
+        instances: stats.instances ?? null,
+        triangles: stats.triangles ?? null,
+        textures: stats.textures ?? null,
+        programs: stats.programs ?? null,
+        canvas: stats.canvas ?? null,
       },
       null,
       2,
     ),
   );
 
-  if (launched && !args.keepOpen) {
-    launched.kill();
+  if (report.pageErrors.length > 0) {
+    console.error(
+      `WARNING: ${report.pageErrors.length} uncaught page error(s) during legacy capture`,
+    );
+  }
+
+  if (report.consoleErrors.length > 0) {
+    console.error(`WARNING: ${report.consoleErrors.length} console error(s) during legacy capture`);
+  }
+}
+
+async function resolveShotIds({ browser, options, baseUrl, log }) {
+  if (options.shotMode === "single") {
+    return [options.shot];
+  }
+
+  try {
+    return await withIsolatedPage(browser, options.viewport, async ({ page, diagnostics }) => {
+      const url = buildCaptureUrl(baseUrl, { level: options.level, shot: null });
+      await waitForCaptureReady(page, {
+        url,
+        timeoutMs: options.readyTimeout,
+        log,
+        diagnostics,
+      });
+
+      return readShotIds(page);
+    });
+  } catch (error) {
+    log(`WARNING: could not discover the shot list without ?shot: ${firstLine(error.message)}`);
+    log(`falling back to the plan list: ${DEFAULT_SHOT_IDS.join(", ")}`);
+
+    return DEFAULT_SHOT_IDS;
+  }
+}
+
+async function captureShot({ browser, options, baseUrl, log, id }) {
+  const url = buildCaptureUrl(baseUrl, { level: options.level, shot: id });
+  const captured = await withIsolatedPage(
+    browser,
+    options.viewport,
+    async ({ page, diagnostics }) => {
+      await waitForCaptureReady(page, {
+        url,
+        timeoutMs: options.readyTimeout,
+        log,
+        diagnostics,
+      });
+
+      const available = await readShotIds(page);
+
+      if (!available.includes(id)) {
+        throw new CaptureModeError(
+          `shot "${id}" is not exposed by the page (available: ${available.join(", ")})`,
+        );
+      }
+
+      await applyShot(page, id);
+      await waitSettleFrames(page, options.frames);
+
+      const viewport = await readPageViewport(page);
+      const stats = await readStats(page);
+      const buffer = await page.screenshot({
+        type: "png",
+        animations: "disabled",
+        caret: "hide",
+      });
+      const diagnosticsSnapshot = diagnostics.snapshot();
+
+      return {
+        id,
+        buffer,
+        stats,
+        viewport,
+        ...diagnosticsSnapshot,
+      };
+    },
+  );
+
+  const png = evidence.pngSize(captured.buffer);
+  const file = evidence.shotFile(options.outputDir, id);
+
+  await writeFile(file, captured.buffer);
+
+  const problems = [];
+
+  if (png === null) {
+    problems.push("screenshot is not a PNG");
+  } else if (png.width !== options.viewport.width || png.height !== options.viewport.height) {
+    problems.push(
+      `PNG is ${png.width}x${png.height}, expected ${options.viewport.width}x${options.viewport.height}`,
+    );
+  }
+
+  if (
+    captured.viewport.width !== options.viewport.width ||
+    captured.viewport.height !== options.viewport.height
+  ) {
+    problems.push(
+      `page viewport is ${captured.viewport.width}x${captured.viewport.height}, expected ${options.viewport.width}x${options.viewport.height}`,
+    );
+  }
+
+  if (captured.viewport.devicePixelRatio !== 1) {
+    problems.push(`devicePixelRatio is ${captured.viewport.devicePixelRatio}, expected 1`);
+  }
+
+  // The contract may expose `canvas` as [width, height] or { width, height }.
+  const canvas = captured.stats?.canvas;
+  const canvasWidth = Array.isArray(canvas) ? canvas[0] : canvas?.width;
+  const canvasHeight = Array.isArray(canvas) ? canvas[1] : canvas?.height;
+
+  if (Number.isFinite(canvasWidth) && Number.isFinite(canvasHeight)) {
+    if (canvasWidth !== options.viewport.width || canvasHeight !== options.viewport.height) {
+      problems.push(
+        `stats().canvas is ${canvasWidth}x${canvasHeight}, expected ${options.viewport.width}x${options.viewport.height}`,
+      );
+    }
+  } else {
+    problems.push("stats().canvas is missing (expected [width, height] or { width, height })");
+  }
+
+  if (
+    typeof captured.stats?.shot === "string" &&
+    captured.stats.shot !== "" &&
+    captured.stats.shot !== id
+  ) {
+    problems.push(`stats().shot is "${captured.stats.shot}", expected "${id}"`);
+  }
+
+  if (captured.pageErrors.length > 0) {
+    problems.push(
+      `uncaught page exception(s):\n${captured.pageErrors.map((entry) => `    ${firstLine(entry)}`).join("\n")}`,
+    );
+  }
+
+  if (options.strictConsole && captured.consoleErrors.length > 0) {
+    problems.push(
+      `console errors (--strict-console):\n${captured.consoleErrors.map((entry) => `    ${entry}`).join("\n")}`,
+    );
+  }
+
+  if (problems.length > 0) {
+    throw new Error(
+      `shot "${id}" failed (file written for inspection: ${file}):\n  - ${problems.join("\n  - ")}`,
+    );
+  }
+
+  const sha256 = evidence.sha256(captured.buffer);
+
+  log(
+    `shot "${id}" → ${evidence.toRepoPath(ROOT_DIR, file)} ${png.width}x${png.height} sha256=${sha256.slice(0, 16)}…`,
+  );
+
+  return {
+    id,
+    file,
+    buffer: captured.buffer,
+    png,
+    sha256,
+    stats: captured.stats,
+    viewport: captured.viewport,
+    consoleErrors: captured.consoleErrors,
+    pageErrors: captured.pageErrors,
+    failedRequests: captured.failedRequests,
+  };
+}
+
+async function capturePass({ browser, options, baseUrl, log, shotIds, outputDir, label }) {
+  const shots = [];
+
+  for (const [index, id] of shotIds.entries()) {
+    log(`[${label} ${index + 1}/${shotIds.length}] capture "${id}"`);
+    shots.push(
+      await captureShot({
+        browser,
+        options: { ...options, outputDir },
+        baseUrl,
+        log,
+        id,
+      }),
+    );
+  }
+
+  return shots;
+}
+
+function buildManifest({ options, baseUrl, browserInfo, shots, determinism }) {
+  return {
+    iteration: options.iteration,
+    generatedAt: new Date().toISOString(),
+    generator: "tools/capture/capture.mjs",
+    mode: "capture",
+    level: options.level,
+    url: baseUrl,
+    browser: browserInfo,
+    viewport: {
+      width: options.viewport.width,
+      height: options.viewport.height,
+      deviceScaleFactor: 1,
+    },
+    frames: options.frames,
+    shots: shots.map((shot) => ({
+      id: shot.id,
+      file: evidence.toRepoPath(ROOT_DIR, shot.file),
+      sha256: shot.sha256,
+      png: { ...shot.png, bytes: shot.buffer.length },
+      stats: shot.stats,
+      consoleErrors: shot.consoleErrors,
+    })),
+    determinism,
+  };
+}
+
+async function verifyDeterminism({ options, baseUrl, log, shotIds, firstShots, outputDir }) {
+  const tempDir = resolve(outputDir, ".determinism");
+  await rm(tempDir, { recursive: true, force: true });
+  await evidence.ensureDir(tempDir);
+
+  log(
+    `determinism: capturing every shot a second time in a fresh Edge instance into ${evidence.toRepoPath(ROOT_DIR, tempDir)}`,
+  );
+
+  // A second, independent browser launch matches the "two separate runs" rule
+  // more strictly than reusing the first browser process.
+  const secondBrowser = await launchBrowser({ headless: options.headless, log });
+  let secondShots;
+
+  try {
+    secondShots = await capturePass({
+      browser: secondBrowser.browser,
+      options,
+      baseUrl,
+      log,
+      shotIds,
+      outputDir: tempDir,
+      label: "determinism",
+    });
+  } finally {
+    await secondBrowser.browser.close().catch(() => {
+      // already closed
+    });
+  }
+
+  const comparisons = firstShots.map((first, index) => {
+    const second = secondShots[index];
+    const byteDiff = evidence.compareBuffers(first.buffer, second.buffer);
+
+    return {
+      id: first.id,
+      sha256First: first.sha256,
+      sha256Second: second.sha256,
+      identical: first.sha256 === second.sha256,
+      sizes: { first: first.buffer.length, second: second.buffer.length },
+      differingBytes: byteDiff.differingBytes,
+      firstDifference: byteDiff.firstDifference,
+      statsIdentical: JSON.stringify(first.stats) === JSON.stringify(second.stats),
+    };
+  });
+
+  const mismatches = comparisons.filter((comparison) => !comparison.identical);
+
+  if (mismatches.length === 0) {
+    await rm(tempDir, { recursive: true, force: true });
+    log(`determinism: PASS (${comparisons.length}/${comparisons.length} shots byte-identical)`);
+  } else {
+    log(
+      `determinism: FAIL (${mismatches.length}/${comparisons.length} shots differ); second-pass frames kept in ${evidence.toRepoPath(ROOT_DIR, tempDir)}`,
+    );
+  }
+
+  const rows = comparisons.map((comparison) => [
+    comparison.id,
+    `${comparison.sha256First.slice(0, 16)}…`,
+    `${comparison.sha256Second.slice(0, 16)}…`,
+    comparison.identical ? "PASS" : "FAIL",
+    comparison.identical
+      ? ""
+      : `${comparison.differingBytes} B differ @${comparison.firstDifference}`,
+  ]);
+
+  console.log("");
+  console.log(
+    evidence.renderTable(["id", "run1 sha256", "run2 sha256", "verdict", "delta"], rows, {
+      aligns: ["left", "left", "left", "left", "right"],
+    }),
+  );
+  console.log("");
+
+  return {
+    verified: true,
+    matches: comparisons.length - mismatches.length,
+    total: comparisons.length,
+    keptSecondPassDir: mismatches.length > 0 ? evidence.toRepoPath(ROOT_DIR, tempDir) : null,
+    shots: comparisons,
+  };
+}
+
+function printShotTable(shots, options) {
+  const rows = shots.map((shot) => [
+    shot.id,
+    shot.sha256,
+    String(shot.stats?.drawCalls ?? "?"),
+    String(shot.stats?.triangles ?? "?"),
+    String(shot.stats?.textures ?? "?"),
+    String(shot.stats?.programs ?? "?"),
+    shot.png ? `${shot.png.width}x${shot.png.height}` : "?",
+    evidence.formatBytes(shot.buffer.length),
+  ]);
+
+  console.log(
+    evidence.renderTable(
+      ["id", "sha256", "drawCalls", "triangles", "textures", "programs", "png", "bytes"],
+      rows,
+      { aligns: ["left", "left", "right", "right", "right", "right", "right", "right"] },
+    ),
+  );
+
+  const consoleErrors = shots.reduce((total, shot) => total + shot.consoleErrors.length, 0);
+  const pageErrors = shots.reduce((total, shot) => total + shot.pageErrors.length, 0);
+
+  console.log("");
+  console.log(
+    `viewport ${options.viewport.width}x${options.viewport.height} @1 · ${shots.length} shot(s) · console errors: ${consoleErrors} · page errors: ${pageErrors}`,
+  );
+}
+
+async function runCaptureMode({ browser, browserInfo, options, baseUrl, log }) {
+  const outputDir = evidence.iterationDir(ROOT_DIR, options.iteration);
+  await evidence.ensureDir(outputDir);
+
+  log(`evidence dir: ${evidence.toRepoPath(ROOT_DIR, outputDir)}`);
+
+  const shotIds = await resolveShotIds({ browser, options, baseUrl, log });
+  log(`shots (${shotIds.length}): ${shotIds.join(", ")}`);
+
+  const framesLabel = options.frames === 1 ? "frame" : "frames";
+  log(`settling ${options.frames} ${framesLabel} after apply()`);
+
+  const firstPass = await capturePass({
+    browser,
+    options,
+    baseUrl,
+    log,
+    shotIds,
+    outputDir,
+    label: "capture",
+  });
+
+  const manifestPath = resolve(outputDir, "manifest.json");
+  const manifest = buildManifest({
+    options,
+    baseUrl,
+    browserInfo,
+    shots: firstPass,
+    determinism: null,
+  });
+
+  await evidence.writeJson(manifestPath, manifest);
+  log(`manifest: ${evidence.toRepoPath(ROOT_DIR, manifestPath)}`);
+
+  let determinism = null;
+
+  if (options.verifyDeterminism) {
+    determinism = await verifyDeterminism({
+      options,
+      baseUrl,
+      log,
+      shotIds,
+      firstShots: firstPass,
+      outputDir,
+    });
+
+    manifest.determinism = determinism;
+    await evidence.writeJson(manifestPath, manifest);
+    log(
+      `manifest updated with determinism verdict: ${evidence.toRepoPath(ROOT_DIR, manifestPath)}`,
+    );
+  }
+
+  console.log("");
+  console.log(
+    `iteration "${options.iteration}" · ${baseUrl} · ${browserInfo.name} ${browserInfo.version}`,
+  );
+  console.log("");
+  printShotTable(firstPass, options);
+
+  if (determinism !== null && determinism.matches !== determinism.total) {
+    console.error("");
+    console.error("determinism check FAILED — per-shot sha256 differs between two identical runs.");
+    console.error(
+      "This means the capture mode is not frozen enough (time-driven animation, random seeds, camera drift).",
+    );
+    console.error(`Second-pass frames: ${determinism.keptSecondPassDir}`);
+    return { exitCode: 1, manifestPath, manifest };
+  }
+
+  return { exitCode: 0, manifestPath, manifest };
+}
+
+async function runLegacy({ browser, options, baseUrl, log }) {
+  const report = await runLegacyCapture({ browser, baseUrl, options, log });
+  printLegacyReport(report);
+
+  if (options.json) {
+    const jsonPath = resolve(process.cwd(), options.json);
+    await evidence.ensureDir(dirname(jsonPath));
+    await writeFile(jsonPath, `${JSON.stringify(report, null, 2)}\n`);
+    log(`report: ${jsonPath}`);
+  }
+
+  return { exitCode: 0 };
+}
+
+async function main() {
+  let options;
+
+  try {
+    options = parseArgs(process.argv.slice(2));
+  } catch (error) {
+    if (error instanceof UsageError) {
+      console.error(`[capture] ${error.message}`);
+      console.error("");
+      printHelp();
+      process.exitCode = 2;
+      return;
+    }
+
+    throw error;
+  }
+
+  if (options.help) {
+    printHelp();
+    return;
+  }
+
+  const log = createLogger();
+
+  if (!options.legacy && options.legacyFlagsUsed.length > 0) {
+    log(
+      `legacy flag(s) ignored in capture mode: ${options.legacyFlagsUsed.join(", ")} (pass --out <file> for a one-off frame)`,
+    );
+  }
+
+  const baseUrl = options.url
+    ? new URL(options.url).href
+    : `http://127.0.0.1:${options.serverPort}/`;
+  const probeUrl = new URL("/", baseUrl).href;
+  const server = createServerManager({
+    rootDir: ROOT_DIR,
+    port: options.serverPort,
+    host: "127.0.0.1",
+    baseUrl: probeUrl,
+    log,
+  });
+
+  let browser = null;
+  let shuttingDown = false;
+
+  const shutdown = async (code, reason) => {
+    if (shuttingDown) {
+      return;
+    }
+
+    shuttingDown = true;
+    log(`${reason}; shutting down`);
+
+    try {
+      await browser?.close();
+    } catch {
+      // browser may already be gone
+    }
+
+    try {
+      await server.stop();
+    } catch {
+      // best effort on a signal path
+    }
+
+    process.exit(code);
+  };
+
+  process.once("SIGINT", () => {
+    void shutdown(130, "SIGINT");
+  });
+  process.once("SIGTERM", () => {
+    void shutdown(143, "SIGTERM");
+  });
+
+  try {
+    await server.ensure({ reuseServer: options.reuseServer, timeoutMs: options.serverTimeout });
+
+    const launched = await launchBrowser({ headless: options.headless, log });
+    browser = launched.browser;
+
+    let result;
+
+    if (options.legacy) {
+      result = await runLegacy({ browser, options, baseUrl, log });
+    } else {
+      result = await runCaptureMode({
+        browser,
+        browserInfo: launched.info,
+        options,
+        baseUrl,
+        log,
+      });
+
+      if (options.json) {
+        const jsonPath = resolve(process.cwd(), options.json);
+        await evidence.ensureDir(dirname(jsonPath));
+        await writeFile(
+          jsonPath,
+          `${JSON.stringify(
+            {
+              ...result.manifest,
+              manifestPath: evidence.toRepoPath(ROOT_DIR, result.manifestPath),
+            },
+            null,
+            2,
+          )}\n`,
+        );
+        log(`report: ${jsonPath}`);
+      }
+    }
+
+    process.exitCode = result.exitCode;
+  } finally {
+    try {
+      await browser?.close();
+    } catch {
+      // already closed by the signal path
+    }
+
+    const stopResult = await server.stop().catch((error) => {
+      console.error(`[capture] WARNING: failed to stop the dev server: ${error.message}`);
+      return null;
+    });
+
+    if (stopResult?.stopped) {
+      log(`server child stopped; ${probeUrl} free=${stopResult.portFree}`);
+    }
   }
 }
 
 main().catch((error) => {
-  console.error(error instanceof Error ? error.message : error);
+  const message = error instanceof Error ? error.message : String(error);
+  console.error(`[capture] ERROR: ${message}`);
+
+  // Only add stack frames; multi-line diagnostics messages must not be repeated.
+  if (error instanceof Error && typeof error.stack === "string") {
+    const frames = error.stack
+      .split("\n")
+      .filter((line) => line.trim().startsWith("at "))
+      .slice(0, 3);
+
+    if (frames.length > 0) {
+      console.error(frames.join("\n"));
+    }
+  }
+
   process.exitCode = 1;
 });
