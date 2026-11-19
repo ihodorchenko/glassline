@@ -5,8 +5,289 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="color-scheme" content="light dark" />
     <title>Glassline</title>
+    <style>
+      :root {
+        --boot-paper: #f1ece0;
+        --boot-ink: #14191d;
+        --boot-muted: #5d625f;
+        --boot-red: #d52e36;
+        --boot-hairline: rgba(20, 25, 29, 0.18);
+      }
+
+      html,
+      body {
+        margin: 0;
+        padding: 0;
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+        background: var(--boot-paper);
+      }
+
+      #boot-loader {
+        position: fixed;
+        inset: 0;
+        z-index: 9999;
+        display: grid;
+        grid-template-rows: auto 1fr auto;
+        gap: clamp(20px, 4vh, 44px);
+        box-sizing: border-box;
+        padding: clamp(22px, 4.5vw, 64px);
+        overflow: hidden;
+        color: var(--boot-ink);
+        background:
+          radial-gradient(120% 80% at 78% 0%, rgba(255, 255, 255, 0.85), transparent 55%),
+          linear-gradient(118deg, rgba(255, 255, 255, 0.55), transparent 46%),
+          repeating-linear-gradient(0deg, rgba(20, 25, 29, 0.024) 0 1px, transparent 1px 4px),
+          var(--boot-paper);
+        font-family: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+        transition: opacity 420ms ease, visibility 420ms ease;
+      }
+
+      #boot-loader::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        pointer-events: none;
+        opacity: 0.43;
+        background-image:
+          radial-gradient(rgba(20, 25, 29, 0.13) 0.6px, transparent 0.7px),
+          radial-gradient(rgba(255, 255, 255, 0.8) 0.6px, transparent 0.7px);
+        background-position: 0 0, 3px 3px;
+        background-size: 6px 6px;
+        mix-blend-mode: multiply;
+      }
+
+      #boot-loader.is-hidden {
+        opacity: 0;
+        visibility: hidden;
+        pointer-events: none;
+      }
+
+      .boot-loader__mast,
+      .boot-loader__center,
+      .boot-loader__foot {
+        position: relative;
+        z-index: 1;
+      }
+
+      .boot-loader__network {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: clamp(12px, 2.2vh, 22px);
+        color: var(--boot-muted);
+        font-family: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+        font-size: 10px;
+        font-weight: 600;
+        letter-spacing: 0.24em;
+        text-transform: uppercase;
+      }
+
+      .boot-loader__network::before {
+        content: "";
+        width: 26px;
+        height: 3px;
+        background: var(--boot-red);
+      }
+
+      .boot-loader__title {
+        margin: 0;
+        color: var(--boot-ink);
+        font-size: clamp(3.2rem, 9.2vw, 8.8rem);
+        font-weight: 800;
+        letter-spacing: -0.055em;
+        line-height: 0.79;
+        text-transform: uppercase;
+      }
+
+      .boot-loader__rule {
+        width: 86px;
+        height: 6px;
+        margin: clamp(16px, 2.8vh, 26px) 0 14px;
+        background: var(--boot-red);
+      }
+
+      .boot-loader__tagline {
+        margin: 0;
+        color: var(--boot-muted);
+        font-size: clamp(0.7rem, 1.1vw, 0.82rem);
+        font-weight: 600;
+        letter-spacing: 0.28em;
+        text-transform: uppercase;
+      }
+
+      .boot-loader__center {
+        align-self: end;
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
+        grid-template-areas:
+          "mark mark"
+          "stage percent"
+          "track track"
+          "detail detail";
+        gap: 10px 18px;
+        width: min(620px, 100%);
+      }
+
+      .boot-loader__mark {
+        grid-area: mark;
+        display: flex;
+        align-items: flex-end;
+        gap: 5px;
+        height: 26px;
+        margin-bottom: 4px;
+      }
+
+      .boot-loader__mark span {
+        display: block;
+        width: 8px;
+        background: var(--boot-red);
+        animation: boot-bars 1.25s ease-in-out infinite;
+      }
+
+      .boot-loader__mark span:nth-child(1) {
+        height: 14px;
+        animation-delay: -0.2s;
+      }
+
+      .boot-loader__mark span:nth-child(2) {
+        height: 26px;
+        animation-delay: -0.05s;
+      }
+
+      .boot-loader__mark span:nth-child(3) {
+        height: 19px;
+        animation-delay: -0.35s;
+      }
+
+      .boot-loader__stage {
+        grid-area: stage;
+        margin: 0;
+        font-family: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+        font-size: clamp(0.74rem, 1.45vw, 0.9rem);
+        font-weight: 700;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+      }
+
+      .boot-loader__percent {
+        grid-area: percent;
+        color: var(--boot-muted);
+        font-family: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+        font-size: clamp(0.74rem, 1.45vw, 0.9rem);
+        font-variant-numeric: tabular-nums;
+        letter-spacing: 0.08em;
+      }
+
+      .boot-loader__track {
+        grid-area: track;
+        height: 4px;
+        overflow: hidden;
+        background: var(--boot-hairline);
+      }
+
+      .boot-loader__fill {
+        display: block;
+        width: 6%;
+        height: 100%;
+        background: var(--boot-red);
+        transition: width 380ms cubic-bezier(0.2, 0.7, 0.2, 1);
+      }
+
+      .boot-loader__detail {
+        grid-area: detail;
+        margin: 0;
+        color: var(--boot-muted);
+        font-size: 0.78rem;
+        line-height: 1.45;
+      }
+
+      .boot-loader__foot {
+        display: flex;
+        align-items: flex-end;
+        justify-content: space-between;
+        gap: 18px;
+        padding-top: 14px;
+        border-top: 1px solid var(--boot-hairline);
+        color: var(--boot-muted);
+        font-family: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+        font-size: 10px;
+        letter-spacing: 0.18em;
+        text-transform: uppercase;
+      }
+
+      #boot-loader.is-ready .boot-loader__mark span {
+        background: var(--boot-ink);
+        animation: none;
+      }
+
+      #boot-loader.is-error .boot-loader__stage,
+      #boot-loader.is-error .boot-loader__percent {
+        color: var(--boot-red);
+      }
+
+      #boot-loader.is-error .boot-loader__fill {
+        background: var(--boot-ink);
+      }
+
+      @keyframes boot-bars {
+        0%,
+        100% {
+          transform: scaleY(0.55);
+          opacity: 0.55;
+        }
+        45% {
+          transform: scaleY(1);
+          opacity: 1;
+        }
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        #boot-loader,
+        .boot-loader__fill {
+          transition: none;
+        }
+
+        .boot-loader__mark span {
+          animation: none;
+        }
+      }
+    </style>
   </head>
   <body>
+    <div id="boot-loader" role="status" aria-live="polite" aria-label="Loading Glassline">
+      <header class="boot-loader__mast">
+        <div class="boot-loader__network">Glassline / Runner Network</div>
+        <h1 class="boot-loader__title">Glassline</h1>
+        <div class="boot-loader__rule"></div>
+        <p class="boot-loader__tagline">First-person parkour</p>
+      </header>
+
+      <section class="boot-loader__center">
+        <div class="boot-loader__mark" aria-hidden="true"><span></span><span></span><span></span></div>
+        <p class="boot-loader__stage" id="boot-stage">Booting</p>
+        <span class="boot-loader__percent" id="boot-percent">06</span>
+        <div
+          class="boot-loader__track"
+          id="boot-track"
+          role="progressbar"
+          aria-label="Loading progress"
+          aria-valuemin="0"
+          aria-valuemax="100"
+          aria-valuenow="6"
+        >
+          <span class="boot-loader__fill" id="boot-fill"></span>
+        </div>
+        <p class="boot-loader__detail" id="boot-detail">Initiating runner network</p>
+      </section>
+
+      <footer class="boot-loader__foot">
+        <span>Prologue / Rooftop Run</span>
+        <span>Build 0.1.0</span>
+      </footer>
+    </div>
+
     <canvas id="game-canvas" aria-label="Glassline game viewport" tabindex="0"></canvas>
 
     <noscript>

@@ -353,12 +353,23 @@ export class UIManager {
   showLoading(mode: "training" | "prologue" | "speedrun"): void {
     const screen = this.createScreen("common.loading", "gl-screen--loading");
     const label = this.localize(`loading.${mode}`);
+    const loader = element("div", "gl-loading");
+    const track = element("div", "gl-loading__track", "");
 
-    screen.append(
-      element("div", "gl-spinner", ""),
+    track.append(element("div", "gl-loading__fill", ""));
+    loader.setAttribute("role", "status");
+    loader.setAttribute("aria-live", "polite");
+    loader.append(
+      element("p", "gl-loading__network", "Glassline / Runner Network"),
+      element("div", "gl-loading__wordmark", "Glassline"),
+      element("div", "gl-loading__rule", ""),
+      element("p", "gl-loading__eyebrow", "Preparing Run"),
       element("h1", "gl-screen__title", this.localize("loading.mode", { mode: label })),
       element("p", "gl-screen__muted", this.localize("common.loading")),
+      track,
+      element("p", "gl-loading__detail", "Generating city · collision · audio"),
     );
+    screen.append(loader);
     this.setScreen("loading", screen);
   }
 

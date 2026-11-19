@@ -974,3 +974,125 @@ body {
   background: #ffffff;
   color: #000000;
 }
+
+/* Reference paper/ink level loader (initial boot uses inline styles). */
+.gl-screen--loading {
+  align-items: stretch;
+  padding: clamp(26px, 5vw, 72px);
+  text-align: left;
+  background:
+    radial-gradient(120% 80% at 78% 0%, rgba(255, 255, 255, 0.9), transparent 58%),
+    linear-gradient(118deg, rgba(255, 255, 255, 0.55), transparent 48%),
+    repeating-linear-gradient(0deg, rgba(20, 25, 29, 0.024) 0 1px, transparent 1px 4px),
+    var(--glassline-paper);
+  color: var(--glassline-ink-strong);
+  justify-content: space-between;
+}
+
+.gl-loading {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(8px, 1.6vh, 16px);
+  width: 100%;
+  height: 100%;
+  box-sizing: border-box;
+}
+
+.gl-loading__network {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 0;
+  color: rgba(18, 23, 26, 0.58);
+  font-family: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+}
+
+.gl-loading__network::before {
+  content: "";
+  width: 26px;
+  height: 3px;
+  background: var(--glassline-accent);
+}
+
+.gl-loading__wordmark {
+  margin-top: 10px;
+  font-size: clamp(2.6rem, 7vw, 6rem);
+  font-weight: 800;
+  letter-spacing: -0.055em;
+  line-height: 0.82;
+  text-transform: uppercase;
+}
+
+.gl-loading__rule {
+  width: 86px;
+  height: 6px;
+  margin-top: 18px;
+  background: var(--glassline-accent);
+}
+
+.gl-loading__eyebrow {
+  margin: clamp(24px, 5vh, 48px) 0 0;
+  color: rgba(18, 23, 26, 0.58);
+  font-family: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+}
+
+.gl-loading .gl-screen__title {
+  margin: 6px 0 0;
+  font-size: clamp(1.8rem, 4.6vw, 3.4rem);
+  letter-spacing: -0.04em;
+}
+
+.gl-loading .gl-screen__muted {
+  margin: 4px 0 0;
+  color: rgba(18, 23, 26, 0.62);
+}
+
+.gl-loading__track {
+  position: relative;
+  width: min(620px, 100%);
+  height: 4px;
+  margin-top: auto;
+  overflow: hidden;
+  background: rgba(20, 25, 29, 0.14);
+}
+
+.gl-loading__fill {
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 38%;
+  background: var(--glassline-accent);
+  animation: gl-loading-sweep 1.3s ease-in-out infinite;
+}
+
+.gl-loading__detail {
+  width: min(620px, 100%);
+  margin: 0 0 4px;
+  color: rgba(18, 23, 26, 0.56);
+  font-family: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+  font-size: 11px;
+  letter-spacing: 0.06em;
+}
+
+@keyframes gl-loading-sweep {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(270%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .gl-loading__fill {
+    animation: none;
+    width: 62%;
+  }
+}

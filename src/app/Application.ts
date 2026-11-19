@@ -189,6 +189,7 @@ export class Application implements Disposable {
     }
 
     this.state = "initializing";
+    this.config.onBootStage?.("boot");
 
     if (this.config.enableStatusOverlay) {
       this.statusOverlay = new StatusOverlay();
@@ -198,19 +199,28 @@ export class Application implements Disposable {
     try {
       this.canvas = this.resolveCanvas();
 
+      this.config.onBootStage?.("storage");
       await this.initializeStorage();
       await this.initializeSettings();
+
+      this.config.onBootStage?.("world");
       await this.initializeLocalization();
       await this.initializeLongTermSystems();
 
+      this.config.onBootStage?.("materials");
       this.initializeRendering();
 
+      this.config.onBootStage?.("physics");
       await this.initializePhysics();
+
+      this.config.onBootStage?.("level");
       this.initializeLevelRuntime();
       this.initializeCamera();
       this.initializeInput();
+      this.config.onBootStage?.("audio");
       this.initializeAudio();
       this.initializeFlowAndSessions();
+      this.config.onBootStage?.("ui");
       this.initializeUserInterface();
       await this.initializeSettingsApplication();
       this.initializeGameLoop();
@@ -223,6 +233,7 @@ export class Application implements Disposable {
       this.ui?.showMainMenu();
       this.syncInputContext();
 
+      this.config.onBootStage?.("ready");
       this.state = "ready";
     } catch (error) {
       this.state = "failed";

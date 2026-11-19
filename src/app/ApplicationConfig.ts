@@ -22,7 +22,20 @@ export interface ApplicationConfig {
   readonly physics: PhysicsWorldOptions;
   readonly storage: DatabaseOptions;
   readonly enableStatusOverlay: boolean;
+  /** Optional boot-stage callback for the styled loading screen. */
+  readonly onBootStage?: (stage: BootStage) => void;
 }
+
+export type BootStage =
+  | "boot"
+  | "storage"
+  | "world"
+  | "materials"
+  | "physics"
+  | "level"
+  | "audio"
+  | "ui"
+  | "ready";
 
 export const DEFAULT_APPLICATION_CONFIG: ApplicationConfig = {
   appName: "Glassline",

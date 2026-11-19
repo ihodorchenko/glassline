@@ -1,14 +1,22 @@
 import "./styles/main.css";
 
 import { Application } from "./app/Application";
+import { DEFAULT_APPLICATION_CONFIG } from "./app/ApplicationConfig";
+import { BootLoader } from "./boot/BootLoader";
 
-const application = new Application();
+const bootLoader = new BootLoader();
+const application = new Application({
+  ...DEFAULT_APPLICATION_CONFIG,
+  onBootStage: (stage) => bootLoader.setStage(stage),
+});
 
 async function bootstrap(): Promise<void> {
   try {
     await application.initialize();
+    bootLoader.complete();
     application.start();
   } catch (error) {
+    bootLoader.fail(error);
     console.error("[Glassline] Fatal startup error.", error);
   }
 }
