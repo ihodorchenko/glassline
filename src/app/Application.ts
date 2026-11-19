@@ -227,6 +227,7 @@ export class Application implements Disposable {
       this.initializeGameLoop();
       this.registerWindowHandlers();
       this.registerDevKeys();
+      this.renderer?.refreshShadows();
       this.handleResize();
       this.resetStatusWindow();
 
@@ -758,6 +759,7 @@ export class Application implements Disposable {
     }
 
     await runtime.loadLevel(context.levelId);
+    this.renderer?.refreshShadows();
 
     const levelSession = runtime.getCurrentSession();
     const level = runtime.getCurrentLevel();
@@ -779,6 +781,7 @@ export class Application implements Disposable {
 
   private async unloadLevelPort(_context: GameplaySessionContext): Promise<void> {
     await this.levelRuntime?.unloadLevel();
+    this.renderer?.refreshShadows();
   }
 
   private async prepareGameplayPort(context: GameplaySessionContext): Promise<void> {

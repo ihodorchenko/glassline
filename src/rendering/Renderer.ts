@@ -45,6 +45,10 @@ export class Renderer implements Disposable {
     this.renderer.toneMapping = THREE.NoToneMapping;
     this.renderer.shadowMap.enabled = options.shadowsEnabled;
     this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+    // All shadow casters are static (level props/billboards); birds and the
+    // viewmodel do not cast. Refresh explicitly on level/quality changes.
+    this.renderer.shadowMap.autoUpdate = false;
+    this.renderer.shadowMap.needsUpdate = true;
     this.renderer.info.autoReset = true;
 
     this.post = options.postProcessing === false ? null : this.createPostPipeline();
@@ -77,11 +81,19 @@ export class Renderer implements Disposable {
     );
     this.renderer.shadowMap.enabled = this.shadowsEnabled && quality !== "low";
     this.post?.setQuality(quality);
+    this.refreshShadows();
     this.resize(window.innerWidth, window.innerHeight);
   }
 
   get currentQuality(): DisplayQuality {
     return this.quality;
+  }
+
+  /** Re-renders the static shadow map after a level/quality change. */
+  refreshShadows(): void {
+    if (this.renderer.shadowMap.enabled) {
+      this.renderer.shadowMap.needsUpdate = true;
+    }
   }
 
   /** Resizes the drawing buffer. CSS keeps the canvas at the full viewport size. */

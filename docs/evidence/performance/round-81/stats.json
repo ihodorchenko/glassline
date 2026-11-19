@@ -1,0 +1,13 @@
+{
+  "capturedAt": "2026-11-19",
+  "build": "dev, 5199",
+  "position": [0, 0.93, 6],
+  "resolution": [1592, 769],
+  "pixelRatio": 1,
+  "render": { "calls": 352, "triangles": 2666500 },
+  "memory": { "geometries": 54, "textures": 49 },
+  "programs": 26,
+  "fps": 60.1,
+  "shadowMap": { "autoUpdate": false, "needsUpdate": false },
+  "startMetrics": "13/13"
+}

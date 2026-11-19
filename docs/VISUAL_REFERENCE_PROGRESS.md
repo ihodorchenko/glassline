@@ -3533,6 +3533,33 @@ Reduce decoration draw calls without changing shadows.
 
 - Transparent signs / GTAO / shadows remain call-heavy; Safari unmeasured.
 
+---
+
+## Round 81 — static shadow-map freeze (2026-11-19)
+
+### Scope
+
+Remove redundant shadow-map rendering every frame.
+
+### What changed
+
+- `shadowMap.autoUpdate = false`; explicit `refreshShadows()` on level load/
+  unload/quality change.
+- All casters are static; birds/viewmodel do not cast.
+- Draw calls **448 → 352**, triangles **4.02M → 2.67M**; start 13/13; 60.1 fps.
+- 282 tests.
+
+### Evidence
+
+- [`stats.json`](evidence/performance/round-81/stats.json)
+- [`start.jpg`](evidence/performance/round-81/start.jpg)
+- [PERFORMANCE_BASELINE.md](PERFORMANCE_BASELINE.md)
+
+### Honest gaps
+
+- Any future dynamic shadow caster must call `refreshShadows()`; documented.
+- Safari still unmeasured.
+
 ## Round log
 
 | Round | Date | Focus | Outcome |

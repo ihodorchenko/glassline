@@ -49,6 +49,22 @@ castShadow). Same start pose:
 Modest call reduction without changing the shadow workload. Transparent signs
 and GTAO/shadow passes remain the dominant call sources.
 
+## Round 81 — static shadow-map freeze
+
+All shadow casters are static (level geometry/props/billboards; birds and the
+viewmodel do not cast). The shadow map is now rendered only on explicit
+level/quality changes (`shadowMap.autoUpdate = false`, `refreshShadows()` in
+level load/unload/quality).
+
+| Metric | Round 80 | Round 81 |
+|---|---:|---:|
+| Draw calls | 448 | **352** |
+| Triangles | 4.02M | **2.67M** |
+| Geometries | 54 | 54 |
+| FPS | 60.3 | 60.1 |
+
+Screenshot at start verifies the cached shadows are still present and aligned.
+
 ## Interpretation
 
 The visual pass (bevels, two-scale triplanar, parallax, puddles, 4K shadows)
