@@ -1316,17 +1316,17 @@ function addCatwalk(builder: CityBuilder): void {
   });
 
   // A close RUN billboard gives the turn a designed foreground landmark.
-  for (const z of [-131.2, -122.4]) {
+  for (const z of [-130.4, -123.2]) {
     builder.box(56.2, 7.4, z, 0.28, 4.4, 0.28, { material: "metal" });
   }
 
-  builder.box(56.2, 9.55, -126.8, 0.28, 0.28, 9.2, { material: "metal" });
-  builder.box(56.32, 8.35, -126.8, 0.28, 3.4, 9.4, { material: "white" });
-  builder.box(56.12, 8.35, -126.8, 0.04, 3.1, 8.9, { material: "orange" });
+  builder.box(56.2, 9.55, -126.8, 0.28, 0.28, 7.6, { material: "metal" });
+  builder.box(56.32, 8.35, -126.8, 0.28, 3.0, 7.8, { material: "white" });
+  builder.box(56.12, 8.35, -126.8, 0.04, 2.7, 7.4, { material: "orange" });
 
-  builder.plane(56.06, 8.35, -126.8, 8.7, 2.9, -Math.PI / 2, {
+  builder.plane(56.06, 8.35, -126.8, 7.0, 2.5, -Math.PI / 2, {
     text: "RUN",
-    background: 0xdd5d1b,
+    background: 0xf08a2a,
     textColor: 0xfff6ea,
     accentColor: 0x111418,
   });
@@ -1506,22 +1506,22 @@ function addHighRoofDressing(builder: CityBuilder): void {
   builder.box(-6.9, 5.78, -127.8, 2.6, 0.08, 1.6, { material: "glass" });
 
   // Helipad marking north of the gate, off the finish approach.
-  builder.cylinder(-4.2, 5.215, -123.6, 5.4, 0.02, {
+  builder.cylinder(-4.2, 5.215, -123.6, 4.4, 0.02, {
     material: "dark-metal",
     castShadow: false,
     receiveShadow: false,
   });
-  builder.box(-5.2, 5.23, -123.6, 0.35, 0.02, 2.4, {
+  builder.box(-5.0, 5.23, -123.6, 0.28, 0.02, 1.9, {
     material: "white",
     castShadow: false,
     receiveShadow: false,
   });
-  builder.box(-3.2, 5.23, -123.6, 0.35, 0.02, 2.4, {
+  builder.box(-3.4, 5.23, -123.6, 0.28, 0.02, 1.9, {
     material: "white",
     castShadow: false,
     receiveShadow: false,
   });
-  builder.box(-4.2, 5.23, -123.6, 2.0, 0.02, 0.35, {
+  builder.box(-4.2, 5.23, -123.6, 1.6, 0.02, 0.28, {
     material: "white",
     castShadow: false,
     receiveShadow: false,

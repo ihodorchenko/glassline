@@ -177,21 +177,107 @@ function trainingTower(
     },
   ];
   const inward = x < 0 ? width / 2 + 0.05 : -width / 2 - 0.05;
+  const rows = Math.max(4, Math.floor((top - 4) / 3.8));
+  const columns = Math.max(3, Math.floor(depth / 4.2));
 
-  for (let band = 0; band < 5; band += 1) {
+  for (let row = 0; row < rows; row += 1) {
+    const y = 4 + row * 3.8;
+
     decorations.push({
-      id: `${prefix}_band_${band}`,
+      id: `${prefix}_slab_${row}`,
       sectionId,
       shape: "box",
-      position: {
-        x: x + inward,
-        y: 5 + band * 4.2,
-        z,
-      },
-      size: { x: 0.08, y: 1.2, z: depth * 0.78 },
-      material: band === 3 ? "warm-light" : "cool-light",
-      emissive: band === 3 ? 0xffd9a5 : 0xbfe6ff,
-      emissiveIntensity: 0.18,
+      position: { x: x + inward, y, z },
+      size: { x: 0.24, y: 0.18, z: depth * 0.98 },
+      material: "concrete",
+      castShadow: false,
+    });
+
+    for (let column = 0; column < columns; column += 1) {
+      const zOffset = -depth / 2 + 2.4 + column * ((depth - 4.8) / Math.max(1, columns - 1));
+
+      decorations.push({
+        id: `${prefix}_window_${row}_${column}`,
+        sectionId,
+        shape: "box",
+        position: { x: x + inward - Math.sign(x) * 0.02, y: y + 1.5, z: z + zOffset },
+        size: { x: 0.06, y: 1.7, z: 2.2 },
+        material:
+          (row + column) % 5 === 0
+            ? "warm-light"
+            : (row + column) % 3 === 0
+              ? "glass"
+              : "cool-light",
+        emissive: (row + column) % 5 === 0 ? 0xffd9a5 : 0xbfe6ff,
+        emissiveIntensity: 0.1,
+        castShadow: false,
+      });
+    }
+  }
+
+  for (let column = 0; column <= columns; column += 1) {
+    const zOffset = -depth / 2 + 2.4 + column * ((depth - 4.8) / Math.max(1, columns));
+
+    decorations.push({
+      id: `${prefix}_mullion_${column}`,
+      sectionId,
+      shape: "box",
+      position: { x: x + inward + 0.02, y: top / 2, z: z + zOffset },
+      size: { x: 0.12, y: top - 2, z: 0.18 },
+      material: "metal",
+      castShadow: false,
+    });
+  }
+
+  // South-facing facade for towers seen from the Training start.
+  const southZ = z + depth / 2 + 0.05;
+  const southColumns = Math.max(3, Math.floor(width / 4.2));
+
+  for (let row = 0; row < rows; row += 1) {
+    const y = 4 + row * 3.8;
+
+    decorations.push({
+      id: `${prefix}_south_slab_${row}`,
+      sectionId,
+      shape: "box",
+      position: { x, y, z: southZ },
+      size: { x: width * 0.98, y: 0.18, z: 0.24 },
+      material: "concrete",
+      castShadow: false,
+    });
+
+    for (let column = 0; column < southColumns; column += 1) {
+      const xOffset = -width / 2 + 2.4 + column * ((width - 4.8) / Math.max(1, southColumns - 1));
+
+      decorations.push({
+        id: `${prefix}_south_window_${row}_${column}`,
+        sectionId,
+        shape: "box",
+        position: { x: x + xOffset, y: y + 1.5, z: southZ - 0.02 },
+        size: { x: 2.2, y: 1.7, z: 0.06 },
+        material:
+          (row + column) % 5 === 0
+            ? "warm-light"
+            : (row + column) % 3 === 0
+              ? "glass"
+              : "cool-light",
+        emissive: (row + column) % 5 === 0 ? 0xffd9a5 : 0xbfe6ff,
+        emissiveIntensity: 0.1,
+        castShadow: false,
+      });
+    }
+  }
+
+  for (let column = 0; column <= southColumns; column += 1) {
+    const xOffset = -width / 2 + 2.4 + column * ((width - 4.8) / Math.max(1, southColumns));
+
+    decorations.push({
+      id: `${prefix}_south_mullion_${column}`,
+      sectionId,
+      shape: "box",
+      position: { x: x + xOffset, y: top / 2, z: southZ + 0.02 },
+      size: { x: 0.18, y: top - 2, z: 0.12 },
+      material: "metal",
       castShadow: false,
     });
   }

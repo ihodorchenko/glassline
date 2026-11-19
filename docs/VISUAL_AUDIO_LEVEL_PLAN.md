@@ -24,7 +24,8 @@
 > a live ground-vs-high analyser probe; Round 17 adds rooftop amenity planting;
 > Round 18 adds an overhead canyon bridge; Round 19 rebalances atmosphere/grade
 > and reaches 13/13 start-frame reference metrics; Round 20 restyles the Training
-> yard parapets/city/signage. The plan's anti-hack rule is honored: the
+> yard parapets/city/signage; Round 21 adds authored Training facade grids and
+> balances the Prologue billboard/helipad. The plan's anti-hack rule is honored: the
 > hard highlight clip was replaced by a gentler shoulder; the remaining
 > near-white/highlight gap is assigned to real lighting and content.
 

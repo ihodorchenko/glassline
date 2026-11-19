@@ -1501,6 +1501,62 @@ collision.
 3. Balance the Prologue billboard/helipad and bypass risk/time.
 4. Human listening and final menu/motion calibration.
 
+---
+
+## Round 21 — authored Training facades + Prologue accent balance (2026-11-19)
+
+### Scope
+
+Round 20 gave Training a light parapet/city shell, but the near towers were still
+flat boxes with only striped light bands, and the turn billboard/helipad were
+oversized. This round adds real facade grids and balances the Prologue accents.
+
+### What changed
+
+- **Training facades:** `trainingTower` now generates inward- and south-facing
+  floor slabs, window grids, and vertical mullions for each tower; five towers
+  (glass/facade/glass-far) get hundreds of instanced window/slab elements, with
+  occasional warm windows and a roof mechanical unit. The start view now has a
+  detailed central tower instead of a blank blue face.
+- **Training signage:** `TRAVERSAL`/`FINISH` board labels from Round 20 remain;
+  `MOVEMENT YARD` moved to the east wall (still outside the initial frustum).
+- **Turn billboard:** reduced from 8.7 × 2.9 m to 7.0 × 2.5 m, lighter orange
+  (`0xf08a2a`), narrower frame; it now reads as a landmark rather than blocking
+  the catwalk.
+- **Helipad:** reduced from 5.4 m to 4.4 m with shorter H bars.
+- **No route/gameplay/audio changes.**
+
+### Verification
+
+- `npm run validate`: typecheck, Biome, **275 tests in 36 files**, build.
+- Prologue start frame remains **13/13** metrics.
+- Performance **60.2 fps**; Training/Prologue integration tests unchanged.
+- Captures: authored Training facades, balanced billboard, helipad/high roof.
+
+### Evidence
+
+| View | Image |
+|---|---|
+| Training with authored facades | ![Training](evidence/visual/round-21/training.jpg) |
+| Balanced turn billboard | ![Billboard](evidence/visual/round-21/billboard.jpg) |
+| High roof/helipad | ![High](evidence/visual/round-21/high.jpg) |
+| Start regression | ![Start](evidence/visual/round-21/start.jpg) |
+
+### Honest gaps
+
+- Training windows are emissive boxes, not authored glass/reflection; some read
+  as bright white panels.
+- Training has no reference metric suite; parity is still visual.
+- `MOVEMENT YARD` sign is not readable from the initial camera.
+- Human listening, final motion/menu, and clipped-highlight recovery remain open.
+
+### Next
+
+1. Train window materials/reflection and reduce emissive noise.
+2. Bring the Movement Yard sign into the start view and add courtyard depth.
+3. Human listening and final camera/menu calibration.
+4. Continue Prologue highlight recovery without losing 13/13.
+
 ## Round log
 
 | Round | Date | Focus | Outcome |
