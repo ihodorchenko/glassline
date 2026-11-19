@@ -2506,6 +2506,49 @@ the reference. Raising it opens the canyon; the old swinging hoist was retired.
 2. Human audio/video review.
 3. Final menu/highlight calibration.
 
+---
+
+## Round 42 — authored bridge banners (2026-11-19)
+
+### Scope
+
+Round 41's red maintenance blocks were coarse. This round replaces them with
+hanging canvas signs that still carry the warm accent.
+
+### What changed
+
+- Two 1.55×2.15 m signs under the raised bridge: `GLASSLINE` (left) and `RUNNER`
+  (right), white on red with dark accent; metal hanger blocks at the top.
+- Red underside strip retained; bridge geometry/route unchanged.
+- No collision/audio changes.
+
+### Verification
+
+- `npm run validate`: typecheck, Biome, **279 tests in 37 files**, build.
+- Start **13/13**: sky 39.8%, deep-shadow 1.72%, red 3.28, split −16.69, luma
+  0.608.
+- Performance **60.1 fps**.
+
+### Evidence
+
+| View | Image |
+|---|---|
+| Authored bridge banners | ![Start](evidence/visual/round-42/start.jpg) |
+| Metrics | [`metrics.json`](evidence/visual/round-42/metrics.json) |
+
+### Honest gaps
+
+- The banners are large and dominate the top edge; the bridge is still a simple
+  slab with thin ribs.
+- Red share is now close to its +2.5 tolerance (delta 0.885).
+- Human listening, clipped highlights, and final motion/menu remain.
+
+### Next
+
+1. Reduce banner scale or move them to the span edges.
+2. Human audio/video review.
+3. Final highlight/menu calibration.
+
 ## Round log
 
 | Round | Date | Focus | Outcome |

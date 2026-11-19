@@ -58,7 +58,7 @@ vertical).
 
 ![Final scaffold ascent](docs/evidence/visual/round-6/ascent.jpg)
 
-![Start roof with reference atmosphere](docs/evidence/visual/round-41/start.jpg)
+![Start roof with reference atmosphere](docs/evidence/visual/round-42/start.jpg)
 
 The shell uses a paper-and-ink editorial language: ivory panels, black uppercase
 type, hard red rules, a minimal HUD, and canvas-rendered `RUN` / section /

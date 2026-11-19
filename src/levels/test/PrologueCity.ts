@@ -973,16 +973,19 @@ function addOverheadBridge(builder: CityBuilder): void {
     builder.box(0, 10.36, z, 27, 0.22, 0.22, { material: "metal" });
   }
 
-  // A hanging red maintenance banner keeps a warm accent under the raised span.
-  for (const x of [-4.2, 4.2]) {
-    builder.box(x, 9.35, -5.6, 1.4, 2.2, 0.06, {
-      material: "red",
-      emissive: 0xc0262d,
-      emissiveIntensity: 0.18,
-      castShadow: false,
+  // Hanging red network banners keep the warm accent under the raised span.
+  for (const [x, text] of [
+    [-4.2, "GLASSLINE"],
+    [4.2, "RUNNER"],
+  ] as const) {
+    builder.plane(x, 9.35, -5.55, 1.55, 2.15, 0, {
+      text,
+      background: 0xb3212a,
+      textColor: 0xf8f2e8,
+      accentColor: 0x14191d,
     });
-    builder.box(x, 9.55, -5.65, 1.15, 0.18, 0.02, {
-      material: "white",
+    builder.box(x, 10.42, -5.58, 0.08, 0.12, 0.08, {
+      material: "metal",
       castShadow: false,
     });
   }
