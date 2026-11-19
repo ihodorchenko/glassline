@@ -371,7 +371,7 @@ function paintTexture(kind: TextureKind): HTMLCanvasElement {
       fillBase(context, "#ddd9cf");
       addMottle(context, random, 110, 0.09, "#fdfaf2", "#a8a49a", 120);
       addSpeckle(context, random, 7000, ["#fbf7ee", "#bdb8ad", "#8b877e"], 1.4);
-      drawSeams(context, 256, "#8b887f", 3, 0.34);
+      drawSeams(context, 96, "#7d7970", 1.4, 0.62);
       break;
     }
     case "facade": {

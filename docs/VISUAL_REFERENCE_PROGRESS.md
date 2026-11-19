@@ -2336,6 +2336,47 @@ it is actually a different choice rather than a strictly worse route.
 2. Human audio/video review.
 3. Highlight/motion calibration.
 
+---
+
+## Round 38 — roof panel seams (2026-11-19)
+
+### Scope
+
+The roof texture had seams but they were effectively invisible at the start
+exposure. This round makes the panel grid readable without darkening the deck.
+
+### What changed
+
+- Roof texture seams: 256 px spacing / 3 px / 0.34 alpha → **96 px / 1.4 px /
+  0.62 alpha**; base/mottle/speckle unchanged.
+- No geometry/route/audio changes.
+
+### Verification
+
+- `npm run validate`: typecheck, Biome, **278 tests in 37 files**, build.
+- Start **13/13**: luma 0.600, p25 0.353, near-white 19.9%, deep-shadow 3.27%,
+  edge 0.0267, local contrast 0.268.
+- Performance **60.2 fps**.
+
+### Evidence
+
+| View | Image |
+|---|---|
+| Roof seam grid | ![Start](evidence/visual/round-38/start.jpg) |
+| Metrics | [`metrics.json`](evidence/visual/round-38/metrics.json) |
+
+### Honest gaps
+
+- Seams are uniform procedural lines, not authored panel joints/wear; the roof
+  is still far from photographic concrete.
+- Human listening, clipped highlights, and final motion/menu remain.
+
+### Next
+
+1. Break seam uniformity with panel-level color/wear variation.
+2. Human audio/video review.
+3. Motion/menu calibration.
+
 ## Round log
 
 | Round | Date | Focus | Outcome |
