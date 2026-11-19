@@ -1,0 +1,20 @@
+{
+  "profile": "physics-simulation",
+  "sampleRate": 60,
+  "start": { "x": 50, "y": 6.1, "z": -130.8 },
+  "finishX": 25,
+  "direct": {
+    "frames": 378,
+    "seconds": 6.3,
+    "jumps": 2,
+    "barriers": [39, 34]
+  },
+  "bypass": {
+    "frames": 405,
+    "seconds": 6.75,
+    "jumps": 1,
+    "dropAndClimb": true
+  },
+  "deltaSeconds": 0.45,
+  "note": "Deterministic PlayerSystem/PhysicsWorld simulation; direct is ~0.45 s faster, bypass trades time for one fewer timed jump."
+}

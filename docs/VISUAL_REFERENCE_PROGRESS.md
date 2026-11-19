@@ -2291,6 +2291,51 @@ return catwalk.
 2. Human review of video/audio.
 3. Highlight/motion calibration.
 
+---
+
+## Round 37 — timed direct vs bypass (2026-11-19)
+
+### Scope
+
+Round 35/36 made the bypass a legible alternative; this round measures whether
+it is actually a different choice rather than a strictly worse route.
+
+### What changed
+
+- New deterministic physics test `tests/unit/bypass-benchmark.test.ts`:
+  - direct two-jump line: **378 frames / 6.30 s**;
+  - lower bypass: **405 frames / 6.75 s**;
+  - bypass is ~0.45 s slower but uses one timed jump instead of two.
+- Test guards absolute windows and the relative gap, so future tuning cannot
+  silently erase the tradeoff.
+- No game/route/visual/audio changes.
+
+### Verification
+
+- `npm run validate`: typecheck, Biome, **278 tests in 37 files**, build.
+- Direct/bypass simulation runs at a fixed 60 Hz; start metrics 13/13 unaffected.
+- Performance **60.1 fps**.
+
+### Evidence
+
+- [`lines.json`](evidence/design/round-37/lines.json)
+- [`README.md`](evidence/design/round-37/README.md)
+- Test: [`bypass-benchmark.test.ts`](tests/unit/bypass-benchmark.test.ts)
+
+### Honest gaps
+
+- The simulation uses scripted jumps/waypoints, not a human; line choice may feel
+  different in play.
+- 0.45 s is small and depends on jump timing; bypass is a safety/precision
+  tradeoff, not a clear speed win.
+- Human listening, clipped highlights, and final motion/menu remain.
+
+### Next
+
+1. Human playtest of the line choice.
+2. Human audio/video review.
+3. Highlight/motion calibration.
+
 ## Round log
 
 | Round | Date | Focus | Outcome |
