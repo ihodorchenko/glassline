@@ -1968,6 +1968,55 @@ judged and compared.
 3. Balance high-route loudness/wind against the prologue mix if needed.
 4. Final visual/motion calibration.
 
+---
+
+## Round 30 — cinematic route capture (2026-11-19)
+
+### Scope
+
+Screenshots and audio clips existed separately; this round captures a continuous
+camera overview of the authored route with live engine audio.
+
+### What changed
+
+- **Tool:** `tools/capture/route-video.mjs` captures CDP screencast frames plus a
+  post-limiter WAV tap, then muxes with ffmpeg. `--cinematic` hides HUD/arms and
+  follows a two-shot authored camera path; input-driven mode is experimental.
+- **Video:** 17.5 s, 1280×720/30 fps H.264 + AAC, 8 MB. Shot A: start roof →
+  lower roof → stairs → skybridge → finish beam. Shot B: high catwalk turn →
+  finish approach.
+- **Audio:** live wind/music bed, peak −9.85 dBFS / LUFS ≈ −24.85 after +8 dB
+  review gain (raw −17.85/−32.85); no footsteps because the camera is authored.
+- **No game/mix/route changes.**
+
+### Verification
+
+- `npm run validate`: typecheck, Biome, **275 tests in 36 files**, build.
+- Video/audio probe valid; no browser errors; ffprobe 17.5 s/30 fps.
+- `npm run check` clean for the new tool.
+
+### Evidence
+
+- [`cinematic-route.mp4`](evidence/video/round-30/cinematic-route.mp4)
+- [`cinematic-route.wav`](evidence/video/round-30/cinematic-route.wav)
+- [`poster.jpg`](evidence/video/round-30/poster.jpg)
+- [`README.md`](evidence/video/round-30/README.md)
+
+### Honest gaps
+
+- The video is a **cinematic camera path**, not continuous player traversal; it
+  cuts from the finish beam to the catwalk turn.
+- Audio has no footsteps/landings, and the +8 dB review gain is not the game mix.
+- The tool's input-driven gameplay mode can stall at the slide tunnel.
+- Human listening, bypass tradeoff, clipped highlights, and final motion/menu
+  calibration remain.
+
+### Next
+
+1. Record a continuous player traversal (fix slide/tunnel automation).
+2. Human review of the cinematic/audio.
+3. Continue visual/motion parity.
+
 ## Round log
 
 | Round | Date | Focus | Outcome |

@@ -1,0 +1,21 @@
+{
+  "video": {
+    "durationSeconds": 17.5,
+    "width": 1280,
+    "height": 720,
+    "fps": 30,
+    "videoCodec": "h264",
+    "audioCodec": "aac",
+    "approximateBytes": 8059000
+  },
+  "audio": {
+    "sampleRate": 44100,
+    "channels": 2,
+    "reviewGainDb": 8,
+    "peakDb": -9.852,
+    "lufs": -24.85,
+    "lowShare": 0.893,
+    "highShare": 0.099
+  },
+  "note": "Cinematic camera path; ambient wind/music only, no synthetic footsteps."
+}

@@ -1,0 +1,60 @@
+{
+  "wav": "docs/evidence/video/round-30/cinematic-route.wav",
+  "values": {
+    "durationSeconds": 17.5,
+    "sampleRate": 44100,
+    "peak": 0.3216552734375,
+    "peak_db": -9.852186481663804,
+    "rms": 0.06433486268616126,
+    "rms_db": -23.8310724329115,
+    "short_term_range": 2.2223057592782247,
+    "lufs": -24.849878159537123,
+    "low_share": 0.8926320598591773,
+    "mid_share": 0.007968842222255058,
+    "high_share": 0.09939909791856798
+  },
+  "targets": [
+    {
+      "metric": "low_share",
+      "label": "Energy < 500 Hz",
+      "value": 0.8926320598591773,
+      "min": 0.85,
+      "max": 0.94,
+      "pass": true
+    },
+    {
+      "metric": "high_share",
+      "label": "Energy > 2 kHz",
+      "value": 0.09939909791856798,
+      "min": 0.03,
+      "max": 0.08,
+      "pass": false
+    },
+    {
+      "metric": "lufs",
+      "label": "Integrated loudness (approx K-weighted)",
+      "value": -24.849878159537123,
+      "min": -31.0,
+      "max": -26.0,
+      "pass": false
+    },
+    {
+      "metric": "peak_db",
+      "label": "Sample peak",
+      "value": -9.852186481663804,
+      "min": -60.0,
+      "max": -3.0,
+      "pass": true
+    },
+    {
+      "metric": "short_term_range",
+      "label": "Short-term range",
+      "value": 2.2223057592782247,
+      "min": 18.0,
+      "max": 26.0,
+      "pass": false
+    }
+  ],
+  "passed": 2,
+  "total": 5
+}
