@@ -3768,6 +3768,29 @@ Make the current build reviewable in one pass.
 
 - Automated run, not human speedrun; human visual/audio verdict still pending.
 
+---
+
+## Round 92 — red ascent handrails (2026-11-19)
+
+### Scope
+
+Bring the reference's red rail language into the final ascent.
+
+### What changed
+
+- Eight scaffold platforms: red handrail + two corner posts per side.
+- Visual only; colliders/route untouched.
+- Start **13/13**, clean in-page run **0 respawns**, 282 tests.
+
+### Evidence
+
+- [`ascent-rails.jpg`](evidence/visual/round-92/ascent-rails.jpg)
+- [`start.jpg`](evidence/visual/round-92/start.jpg)
+
+### Honest gaps
+
+- Rail line is thin at distance; low-poly construction remains.
+
 ## Round log
 
 | Round | Date | Focus | Outcome |

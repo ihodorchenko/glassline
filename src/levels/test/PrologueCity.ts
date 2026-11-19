@@ -1325,7 +1325,13 @@ function addFinaleScaffold(builder: CityBuilder): void {
 
     for (const side of [-1, 1]) {
       builder.box(side * 2.6, top, start - 1.8, 0.18, 0.18, 3.8, { material: "metal" });
-      builder.box(side * 1.85, top + 0.55, start - 1.8, 0.06, 0.06, 3.4, { material: "metal" });
+      builder.box(side * 1.85, top + 0.55, start - 1.8, 0.06, 0.06, 3.4, { material: "red" });
+
+      for (const postZ of [start - 0.35, start - 3.25]) {
+        builder.box(side * 1.85, top + 0.275, postZ, 0.06, 0.55, 0.06, {
+          material: "red",
+        });
+      }
     }
 
     builder.box(0, top + 0.015, start - 0.15, 3.4, 0.02, 0.12, {

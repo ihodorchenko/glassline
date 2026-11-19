@@ -104,6 +104,8 @@ Only `Verified` means that the applicable acceptance criteria have been checked 
 
 **Full run:** clean spawn → FINISH is now reproducible with the in-page autopilot — **4 consecutive runs, 0 respawns, 21.8–23.1 s** (Round 89). CDP-polled runs remain stochastic. Automated, not a human record.
 
+**Route language:** red handrails on the final scaffold ascent.
+
 **Geometry:** beveled static boxes and instanced props (visual only, colliders unchanged). Static boxes merged per material, decoration batches merged, and the static shadow map is cached; calls **1040 → 352**, triangles **4.02M → 2.67M**, geometries **111 → 54** ([PERFORMANCE_BASELINE.md](PERFORMANCE_BASELINE.md)).
 
 **Maintenance:** light membrane repair patches on the roof.
