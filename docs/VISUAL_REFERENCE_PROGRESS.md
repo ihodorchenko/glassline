@@ -3390,6 +3390,29 @@ Carry the static bevel treatment into instanced props.
 
 - Bevel is scale-dependent on instanced props; thin rails get little visible change.
 
+---
+
+## Round 74 — shallow rain puddles (2026-11-19)
+
+### Scope
+
+Add dampness/reflection variation to the dry white roof.
+
+### What changed
+
+- Transparent water material (roughness 0.05, envMap 1.5, opacity 0.3).
+- Five shallow puddles with radial alphaMap soft edges.
+- Start **13/13**, 60.1 fps, 280 tests.
+
+### Evidence
+
+- [`puddles.jpg`](evidence/visual/round-74/puddles.jpg)
+- [`start.jpg`](evidence/visual/round-74/start.jpg)
+
+### Honest gaps
+
+- Puddles are subtle and circular; not a full wet-surface simulation.
+
 ## Round log
 
 | Round | Date | Focus | Outcome |

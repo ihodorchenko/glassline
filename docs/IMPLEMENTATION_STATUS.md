@@ -106,6 +106,8 @@ Only `Verified` means that the applicable acceptance criteria have been checked 
 
 **Geometry:** beveled static boxes and instanced props (visual only, colliders unchanged).
 
+**Dampness:** shallow reflective puddles with soft alpha edges.
+
 **Materials/lighting:** two-scale triplanar bump/parallax + cracks/grime/rust/seam highlights, PCF-soft 4096 shadows, metal coping and expansion joints ([Rounds 61/66/67/68/69/70](VISUAL_REFERENCE_PROGRESS.md)); start remains 13/13.
 
 **Cross-browser:** Chromium passes; **real Safari 27.2 passes Training** (user-confirmed); Playwright WebKit hits a non-representative Rapier WASM trap; Firefox is environment-sandbox-blocked ([CROSS_BROWSER.md](CROSS_BROWSER.md)).

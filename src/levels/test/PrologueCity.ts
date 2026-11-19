@@ -150,6 +150,26 @@ function addEdgeRailings(builder: CityBuilder): void {
   builder.box(10.9, 1.12, 0, 0.07, 0.07, 41.4, { material: "metal" });
 }
 
+function addPuddles(builder: CityBuilder): void {
+  // Shallow rain puddles pick up the sky/parapet and break the dry white roof.
+  const puddles: readonly [number, number, number][] = [
+    [-5.2, 10.2, 2.6],
+    [-3.2, 3.2, 2.4],
+    [3.4, -4.4, 1.9],
+    [-7.4, -12.8, 1.35],
+    [8.6, 4.2, 2.1],
+    [-2.8, 18.4, 1.6],
+  ];
+
+  for (const [x, z, diameter] of puddles) {
+    builder.cylinder(x, 0.014, z, diameter, 0.008, {
+      material: "water",
+      castShadow: false,
+      receiveShadow: false,
+    });
+  }
+}
+
 function addSkylight(builder: CityBuilder): void {
   // Glass below the opening, with a visible frame grid.
   builder.box(7, -2.65, 5, 4.2, 0.08, 4.2, {
@@ -1795,6 +1815,7 @@ export function createPrologueCityDecorations(
   addParapetCoping(builder);
   addRoofExpansionJoints(builder);
   addEdgeRailings(builder);
+  addPuddles(builder);
   addSkylight(builder);
   addSolarArray(builder);
 

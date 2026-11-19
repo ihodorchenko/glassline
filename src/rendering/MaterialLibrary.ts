@@ -19,7 +19,8 @@ export type MaterialKey =
   | "cool-light"
   | "foliage"
   | "soil"
-  | "stain";
+  | "stain"
+  | "water";
 
 interface MaterialSpec {
   readonly color: number;
@@ -32,6 +33,7 @@ interface MaterialSpec {
   readonly envMapIntensity?: number;
   readonly transparent?: boolean;
   readonly depthWrite?: boolean;
+  readonly opacity?: number;
 }
 
 type TextureKind =
@@ -43,6 +45,35 @@ type TextureKind =
   | "asphalt"
   | "red"
   | "stain";
+
+function createWaterAlphaMap(): THREE.Texture {
+  const canvas = document.createElement("canvas");
+
+  canvas.width = 256;
+  canvas.height = 256;
+
+  const context = canvas.getContext("2d");
+
+  if (context) {
+    const gradient = context.createRadialGradient(128, 128, 8, 128, 128, 126);
+
+    gradient.addColorStop(0, "#ffffff");
+    gradient.addColorStop(0.58, "#d8d8d8");
+    gradient.addColorStop(0.86, "#4a4a4a");
+    gradient.addColorStop(1, "#000000");
+    context.fillStyle = gradient;
+    context.fillRect(0, 0, 256, 256);
+  }
+
+  const texture = new THREE.CanvasTexture(canvas);
+
+  texture.wrapS = THREE.ClampToEdgeWrapping;
+  texture.wrapT = THREE.ClampToEdgeWrapping;
+  texture.colorSpace = THREE.NoColorSpace;
+  texture.needsUpdate = true;
+
+  return texture;
+}
 
 const MATERIAL_SPECS: Record<MaterialKey, MaterialSpec> = {
   white: {
@@ -158,6 +189,16 @@ const MATERIAL_SPECS: Record<MaterialKey, MaterialSpec> = {
     texture: "stain",
     transparent: true,
     depthWrite: false,
+  },
+  water: {
+    color: 0x718793,
+    roughness: 0.05,
+    metalness: 0.32,
+    uvScale: 1,
+    transparent: true,
+    opacity: 0.3,
+    depthWrite: false,
+    envMapIntensity: 1.5,
   },
   soil: {
     color: 0x3a3028,
@@ -675,7 +716,16 @@ export class MaterialLibrary implements Disposable {
       envMapIntensity: spec.envMapIntensity ?? 0.5,
       transparent: spec.transparent ?? false,
       depthWrite: spec.depthWrite ?? true,
+      opacity: spec.opacity ?? 1,
     });
+
+    if (key === "water" && typeof document !== "undefined") {
+      const alphaMap = createWaterAlphaMap();
+
+      material.alphaMap = alphaMap;
+      material.alphaTest = 0.08;
+      this.textures.push(alphaMap);
+    }
 
     if (spec.emissive !== undefined) {
       material.emissive.setHex(spec.emissive);
