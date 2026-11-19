@@ -229,6 +229,33 @@ function trainingTower(
     });
   }
 
+  // Projecting balcony bands break the flat curtain wall and add depth.
+  for (let row = 2; row < rows; row += 3) {
+    const y = 4 + row * 3.8 + 0.9;
+    const side = Math.sign(x);
+
+    decorations.push(
+      {
+        id: `${prefix}_balcony_in_${row}`,
+        sectionId,
+        shape: "box",
+        position: { x: x + inward + side * 0.38, y, z },
+        size: { x: 0.76, y: 0.16, z: depth * 0.72 },
+        material: "concrete",
+        castShadow: true,
+      },
+      {
+        id: `${prefix}_balcony_in_rail_${row}`,
+        sectionId,
+        shape: "box",
+        position: { x: x + inward + side * 0.74, y: y + 0.5, z },
+        size: { x: 0.08, y: 0.9, z: depth * 0.7 },
+        material: "glass",
+        castShadow: false,
+      },
+    );
+  }
+
   // South-facing facade for towers seen from the Training start.
   const southZ = z + depth / 2 + 0.05;
   const southColumns = Math.max(3, Math.floor(width / 4.2));
@@ -280,6 +307,31 @@ function trainingTower(
       material: "metal",
       castShadow: false,
     });
+  }
+
+  for (let row = 2; row < rows; row += 3) {
+    const y = 4 + row * 3.8 + 0.9;
+
+    decorations.push(
+      {
+        id: `${prefix}_balcony_south_${row}`,
+        sectionId,
+        shape: "box",
+        position: { x, y, z: southZ + 0.38 },
+        size: { x: width * 0.7, y: 0.16, z: 0.76 },
+        material: "concrete",
+        castShadow: true,
+      },
+      {
+        id: `${prefix}_balcony_south_rail_${row}`,
+        sectionId,
+        shape: "box",
+        position: { x, y: y + 0.5, z: southZ + 0.74 },
+        size: { x: width * 0.68, y: 0.9, z: 0.08 },
+        material: "glass",
+        castShadow: false,
+      },
+    );
   }
 
   decorations.push({

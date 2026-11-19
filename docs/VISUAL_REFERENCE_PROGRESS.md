@@ -1611,6 +1611,55 @@ the `MOVEMENT YARD` name into the initial view.
 3. Human listening and final camera/menu calibration.
 4. Continue Prologue highlight recovery without losing 13/13.
 
+---
+
+## Round 23 — Training facade depth (2026-11-19)
+
+### Scope
+
+Round 22 made Training windows reflective but facades remained flat planes. This
+round adds projecting balcony bands and glass rails for depth and shadow.
+
+### What changed
+
+- **Balconies:** every third floor of each Training tower gets a concrete balcony
+  band projecting 0.76 m on the inward face and south face, with a glass rail
+  0.9 m high. Five towers × 2–4 bands × two faces add genuine facade depth and
+  cast-shadow breakup.
+- **Existing detail retained:** glass/glass-far windows, warm cells, mullions,
+  rooftop masts/beacons, red parapet coping, MOVEMENT YARD banner.
+- **No route/collision/audio changes.**
+
+### Verification
+
+- `npm run validate`: typecheck, Biome, **275 tests in 36 files**, build.
+- Prologue start remains **13/13** metrics.
+- Prologue performance **60.1 fps**; Training/Prologue integration tests green.
+- Captures: Training balcony facades, start regression.
+
+### Evidence
+
+| View | Image |
+|---|---|
+| Training with projecting balconies | ![Training](evidence/visual/round-23/training.jpg) |
+| Start regression | ![Start](evidence/visual/round-23/start.jpg) |
+| Metrics | [`metrics.json`](evidence/visual/round-23/metrics.json) |
+
+### Honest gaps
+
+- Balconies are simple slabs/rails, no doors, interiors, or furniture; close-up
+  still reads as geometry, not authored inhabited architecture.
+- Training has no reference metric suite; parity remains visual.
+- Human listening, clipped-highlight recovery, and final motion/menu calibration
+  remain open.
+
+### Next
+
+1. Add balcony doors/interior depth and vary bands per tower.
+2. Bring Training lane markings/yard identity closer to the reference course.
+3. Human listening and final camera/menu calibration.
+4. Prologue highlight recovery without losing 13/13.
+
 ## Round log
 
 | Round | Date | Focus | Outcome |
