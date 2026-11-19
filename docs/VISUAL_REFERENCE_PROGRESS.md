@@ -3068,6 +3068,27 @@ round re-renders and checks it.
 - High-route targets are custom, not human listening; short clips.
 - Human verdict remains.
 
+---
+
+## Round 59 — final report and freeze (2026-11-19)
+
+### Scope
+
+Prepare the round-60 decision with a single honest status document.
+
+### What changed
+
+- Added [`FINAL_REPORT.md`](FINAL_REPORT.md): achieved design/graphics/sound,
+  automated gates, unmet perceptual/cross-browser/full-run gaps, and options
+  A/B/C.
+- Final gate check: 279 tests, 13/13 start, prologue 5/5 + high-route 5/5,
+  **60.4 fps**, 0 broken links, manifest OK.
+- No game/visual/audio code changes.
+
+### Honest gaps
+
+- Human perception, full-level run, cross-browser/AT remain.
+
 ## Round log
 
 | Round | Date | Focus | Outcome |

@@ -13,6 +13,8 @@
 
 ## 0. Итоговая верификация
 
+Сводный статус и рекомендация: [`FINAL_REPORT.md`](FINAL_REPORT.md).
+
 Хэши ключевых файлов: [`evidence/MANIFEST.md`](evidence/MANIFEST.md).
 
 Сводный прогон: [`VERIFICATION.md`](VERIFICATION.md) — 279 тестов, 13/13 старта,
