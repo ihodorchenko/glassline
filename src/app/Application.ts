@@ -2115,7 +2115,7 @@ export class Application implements Disposable {
     }
 
     if (flow === "gameplay") {
-      return "WASD move · Space jump · Ctrl crouch/slide · Shift sprint · E vault/interact · Esc pause · R restart · Q abandon";
+      return "WASD move · Space jump · C crouch/slide · Shift sprint · E vault/interact · Esc pause · R restart · Q abandon";
     }
 
     if (flow === "paused") {

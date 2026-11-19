@@ -401,8 +401,8 @@ Running `npm run dev` boots to the Game Glassline main menu. Use the mouse, keyb
 - Initial courses: `Training — Movement Yard` (daylight movement yard) and `Prologue — Rooftop Run` (dusk rooftop route), with procedural city silhouettes, lit windows, route markings, gates, and rooftop props.
 - Long-term progress: Training exercise and Prologue completion, deterministic content unlocks and milestones, achievements, tutorial steps, and statistics persist through the Save System and survive reload. Achievement unlocks show a toast and audio cue.
 - During gameplay: click the canvas to capture the mouse (pointer lock); the first click or key press resumes the Web Audio context.
-- `WASD` move, `Space` jump, `Ctrl` crouch, `Shift` sprint.
-- `Ctrl` while running starts a slide; sliding lets the player pass under low ceilings.
+- `WASD` move, `Space` jump, `C` crouch, `Shift` sprint.
+- `C` while running starts a slide; sliding lets the player pass under low ceilings.
 - `E` vaults over a valid low obstacle ahead, and activates contextual interactions when one is in range and in view.
 - Jumping while close to a wall at speed starts a wall run; `Space` again performs a wall jump.
 - Checkpoints activate automatically inside their trigger volumes; falling into the pit respawns the player at the active checkpoint (or the initial spawn).

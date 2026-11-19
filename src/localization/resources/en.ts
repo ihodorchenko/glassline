@@ -174,7 +174,7 @@ export const ENGLISH_RESOURCES: TranslationResources = {
   "tutorial.steps.jump.title": "Jump",
   "tutorial.steps.jump.hint": "Press Space to jump.",
   "tutorial.steps.slide.title": "Slide",
-  "tutorial.steps.slide.hint": "Press Ctrl while running to slide.",
+  "tutorial.steps.slide.hint": "Press C while running to slide.",
   "tutorial.steps.vault.title": "Vault",
   "tutorial.steps.vault.hint": "Press E near a low obstacle.",
   "tutorial.steps.wall_run.title": "Wall Run",

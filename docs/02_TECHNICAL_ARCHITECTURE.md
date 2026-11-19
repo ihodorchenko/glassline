@@ -995,7 +995,7 @@ Initial action mapping:
 | Move right | D |
 | Jump | Space |
 | Sprint | Shift |
-| Slide | Ctrl |
+| Slide | C |
 | Interact / Vault | E |
 | Pause | Escape |
 

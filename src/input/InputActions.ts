@@ -153,7 +153,7 @@ export const DEFAULT_KEYBOARD_BINDINGS: KeyboardBindings = {
   moveLeft: ["KeyA"],
   moveRight: ["KeyD"],
   jump: ["Space"],
-  crouch: ["ControlLeft", "ControlRight"],
+  crouch: ["KeyC"],
   sprint: ["ShiftLeft", "ShiftRight"],
   interact: ["KeyE"],
   restart: ["KeyR"],

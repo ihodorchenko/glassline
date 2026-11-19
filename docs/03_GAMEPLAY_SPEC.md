@@ -189,7 +189,7 @@ During sliding, the physical representation must become lower without allowing t
 | Look around | Mouse |
 | Jump | Space |
 | Sprint | Left Shift |
-| Slide | Left Ctrl |
+| Slide | C |
 | Interact / Context action | E |
 | Pause | Escape |
 

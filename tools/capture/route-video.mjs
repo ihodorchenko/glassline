@@ -701,9 +701,9 @@ async function main() {
         h.add("ShiftLeft");
         h.add("KeyW");
         if (${sliding} || (${z} < -2.4 && ${z} > -10.6)) {
-          h.add("ControlLeft");
+          h.add("KeyC");
         } else {
-          h.delete("ControlLeft");
+          h.delete("KeyC");
         }
         return true;
       })()`);
@@ -715,10 +715,10 @@ async function main() {
 
       if (args.slide && !sliding && z < -2.4 && z > -5.7 && state?.grounded !== false) {
         sliding = true;
-        await session.evaluate("window.__glassline.input.heldKeys.add('ControlLeft'); true");
+        await session.evaluate("window.__glassline.input.heldKeys.add('KeyC'); true");
       } else if (sliding && z < -10.2) {
         sliding = false;
-        await session.evaluate("window.__glassline.input.heldKeys.delete('ControlLeft'); true");
+        await session.evaluate("window.__glassline.input.heldKeys.delete('KeyC'); true");
       }
 
       if (!gapJumped && z < -28) {
@@ -740,7 +740,7 @@ async function main() {
     }
 
     if (sliding) {
-      await session.evaluate("window.__glassline.input.heldKeys.delete('ControlLeft'); true");
+      await session.evaluate("window.__glassline.input.heldKeys.delete('KeyC'); true");
     }
 
     await sendKey(session, "keyUp", "KeyW", "w", 87);
