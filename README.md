@@ -4,7 +4,7 @@
 
 [Пакет для решения по референсу](docs/REFERENCE_REVIEW.md) — контактный лист, нормализованное видео, метрики и варианты приёмки.
 [Итоговая верификация](docs/VERIFICATION.md) — тесты, 13/13 старта, 5/5 звука, 60 fps.
-[Кросс-браузерный аудит](docs/CROSS_BROWSER.md) — Chromium PASS, WebKit gameplay FAIL (Rapier WASM).
+[Кросс-браузерный аудит](docs/CROSS_BROWSER.md) — Chromium PASS, реальный Safari 27.2 Training PASS; Playwright WebKit — false positive.
 [Финальный отчёт](docs/FINAL_REPORT.md) — что достигнуто и что осталось.
 [Решение на раунде 60](docs/DECISION_AT_60.md) — статус и варианты A/B/C.
 [Нормализованный реальный финиш/результаты](docs/evidence/review/finish-results-run-review.mp4) — физический забег по catwalk.

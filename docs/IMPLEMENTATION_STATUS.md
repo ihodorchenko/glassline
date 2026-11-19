@@ -106,7 +106,7 @@ Only `Verified` means that the applicable acceptance criteria have been checked 
 
 **Materials:** triplanar procedural bump/normal relief across concrete/roof/metal/asphalt ([Round 61](VISUAL_REFERENCE_PROGRESS.md)); start remains 13/13.
 
-**Cross-browser:** Chromium passes; WebKit gameplay is blocked by a Rapier WASM collider trap; Firefox is blocked by the environment sandbox ([CROSS_BROWSER.md](CROSS_BROWSER.md)).
+**Cross-browser:** Chromium passes; **real Safari 27.2 passes Training** (user-confirmed); Playwright WebKit hits a non-representative Rapier WASM trap; Firefox is environment-sandbox-blocked ([CROSS_BROWSER.md](CROSS_BROWSER.md)).
 
 **Boot presentation:** styled inline paper/ink loader with staged progress + styled level-loading screen ([BOOT_LOADER.md](BOOT_LOADER.md)).
 

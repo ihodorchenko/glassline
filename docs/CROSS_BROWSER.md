@@ -1,19 +1,28 @@
 # Cross-browser audit — round 61
 
-Цель: проверить игру в Chromium, Firefox и WebKit/Safari. Ниже — фактический
-результат, без заявления о полной кросс-браузерности.
+Цель: проверить игру в Chromium, Firefox и Safari. Ниже — фактический результат,
+без заявления о полной кросс-браузерности.
+
+## ОБНОВЛЕНИЕ: реальный Safari (2026-11-19)
+
+Пользователь вручную открыл `http://127.0.0.1:4173/` в **Safari 27.2 на
+macOS 27.2.1**, выбрал Training — **игра не падает**. Значит, ошибка
+`rawcolliderset_createCollider` в Playwright WebKit — артефакт headless-сборки
+WebKit, а не отказ реального Safari. Код/зависимости из-за этого не менялись.
 
 ## Матрица
 
 | Движок | Загрузчик/меню | Gameplay | Статус |
 |---|---|---|---|
 | Chromium (Edge, production) | PASS | PASS | рабочий браузер |
-| WebKit 18.4 (Playwright/Safari engine) | PASS | **FAIL** | старт сессии падает в Rapier WASM |
+| **Safari 27.2 (реальный, вручную)** | PASS | **PASS (Training)** | пользователь подтвердил: не падает |
+| WebKit 18.4 (Playwright) | PASS | FAIL | **не представитель Safari**; см. ниже |
 | Firefox 135 (Playwright) | не проверено | не проверено | браузер не стартует под sandbox окружения |
 
-## WebKit: ошибка
+## Playwright WebKit: ложное срабатывание
 
-Меню и стилевой загрузчик рендерятся, но при старте Training/Prologue:
+В headless Playwright WebKit 18.4 меню и загрузчик рендерятся, но при старте
+Training/Prologue:
 
 ```
 RuntimeError: Out of bounds memory access
@@ -39,7 +48,11 @@ RuntimeError: Out of bounds memory access
 WASM. Это не ошибка уровня или геометрии: падение воспроизводится на
 минимальной странице без Three.js.
 
-## Почему не откатились на 0.15
+## Почему этот результат не относится к Safari
+
+Реальный Safari 27.2 Training запускает; следовательно, трап воспроизводится
+только в WebKit-сборке Playwright (её WASM/JS-окружение), а не в Safari.
+Откат на Rapier 0.15 не нужен.
 
 0.15 проходит создание коллайдеров, но меняет character-controller:
 
@@ -63,12 +76,14 @@ Can't find profile directory
 
 ## Следующие шаги
 
-1. Проверить реальный Safari (Remote Automation / ручной запуск) — возможно,
-   Playwright WebKit ведёт себя иначе.
-2. Искать upstream-фикс Rapier/WebKit или workaround для collider attachment.
-3. Если WebKit обязателен — оценить Rapier 0.15 + переработку slide/character
-   controller, с полным прогоном тестов и таймингов.
-4. Firefox: запуск вне sandbox или через реальный профиль.
+1. Проверить в Safari полный маршрут/управление/звук (Training уже PASS).
+2. Firefox: запуск вне sandbox или через реальный профиль.
+3. Playwright WebKit оставить только как известный false-positive, не как
+   блокер Safari.
+
+## Evidence
+
+- [`evidence/cross-browser/README.md`](evidence/cross-browser/README.md) — real Safari manual PASS.
 
 ## Воспроизведение
 
