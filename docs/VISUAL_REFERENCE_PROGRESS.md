@@ -2461,6 +2461,51 @@ camera or menu drift. This round makes the setting consistent and test-locked.
 1. Human camera/audio review.
 2. Final highlight/menu calibration.
 
+---
+
+## Round 41 — raised bridge and open canyon (2026-11-19)
+
+### Scope
+
+The overhead bridge at y=9 dominated the start frame and pushed sky area below
+the reference. Raising it opens the canyon; the old swinging hoist was retired.
+
+### What changed
+
+- Bridge deck/rails/ribs/supports raised 2 m (deck y=9→11, supports 9.2→10.4 m).
+- Swinging hoist removed from `CityLife` (at the higher span it read as a
+  floating red box); two red maintenance banners + red underside strip preserve
+  the warm accent and split-tone balance.
+- No route/collision/audio changes.
+
+### Verification
+
+- `npm run validate`: typecheck, Biome, **279 tests in 37 files**, build.
+- Start **13/13**: sky 39.7% (was 34.5, ref 43.3), deep-shadow 2.03% (was 3.30),
+  luma 0.604, near-white 20.7%, split −13.66.
+- Performance **60.3 fps**.
+
+### Evidence
+
+| View | Image |
+|---|---|
+| Open canyon/raised bridge | ![Start](evidence/visual/round-41/start.jpg) |
+| Metrics | [`metrics.json`](evidence/visual/round-41/metrics.json) |
+
+### Honest gaps
+
+- Banner boxes are a coarse craft solution; the bridge is now less dominant but
+  still a simple white slab.
+- Retiring the hoist removes a prior ambient-motion element; birds/menu drift
+  remain.
+- Human listening, clipped highlights, and final motion/menu remain.
+
+### Next
+
+1. Refine bridge/banner craft or add a slimmer span.
+2. Human audio/video review.
+3. Final menu/highlight calibration.
+
 ## Round log
 
 | Round | Date | Focus | Outcome |
