@@ -2549,6 +2549,32 @@ hanging canvas signs that still carry the warm accent.
 2. Human audio/video review.
 3. Final highlight/menu calibration.
 
+---
+
+## Round 43 — decision package + round-60 cap (2026-11-19)
+
+### Scope
+
+The remaining gap is perceptual acceptance; this round packages the evidence and
+sets a decision deadline instead of continuing open-ended polish.
+
+### What changed
+
+- Added [`docs/REFERENCE_REVIEW.md`](REFERENCE_REVIEW.md): automated gates,
+  10-minute human checklist, known gaps, and options A/B/C.
+- Goal cap set to **round 60** (at the user's request).
+- No game/visual/audio code changes.
+
+### Verification
+
+- `npm run validate`: 279 tests, build (documentation-only change).
+- Review package links resolve to existing evidence.
+
+### Honest gaps
+
+- Human listening/playtest still not done; the package cannot replace it.
+- If no decision is made, round 60 will record a technical-not-perceptual status.
+
 ## Round log
 
 | Round | Date | Focus | Outcome |
