@@ -293,6 +293,17 @@ describe("Prologue lower-route traversal", () => {
     expect(position.z).toBeGreaterThan(-132.4);
   });
 
+  it("keeps the slide tunnel passable when crouched but blocks standing", () => {
+    const ceiling = PROLOGUE_ARENA_BOXES.find((box) => box.id === "geo_tunnel_ceiling");
+
+    expect(ceiling).toBeDefined();
+
+    const clearance = (ceiling?.position.y ?? 0) - (ceiling?.size.y ?? 0) / 2;
+
+    expect(clearance).toBeGreaterThan(1.3);
+    expect(clearance).toBeLessThan(1.75);
+  });
+
   it("crosses the bridge and reaches the finish roof", async () => {
     const harness = await createHarness({ x: 0, y: 0.03, z: -43 });
 

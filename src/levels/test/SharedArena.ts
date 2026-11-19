@@ -116,7 +116,7 @@ export const ARENA_BOXES: readonly ArenaBox[] = [
   },
   {
     id: "geo_tunnel_ceiling",
-    position: { x: 0, y: 1.15, z: -7.6 },
+    position: { x: 0, y: 1.45, z: -7.6 },
     size: { x: 4, y: 0.2, z: 4 },
     surfaceId: "surface_tunnel",
     color: ARENA_COLORS.steel,

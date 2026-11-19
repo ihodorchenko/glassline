@@ -1,0 +1,60 @@
+{
+  "wav": "docs/evidence/video/round-31/gameplay-route.wav",
+  "values": {
+    "durationSeconds": 9.0,
+    "sampleRate": 44100,
+    "peak": 0.673309326171875,
+    "peak_db": -3.4357073994296976,
+    "rms": 0.08754119152867823,
+    "rms_db": -21.155750929461913,
+    "short_term_range": 0.12480217148417694,
+    "lufs": -22.191600223278677,
+    "low_share": 0.8100405160933725,
+    "mid_share": 0.16806340189669447,
+    "high_share": 0.02189608200993323
+  },
+  "targets": [
+    {
+      "metric": "low_share",
+      "label": "Energy < 500 Hz",
+      "value": 0.8100405160933725,
+      "min": 0.85,
+      "max": 0.94,
+      "pass": false
+    },
+    {
+      "metric": "high_share",
+      "label": "Energy > 2 kHz",
+      "value": 0.02189608200993323,
+      "min": 0.03,
+      "max": 0.08,
+      "pass": false
+    },
+    {
+      "metric": "lufs",
+      "label": "Integrated loudness (approx K-weighted)",
+      "value": -22.191600223278677,
+      "min": -31.0,
+      "max": -26.0,
+      "pass": false
+    },
+    {
+      "metric": "peak_db",
+      "label": "Sample peak",
+      "value": -3.4357073994296976,
+      "min": -60.0,
+      "max": -3.0,
+      "pass": true
+    },
+    {
+      "metric": "short_term_range",
+      "label": "Short-term range",
+      "value": 0.12480217148417694,
+      "min": 18.0,
+      "max": 26.0,
+      "pass": false
+    }
+  ],
+  "passed": 1,
+  "total": 5
+}

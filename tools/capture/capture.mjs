@@ -392,7 +392,7 @@ async function main() {
       ["ShiftLeft", "Shift", 16],
     ]) {
       await session.send("Input.dispatchKeyEvent", {
-        type: "rawKeyDown",
+        type: code === "ShiftLeft" ? "keyDown" : "rawKeyDown",
         code,
         key,
         windowsVirtualKeyCode: vk,

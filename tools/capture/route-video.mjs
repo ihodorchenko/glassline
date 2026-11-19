@@ -35,6 +35,7 @@ function parseArgs(argv) {
     launch: false,
     jumps: true,
     slide: true,
+    verbose: false,
     fps: 30,
     pos: [0, 0.93, 6],
     yaw: 0,
@@ -84,6 +85,9 @@ function parseArgs(argv) {
         break;
       case "--cinematic":
         args.cinematic = true;
+        break;
+      case "--verbose":
+        args.verbose = true;
         break;
       case "--pos":
         args.pos = value()
@@ -272,13 +276,14 @@ class CdpSession {
   }
 }
 
-async function sendKey(session, type, code, key, vk) {
+async function sendKey(session, type, code, key, vk, modifiers = 0) {
   await session.send("Input.dispatchKeyEvent", {
     type,
     code,
     key,
     windowsVirtualKeyCode: vk,
     nativeVirtualKeyCode: vk,
+    modifiers,
   });
 }
 
@@ -564,8 +569,9 @@ async function main() {
     await session.evaluate(CINEMATIC_SETUP);
     await delay(args.seconds * 1000);
   } else {
-    await sendKey(session, "rawKeyDown", "ShiftLeft", "Shift", 16);
-    await sendKey(session, "rawKeyDown", "KeyW", "w", 87);
+    await session.evaluate(
+      "window.__glassline.input.heldKeys.add('ShiftLeft'); window.__glassline.input.heldKeys.add('KeyW'); true",
+    );
 
     const started = Date.now();
     let vaultJumped = false;
@@ -583,21 +589,40 @@ async function main() {
     while (Date.now() - started < args.seconds * 1000) {
       const state = await session.evaluate(`(() => {
       const app = window.__glassline;
-      return { z: app.player.getPosition().z, speed: app.player.model.getSnapshot().speed };
+      return {
+        z: app.player.getPosition().z,
+        speed: app.player.model.getSnapshot().speed,
+        stance: app.player.model.getSnapshot().stance,
+        posture: app.player.postureHeight,
+        grounded: app.player.model.getSnapshot().grounded,
+        held: [...app.input.heldKeys],
+      };
     })()`);
       const z = state?.z ?? 6;
 
-      if (!vaultJumped && z < 2.6) {
+      await session.evaluate(`(() => {
+        const h = window.__glassline.input.heldKeys;
+        h.add("ShiftLeft");
+        h.add("KeyW");
+        if (${sliding} || (${z} < -2.4 && ${z} > -10.6)) {
+          h.add("ControlLeft");
+        } else {
+          h.delete("ControlLeft");
+        }
+        return true;
+      })()`);
+
+      if (!vaultJumped && z < 1.2) {
         vaultJumped = true;
         await jump();
       }
 
-      if (args.slide && !sliding && z < -3.0 && z > -5.7) {
+      if (args.slide && !sliding && z < -2.4 && z > -5.7 && state?.grounded !== false) {
         sliding = true;
-        await sendKey(session, "rawKeyDown", "ControlLeft", "Control", 17);
+        await session.evaluate("window.__glassline.input.heldKeys.add('ControlLeft'); true");
       } else if (sliding && z < -10.2) {
         sliding = false;
-        await sendKey(session, "keyUp", "ControlLeft", "Control", 17);
+        await session.evaluate("window.__glassline.input.heldKeys.delete('ControlLeft'); true");
       }
 
       if (!gapJumped && z < -28) {
@@ -605,19 +630,25 @@ async function main() {
         await jump();
       }
 
-      if (args.jumps && !sliding && Date.now() - lastJumpAt > 2600) {
+      if (args.jumps && !sliding && z < -12 && Date.now() - lastJumpAt > 2400) {
         await jump();
       }
 
-      await delay(110);
+      if (args.verbose) {
+        console.log(
+          `z=${z.toFixed(2)} speed=${(state?.speed ?? 0).toFixed(2)} stance=${state?.stance} posture=${state?.posture?.toFixed(2)} slide=${sliding} held=${(state?.held ?? []).join("+")}`,
+        );
+      }
+
+      await delay(60);
     }
 
     if (sliding) {
-      await sendKey(session, "keyUp", "ControlLeft", "Control", 17);
+      await session.evaluate("window.__glassline.input.heldKeys.delete('ControlLeft'); true");
     }
 
     await sendKey(session, "keyUp", "KeyW", "w", 87);
-    await sendKey(session, "keyUp", "ShiftLeft", "Shift", 16);
+    await sendKey(session, "keyUp", "ShiftLeft", "Shift", 16, 0);
     await delay(500);
   }
 

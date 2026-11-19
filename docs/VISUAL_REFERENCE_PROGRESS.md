@@ -2017,6 +2017,56 @@ camera overview of the authored route with live engine audio.
 2. Human review of the cinematic/audio.
 3. Continue visual/motion parity.
 
+---
+
+## Round 31 — slide-tunnel clearance + continuous gameplay clip (2026-11-19)
+
+### Scope
+
+The input-driven capture exposed a route-flow problem: the slide tunnel's 1.05 m
+clearance stopped the capsule at the entrance unless slide timing was exact. This
+round raises clearance, guards it with a test, and captures real gameplay.
+
+### What changed
+
+- **Tunnel fix:** Prologue and Training tunnel ceilings raised from y=1.15 to
+  y=1.45 (clearance 1.05 → 1.35 m). Crouch (1.15 m) and slide (0.9 m) pass;
+  standing (1.75 m) still blocks, preserving the slide/crouch lesson.
+- **Test:** new traversal unit test asserts 1.3 < clearance < 1.75 and blocks
+  regression.
+- **Autopilot:** `route-video` injects sprint/slide held keys, uses grounded
+  slide timing, and keeps W/Shift alive; it captured a 9 s real gameplay clip
+  from start through the tunnel to the construction stairs.
+- **Evidence:** 9 s 1280×720/30 fps H.264+AAC with live game audio (peak −3.44
+  dBFS, LUFS ≈ −22.19).
+- No start-frame metric change (13/13).
+
+### Verification
+
+- `npm run validate`: typecheck, Biome, **276 tests in 36 files**, build.
+- Prologue start **13/13**; performance **60.1 fps**.
+- Video/audio valid; no probe errors.
+
+### Evidence
+
+- [`gameplay-route.mp4`](evidence/video/round-31/gameplay-route.mp4)
+- [`gameplay-route.wav`](evidence/video/round-31/gameplay-route.wav)
+- [`poster.jpg`](evidence/video/round-31/poster.jpg)
+- [`README.md`](evidence/video/round-31/README.md)
+
+### Honest gaps
+
+- The clip is 9 s and stops before later route sections; the autopilot can still
+  stall on the lower-route obstacles.
+- Audio is real gameplay but loud (−22 LUFS); no human verdict.
+- Bypass tradeoff, clipped highlights, and final motion/menu calibration remain.
+
+### Next
+
+1. Teach the autopilot later obstacles and capture a full traversal.
+2. Human review of the gameplay clip/audio.
+3. Continue visual/motion parity.
+
 ## Round log
 
 | Round | Date | Focus | Outcome |
