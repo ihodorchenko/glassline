@@ -2,13 +2,13 @@
 
 [Стилевой загрузочный экран](docs/BOOT_LOADER.md) — бумага/чернила вместо серого фона.
 
-[Пакет для решения по референсу](docs/REFERENCE_REVIEW.md) — контактный лист, нормализованное видео, метрики и варианты приёмки.
-[Итоговая верификация](docs/VERIFICATION.md) — тесты, 13/13 старта, 5/5 звука, 60 fps.
-[Кросс-браузерный аудит](docs/CROSS_BROWSER.md) — Chromium PASS, реальный Safari 27.2 Training PASS; Playwright WebKit — false positive.
+[Пакет для решения по референсу](docs/REFERENCE_REVIEW.md) — контактный лист, нормализованное видео и варианты приёмки.
+[Итоговая верификация](docs/VERIFICATION.md) — 282 теста, 13/13 старта, 5/5 звука, 352 draw calls.
+[Кросс-браузерный аудит](docs/CROSS_BROWSER.md) — Chromium и Safari PASS (полный забег); Firefox environment-limited.
 [Финальный отчёт](docs/FINAL_REPORT.md) — что достигнуто и что осталось.
-[Решение на раунде 60](docs/DECISION_AT_60.md) — статус и варианты A/B/C.
-[Нормализованный реальный финиш/результаты](docs/evidence/review/finish-results-run-review.mp4) — физический забег по catwalk.
-[Чистый полный забег](docs/evidence/video/round-65/clean-full-run.mp4) — спавн → FINISH, 24,014 с, 0 респавнов.
+[Нормализованный полный забег](docs/evidence/review/full-run-review.mp4) — спавн → FINISH, 0 респавнов.
+[Воспроизводимость забега](docs/evidence/video/round-89/README.md) — 4×0 респавнов, 21,8–23,1 с.
+[Решение на раунде 60](docs/DECISION_AT_60.md) — исторические варианты A/B/C.
 
 **A first-person parkour game focused on movement, momentum, and mastery.**
 
