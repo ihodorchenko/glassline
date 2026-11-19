@@ -91,7 +91,16 @@ function parseArgs(argv) {
         args.slide = false;
         break;
       case "--jump-z":
-        args.jumpZ = (argv[++index] ?? "").split(",").map(Number).filter(Number.isFinite);
+        args.jumpZ = (argv[++index] ?? "")
+          .split(",")
+          .map((entry) => {
+            const [zPart, holdPart] = entry.split(":");
+            const z = Number(zPart);
+            const hold = holdPart ? Number(holdPart) : null;
+
+            return Number.isFinite(z) ? { z, hold } : null;
+          })
+          .filter(Boolean);
         break;
       case "--jump-hold":
         args.jumpHold = Math.max(40, Number(argv[++index] ?? 110) || 110);
@@ -146,7 +155,7 @@ function parseArgs(argv) {
             "  --mode <mode>      prologue | training | speedrun",
             "  --launch           Launch headless Edge",
             "  --no-jumps         Do not auto-jump",
-            "  --jump-z <list>    Jump once when crossing z thresholds (comma-separated)",
+            "  --jump-z <list>    Jump at z thresholds; optional hold ms: z[:hold],...",
             "  --jump-hold <ms>   Hold jump longer for full-height jumps (default 110)",
             "  --slide-range <a,b> Hold crouch/slide between z=a and z=b",
           ].join("\n"),
@@ -683,11 +692,16 @@ async function main() {
       }
 
       if (state.grounded) {
-        for (const targetZ of args.jumpZ) {
+        for (const jump of args.jumpZ) {
+          const targetZ = jump.z;
+          const hold = jump.hold ?? args.jumpHold;
+
           if (!jumpedZ.has(targetZ) && state.z <= targetZ + 0.45 && state.z >= targetZ - 2.2) {
             jumpedZ.add(targetZ);
+            await session.evaluate("window.__glassline.input.heldKeys.delete('Space'); true");
+            await delay(40);
             await session.evaluate("window.__glassline.input.heldKeys.add('Space'); true");
-            await delay(args.jumpHold);
+            await delay(hold);
             await session.evaluate("window.__glassline.input.heldKeys.delete('Space'); true");
             break;
           }
@@ -698,6 +712,8 @@ async function main() {
         for (const x of args.jumpX) {
           if (!jumped.has(x) && Math.abs(state.x - x) < 1.15) {
             jumped.add(x);
+            await session.evaluate("window.__glassline.input.heldKeys.delete('Space'); true");
+            await delay(40);
             await session.evaluate("window.__glassline.input.heldKeys.add('Space'); true");
             await delay(args.jumpHold);
             await session.evaluate("window.__glassline.input.heldKeys.delete('Space'); true");

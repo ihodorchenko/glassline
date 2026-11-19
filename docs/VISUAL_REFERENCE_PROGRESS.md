@@ -3171,6 +3171,35 @@ Priority «полный забег»: record the whole Prologue from the initial
   clean no-respawn run is still pending (`--jump-hold` added for tuning).
 - WebKit gameplay remains blocked by Rapier WASM.
 
+---
+
+## Round 64 — clean-run tuning (2026-11-19)
+
+### Scope
+
+Reduce checkpoint respawns in the spawn-to-finish autopilot.
+
+### What changed
+
+- `--jump-z` now accepts per-jump hold times: `z:hold,...`.
+- Each jump explicitly releases Space for 40 ms before pressing, guaranteeing a
+  pressed edge.
+- Respawn counter remains in the JSON summary.
+
+### Result
+
+- Best tuned completion: **25.449 s with 1 checkpoint respawn** (down from 7).
+- Finish-deck/beam jump now uses a 300 ms hold; platforms use 300 ms, early
+  vault/gap jumps keep 110 ms.
+- A deterministic **0-respawn** run is still flaky: jump-edge/checkpoint timing
+  occasionally leaves the player at the vault or a platform edge.
+- No game/level/audio changes; 280 tests.
+
+### Honest gaps
+
+- Clean no-respawn run not yet captured; current best is 1 respawn.
+- WebKit Playwright remains false-positive only; real Safari Training passes.
+
 ## Round log
 
 | Round | Date | Focus | Outcome |

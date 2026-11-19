@@ -23,7 +23,7 @@ Initial spawn `(0, 0.93, 6)`, no `--unlock`, no end teleport.
 
 Result: `Time 00:32.739` (Prologue). Video ends on the gate; results are captured separately.
 
-**Caveat:** this is an automated waypoint/held-key run. It is physical (no unlock/teleport), but it is not a human-verified or speedrun-valid record. Instrumented reruns counted **7 checkpoint respawns** with the default 110 ms jump hold; the video is a completion, not yet a clean no-respawn run. A `--jump-hold` option is now available for tuning full-height jumps.
+**Caveat:** this is an automated waypoint/held-key run. It is physical (no unlock/teleport), but it is not a human-verified or speedrun-valid record. Instrumented reruns counted **7 checkpoint respawns** with the default 110 ms jump hold; the video is a completion, not yet a clean no-respawn run. Later tuning with per-jump holds/edge resets reached **25.449 s with 1 respawn**; a 0-respawn run is still flaky.
 
 ## Tooling added
 
