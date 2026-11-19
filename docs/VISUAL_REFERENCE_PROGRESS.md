@@ -2788,6 +2788,41 @@ captures the FINISH gate/terminal sequence.
 - Results screen is **not** captured; clip ends on the FINISH banner/achievement.
 - Live audio is loud; human verdict pending.
 
+---
+
+## Round 50 — results screen capture (2026-11-19)
+
+### Scope
+
+Rounds 48/49 reached the finish terminal but not the results screen. This round
+captures and verifies the results flow.
+
+### What changed
+
+- Activated finish sections, teleported into `trigger_finish`, captured the
+  Results screen.
+- UI evidence: `Mode: Prologue`, `Time: 00:26.027`, RETRY/MAIN MENU over the
+  start bridge.
+- **No game/visual/audio changes.** Completion was synthetic; the time is session
+  duration, not a valid run.
+
+### Verification
+
+- `npm run validate`: **279 tests in 37 files**, build.
+- Flow reached `results`; `lastResults` exists.
+- Start 13/13 unchanged.
+
+### Evidence
+
+| View | Image |
+|---|---|
+| Results screen | ![Results](evidence/visual/round-50/results.jpg) |
+
+### Honest gaps
+
+- Synthetic completion; time/score is not a real speedrun.
+- Human audio/video verdict still pending.
+
 ## Round log
 
 | Round | Date | Focus | Outcome |
