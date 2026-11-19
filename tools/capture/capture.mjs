@@ -619,7 +619,8 @@ async function runCaptureMode({ browser, browserInfo, options, baseUrl, log }) {
       "determinism check FAILED — the two passes do not match within the accepted tolerance.",
     );
     console.error(
-      `rule: max channel delta <= ${determinism.tolerance}/255 on <= ${determinism.maxShare} of pixels ` +
+      `rule: max channel delta <= ${determinism.tolerance}/255 on <= ` +
+        `${(determinism.maxShare * 100).toFixed(4)}% of pixels ` +
         `(${determinism.maxAllowedPixels} px at ${options.viewport.width}x${options.viewport.height})`,
     );
 
