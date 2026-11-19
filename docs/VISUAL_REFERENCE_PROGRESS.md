@@ -1264,6 +1264,58 @@ altitude-wind update and metal catwalk footsteps.
 3. Visual balance (billboard/helipad) and bypass tradeoff.
 4. Final menu/motion/colour calibration.
 
+---
+
+## Round 17 — rooftop amenity pass (2026-11-19)
+
+### Scope
+
+The start roof was still mostly white concrete and mechanical kit. This round adds
+low-cost rooftop amenity detail to break up the perimeter and give the reference
+start view more colour/life.
+
+### What changed
+
+- **New materials:** `foliage` and `soil` added to `LevelMaterialType`,
+  `MaterialKey`, and `MATERIAL_SPECS`; no textures, muted roughness.
+- **Planters:** three concrete planters on the start roof perimeter, each with a
+  dark soil bed and a row of nine small foliage cylinders forming a clipped
+  hedge. A low dark-metal bench/bench-back sits near the west planter.
+- **Placement:** planters at x −6.5/6.8 near z 1.2 and x −6.5 at z 14.2, off the
+  red route line and away from the solar array/mast. They are visual-only.
+- **No route/checkpoint or audio changes.**
+
+### Verification
+
+- `npm run validate`: typecheck, Biome, **275 tests in 36 files**, build.
+- Start frame remains **10/13** metrics (luma 0.588, saturation 0.348, sky still
+  the main open metric).
+- Performance **60.1 fps**.
+- Captures: start with planters at both roof edges, planter close-up.
+
+### Evidence
+
+| View | Image |
+|---|---|
+| Start roof with amenity planters | ![Start](evidence/visual/round-17/start.jpg) |
+| Planter/hedge close-up | ![Planter](evidence/visual/round-17/planter.jpg) |
+
+### Honest gaps
+
+- Foliage is still cylinder-based; close-up reads as clipped green cups, not
+  authored planting.
+- Planters are decorative and do not affect traversal/cover.
+- No human listening or live mix pass this round.
+- Billboard/helipad balance, bypass tradeoff, high-roof density, and final
+  menu/motion/colour calibration remain open.
+
+### Next
+
+1. Improve planting silhouettes or replace with authored rooftop furniture.
+2. Balance billboard/helipad and bypass risk/time.
+3. Human listening pass and final motion/colour calibration.
+4. Continue facade/world detail parity.
+
 ## Round log
 
 | Round | Date | Focus | Outcome |

@@ -323,6 +323,37 @@ function addMiscRoofProps(builder: CityBuilder): void {
   builder.box(9.6, 9.9, 5.2, 0.38, 0.16, 0.38, { material: "red" });
   builder.cylinder(9.6, 0.2, 5.2, 1.0, 0.4, { material: "concrete" });
 
+  // Low planters and shrubs break up the white roof perimeter.
+  for (const [x, z] of [
+    [-6.5, 1.2],
+    [6.8, 1.2],
+    [-6.5, 14.2],
+  ] as const) {
+    builder.box(x, 0.36, z, 2.4, 0.72, 1.5, { material: "concrete" });
+    builder.box(x, 0.74, z, 2.1, 0.08, 1.2, { material: "soil" });
+
+    const shrubs: readonly (readonly [number, number, number])[] = [
+      [-0.88, -0.1, 0.34],
+      [-0.66, 0.24, 0.48],
+      [-0.44, -0.22, 0.4],
+      [-0.22, 0.14, 0.56],
+      [0.0, -0.04, 0.72],
+      [0.22, 0.24, 0.44],
+      [0.44, -0.2, 0.52],
+      [0.66, 0.12, 0.38],
+      [0.88, -0.06, 0.5],
+    ];
+
+    for (const [offsetX, offsetZ, height] of shrubs) {
+      builder.cylinder(x + offsetX, 0.78 + height / 2, z + offsetZ, 0.4, height, {
+        material: "foliage",
+      });
+    }
+  }
+
+  builder.box(-6.7, 0.48, 5.0, 1.1, 0.08, 2.2, { material: "dark-metal" });
+  builder.box(-6.7, 0.82, 5.0, 0.08, 0.65, 2.0, { material: "metal" });
+
   // Wall-run corridor coping and hand rail.
   for (const side of [-1, 1]) {
     builder.box(side * 2.4, 3.44, -12.5, 0.55, 0.12, 7.1, { material: "white" });

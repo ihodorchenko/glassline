@@ -16,7 +16,9 @@ export type MaterialKey =
   | "rubber"
   | "asphalt"
   | "warm-light"
-  | "cool-light";
+  | "cool-light"
+  | "foliage"
+  | "soil";
 
 interface MaterialSpec {
   readonly color: number;
@@ -130,6 +132,18 @@ const MATERIAL_SPECS: Record<MaterialKey, MaterialSpec> = {
     uvScale: 0.3,
     emissive: 0xcfe8ff,
     emissiveIntensity: 0.18,
+  },
+  foliage: {
+    color: 0x4f6b45,
+    roughness: 0.96,
+    metalness: 0,
+    uvScale: 0.28,
+  },
+  soil: {
+    color: 0x3a3028,
+    roughness: 0.98,
+    metalness: 0,
+    uvScale: 0.3,
   },
 };
 

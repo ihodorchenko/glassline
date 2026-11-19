@@ -65,7 +65,9 @@ export type LevelMaterialType =
   | "rubber"
   | "asphalt"
   | "warm-light"
-  | "cool-light";
+  | "cool-light"
+  | "foliage"
+  | "soil";
 
 /** Visual-only authored geometry; it never receives a physics collider. */
 export interface LevelDecorationDefinition {
