@@ -34,6 +34,21 @@ The merged mesh loses per-box frustum culling, so triangle count stays flat, but
 the call reduction is meaningful for CPU-bound browsers. A full spawn→finish
 vehicle run still completed (1 stochastic checkpoint respawn).
 
+## Round 80 — decoration batch merge
+
+Decoration batches now ignore `receiveShadow` differences (still split on
+castShadow). Same start pose:
+
+| Metric | Round 78 | Round 80 |
+|---|---:|---:|
+| Draw calls | 488 | **448** |
+| Triangles | 3.99M | 4.02M |
+| Geometries | 54 | 54 |
+| FPS | 60.3 | 60.3 |
+
+Modest call reduction without changing the shadow workload. Transparent signs
+and GTAO/shadow passes remain the dominant call sources.
+
 ## Interpretation
 
 The visual pass (bevels, two-scale triplanar, parallax, puddles, 4K shadows)

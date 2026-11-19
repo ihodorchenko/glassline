@@ -3510,6 +3510,29 @@ Make the dead `display.quality` setting control the renderer.
 
 - Safari not measured; low mode is a fallback, not a visual-quality win.
 
+---
+
+## Round 80 — decoration batch merge (2026-11-19)
+
+### Scope
+
+Reduce decoration draw calls without changing shadows.
+
+### What changed
+
+- Batch key ignores `receiveShadow`; batches merge on material/shape/castShadow.
+- Draw calls **488 → 448**; triangles flat; FPS 60.3.
+- Start 13/13; 282 tests.
+
+### Evidence
+
+- [`stats.json`](evidence/performance/round-80/stats.json)
+- [`start.jpg`](evidence/performance/round-80/start.jpg)
+
+### Honest gaps
+
+- Transparent signs / GTAO / shadows remain call-heavy; Safari unmeasured.
+
 ## Round log
 
 | Round | Date | Focus | Outcome |

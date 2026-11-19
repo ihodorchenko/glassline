@@ -96,8 +96,8 @@ function decorationMatrix(decoration: LevelDecorationDefinition): THREE.Matrix4 
 interface DecorationBatch {
   readonly shape: "box" | "cylinder";
   readonly material: THREE.MeshStandardMaterial;
-  readonly castShadow: boolean;
-  readonly receiveShadow: boolean;
+  castShadow: boolean;
+  receiveShadow: boolean;
   readonly matrices: THREE.Matrix4[];
 }
 
@@ -303,7 +303,7 @@ export class BoxLevelContentLoader {
         : library.getColor(decoration.color ?? 0xffffff);
       const castShadow = decoration.castShadow ?? true;
       const receiveShadow = decoration.receiveShadow ?? true;
-      const key = `${material.uuid}:${decoration.shape}:${castShadow ? 1 : 0}:${receiveShadow ? 1 : 0}`;
+      const key = `${material.uuid}:${decoration.shape}:${castShadow ? 1 : 0}`;
       let batch = batches.get(key);
 
       if (!batch) {
@@ -315,6 +315,8 @@ export class BoxLevelContentLoader {
           matrices: [],
         };
         batches.set(key, batch);
+      } else {
+        batch.receiveShadow = batch.receiveShadow || receiveShadow;
       }
 
       batch.matrices.push(decorationMatrix(decoration));

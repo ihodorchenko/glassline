@@ -104,7 +104,7 @@ Only `Verified` means that the applicable acceptance criteria have been checked 
 
 **Full run:** **clean spawn → FINISH in 24.014 s with 0 respawns**, no unlock/teleport (automated) — [Round 65](VISUAL_REFERENCE_PROGRESS.md).
 
-**Geometry:** beveled static boxes and instanced props (visual only, colliders unchanged). Static boxes are merged per material; calls **1040 → 488**, geometries **111 → 54** ([PERFORMANCE_BASELINE.md](PERFORMANCE_BASELINE.md)).
+**Geometry:** beveled static boxes and instanced props (visual only, colliders unchanged). Static boxes merged per material and decoration batches ignore receive-shadow splits; calls **1040 → 448**, geometries **111 → 54** ([PERFORMANCE_BASELINE.md](PERFORMANCE_BASELINE.md)).
 
 **Maintenance:** light membrane repair patches on the roof.
 
