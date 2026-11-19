@@ -122,7 +122,7 @@ Only `Verified` means that the applicable acceptance criteria have been checked 
 
 **Review package:** [`REFERENCE_REVIEW.md`](REFERENCE_REVIEW.md) — evidence, human checklist, and options A/B/C; decision deadline round 60.
 
-**Current phase:** Phases 0–7 and Phase 8 (stabilization) are complete. A post-roadmap **Release Polish** pass has also been completed: initial release content presentation, HUD tutorial guidance, atmosphere, and procedural ambience/footsteps. A **Reference Presentation Pass** is in progress to bring design, graphics, and sound up to the *Mirror's Edge* prologue reference. Round 1 (HDR rendering, sky, materials, rooftop city, first-person arms) is complete and measured. Round 2 (procedural audio architecture, surface-aware movement, parkour set, ambience, score, radio) is implemented and measured. Round 3 extends the Prologue from a 25 m flat corridor to a ~66 m route with a roof drop, sprint gap, stair climb, narrow skybridge, and finish roof. Round 4 applies the reference's editorial UI language (paper panels, ink type, red rules, minimal HUD), canvas signage (`RUN`, section indices, `FINISH`), and a speed-reactive radial blur. Round 5 adds a visual-only Prologue city vignette behind the paper menu, shown only outside gameplay. Round 6 extends the playable route with a final scaffold ascent: a beam, eight rising jump platforms, and a high finish roof. Round 7 adds an exposed high catwalk U-turn before the finish gate, bringing the path to ~220 m with 8.2 m vertical range in the 180–220 m band. Round 8 polishes the finale with a suspended construction load, deck/high-roof kit, turn-view cleanup, and altitude-scaled wind ambience. Round 9 adds a 2.2 m catwalk gap and opens the turn vista with a distant crane. Round 10 adds a fall-only high-route respawn anchor, metal catwalk surface audio, and distant hero towers at the turn. Round 11 replaces those towers with authored facades/billboard and adds a 0.5 m return barrier. Round 12 adds a platform-5 fall anchor with a visible safe-retry pad on the scaffold climb. Round 13 adds an optional lower bypass around the return-catwalk barrier. Round 14 adds a close RUN billboard at the turn and a high-roof helipad detail. Round 15 adds a measured high-route audio profile (altitude wind, metal catwalk steps, landings, finish hit) with a 5/5 custom band result while preserving the prologue 5/5 mix. Round 16 verifies the live in-engine altitude wind and metal catwalk steps with a ground-vs-high analyser probe. Round 17 adds foliage/soil materials and amenity planters/bench to the start roof. Round 18 adds an overhead canyon bridge that brings the start sky metric into band. Round 19 rebalances sky haze/fog/grade and reaches **13/13** start-frame reference metrics. Round 20 brings the Training yard to the same light parapet/city/signage language. Round 21 adds authored window-grid facades to Training towers and balances the Prologue billboard/helipad. Round 22 moves Training windows to glass materials, adds rooftop masts/beacons and a readable MOVEMENT YARD banner. Round 23 adds projecting balcony bands and glass rails for facade depth. Round 24 fixes balcony projection, adds doors/warm interiors, and a small animated bird flock over the city. Round 25 adds slow menu-camera drift and a swinging bridge hoist for ambient motion. Round 26 adds Training floor identity and makes menu drift respect reduced motion. Round 27 paints the floor mat into the lane and freezes ambient motion (birds/hoist/clouds) under reduced motion. Round 28 records an actual in-engine high-route WAV for listening, with peak/LUFS/spectral metrics. Round 29 adds normal-cadence high/ground recordings and a direct RMS/LUFS comparison. Round 30 adds a cinematic route-video capture with live engine ambience. Round 31 raises slide-tunnel clearance to 1.35 m, guards it with a test, and captures a 9 s continuous gameplay clip. Round 32 adds foreground roof utility detail while retaining 13/13. Round 33 adds faint worn-concrete patches, also retaining 13/13. Round 34 replaces them with a procedural alpha stain material. Round 35 adds a second return barrier so the lower bypass becomes a real one-jump-plus-drop alternative to the two-jump line. Round 36 signposts the bypass entrance with a sign, edge paint and chevrons. Round 37 measures direct vs bypass (6.30 s vs 6.75 s) and guards the tradeoff with a test. Round 38 makes the roof panel seams readable while retaining 13/13. Round 39 adds per-panel tint variation and a landing camera lift/roll. Round 40 makes landing/menu motion respect the motion-intensity setting. Round 41 raises the overhead bridge to 11 m, opens the start canyon (sky 39.7%), retires the hoist, and adds red maintenance banners while keeping 13/13. Round 42 turns those banners into authored GLASSLINE/RUNNER canvas signs. Round 43 adds a reference review/decision package and caps the goal at round 60. Round 44 moves/shrinks the bridge banners to open the center composition while keeping 13/13. Round 45 aligns the menu vignette's tunnel ceiling and roof utility with gameplay. Round 46 adds section-unlock capture tooling and a 2.8 s catwalk sprint clip. Round 47 adds waypoint steering and captures the full catwalk U-turn. Round 48 adds barrier auto-jumps and captures the continuous outbound/turn/two-jump/finish-approach line. Round 49 adds terminal interaction and captures the run through the FINISH gate to the “Making Contact” achievement. Round 50 captures the Results screen/flow (synthetic finish). Round 51 adds a consolidated review bundle and normalized −26 LUFS mix for the final human pass. Round 52 freezes a reproducible verification snapshot (280 tests, 13/13, 5/5, 60 fps, 0 broken links). Round 53 captures a physical finish and the real Results screen (15.594 s section-run). Round 54 signposts the west-end finish detour. Round 55 makes the normalized real finish/results run the primary review artifact. Round 56 re-runs all gates on the current code (13/13, 5/5, 280 tests, 60 fps, 0 broken links). Round 57 freezes checksummed evidence and cleans up capture code. Round 58 re-verifies the high-route mix (5/5 custom targets). Round 59 adds the final report and decision options; all automated gates are green. Round 60 records the cap-reached decision status without marking the goal complete; a human listening pass, full-level run, and cross-browser/AT remain.
+**Current phase:** Phases 0–7 and Phase 8 (stabilization) are complete. A post-roadmap **Release Polish** pass has also been completed: initial release content presentation, HUD tutorial guidance, atmosphere, and procedural ambience/footsteps. A **Reference Presentation Pass** is in progress to bring design, graphics, and sound up to the *Mirror's Edge* prologue reference. Round 1 (HDR rendering, sky, materials, rooftop city, first-person arms) is complete and measured. Round 2 (procedural audio architecture, surface-aware movement, parkour set, ambience, score, radio) is implemented and measured. Round 3 extends the Prologue from a 25 m flat corridor to a ~66 m route with a roof drop, sprint gap, stair climb, narrow skybridge, and finish roof. Round 4 applies the reference's editorial UI language (paper panels, ink type, red rules, minimal HUD), canvas signage (`RUN`, section indices, `FINISH`), and a speed-reactive radial blur. Round 5 adds a visual-only Prologue city vignette behind the paper menu, shown only outside gameplay. Round 6 extends the playable route with a final scaffold ascent: a beam, eight rising jump platforms, and a high finish roof. Round 7 adds an exposed high catwalk U-turn before the finish gate, bringing the path to ~220 m with 8.2 m vertical range in the 180–220 m band. Round 8 polishes the finale with a suspended construction load, deck/high-roof kit, turn-view cleanup, and altitude-scaled wind ambience. Round 9 adds a 2.2 m catwalk gap and opens the turn vista with a distant crane. Round 10 adds a fall-only high-route respawn anchor, metal catwalk surface audio, and distant hero towers at the turn. Round 11 replaces those towers with authored facades/billboard and adds a 0.5 m return barrier. Round 12 adds a platform-5 fall anchor with a visible safe-retry pad on the scaffold climb. Round 13 adds an optional lower bypass around the return-catwalk barrier. Round 14 adds a close RUN billboard at the turn and a high-roof helipad detail. Round 15 adds a measured high-route audio profile (altitude wind, metal catwalk steps, landings, finish hit) with a 5/5 custom band result while preserving the prologue 5/5 mix. Round 16 verifies the live in-engine altitude wind and metal catwalk steps with a ground-vs-high analyser probe. Round 17 adds foliage/soil materials and amenity planters/bench to the start roof. Round 18 adds an overhead canyon bridge that brings the start sky metric into band. Round 19 rebalances sky haze/fog/grade and reaches **13/13** start-frame reference metrics. Round 20 brings the Training yard to the same light parapet/city/signage language. Round 21 adds authored window-grid facades to Training towers and balances the Prologue billboard/helipad. Round 22 moves Training windows to glass materials, adds rooftop masts/beacons and a readable MOVEMENT YARD banner. Round 23 adds projecting balcony bands and glass rails for facade depth. Round 24 fixes balcony projection, adds doors/warm interiors, and a small animated bird flock over the city. Round 25 adds slow menu-camera drift and a swinging bridge hoist for ambient motion. Round 26 adds Training floor identity and makes menu drift respect reduced motion. Round 27 paints the floor mat into the lane and freezes ambient motion (birds/hoist/clouds) under reduced motion. Round 28 records an actual in-engine high-route WAV for listening, with peak/LUFS/spectral metrics. Round 29 adds normal-cadence high/ground recordings and a direct RMS/LUFS comparison. Round 30 adds a cinematic route-video capture with live engine ambience. Round 31 raises slide-tunnel clearance to 1.35 m, guards it with a test, and captures a 9 s continuous gameplay clip. Round 32 adds foreground roof utility detail while retaining 13/13. Round 33 adds faint worn-concrete patches, also retaining 13/13. Round 34 replaces them with a procedural alpha stain material. Round 35 adds a second return barrier so the lower bypass becomes a real one-jump-plus-drop alternative to the two-jump line. Round 36 signposts the bypass entrance with a sign, edge paint and chevrons. Round 37 measures direct vs bypass (6.30 s vs 6.75 s) and guards the tradeoff with a test. Round 38 makes the roof panel seams readable while retaining 13/13. Round 39 adds per-panel tint variation and a landing camera lift/roll. Round 40 makes landing/menu motion respect the motion-intensity setting. Round 41 raises the overhead bridge to 11 m, opens the start canyon (sky 39.7%), retires the hoist, and adds red maintenance banners while keeping 13/13. Round 42 turns those banners into authored GLASSLINE/RUNNER canvas signs. Round 43 adds a reference review/decision package and caps the goal at round 60. Round 44 moves/shrinks the bridge banners to open the center composition while keeping 13/13. Round 45 aligns the menu vignette's tunnel ceiling and roof utility with gameplay. Round 46 adds section-unlock capture tooling and a 2.8 s catwalk sprint clip. Round 47 adds waypoint steering and captures the full catwalk U-turn. Round 48 adds barrier auto-jumps and captures the continuous outbound/turn/two-jump/finish-approach line. Round 49 adds terminal interaction and captures the run through the FINISH gate to the “Making Contact” achievement. Round 50 captures the Results screen/flow (synthetic finish). Round 51 adds a consolidated review bundle and normalized −26 LUFS mix for the final human pass. Round 52 freezes a reproducible verification snapshot (282 tests, 13/13, 5/5, 60 fps, 0 broken links). Round 53 captures a physical finish and the real Results screen (15.594 s section-run). Round 54 signposts the west-end finish detour. Round 55 makes the normalized real finish/results run the primary review artifact. Round 56 re-runs all gates on the current code (13/13, 5/5, 282 tests, 60 fps, 0 broken links). Round 57 freezes checksummed evidence and cleans up capture code. Round 58 re-verifies the high-route mix (5/5 custom targets). Round 59 adds the final report and decision options; all automated gates are green. Round 60 records the cap-reached decision status without marking the goal complete; a human listening pass, full-level run, and cross-browser/AT remain.
 
 **Implementation readiness:** The game is feature-complete for the initial release scope, stabilized, and visually/audio-polished: core gameplay, Training/Prologue sessions, Speedrun validation and local records, persistent progression/achievements/statistics/tutorial, HUD tutorial guidance, level atmosphere and ambience, UI/accessibility/localization, Save System recovery, and the fixed-step loop are implemented, integrated, and covered by automated and browser checks. The reference pass has added an HDR post pipeline, procedural sky/reflections, PBR materials, a dense Prologue city, a first-person body, a procedural audio mix with surface-aware movement, parkour loops, ambience, and a sparse score, a vertical Prologue route with drop, gap, stair climb, skybridge, and finish roof, a reference-style paper/ink UI with canvas signage and speed blur, a visual-only menu city vignette, a high-roof scaffold finale, an exposed catwalk U-turn, altitude-scaled wind, a catwalk gap, a high-route safety anchor, metal catwalk surface audio, authored turn skyline, a return barrier, a mid-ascent safety pad, a return-catwalk bypass, a turn billboard, a high-roof helipad, a measured high-route sound profile, a live altitude/metal audio probe, rooftop planters, an overhead canyon bridge, a pale/hazy reference atmosphere, a restyled Training yard, authored Training facades, glass Training windows, a yard banner, projecting Training balconies, balcony doors, a living skyline, menu drift, authored bridge banners, Training floor markings, reduced-motion-aware menu/ambience, a painted floor mat, a live in-engine audio recording, a high/ground listening pair, a cinematic route video, a real gameplay clip, foreground roof utility, a procedural stain material, worn-concrete patches, a physical bypass tradeoff, a signposted bypass entrance, a measured line tradeoff, readable roof seams, panel tint variation, landing camera motion, and motion-intensity coherence. The measured start frame is inside the reference tolerance band on **13/13** image metrics; the offline audio demo is inside all five planned audio bands (5/5). Remaining limitations are compatibility verification depth (Firefox/Safari gameplay, actual assistive-technology testing), reference-level sound and route design, asset-level art polish, and intentionally deferred features.
 
@@ -2064,7 +2064,7 @@ Known limitations:
 Implemented:
 
 - Landing impact × clamped motionIntensity; menu drift same; reduced motion zero.
-- Camera test covers intensity1 vs0; 280 tests; 60.1 fps.
+- Camera test covers intensity1 vs0; 282 tests; 60.1 fps.
 - No visual/audio asset changes; start 13/13 unaffected.
 
 Known limitations:
@@ -2084,7 +2084,7 @@ Implemented:
 - Bridge raised 2 m (deck 9→11, supports 10.4 m); hoist retired.
 - Two red maintenance banners + red underside strip restore warm split.
 - Start 13/13: sky 39.7% (ref 43.3), deep-shadow 2.03%, luma 0.604.
-- 280 tests; 60.3 fps.
+- 282 tests; 60.3 fps.
 
 Known limitations:
 
@@ -2102,7 +2102,7 @@ Implemented:
 
 - `GLASSLINE`/`RUNNER` 1.55×2.15 m canvas signs + metal hangers under bridge.
 - Start 13/13: sky 39.8%, deep-shadow 1.72%, red 3.28, split −16.69.
-- 280 tests; 60.1 fps.
+- 282 tests; 60.1 fps.
 
 Known limitations:
 
@@ -2119,7 +2119,7 @@ Known limitations:
 Implemented:
 
 - Banners x=±6.8, 1.3×1.9 m; center open; start 13/13 (sky 40.0%, red 3.07).
-- 280 tests; 60.0 fps.
+- 282 tests; 60.0 fps.
 
 Known limitations:
 
@@ -2135,7 +2135,7 @@ Known limitations:
 Implemented:
 
 - Menu tunnel ceiling 1.45 m; two drains + access hatch/red handle added.
-- No gameplay/route/metrics changes; 280 tests; 60.3 fps.
+- No gameplay/route/metrics changes; 282 tests; 60.3 fps.
 
 Known limitations:
 
@@ -2152,7 +2152,7 @@ Implemented:
 
 - `route-video --unlock` activates finish sections before teleport.
 - 2.8 s catwalk sprint video/audio; trimmed before un-steered turn.
-- No game changes; 280 tests; start 13/13.
+- No game changes; 282 tests; start 13/13.
 
 Known limitations:
 
@@ -2169,7 +2169,7 @@ Implemented:
 
 - `--waypoints` sprint steering; 5.85 s outbound→turn→return clip.
 - Live audio peak −4.27 dBFS / LUFS −21.38.
-- No game changes; 280 tests; start 13/13.
+- No game changes; 282 tests; start 13/13.
 
 Known limitations:
 
@@ -2187,7 +2187,7 @@ Implemented:
 - `--jump-x` barrier auto-jump (grounded, ±1.15 m).
 - 12.35 s continuous outbound/turn/both-barriers/finish-approach clip at 8.5 m/s.
 - Live audio peak −4.19 dBFS / LUFS −21.79.
-- No game changes; 280 tests; start 13/13.
+- No game changes; 282 tests; start 13/13.
 
 Known limitations:
 
@@ -2205,7 +2205,7 @@ Implemented:
 - `--interact` terminal E at last waypoint; capture loop safe on results/dispose.
 - 14.40 s full run to FINISH gate/terminal + “Making Contact”.
 - Live audio peak −3.86 dBFS / LUFS −22.03.
-- No game changes; 280 tests; start 13/13.
+- No game changes; 282 tests; start 13/13.
 
 Known limitations:
 
@@ -2222,7 +2222,7 @@ Implemented:
 
 - Results screen captured after activating finish sections and entering
   `trigger_finish`; paper/ink UI with RETRY/MAIN MENU.
-- No game changes; 280 tests; start 13/13.
+- No game changes; 282 tests; start 13/13.
 
 Known limitations:
 
@@ -2241,7 +2241,7 @@ Implemented:
 - Contact sheet (start/training/catwalk/results).
 - Review clip normalized to −26.07 LUFS, peak −7.53; original loud mix retained
   as live evidence.
-- No game changes; 280 tests; start 13/13.
+- No game changes; 282 tests; start 13/13.
 
 Known limitations:
 
@@ -2258,7 +2258,7 @@ Known limitations:
 Implemented:
 
 - `VERIFICATION.md` with commands and results.
-- 280 tests/37 files; 13/13 start; 5/5 prologue audio; 60.1 fps; 0 broken links.
+- 282 tests/37 files; 13/13 start; 5/5 prologue audio; 60.1 fps; 0 broken links.
 - No game/visual/audio changes.
 
 Known limitations:
@@ -2276,7 +2276,7 @@ Implemented:
 
 - Route around the return rail west end onto the final deck → `trigger_finish`.
 - 13.73 s video ends on real Results (`Time 00:15.594`); audio −21.94 LUFS.
-- No game changes; 280 tests; start 13/13.
+- No game changes; 282 tests; start 13/13.
 
 Known limitations:
 
@@ -2293,7 +2293,7 @@ Known limitations:
 Implemented:
 
 - `FINISH / WEST END` sign + posts/chevrons at x≈10.5 on return catwalk.
-- Visual only; 280 tests; 60.2 fps; start 13/13 unchanged.
+- Visual only; 282 tests; 60.2 fps; start 13/13 unchanged.
 
 Known limitations:
 
@@ -2310,7 +2310,7 @@ Implemented:
 
 - 13.7 s real-finish review normalized to −26.07 LUFS / −7.54 dBFS.
 - Contact sheet real Results; terminal-only review removed.
-- No game changes; 280 tests; start 13/13.
+- No game changes; 282 tests; start 13/13.
 
 Known limitations:
 
@@ -2325,7 +2325,7 @@ Known limitations:
 
 Implemented:
 
-- Current evidence refreshed; 280 tests/37 files, 13/13 start, 5/5 prologue
+- Current evidence refreshed; 282 tests/37 files, 13/13 start, 5/5 prologue
   audio, 60.1 fps, 0 broken relative links.
 - No game changes.
 
@@ -2344,7 +2344,7 @@ Implemented:
 
 - MANIFEST.md/sha256 for start/metrics/audio/review/finish/training.
 - Removed unused route-video frameIndex.
-- No game changes; 280 tests; manifest verifies.
+- No game changes; 282 tests; manifest verifies.
 
 Known limitations:
 
@@ -2360,7 +2360,7 @@ Known limitations:
 Implemented:
 
 - 20 s high-route render, 5/5 custom targets; prologue 5/5 remains.
-- No game changes; 280 tests; 13/13 start.
+- No game changes; 282 tests; 13/13 start.
 
 Known limitations:
 
