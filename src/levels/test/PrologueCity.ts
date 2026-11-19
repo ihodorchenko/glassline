@@ -323,6 +323,24 @@ function addMiscRoofProps(builder: CityBuilder): void {
   builder.box(9.6, 9.9, 5.2, 0.38, 0.16, 0.38, { material: "red" });
   builder.cylinder(9.6, 0.2, 5.2, 1.0, 0.4, { material: "concrete" });
 
+  // Foreground roof utility: drains, a hatch, and a conduit run break up the
+  // high-key deck without adding route obstacles.
+  for (const [x, z] of [
+    [-3.6, 3.4],
+    [2.6, 2.0],
+    [3.4, -2.6],
+    [-4.0, -5.2],
+  ] as const) {
+    builder.box(x, 0.045, z, 0.86, 0.06, 0.86, { material: "metal", castShadow: true });
+    builder.box(x, 0.085, z, 0.66, 0.02, 0.66, { material: "dark-metal" });
+  }
+
+  builder.box(-5.4, 0.14, 4.3, 1.4, 0.16, 1.4, { material: "metal", castShadow: true });
+  builder.box(-5.4, 0.24, 4.3, 1.16, 0.04, 1.16, { material: "dark-metal" });
+  builder.box(-4.95, 0.32, 4.3, 0.5, 0.06, 0.08, { material: "red" });
+
+  builder.box(-7.2, 0.1, -0.4, 0.16, 0.12, 8.2, { material: "metal", castShadow: true });
+
   // Low planters and shrubs break up the white roof perimeter.
   for (const [x, z] of [
     [-6.5, 1.2],

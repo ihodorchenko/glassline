@@ -2067,6 +2067,49 @@ round raises clearance, guards it with a test, and captures real gameplay.
 2. Human review of the gameplay clip/audio.
 3. Continue visual/motion parity.
 
+---
+
+## Round 32 — foreground roof utility (2026-11-19)
+
+### Scope
+
+The start frame passes 13/13 but its foreground roof is still mostly white.
+This round adds small, non-routing utility details to break it up.
+
+### What changed
+
+- Three metal **drain grates** (0.86×0.86 m) with dark inner plates at lane edges.
+- A **roof access hatch** (1.4×1.4 m) with dark inset and red handle.
+- A thin **east-edge conduit** (8.2 m).
+- All are visual-only `builder.box` decorations; no colliders or route changes.
+
+### Verification
+
+- `npm run validate`: typecheck, Biome, **276 tests in 36 files**, build.
+- Start frame remains **13/13** metrics: luma 0.606, near-white 20.6%,
+  deep-shadow 3.26%, local contrast 0.270.
+- Performance **60.2 fps**; capture saved.
+
+### Evidence
+
+| View | Image |
+|---|---|
+| Start with roof utility | ![Start](evidence/visual/round-32/start.jpg) |
+| Metrics | [`metrics.json`](evidence/visual/round-32/metrics.json) |
+
+### Honest gaps
+
+- The details are subtle at 720p; the foreground roof still reads washed and
+  low-poly compared with the reference's photographic concrete.
+- No new material/texture variation, only geometry.
+- Human listening, bypass tradeoff, and final motion/menu calibration remain.
+
+### Next
+
+1. Add a worn concrete/decal material variation to the foreground.
+2. Balance the bypass using physical/route geometry.
+3. Human review of video/audio.
+
 ## Round log
 
 | Round | Date | Focus | Outcome |
