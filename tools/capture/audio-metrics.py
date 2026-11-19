@@ -218,6 +218,7 @@ def main() -> int:
     if args.json:
         with open(args.json, "w", encoding="utf-8") as handle:
             json.dump(report, handle, indent=2)
+            handle.write("\n")
         print(f"\nWrote {args.json}")
 
     return 0 if passed >= len(rows) - 1 else 1

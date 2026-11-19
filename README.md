@@ -49,6 +49,11 @@ Reference alignment is tracked in
 
 ![Prologue rooftop presentation](docs/evidence/visual/round-1/start.jpg)
 
+The Prologue now descends from the white rooftop through a service roof, a
+sprint gap, a construction stair climb, a narrow skybridge, and a finish roof.
+
+![Prologue lower route](docs/evidence/visual/round-3/lower.jpg)
+
 ## Sound
 
 All audio is generated procedurally at runtime: a multi-bus mix with limiter and

@@ -355,30 +355,33 @@ function addMiscRoofProps(builder: CityBuilder): void {
   }
 }
 
-function addFinishArea(builder: CityBuilder): void {
-  builder.box(-3.8, 2.1, -19.6, 0.34, 4.2, 0.34, { material: "white", castShadow: true });
-  builder.box(3.8, 2.1, -19.6, 0.34, 4.2, 0.34, { material: "white", castShadow: true });
-  builder.box(0, 4.2, -19.6, 7.9, 0.26, 0.38, { material: "white" });
-  builder.box(0, 4.02, -19.6, 6.2, 0.08, 0.08, {
+function addFinishArea(builder: CityBuilder, z: number, deckY: number): void {
+  builder.box(-3.8, deckY + 2.1, z, 0.34, 4.2, 0.34, { material: "white", castShadow: true });
+  builder.box(3.8, deckY + 2.1, z, 0.34, 4.2, 0.34, { material: "white", castShadow: true });
+  builder.box(0, deckY + 4.2, z, 7.9, 0.26, 0.38, { material: "white" });
+  builder.box(0, deckY + 4.02, z, 6.2, 0.08, 0.08, {
     material: "red",
     emissive: 0xc0262d,
     emissiveIntensity: 0.7,
   });
-  builder.box(0, 0.016, -19.1, 5.2, 0.02, 0.16, {
+  builder.box(0, deckY + 0.016, z + 0.5, 5.2, 0.02, 0.16, {
     material: "red",
     castShadow: false,
     receiveShadow: false,
   });
 
   // Finish terminal with a lit screen.
-  builder.box(2.5, 1.32, -18, 0.72, 0.5, 0.1, {
+  builder.box(2.5, deckY + 1.32, z + 1.8, 0.72, 0.5, 0.1, {
     material: "cool-light",
     rotationY: -0.4,
     emissive: 0xbfe6ff,
     emissiveIntensity: 0.8,
   });
-  builder.box(2.5, 1.55, -18, 0.78, 0.08, 0.14, { material: "dark-metal", rotationY: -0.4 });
-  builder.box(2.5, 0.62, -17.68, 0.5, 0.42, 0.04, {
+  builder.box(2.5, deckY + 1.55, z + 1.8, 0.78, 0.08, 0.14, {
+    material: "dark-metal",
+    rotationY: -0.4,
+  });
+  builder.box(2.5, deckY + 0.62, z + 2.12, 0.5, 0.42, 0.04, {
     material: "cool-light",
     emissive: 0xbfe6ff,
     emissiveIntensity: 0.9,
@@ -386,14 +389,22 @@ function addFinishArea(builder: CityBuilder): void {
 }
 
 function addCheckpointBeacons(builder: CityBuilder): void {
-  for (const z of [3, -2.5, -8.5, -14.5, -18.5]) {
+  const checkpoints: readonly (readonly [number, number, number])[] = [
+    [3, 0, 4.3],
+    [-2.5, 0, 4.3],
+    [-8.5, 0, 4.3],
+    [-46, -0.9, 1.3],
+    [-56, -0.9, 4.3],
+  ];
+
+  for (const [z, deckY, offset] of checkpoints) {
     for (const side of [-1, 1]) {
-      builder.box(side * 4.3, 0.38, z, 0.06, 0.76, 0.06, {
+      builder.box(side * offset, deckY + 0.38, z, 0.06, 0.76, 0.06, {
         material: "red",
         emissive: 0xc0262d,
         emissiveIntensity: 0.3,
       });
-      builder.box(side * 4.3, 0.78, z, 0.22, 0.04, 0.22, {
+      builder.box(side * offset, deckY + 0.78, z, 0.22, 0.04, 0.22, {
         material: "red",
         emissive: 0xc0262d,
         emissiveIntensity: 0.25,
@@ -813,21 +824,23 @@ function addNearCity(builder: CityBuilder): void {
 }
 
 function addSkybridge(builder: CityBuilder): void {
-  builder.box(0, 13.4, -44, 48, 0.8, 3.4, {
+  // Distant skybridge linking the far skyline; the playable bridge is part of
+  // the level geometry.
+  builder.box(0, 24, -118, 58, 0.8, 3.4, {
     material: "white",
-    castShadow: true,
+    castShadow: false,
   });
-  builder.box(0, 14.2, -44, 48, 1.4, 0.12, {
+  builder.box(0, 24.8, -118, 58, 1.4, 0.12, {
     material: "glass-far",
     castShadow: false,
     receiveShadow: false,
   });
-  builder.box(0, 14.2, -42.6, 48, 1.4, 0.12, {
+  builder.box(0, 24.8, -116.6, 58, 1.4, 0.12, {
     material: "glass-far",
     castShadow: false,
     receiveShadow: false,
   });
-  builder.box(0, 12.9, -44, 48.4, 0.18, 3.7, { material: "dark-metal" });
+  builder.box(0, 23.5, -118, 58.4, 0.18, 3.7, { material: "dark-metal" });
 }
 
 function addCrane(builder: CityBuilder): void {
@@ -845,15 +858,189 @@ function addCrane(builder: CityBuilder): void {
   }
 }
 
-function addBillboards(builder: CityBuilder): void {
-  // A smaller rooftop sign, kept off the route's centre sight-line.
-  builder.box(8.4, 4.4, -23.9, 5.4, 3.6, 0.36, { material: "white", castShadow: true });
-  builder.box(8.4, 4.4, -23.68, 5.0, 3.1, 0.1, { material: "white" });
-  builder.box(8.4, 4.55, -23.6, 3.4, 0.34, 0.05, { material: "metal" });
-  builder.box(8.4, 3.3, -23.6, 3.2, 0.16, 0.04, { material: "red" });
+function addLowerZone(builder: CityBuilder): void {
+  // Warning edge at the drop, then a red guide line down the service roof.
+  builder.box(0, 0.022, -21.85, 7.6, 0.02, 0.34, {
+    material: "red",
+    castShadow: false,
+    receiveShadow: false,
+  });
 
-  for (const x of [6.2, 10.6]) {
-    builder.box(x, 2.6, -24, 0.26, 5.2, 0.26, { material: "metal" });
+  for (let z = -24; z > -34.5; z -= 2.4) {
+    builder.box(0, -2.985, z, 0.18, 0.02, 1.15, {
+      material: "red",
+      castShadow: false,
+      receiveShadow: false,
+    });
+  }
+
+  for (let z = -36; z > -41.5; z -= 2.2) {
+    builder.box(0, -2.985, z, 0.18, 0.02, 1.0, {
+      material: "red",
+      castShadow: false,
+      receiveShadow: false,
+    });
+  }
+
+  // Lower roof edge rails.
+  for (const side of [-1, 1]) {
+    for (let z = -24; z >= -41; z -= 3.2) {
+      builder.box(side * 13.9, -1.5, z, 0.06, 2.0, 0.06, { material: "metal" });
+    }
+
+    builder.box(side * 13.9, -0.55, -32.5, 0.07, 0.07, 18.2, { material: "metal" });
+  }
+
+  // Scaffold cage around the stair flight.
+  for (const side of [-1, 1]) {
+    for (const z of [-35.2, -38.1, -41.0]) {
+      builder.box(side * 1.95, -1.1, z, 0.09, 4.0, 0.09, { material: "metal" });
+    }
+
+    builder.box(side * 1.95, 0.65, -38.1, 0.07, 0.07, 6.6, { material: "metal" });
+    builder.box(side * 1.95, -1.1, -38.1, 0.07, 0.07, 6.6, { material: "metal" });
+
+    for (const z of [-36.6, -39.5]) {
+      builder.box(side * 1.95, -1.1, z, 0.07, 3.5, 0.07, {
+        material: "metal",
+        rotationX: 0.5,
+      });
+    }
+  }
+
+  // Service units and construction kit on the lower deck.
+  for (const [x, z, rotation] of [
+    [-9.5, -26.5, 0.1],
+    [9.2, -29.5, -0.12],
+    [-8.6, -37.8, 0.18],
+  ] as const) {
+    builder.box(x, -2.35, z, 2.2, 1.3, 1.6, { material: "metal", rotationY: rotation });
+    builder.box(x, -1.66, z, 2.0, 0.12, 1.4, { material: "dark-metal", rotationY: rotation });
+    builder.box(x, -2.98, z, 2.3, 0.08, 1.7, { material: "dark-metal", rotationY: rotation });
+  }
+
+  builder.box(12.2, -2.5, -31, 0.8, 0.6, 9.0, { material: "metal" });
+  builder.box(12.2, -2.15, -31, 0.95, 0.08, 9.2, { material: "dark-metal" });
+
+  for (let index = 0; index < 3; index += 1) {
+    builder.box(-6.2 + index * 1.0, -2.55, -24.6, 0.9, 0.9, 0.9, {
+      material: "dark-metal",
+    });
+  }
+
+  builder.cylinder(-5.4, -2.4, -27.6, 0.6, 1.2, { material: "red" });
+  builder.cylinder(-4.6, -2.4, -27.6, 0.6, 1.2, { material: "red" });
+
+  for (const x of [-12.5, 12.5]) {
+    builder.box(x, -1.3, -24.8, 0.14, 3.4, 0.14, { material: "metal" });
+    builder.box(x, 0.35, -24.8, 0.5, 0.18, 0.5, {
+      material: "cool-light",
+      emissive: 0xcfe8ff,
+      emissiveIntensity: 0.7,
+    });
+  }
+
+  // A lower service roof far below the gap gives the drop depth instead of a
+  // black hole; it is visual-only and sits below the kill volume.
+  builder.box(0, -19.2, -34, 30, 0.8, 16, {
+    material: "roof",
+    castShadow: false,
+  });
+  builder.box(0, -18.8, -34, 30.4, 0.3, 16.4, { material: "concrete" });
+
+  for (const [x, z] of [
+    [-8, -30],
+    [7, -35],
+    [0, -39],
+  ] as const) {
+    builder.box(x, -18.2, z, 2.0, 1.2, 1.6, { material: "metal" });
+    builder.box(x, -17.55, z, 1.8, 0.1, 1.4, { material: "dark-metal" });
+  }
+
+  for (const x of [-12, 12]) {
+    builder.box(x, -18.2, -34, 0.3, 0.8, 13, { material: "concrete" });
+  }
+
+  // Bridge supports down into the city canyon.
+  for (const side of [-1, 1]) {
+    for (const z of [-43.4, -48.6]) {
+      builder.box(side * 1.55, -16, z, 0.5, 30, 0.5, {
+        material: "concrete",
+        castShadow: false,
+      });
+    }
+
+    builder.box(side * 1.55, -5.4, -46, 0.3, 0.3, 7.2, { material: "metal" });
+    builder.box(side * 1.55, -9.6, -46, 0.24, 0.24, 6.4, {
+      material: "metal",
+      rotationX: 0.3,
+    });
+  }
+
+  // Bridge rail markers and lamps.
+  for (const side of [-1, 1]) {
+    for (const z of [-43, -46, -49]) {
+      builder.box(side * 1.92, -0.2, z, 0.12, 0.12, 0.12, {
+        material: "red",
+        emissive: 0xc0262d,
+        emissiveIntensity: 0.5,
+      });
+    }
+  }
+
+  // Finish roof lines, floodlight masts, and service kit.
+  for (let x = -7.5; x <= 7.5; x += 1.5) {
+    builder.box(x, -0.885, -60, 0.8, 0.02, 0.12, {
+      material: "red",
+      castShadow: false,
+      receiveShadow: false,
+    });
+  }
+
+  for (const x of [-7.8, 7.8]) {
+    builder.box(x, 1.6, -61.2, 0.14, 5.0, 0.14, { material: "metal" });
+    builder.box(x, 4.1, -61.2, 0.4, 0.2, 0.4, {
+      material: "cool-light",
+      emissive: 0xcfe8ff,
+      emissiveIntensity: 0.8,
+    });
+  }
+
+  const finishProps: readonly (readonly [number, number])[] = [
+    [-7.2, -52.4],
+    [7.2, -53.6],
+    [6.8, -61.0],
+  ];
+
+  for (const [x, z] of finishProps) {
+    builder.box(x, -0.4, z, 1.8, 1.0, 1.4, { material: "metal" });
+    builder.box(x, 0.14, z, 1.7, 0.1, 1.3, { material: "dark-metal" });
+  }
+
+  builder.cylinder(-8.0, -0.1, -56.5, 0.9, 1.8, { material: "metal" });
+  builder.cylinder(-8.0, 0.85, -56.5, 1.0, 0.12, { material: "dark-metal" });
+
+  // Close service facades frame the lower route without blocking it.
+  builder.box(-21, -8.5, -33, 12, 14, 26, { material: "facade", castShadow: true });
+  builder.box(-21, -1.2, -33, 12.4, 0.4, 26.4, { material: "concrete" });
+  builder.box(22, -6.5, -47, 12, 16, 24, { material: "glass-far", castShadow: true });
+  builder.box(22, 1.7, -47, 12.4, 0.4, 24.4, { material: "concrete" });
+
+  for (let z = -26; z >= -40; z -= 4) {
+    builder.box(-14.8, -1.4, z, 0.12, 1.2, 2.2, { material: "metal" });
+    builder.box(14.8, -1.4, z, 0.12, 1.2, 2.2, { material: "metal" });
+  }
+}
+
+function addBillboards(builder: CityBuilder): void {
+  // Finish-roof sign, offset from the gate's centre line.
+  builder.box(10.4, 2.6, -59, 4.4, 3.0, 0.36, { material: "white", castShadow: true });
+  builder.box(10.4, 2.6, -58.78, 4.0, 2.6, 0.1, { material: "white" });
+  builder.box(10.4, 2.72, -58.7, 2.8, 0.3, 0.05, { material: "metal" });
+  builder.box(10.4, 1.7, -58.7, 2.8, 0.14, 0.04, { material: "red" });
+
+  for (const x of [8.6, 12.2]) {
+    builder.box(x, 0.6, -59.2, 0.24, 3.2, 0.24, { material: "metal" });
   }
 }
 
@@ -962,7 +1149,8 @@ export function createPrologueCityDecorations(
 
   addStairBulkhead(builder);
   addMiscRoofProps(builder);
-  addFinishArea(builder);
+  addLowerZone(builder);
+  addFinishArea(builder, -60, -0.9);
   addCheckpointBeacons(builder);
 
   addNearCity(builder);

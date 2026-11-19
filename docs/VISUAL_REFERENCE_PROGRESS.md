@@ -285,9 +285,111 @@ settings, radio, and score scheduling.
 5. Graphics polish: clouds, billboard typography, motion blur, contact decals,
    animated city props, and Training/menu presentation.
 
+---
+
+## Round 3 — vertical Prologue extension (2026-11-19)
+
+### Scope
+
+The Prologue was a 25 m flat rooftop corridor. This round extends it into a
+~66 m route with a roof drop, a sprint gap, a stair climb, a narrow skybridge,
+and a separate finish roof, while preserving the five checkpoint IDs, their
+order, the section chain, and the speedrun route contract.
+
+### What changed
+
+**Route and level design**
+
+- The north parapet now opens into a 1 m drop from the upper roof (y = 0) to a
+  lower service roof (y = −3). Void kill volumes moved below the lower route so
+  falls still respawn.
+- The lower service roof is split by a 2.4 m sprint gap. The far deck starts at
+  z = −34.4 so a run jump clears it; a sprint jump is the intended line, and the
+  gap is forgiving enough to recover.
+- A 15-step, 0.15 m-riser construction stair climbs 2.1 m to the skybridge deck.
+  The riser was deliberately reduced after a physics probe showed the character
+  controller stalling on 0.28 m boxes despite `enableAutostep(0.3, ...)`.
+- A 3.4 m-wide skybridge spans the canyon at y = −0.9 with 1.3 m glass rails;
+  its supports drop into the city. The finish roof (18 × 12 m) follows at the
+  same level with a gate at z = −60, lit terminal, and floodlights.
+- Checkpoints moved to the new beats: `cp_rooftop` (z 3), `cp_industrial`
+  (z −2.5), `cp_construction` (z −8.5), `cp_skybridge` (z −46, bridge), and
+  `cp_finish` (z −56, finish roof). Section triggers and entry spawn points moved
+  with them; IDs and ordering are unchanged.
+- The sun shadow camera now covers z ≈ −74…26, so the lower route and finish
+  receive shadows instead of falling outside the shadow frustum.
+
+**Content language**
+
+- Scaffold cage, red guide dashes, hazard line at the drop, bridge rail lights,
+  AC/duct/crate clusters, floodlight masts, terminal screen, finish sign, and
+  lower-roof parapets dress the new route.
+- A lower service roof 16 m below the gap gives the drop visual depth; the old
+  decorative skybridge moved to the far skyline so it no longer hangs as a black
+  canopy over the new route.
+- The bridge narrowed from 5 m to 3.4 m and its checkpoint beacons moved inboard,
+  so it reads as a crossing rather than a plaza.
+
+**Verification**
+
+- New physics test loads every Prologue collider, sprint-jumps the 2.4 m gap,
+  climbs the stair flight, crosses the bridge, and reaches z < −58 on the finish
+  roof.
+- The start-to-finish integration test now walks the extended waypoints through
+  all five checkpoints, section transitions, and the finish trigger.
+- Browser capture: drop from the upper roof settles at y ≈ −2.11 on the lower
+  deck; lower route, stairs, bridge, and finish render without console errors.
+
+### Result
+
+| View | Image |
+|---|---|
+| Drop from the upper roof | ![Drop](evidence/visual/round-3/drop.jpg) |
+| Lower service roof and stairs | ![Lower route](evidence/visual/round-3/lower.jpg) |
+| Skybridge | ![Bridge](evidence/visual/round-3/bridge.jpg) |
+| Finish roof | ![Finish](evidence/visual/round-3/finish.jpg) |
+
+Route facts:
+
+| Metric | Before | Round 3 | Plan target |
+|---|---:|---:|---:|
+| Forward route length | ~25 m | ~66 m | 180–220 m |
+| Vertical delta | 0 m | 5.1 m (3.0 drop + 2.1 climb) | ≥ 8 m |
+| Sections / checkpoints | 5 / 5 | 5 / 5 | 5 / 5 |
+| Explicit gaps | 0 | 1 sprint gap | several |
+| Distinct bridge | no | 3.4 m skybridge | yes |
+
+Tests: **270 tests in 36 files**, including the new physical traversal test and
+the updated route integration. The start frame remains at 10/13 image metrics
+(highlight headroom and open-sky composition are unchanged from Round 1).
+
+### Honest gaps
+
+- The route is still **~66 m**, not the 180–220 m target, and has one authored
+  gap rather than a sequence of rooftop-to-rooftop beats. It is a real vertical
+  extension, not a finished reference-scale Prologue.
+- The stair climb is physically reliable but slow under autostep; a faster
+  parkour line needs jump platforms or a tuned ramp.
+- The lower roof is broad and partly empty; the gap still reads as a dark void
+  when looked at from the deck edge.
+- Section geometry is section-gated by z; a surface on a boundary box can be
+  deactivated one beat early. Colliders remain, but surface metadata should be
+  authored explicitly in a later pass.
+- No new sound or UI work this round; the mix still needs a listening verdict.
+
+### Next
+
+1. Extend the route to the reference scale with a second/third rooftop turn and
+   a construction chain, or convert the stair climb into jump platforms.
+2. Replace the boundary z-section mapping with explicit per-box section IDs.
+3. Graphics polish: billboard typography, cloud shaping, motion blur, contact
+   decals, animated props.
+4. Listening pass on the Round 2 mix.
+
 ## Round log
 
 | Round | Date | Focus | Outcome |
 |---|---|---|---|
 | 1 | 2026-11-19 | HDR renderer, sky, materials, city, viewmodel | 10/13 reference metrics in band (2 highlight metrics open); 60 fps at 1600×900 |
 | 2 | 2026-11-19 | Procedural audio: buses, ambience, movement/parkour, score, radio | 5/5 audio targets in band; live post-limiter peak −3.7 dBFS; 30 audio tests |
+| 3 | 2026-11-19 | Vertical Prologue extension: drop, gap, stair climb, skybridge, finish roof | Route ~66 m / 5.1 m vertical; 270 tests; physical traversal verified |

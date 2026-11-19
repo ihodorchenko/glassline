@@ -6,10 +6,12 @@
 > buses/limiter/reverb, surface-aware footsteps, parkour set, ambience, score,
 > radio, offline render and metrics (5/5 audio targets). See
 > [`VISUAL_REFERENCE_PROGRESS.md`](VISUAL_REFERENCE_PROGRESS.md) for measurements
-> and evidence. W3 route design, a listening pass, and further W1/W2 polish
-> remain. The plan's anti-hack rule is honored: the hard highlight clip was
-> replaced by a gentler shoulder; the remaining near-white/highlight gap is
-> assigned to real lighting and content.
+> and evidence. Round 3 advances W3: the Prologue now has a roof drop, sprint
+> gap, stair climb, narrow skybridge, and finish roof (~66 m / 5.1 m vertical).
+> W3 is still open — the 180–220 m / 8 m target is not met. A listening pass and
+> further W1/W2 polish also remain. The plan's anti-hack rule is honored: the
+> hard highlight clip was replaced by a gentler shoulder; the remaining
+> near-white/highlight gap is assigned to real lighting and content.
 
 **Status:** Draft for owner approval (W0–W2 partially executed, W4 foundation landed)
 **Date:** 2026-11-19
@@ -32,7 +34,7 @@ closing the gap between the current build and the reference prologue footage in
 | Renderer | WebGL2 HDR + `EffectComposer`: GTAO, UnrealBloom, custom ACES grade (vignette, grain, CA), PMREM sky IBL, PCF soft sun shadows. No volumetrics, no calibrated exposure, no quality tiers |
 | Materials | `MaterialLibrary` (procedural PBR, triplanar) landed and measured on the start frame |
 | Audio | Round 2: six-bus graph + limiter/reverb, procedural noise bank, surface-aware footsteps/landings, parkour one-shots and loops, three-layer ambience, sparse score, radio/ducking. No spatial emitters or speech |
-| Level | Prologue colliders: 22 m-wide roof (x −11..11, z −22..22) plus close tower wall and procedural city; five logical sections, still one flat lane with no vertical route |
+| Level | Prologue colliders: upper roof (y 0) → lower service roof (y −3) → 2.4 m gap → 15-step climb → 3.4 m skybridge (y −0.9) → finish roof (z −62). Five sections/checkpoints preserved; ~66 m and 5.1 m vertical, still short of 180–220 m / 8 m |
 | Reference | `ref/reference/prolog-kit`: 827 s video, 829 frames, 24 contact sheets, `shots.csv` (luma/motion per shot), `audio/segments.json` (band shares, LUFS), `study/` grouped by segment |
 
 Baseline is green, so this pass starts from a working tree, not a repair job.

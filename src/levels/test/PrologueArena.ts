@@ -81,9 +81,16 @@ export const PROLOGUE_ARENA_BOXES: readonly PrologueArenaBox[] = [
     material: "facade",
   },
   {
-    id: "geo_parapet_north",
-    position: { x: 0, y: PARAPET_HEIGHT / 2, z: -22.2 },
-    size: { x: 44.4, y: PARAPET_HEIGHT, z: PARAPET_THICKNESS },
+    id: "geo_parapet_north_west",
+    position: { x: -13.1, y: PARAPET_HEIGHT / 2, z: -22.2 },
+    size: { x: 18.2, y: PARAPET_HEIGHT, z: PARAPET_THICKNESS },
+    surfaceId: "surface_boundary",
+    material: "facade",
+  },
+  {
+    id: "geo_parapet_north_east",
+    position: { x: 13.1, y: PARAPET_HEIGHT / 2, z: -22.2 },
+    size: { x: 18.2, y: PARAPET_HEIGHT, z: PARAPET_THICKNESS },
     surfaceId: "surface_boundary",
     material: "facade",
   },
@@ -183,13 +190,131 @@ export const PROLOGUE_ARENA_BOXES: readonly PrologueArenaBox[] = [
     surfaceId: "surface_wallrun",
     material: "facade",
   },
-  // Interaction terminal and navigation marker.
+  // Lower service roof after the north drop: two decks with a sprint gap.
   {
-    id: "geo_terminal",
-    position: { x: 2.5, y: 0.6, z: -18 },
+    id: "geo_lower_roof_a",
+    position: { x: 0, y: -3.1, z: -27.5 },
+    size: { x: 28, y: 0.2, z: 9 },
+    surfaceId: "surface_concrete",
+    material: "roof",
+  },
+  {
+    id: "geo_lower_roof_b",
+    position: { x: 0, y: -3.1, z: -38.2 },
+    size: { x: 28, y: 0.2, z: 7.6 },
+    surfaceId: "surface_concrete",
+    material: "roof",
+  },
+  {
+    id: "geo_lower_parapet_west",
+    position: { x: -14.2, y: -2.5, z: -32.5 },
+    size: { x: PARAPET_THICKNESS, y: 1, z: 19 },
+    surfaceId: "surface_boundary",
+    material: "facade",
+  },
+  {
+    id: "geo_lower_parapet_east",
+    position: { x: 14.2, y: -2.5, z: -32.5 },
+    size: { x: PARAPET_THICKNESS, y: 1, z: 19 },
+    surfaceId: "surface_boundary",
+    material: "facade",
+  },
+  // Stair flight up onto the skybridge. The character controller reliably
+  // autosteps 0.15 m; steeper risers stall against the capsule.
+  ...Array.from({ length: 15 }, (_, index) => {
+    const top = -3 + (index + 1) * 0.15;
+
+    return {
+      id: `geo_skybridge_step_${index}`,
+      position: {
+        x: 0,
+        y: (top + -3.1) / 2,
+        z: -34.4 - (index + 0.5) * 0.5,
+      },
+      size: { x: 3.2, y: top + 3.1, z: 0.5 },
+      surfaceId: "surface_step",
+      material: "metal" as const,
+    };
+  }),
+  // Skybridge deck and rails.
+  {
+    id: "geo_skybridge_deck",
+    position: { x: 0, y: -1.0, z: -46 },
+    size: { x: 3.4, y: 0.2, z: 8 },
+    surfaceId: "surface_concrete",
+    material: "roof",
+  },
+  {
+    id: "geo_skybridge_rail_west",
+    position: { x: -1.8, y: -0.25, z: -46 },
+    size: { x: 0.2, y: 1.3, z: 8 },
+    surfaceId: "surface_boundary",
+    material: "glass",
+  },
+  {
+    id: "geo_skybridge_rail_east",
+    position: { x: 1.8, y: -0.25, z: -46 },
+    size: { x: 0.2, y: 1.3, z: 8 },
+    surfaceId: "surface_boundary",
+    material: "glass",
+  },
+  // Finish roof.
+  {
+    id: "geo_finish_deck",
+    position: { x: 0, y: -1.0, z: -56 },
+    size: { x: 18, y: 0.2, z: 12 },
+    surfaceId: "surface_concrete",
+    material: "roof",
+  },
+  {
+    id: "geo_finish_parapet_west",
+    position: { x: -9.2, y: -0.4, z: -56 },
+    size: { x: PARAPET_THICKNESS, y: 1, z: 12 },
+    surfaceId: "surface_boundary",
+    material: "facade",
+  },
+  {
+    id: "geo_finish_parapet_east",
+    position: { x: 9.2, y: -0.4, z: -56 },
+    size: { x: PARAPET_THICKNESS, y: 1, z: 12 },
+    surfaceId: "surface_boundary",
+    material: "facade",
+  },
+  {
+    id: "geo_finish_parapet_north",
+    position: { x: 0, y: -0.4, z: -62.2 },
+    size: { x: 18.4, y: 1, z: PARAPET_THICKNESS },
+    surfaceId: "surface_boundary",
+    material: "facade",
+  },
+  {
+    id: "geo_finish_parapet_south_west",
+    position: { x: -5.5, y: -0.4, z: -49.8 },
+    size: { x: 7.4, y: 1, z: PARAPET_THICKNESS },
+    surfaceId: "surface_boundary",
+    material: "facade",
+  },
+  {
+    id: "geo_finish_parapet_south_east",
+    position: { x: 5.5, y: -0.4, z: -49.8 },
+    size: { x: 7.4, y: 1, z: PARAPET_THICKNESS },
+    surfaceId: "surface_boundary",
+    material: "facade",
+  },
+  // Interaction terminal and finish marker.
+  {
+    id: "geo_terminal_finish",
+    position: { x: 2.5, y: -0.3, z: -58 },
     size: { x: 0.6, y: 1.2, z: 0.6 },
     surfaceId: "surface_terminal",
     material: "metal",
+  },
+  {
+    id: "geo_finish_marker",
+    position: { x: 6, y: 0.2, z: -58 },
+    size: { x: 0.5, y: 2.2, z: 0.5 },
+    surfaceId: "surface_marker",
+    material: "red",
   },
   {
     id: "geo_marker",

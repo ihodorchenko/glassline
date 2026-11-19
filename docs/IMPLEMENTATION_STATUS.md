@@ -102,9 +102,9 @@ Only `Verified` means that the applicable acceptance criteria have been checked 
 | Statistics | Defined | Implemented | Integrated | Verified |
 | Reference Presentation | Defined | In Progress | Integrated | Partially Verified |
 
-**Current phase:** Phases 0–7 and Phase 8 (stabilization) are complete. A post-roadmap **Release Polish** pass has also been completed: initial release content presentation, HUD tutorial guidance, atmosphere, and procedural ambience/footsteps. A **Reference Presentation Pass** is in progress to bring design, graphics, and sound up to the *Mirror's Edge* prologue reference. Round 1 (HDR rendering, sky, materials, rooftop city, first-person arms) is complete and measured. Round 2 (procedural audio architecture, surface-aware movement, parkour set, ambience, score, radio) is implemented and measured; a human listening pass, route design, and further graphics polish remain.
+**Current phase:** Phases 0–7 and Phase 8 (stabilization) are complete. A post-roadmap **Release Polish** pass has also been completed: initial release content presentation, HUD tutorial guidance, atmosphere, and procedural ambience/footsteps. A **Reference Presentation Pass** is in progress to bring design, graphics, and sound up to the *Mirror's Edge* prologue reference. Round 1 (HDR rendering, sky, materials, rooftop city, first-person arms) is complete and measured. Round 2 (procedural audio architecture, surface-aware movement, parkour set, ambience, score, radio) is implemented and measured. Round 3 extends the Prologue from a 25 m flat corridor to a ~66 m route with a roof drop, sprint gap, stair climb, narrow skybridge, and finish roof. A human listening pass, route extension toward the 180–220 m reference scale, and further graphics polish remain.
 
-**Implementation readiness:** The game is feature-complete for the initial release scope, stabilized, and visually/audio-polished: core gameplay, Training/Prologue sessions, Speedrun validation and local records, persistent progression/achievements/statistics/tutorial, HUD tutorial guidance, level atmosphere and ambience, UI/accessibility/localization, Save System recovery, and the fixed-step loop are implemented, integrated, and covered by automated and browser checks. The reference pass has added an HDR post pipeline, procedural sky/reflections, PBR materials, a dense Prologue city, a first-person body, and a procedural audio mix with surface-aware movement, parkour loops, ambience, and a sparse score. The measured start frame is inside the reference tolerance band on 10/13 image metrics (highlight headroom and sky area are open gaps); the offline audio demo is inside all five planned audio bands (5/5). Remaining limitations are compatibility verification depth (Firefox/Safari gameplay, actual assistive-technology testing), reference-level sound and route design, asset-level art polish, and intentionally deferred features.
+**Implementation readiness:** The game is feature-complete for the initial release scope, stabilized, and visually/audio-polished: core gameplay, Training/Prologue sessions, Speedrun validation and local records, persistent progression/achievements/statistics/tutorial, HUD tutorial guidance, level atmosphere and ambience, UI/accessibility/localization, Save System recovery, and the fixed-step loop are implemented, integrated, and covered by automated and browser checks. The reference pass has added an HDR post pipeline, procedural sky/reflections, PBR materials, a dense Prologue city, a first-person body, a procedural audio mix with surface-aware movement, parkour loops, ambience, and a sparse score, and a vertical Prologue route with drop, gap, stair climb, skybridge, and finish roof. The measured start frame is inside the reference tolerance band on 10/13 image metrics (highlight headroom and sky area are open gaps); the offline audio demo is inside all five planned audio bands (5/5). Remaining limitations are compatibility verification depth (Firefox/Safari gameplay, actual assistive-technology testing), reference-level sound and route design, asset-level art polish, and intentionally deferred features.
 
 ### 3.1. Documentation Reconciliation (2026-11-17)
 
@@ -1029,6 +1029,62 @@ Known limitations:
 - Continuous loops do not crossfade between surface materials.
 - The demo peak is conservatively low versus the reference; transient headroom
   can be raised after listening.
+
+---
+### Reference Presentation Pass — Round 3 (2026-11-19)
+
+**Goal:** move the Prologue design from a flat 25 m corridor toward the
+reference's rooftop traversal beats without breaking checkpoint/speedrun
+contracts.
+
+**Status:** Implemented, integrated, verified by physics and route integration;
+reference-scale route length remains open.
+
+Implemented:
+
+- **Vertical route:** upper roof (y = 0) → 1 m drop through the north parapet gap
+  → lower service roof (y = −3) → 2.4 m sprint gap → 15-step 0.15 m stair climb
+  → 3.4 m skybridge (y = −0.9) → finish roof (z = −62).
+- **Checkpoint/section migration:** all five checkpoint IDs and their order are
+  unchanged; positions moved to the new beats (`cp_skybridge` z = −46,
+  `cp_finish` z = −56), with matching spawn points, section triggers, and finish
+  trigger at z = −60.
+- **Safety:** void kill volumes moved below the lower route; the upper roof drop
+  and lower-gap fall still respawn at the last checkpoint.
+- **Presentation:** construction scaffold, red route paint, hazard edge, bridge
+  rails/lights, lower-deck AC/duct/crate kit, floodlights, finish terminal/sign,
+  and lower background roof for drop depth. The decorative skybridge moved to
+  the distant skyline so it no longer occludes the playable route.
+- **Shadow coverage:** the sun shadow frustum now covers the lower route and
+  finish roof; the deprecated `PCFSoftShadowMap` setting was replaced with
+  `PCFShadowMap`.
+- **Tests:** new `prologue-traversal.test.ts` builds every Prologue collider and
+  physically sprint-jumps the gap, climbs the stairs, and crosses the bridge to
+  the finish roof; `prologue-integration.test.ts` waypoints cover the extended
+  checkpoint chain.
+
+Verification:
+
+- `npm run validate` green: typecheck, Biome, **270 tests in 36 files**, build.
+- Physical traversal: 2.4 m gap cleared, 2.1 m stair climb completed, bridge and
+  finish reached (z < −58, y > −1.2).
+- Browser: upper-roof drop settles at y ≈ −2.11 on the lower deck; lower route,
+  stairs, bridge, and finish render with no console errors.
+- Evidence: `docs/evidence/visual/round-3/` (start, drop, lower, bridge, finish,
+  metrics) and `docs/VISUAL_REFERENCE_PROGRESS.md`.
+
+Known limitations:
+
+- Route is ~66 m with one explicit gap, versus the 180–220 m reference-scale
+  target; vertical delta is 5.1 m versus ≥ 8 m.
+- The 0.15 m stair risers are reliable under autostep but slow; a parkour line
+  needs jump platforms or a tuned ramp.
+- Section IDs for boundary geometry are still inferred from z; surface metadata
+  on a boundary can deactivate a beat early.
+- Lower roof remains broad and partially empty; the gap can read as a black void
+  from the deck edge.
+- No sound or UI changes this round; the Round 2 mix still awaits a human
+  listening pass.
 
 ---
 

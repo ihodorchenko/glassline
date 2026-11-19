@@ -166,10 +166,12 @@ describe("Prologue start-to-finish integration", () => {
       { x: 0, y: 0.93, z: -6.1 },
       { x: 0, y: 0.93, z: -8.5 },
       { x: 0, y: 0.93, z: -10.1 },
-      { x: 0, y: 0.93, z: -14.5 },
-      { x: 0, y: 0.93, z: -16.1 },
-      { x: 0, y: 0.93, z: -18.5 },
-      { x: 0, y: 0.93, z: -19.5 },
+      { x: 0, y: -2.07, z: -27.5 },
+      { x: 0, y: -0.5, z: -43 },
+      { x: 0, y: 0.03, z: -46 },
+      { x: 0, y: -0.5, z: -50.3 },
+      { x: 0, y: 0.03, z: -56 },
+      { x: 0, y: -0.5, z: -60 },
     ];
 
     for (const waypoint of waypoints) {
@@ -198,7 +200,7 @@ describe("Prologue start-to-finish integration", () => {
     expect(result.validation.valid).toBe(true);
     expect(result.checkpointsCompleted).toBe(5);
     expect(result.splits.map((split) => split.checkpointId)).toEqual(route.checkpointOrder);
-    expect(result.totalTimeMs).toBe(16000);
+    expect(result.totalTimeMs).toBe(waypoints.length * 1500 + 1000);
     expect(result.medal).not.toBe("none");
     expect(speedrun.getState()).toBe("finished");
 
