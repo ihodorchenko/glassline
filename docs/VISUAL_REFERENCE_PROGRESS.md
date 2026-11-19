@@ -3560,6 +3560,33 @@ Remove redundant shadow-map rendering every frame.
 - Any future dynamic shadow caster must call `refreshShadows()`; documented.
 - Safari still unmeasured.
 
+---
+
+## Round 82 — full-run reproducibility audit (2026-11-19)
+
+### Scope
+
+Check whether the clean 0-respawn run is reproducible after the visual and
+performance changes.
+
+### What changed
+
+- Added `--poll-ms` to the capture autopilot (30 ms vs 80 ms).
+- Six attempts: **1–3 checkpoint respawns**, some did not finish inside the
+  30 s capture. Faster polling did not remove the variance.
+- Best known remains **24.014 s / 0 respawns** (Round 65).
+- No game code changes; 282 tests.
+
+### Evidence
+
+- [`runs.json`](evidence/video/round-82/runs.json)
+
+### Honest gaps
+
+- Full run is completed and has a clean sample, but the autopilot is **not
+  deterministic**. A deterministic jump/landing controller is still needed for
+  repeatable 0-respawn verification.
+
 ## Round log
 
 | Round | Date | Focus | Outcome |

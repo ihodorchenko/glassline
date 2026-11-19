@@ -47,6 +47,7 @@ function parseArgs(argv) {
     jumpHold: 110,
     slideRange: null,
     interact: false,
+    pollMs: 80,
   };
 
   for (let index = 0; index < argv.length; index += 1) {
@@ -101,6 +102,9 @@ function parseArgs(argv) {
             return Number.isFinite(z) ? { z, hold } : null;
           })
           .filter(Boolean);
+        break;
+      case "--poll-ms":
+        args.pollMs = Math.max(15, Number(argv[++index] ?? 80) || 80);
         break;
       case "--jump-hold":
         args.jumpHold = Math.max(40, Number(argv[++index] ?? 110) || 110);
@@ -157,6 +161,7 @@ function parseArgs(argv) {
             "  --no-jumps         Do not auto-jump",
             "  --jump-z <list>    Jump at z thresholds; optional hold ms: z[:hold],...",
             "  --jump-hold <ms>   Hold jump longer for full-height jumps (default 110)",
+            "  --poll-ms <ms>     Waypoint/jump polling interval (default 80)",
             "  --slide-range <a,b> Hold crouch/slide between z=a and z=b",
           ].join("\n"),
         );
@@ -751,7 +756,7 @@ async function main() {
         break;
       }
 
-      await delay(80);
+      await delay(args.pollMs);
     }
 
     await session.evaluate(

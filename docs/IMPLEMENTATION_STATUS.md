@@ -102,7 +102,7 @@ Only `Verified` means that the applicable acceptance criteria have been checked 
 | Statistics | Defined | Implemented | Integrated | Verified |
 | Reference Presentation | Defined | In Progress | Integrated | Partially Verified |
 
-**Full run:** **clean spawn → FINISH in 24.014 s with 0 respawns**, no unlock/teleport (automated) — [Round 65](VISUAL_REFERENCE_PROGRESS.md).
+**Full run:** clean spawn → FINISH exists in **24.014 s / 0 respawns** (Round 65), but the autopilot is stochastic: recent attempts had 1–3 checkpoint respawns ([Round 82 audit](VISUAL_REFERENCE_PROGRESS.md)).
 
 **Geometry:** beveled static boxes and instanced props (visual only, colliders unchanged). Static boxes merged per material, decoration batches merged, and the static shadow map is cached; calls **1040 → 352**, triangles **4.02M → 2.67M**, geometries **111 → 54** ([PERFORMANCE_BASELINE.md](PERFORMANCE_BASELINE.md)).
 
