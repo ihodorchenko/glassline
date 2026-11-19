@@ -245,12 +245,12 @@ const AMBIENT_AO_SHADER = {
     tAO: { value: null as THREE.Texture | null },
     /** 0 = open / no effect, 1 = fully covered (set from scene.userData). */
     uInteriorWeight: { value: 0 },
-    uAOStrength: { value: 0.86 },
+    uAOStrength: { value: 0.85 },
     /** AO exponent: measured large-radius AO is ~0.78 indoors, ~0.95+ outside. */
     uAOPower: { value: 3.2 },
     uAOOpen: { value: 0.9 },
     uAOCovered: { value: 0.72 },
-    uBounceColor: { value: new THREE.Color(0xc8d4dc) },
+    uBounceColor: { value: new THREE.Color(0xd4d8dc) },
     uBounceStrength: { value: 0.55 },
     /** Tap spacing (UV) for the 3x3 low-pass; set from the AO target size. */
     uAOKernel: { value: new THREE.Vector2(1 / 400, 1 / 225) },

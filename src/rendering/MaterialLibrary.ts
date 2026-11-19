@@ -110,14 +110,14 @@ const MATERIAL_SPECS: Record<MaterialKey, MaterialSpec> = {
     roughness: 0.13,
     metalness: 0.6,
     uvScale: 0.4,
-    envMapIntensity: 1.7,
+    envMapIntensity: 1.55,
   },
   "glass-far": {
     color: 0x283038,
     roughness: 0.2,
     metalness: 0.5,
     uvScale: 0.4,
-    envMapIntensity: 1.35,
+    envMapIntensity: 1.25,
   },
   metal: {
     color: 0x747a7d,
@@ -128,7 +128,7 @@ const MATERIAL_SPECS: Record<MaterialKey, MaterialSpec> = {
     envMapIntensity: 1.05,
   },
   "dark-metal": {
-    color: 0x33393d,
+    color: 0x2b3542,
     roughness: 0.5,
     metalness: 0.8,
     uvScale: 0.3,
@@ -746,7 +746,7 @@ function applyTriplanar(
   material.customProgramCacheKey = () => "glassline-triplanar";
 }
 
-const GLASS_SHEEN_TINT = 0x3a4a56;
+const GLASS_SHEEN_TINT = 0x585c60;
 
 /**
  * Grazing sheen for the dark glass masses.
@@ -830,8 +830,8 @@ export class MaterialLibrary implements Disposable {
       applyGlassSheen(
         material,
         GLASS_SHEEN_TINT,
-        key === "glass" ? 1.35 : 1.45,
-        key === "glass" ? 0.1 : 0.2,
+        key === "glass" ? 0.9 : 1.0,
+        key === "glass" ? 0.07 : 0.15,
       );
     }
 

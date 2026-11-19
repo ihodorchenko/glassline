@@ -3,7 +3,8 @@ import type { LevelDecorationDefinition, LevelMaterialType } from "../LevelTypes
 type SectionResolver = (z: number) => string;
 
 interface BoxOptions {
-  readonly material: LevelMaterialType;
+  /** Semantic PBR material; omitted when the box is a flat authored colour. */
+  readonly material?: LevelMaterialType;
   readonly rotationX?: number;
   readonly rotationY?: number;
   readonly rotationZ?: number;
@@ -126,19 +127,18 @@ function addParapetCoping(builder: CityBuilder): void {
 }
 
 function addRoofExpansionJoints(builder: CityBuilder): void {
-  // Flush metal expansion joints break up the roof panels at human scale.
-  // Brushed steel reads as a seam; the old dark-metal strips read as black
-  // holes in the deck.
+  // Cool dark-steel expansion joints break up the roof panels at human scale.
+  // The darker steel reads as a structural seam without becoming a black hole.
   for (const z of [-16, -8, 0, 8, 16]) {
     builder.box(-3.2, 0.018, z, 15.6, 0.024, 0.05, {
-      material: "metal",
+      material: "dark-metal",
       castShadow: false,
     });
   }
 
   for (const z of [-16, -8, 0, 8, 16]) {
     builder.box(10, 0.018, z, 2, 0.024, 0.05, {
-      material: "metal",
+      material: "dark-metal",
       castShadow: false,
     });
   }
@@ -525,21 +525,25 @@ function addFinishArea(builder: CityBuilder, z: number, deckY: number): void {
     receiveShadow: false,
   });
 
-  // Finish terminal with a lit screen.
+  // Finish terminal with a matte screen. The screen is a white printed panel,
+  // not a light source: without a texture canvas the library `cool-light`
+  // material glowed (emissive 0.18) and read as an emissive panel, so it is
+  // printed on the same matte white as the gate; the decoration-level emissive
+  // stays at 0.05 for data hygiene.
   builder.box(2.5, deckY + 1.32, z + 1.8, 0.72, 0.5, 0.1, {
-    material: "cool-light",
+    material: "white",
     rotationY: -0.4,
     emissive: 0xbfe6ff,
-    emissiveIntensity: 0.2,
+    emissiveIntensity: 0.05,
   });
   builder.box(2.5, deckY + 1.55, z + 1.8, 0.78, 0.08, 0.14, {
     material: "dark-metal",
     rotationY: -0.4,
   });
   builder.box(2.5, deckY + 0.62, z + 2.12, 0.5, 0.42, 0.04, {
-    material: "cool-light",
+    material: "white",
     emissive: 0xbfe6ff,
-    emissiveIntensity: 0.2,
+    emissiveIntensity: 0.05,
   });
 }
 
@@ -1114,7 +1118,7 @@ function addLowerZone(builder: CityBuilder): void {
     receiveShadow: false,
   });
 
-  for (let z = -24; z > -34.5; z -= 2.4) {
+  for (let z = -24; z > -32; z -= 2.4) {
     builder.box(0, -2.985, z, 0.18, 0.02, 1.15, {
       material: "red",
       castShadow: false,
@@ -1129,6 +1133,23 @@ function addLowerZone(builder: CityBuilder): void {
       receiveShadow: false,
     });
   }
+
+  // First-gap edge dressing: a 0.3 m parapet cap on the lower-roof lip, the
+  // route red bound to the edge as a 0.6 × 0.3 m hazard plate instead of a tab
+  // floating over the gap, and a soft contact shadow where the cap meets the
+  // deck. Visual only: no collider, section or trigger metadata.
+  builder.box(0, -2.97, -31.85, 28, 0.06, 0.3, { material: "dark-metal" });
+  builder.box(0, -2.93, -31.85, 0.6, 0.02, 0.3, {
+    material: "red",
+    castShadow: false,
+    receiveShadow: false,
+  });
+  builder.box(0, -2.991, -31.59, 28, 0.012, 0.22, {
+    color: 0x101820,
+    opacity: 0.28,
+    castShadow: false,
+    receiveShadow: false,
+  });
 
   // Lower roof edge rails.
   for (const side of [-1, 1]) {
