@@ -1764,6 +1764,57 @@ the overhead bridge.
 3. Human listening and final camera/menu calibration.
 4. Continue highlight/world-detail parity.
 
+---
+
+## Round 26 — Training floor identity + reduced-motion menu (2026-11-19)
+
+### Scope
+
+Training needed a readable start identity on the floor, and the Round 25 menu
+drift ignored the reduced-motion setting. This round fixes both.
+
+### What changed
+
+- **Training floor identity:** a 3.2 × 0.8 m dark `MOVEMENT YARD` mat at z=1.0,
+  plus red V-chevrons at z=0.2/−5.8/−10.9/−16.2 along the lane. The mat is a
+  plane sign lying on the floor, placed beyond the start line but inside the
+  initial view.
+- **Reduced motion:** `CameraSystem.reducedMotionEnabled` exposed; the menu
+  presentation drift scales to zero when the accessibility reduced-motion
+  setting is on, while the camera still takes the static menu pose.
+- **No route/collision/audio changes.**
+- **No metric regression:** Prologue start remains 13/13.
+
+### Verification
+
+- `npm run validate`: typecheck, Biome, **275 tests in 36 files**, build.
+- Prologue start **13/13**; performance **60.3 fps**.
+- Captures: Training mat/chevrons, menu, start.
+
+### Evidence
+
+| View | Image |
+|---|---|
+| Training floor identity | ![Training](evidence/visual/round-26/training.jpg) |
+| Menu with reduced-motion-aware drift | ![Menu](evidence/visual/round-26/menu.jpg) |
+| Start regression | ![Start](evidence/visual/round-26/start.jpg) |
+| Metrics | [`metrics.json`](evidence/visual/round-26/metrics.json) |
+
+### Honest gaps
+
+- The floor mat is a thin sign plane, not a worn painted/embedded surface; it
+  can read as a floating sticker.
+- Reduced motion is applied to menu drift only; hoist/birds/clouds still animate.
+- Hoist audio, human listening, clipped-highlight recovery, bypass tradeoff, and
+  final motion/menu calibration remain open.
+
+### Next
+
+1. Make Training floor markings feel painted/worn and add lane arrows.
+2. Apply reduced-motion policy to hoist/birds if desired.
+3. Human listening and final camera/menu calibration.
+4. Prologue highlight recovery without losing 13/13.
+
 ## Round log
 
 | Round | Date | Focus | Outcome |

@@ -200,6 +200,10 @@ export class CameraSystem implements Disposable {
     return this.currentRoll;
   }
 
+  get reducedMotionEnabled(): boolean {
+    return this.view.reducedMotion;
+  }
+
   /** World-space direction the camera is looking along. */
   getLookDirection(): Vector3Like {
     const cosPitch = Math.cos(this.pitch);
