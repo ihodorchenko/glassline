@@ -1,0 +1,60 @@
+{
+  "wav": "docs/evidence/video/round-48/catwalk-finish-run.wav",
+  "values": {
+    "durationSeconds": 12.353015873015874,
+    "sampleRate": 44100,
+    "peak": 0.617218017578125,
+    "peak_db": -4.19122809350816,
+    "rms": 0.08993461813294022,
+    "rms_db": -20.921462100782886,
+    "short_term_range": 1.3865690520433915,
+    "lufs": -21.785406354033785,
+    "low_share": 0.8676052623517756,
+    "mid_share": 0.1004480532927131,
+    "high_share": 0.0319466843555113
+  },
+  "targets": [
+    {
+      "metric": "low_share",
+      "label": "Energy < 500 Hz",
+      "value": 0.8676052623517756,
+      "min": 0.85,
+      "max": 0.94,
+      "pass": true
+    },
+    {
+      "metric": "high_share",
+      "label": "Energy > 2 kHz",
+      "value": 0.0319466843555113,
+      "min": 0.03,
+      "max": 0.08,
+      "pass": true
+    },
+    {
+      "metric": "lufs",
+      "label": "Integrated loudness (approx K-weighted)",
+      "value": -21.785406354033785,
+      "min": -31.0,
+      "max": -26.0,
+      "pass": false
+    },
+    {
+      "metric": "peak_db",
+      "label": "Sample peak",
+      "value": -4.19122809350816,
+      "min": -60.0,
+      "max": -3.0,
+      "pass": true
+    },
+    {
+      "metric": "short_term_range",
+      "label": "Short-term range",
+      "value": 1.3865690520433915,
+      "min": 18.0,
+      "max": 26.0,
+      "pass": false
+    }
+  ],
+  "passed": 3,
+  "total": 5
+}

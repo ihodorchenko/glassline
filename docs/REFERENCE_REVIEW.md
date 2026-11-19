@@ -35,6 +35,7 @@ deep-shadow 1,72% · sky 39,8% · split −16,69 · red 3,28**.
    - [gameplay-route.wav](evidence/video/round-31/gameplay-route.wav) — реальный игровой микс.
 2. **Посмотреть 9-секундный реальный геймплей** и 17,5-секундный обзор:
    - [gameplay-route.mp4](evidence/video/round-31/gameplay-route.mp4)
+   - [catwalk-finish-run.mp4](evidence/video/round-48/catwalk-finish-run.mp4) — 12,35 с, поворот + два барьера + подход к финишу
    - [cinematic-route.mp4](evidence/video/round-30/cinematic-route.mp4)
 3. **Посмотреть стартовый кадр и Training**:
    - [start.jpg](evidence/visual/round-42/start.jpg)

@@ -2717,6 +2717,41 @@ and captures the full 180° turn.
 - Stops before barriers; no bypass/return-run; audio loud.
 - Human audio/video verdict still pending.
 
+---
+
+## Round 48 — full catwalk line with barrier jumps (2026-11-19)
+
+### Scope
+
+Round 47 stopped at the catwalk turn/barriers. This round adds barrier auto-jump
+thresholds and captures the full return line.
+
+### What changed
+
+- Waypoint capture `--jump-x "39,34"` triggers Space when grounded within 1.15 m
+  of each barrier x.
+- 12.35 s continuous clip: start x=32 → outbound → 180° turn → jump x=39/x=34 →
+  finish-deck approach at 8.5 m/s.
+- Live audio peak −4.19 dBFS / LUFS ≈ −21.79.
+- No game/route/visual changes.
+
+### Verification
+
+- `npm run validate`: **279 tests in 37 files**, build.
+- 12.35 s/1280×720/30 fps; both jumps visible; no probe errors.
+- Start 13/13 unchanged.
+
+### Evidence
+
+- [`catwalk-finish-run.mp4`](evidence/video/round-48/catwalk-finish-run.mp4)
+- [`catwalk-finish-run.wav`](evidence/video/round-48/catwalk-finish-run.wav)
+- [`poster.png`](evidence/video/round-48/poster.png)
+
+### Honest gaps
+
+- Ends before the finish trigger; no finish-screen capture.
+- Audio is loud/live, not normalized; human verdict pending.
+
 ## Round log
 
 | Round | Date | Focus | Outcome |

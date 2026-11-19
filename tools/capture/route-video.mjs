@@ -42,6 +42,7 @@ function parseArgs(argv) {
     cinematic: false,
     unlock: false,
     waypoints: null,
+    jumpX: [],
   };
 
   for (let index = 0; index < argv.length; index += 1) {
@@ -90,6 +91,12 @@ function parseArgs(argv) {
         break;
       case "--unlock":
         args.unlock = true;
+        break;
+      case "--jump-x":
+        args.jumpX = value()
+          .split(",")
+          .map((entry) => Number(entry.trim()))
+          .filter(Number.isFinite);
         break;
       case "--waypoints":
         args.waypoints = value()
@@ -594,11 +601,16 @@ async function main() {
     );
     const started = Date.now();
     let index = 0;
+    const jumped = new Set();
 
     while (Date.now() - started < args.seconds * 1000) {
       const state = await session.evaluate(`(() => {
         const app = window.__glassline;
-        return { x: app.player.getPosition().x, z: app.player.getPosition().z };
+        return {
+          x: app.player.getPosition().x,
+          z: app.player.getPosition().z,
+          grounded: app.player.model.getSnapshot().grounded,
+        };
       })()`);
       const target = waypoints[index] ?? waypoints[waypoints.length - 1];
 
@@ -618,6 +630,18 @@ async function main() {
         camera.pitch = 0;
         return true;
       })()`);
+
+      if (state.z < -128 && state.grounded) {
+        for (const x of args.jumpX) {
+          if (!jumped.has(x) && Math.abs(state.x - x) < 1.15) {
+            jumped.add(x);
+            await sendKey(session, "rawKeyDown", "Space", " ", 32);
+            await delay(70);
+            await sendKey(session, "keyUp", "Space", " ", 32);
+            break;
+          }
+        }
+      }
 
       if (index === waypoints.length - 1 && distance < 1.2) break;
 
