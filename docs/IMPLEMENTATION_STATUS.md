@@ -102,6 +102,8 @@ Only `Verified` means that the applicable acceptance criteria have been checked 
 | Statistics | Defined | Implemented | Integrated | Verified |
 | Reference Presentation | Defined | In Progress | Integrated | Partially Verified |
 
+**Full run:** spawn → FINISH in **32.739 s** (no unlock/teleport, automated) — [Round 62](VISUAL_REFERENCE_PROGRESS.md).
+
 **Materials:** triplanar procedural bump/normal relief across concrete/roof/metal/asphalt ([Round 61](VISUAL_REFERENCE_PROGRESS.md)); start remains 13/13.
 
 **Cross-browser:** Chromium passes; WebKit gameplay is blocked by a Rapier WASM collider trap; Firefox is blocked by the environment sandbox ([CROSS_BROWSER.md](CROSS_BROWSER.md)).

@@ -3140,6 +3140,36 @@ First step of the new +40 cap: push materials beyond flat color maps.
 - WebKit gameplay still blocked by the Rapier WASM trap (see CROSS_BROWSER.md).
 - No human visual verdict.
 
+---
+
+## Round 62 — full Prologue run from spawn (2026-11-19)
+
+### Scope
+
+Priority «полный забег»: record the whole Prologue from the initial spawn.
+
+### What changed
+
+- Added `--jump-z` thresholds and `--slide-range` to the capture autopilot.
+- Jumps now use `input.heldKeys`; W/Shift are refreshed every loop and jump
+  thresholds reset on checkpoint respawn.
+- Completed route: vault → slide duct → lower roofs → stairs → skybridge →
+  beam → 8 ascent platforms → FINISH.
+- **32.739 s**, no `--unlock`, no end teleport.
+- No game/level/audio changes.
+
+### Evidence
+
+- [`full-run.mp4`](evidence/video/round-62/full-run.mp4) — 31.95 s
+- [`results-full.png`](evidence/video/round-62/results-full.png) — Results 00:32.739
+- [`README.md`](evidence/video/round-62/README.md)
+
+### Honest gaps
+
+- Automated waypoint/held-key completion, not a human/speedrun-valid record;
+  checkpoint respawns may occur.
+- WebKit gameplay remains blocked by Rapier WASM.
+
 ## Round log
 
 | Round | Date | Focus | Outcome |

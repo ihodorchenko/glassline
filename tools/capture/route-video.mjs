@@ -43,6 +43,8 @@ function parseArgs(argv) {
     unlock: false,
     waypoints: null,
     jumpX: [],
+    jumpZ: [],
+    slideRange: null,
     interact: false,
   };
 
@@ -87,6 +89,14 @@ function parseArgs(argv) {
       case "--no-slide":
         args.slide = false;
         break;
+      case "--jump-z":
+        args.jumpZ = (argv[++index] ?? "").split(",").map(Number).filter(Number.isFinite);
+        break;
+      case "--slide-range": {
+        const range = (argv[++index] ?? "").split(",").map(Number);
+        args.slideRange = range.length === 2 && range.every(Number.isFinite) ? range : null;
+        break;
+      }
       case "--cinematic":
         args.cinematic = true;
         break;
@@ -132,6 +142,8 @@ function parseArgs(argv) {
             "  --mode <mode>      prologue | training | speedrun",
             "  --launch           Launch headless Edge",
             "  --no-jumps         Do not auto-jump",
+            "  --jump-z <list>    Jump once when crossing z thresholds (comma-separated)",
+            "  --slide-range <a,b> Hold crouch/slide between z=a and z=b",
           ].join("\n"),
         );
         process.exit(0);
@@ -604,11 +616,16 @@ async function main() {
     const started = Date.now();
     let index = 0;
     const jumped = new Set();
+    const jumpedZ = new Set();
+    let lastLogAt = 0;
+    let lastStateZ = 6;
 
     while (Date.now() - started < args.seconds * 1000) {
       const state = await session.evaluate(`(() => {
         const app = window.__glassline;
         if (!app.player) return { done: true };
+        app.input.heldKeys.add('KeyW');
+        app.input.heldKeys.add('ShiftLeft');
         return {
           done: false,
           x: app.player.getPosition().x,
@@ -620,7 +637,21 @@ async function main() {
 
       if (!state || state.done || !target) break;
 
+      if (state.z > lastStateZ + 5) {
+        jumpedZ.clear();
+        jumped.clear();
+      }
+
+      lastStateZ = state.z;
+
       const distance = Math.hypot(target.x - state.x, target.z - state.z);
+
+      if (args.verbose && Date.now() - lastLogAt > 500) {
+        lastLogAt = Date.now();
+        console.log(
+          `wp=${index}/${waypoints.length - 1} x=${state.x.toFixed(2)} z=${state.z.toFixed(2)} grounded=${state.grounded}`,
+        );
+      }
 
       if (distance < 1.0 && index < waypoints.length - 1) {
         index += 1;
@@ -635,13 +666,34 @@ async function main() {
         return true;
       })()`);
 
+      if (args.slideRange) {
+        const [slideStart, slideEnd] = args.slideRange;
+        const shouldSlide = state.z <= slideStart && state.z >= slideEnd;
+
+        await session.evaluate(
+          `window.__glassline.input.heldKeys.${shouldSlide ? "add" : "delete"}('KeyC'); true`,
+        );
+      }
+
+      if (state.grounded) {
+        for (const targetZ of args.jumpZ) {
+          if (!jumpedZ.has(targetZ) && state.z <= targetZ + 0.45 && state.z >= targetZ - 2.2) {
+            jumpedZ.add(targetZ);
+            await session.evaluate("window.__glassline.input.heldKeys.add('Space'); true");
+            await delay(110);
+            await session.evaluate("window.__glassline.input.heldKeys.delete('Space'); true");
+            break;
+          }
+        }
+      }
+
       if (state.z < -128 && state.grounded) {
         for (const x of args.jumpX) {
           if (!jumped.has(x) && Math.abs(state.x - x) < 1.15) {
             jumped.add(x);
-            await sendKey(session, "rawKeyDown", "Space", " ", 32);
-            await delay(70);
-            await sendKey(session, "keyUp", "Space", " ", 32);
+            await session.evaluate("window.__glassline.input.heldKeys.add('Space'); true");
+            await delay(110);
+            await session.evaluate("window.__glassline.input.heldKeys.delete('Space'); true");
             break;
           }
         }
