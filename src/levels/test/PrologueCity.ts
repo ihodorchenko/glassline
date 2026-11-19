@@ -332,9 +332,7 @@ function addMiscRoofProps(builder: CityBuilder): void {
     [-4.6, 0.8, 0.9, 1.2],
   ] as const) {
     builder.box(x, 0.055, z, width, 0.012, depth, {
-      material: "concrete",
-      color: 0x8a867d,
-      opacity: 0.28,
+      material: "stain",
       castShadow: false,
       receiveShadow: false,
     });

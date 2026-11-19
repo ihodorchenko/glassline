@@ -18,7 +18,8 @@ export type MaterialKey =
   | "warm-light"
   | "cool-light"
   | "foliage"
-  | "soil";
+  | "soil"
+  | "stain";
 
 interface MaterialSpec {
   readonly color: number;
@@ -29,9 +30,19 @@ interface MaterialSpec {
   readonly emissive?: number;
   readonly emissiveIntensity?: number;
   readonly envMapIntensity?: number;
+  readonly transparent?: boolean;
+  readonly depthWrite?: boolean;
 }
 
-type TextureKind = "plaster" | "concrete" | "roof" | "facade" | "metal" | "asphalt" | "red";
+type TextureKind =
+  | "plaster"
+  | "concrete"
+  | "roof"
+  | "facade"
+  | "metal"
+  | "asphalt"
+  | "red"
+  | "stain";
 
 const MATERIAL_SPECS: Record<MaterialKey, MaterialSpec> = {
   white: {
@@ -138,6 +149,15 @@ const MATERIAL_SPECS: Record<MaterialKey, MaterialSpec> = {
     roughness: 0.96,
     metalness: 0,
     uvScale: 0.28,
+  },
+  stain: {
+    color: 0xffffff,
+    roughness: 0.95,
+    metalness: 0,
+    uvScale: 0.3,
+    texture: "stain",
+    transparent: true,
+    depthWrite: false,
   },
   soil: {
     color: 0x3a3028,
@@ -378,6 +398,23 @@ function paintTexture(kind: TextureKind): HTMLCanvasElement {
       context.globalAlpha = 1;
       break;
     }
+    case "stain": {
+      for (let index = 0; index < 22; index += 1) {
+        const x = random() * TEXTURE_SIZE;
+        const y = random() * TEXTURE_SIZE;
+        const radius = 18 + random() * 64;
+        const gradient = context.createRadialGradient(x, y, 0, x, y, radius);
+
+        gradient.addColorStop(0, `rgba(72, 68, 61, ${0.16 + random() * 0.24})`);
+        gradient.addColorStop(0.55, `rgba(92, 88, 80, ${0.08 + random() * 0.12})`);
+        gradient.addColorStop(1, "rgba(92, 88, 80, 0)");
+        context.fillStyle = gradient;
+        context.beginPath();
+        context.arc(x, y, radius, 0, Math.PI * 2);
+        context.fill();
+      }
+      break;
+    }
     case "asphalt": {
       fillBase(context, "#55585a");
       addSpeckle(context, random, 9000, ["#74777a", "#3d4042", "#8b8e90"], 2.2);
@@ -482,6 +519,8 @@ export class MaterialLibrary implements Disposable {
       roughness: spec.roughness,
       metalness: spec.metalness,
       envMapIntensity: spec.envMapIntensity ?? 0.5,
+      transparent: spec.transparent ?? false,
+      depthWrite: spec.depthWrite ?? true,
     });
 
     if (spec.emissive !== undefined) {

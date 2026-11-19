@@ -67,7 +67,8 @@ export type LevelMaterialType =
   | "warm-light"
   | "cool-light"
   | "foliage"
-  | "soil";
+  | "soil"
+  | "stain";
 
 /** Visual-only authored geometry; it never receives a physics collider. */
 export interface LevelDecorationDefinition {

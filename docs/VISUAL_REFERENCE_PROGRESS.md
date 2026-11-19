@@ -2156,6 +2156,52 @@ metric gate.
 2. Physical bypass tradeoff.
 3. Human review.
 
+---
+
+## Round 34 — procedural stain material (2026-11-19)
+
+### Scope
+
+Round 33 used flat translucent boxes for wear. This round adds a proper semantic
+`stain` material with procedural alpha grime and reuses the existing material
+path.
+
+### What changed
+
+- New `stain` material key/texture: transparent 512 px canvas with 22 radial
+  grime blobs, triplanar-mapped, `transparent`/`depthWrite:false`.
+- Five roof patches now use `material: "stain"` instead of opaque/translucent
+  boxes; organic edges replace hard rectangles.
+- No route/collision/audio changes.
+
+### Verification
+
+- `npm run validate`: typecheck, Biome, **276 tests in 36 files**, build.
+- Start **13/13**: luma 0.601, p25 0.355, near-white 20.0%, deep-shadow 3.30%,
+  local contrast 0.269.
+- Performance **60.1 fps**.
+
+### Evidence
+
+| View | Image |
+|---|---|
+| Start with stain material | ![Start](evidence/visual/round-34/start.jpg) |
+| Metrics | [`metrics.json`](evidence/visual/round-34/metrics.json) |
+
+### Honest gaps
+
+- At 720p the grime is still faint and reads as soft gray patches, not
+  photographic concrete wear; alpha was raised once to make it visible.
+- The stain material is a runtime canvas, not an authored texture; tiling is
+  uniform across all five patches.
+- Human listening, bypass tradeoff, and final motion/menu calibration remain.
+
+### Next
+
+1. Vary stain tiling/rotation and add edge wear.
+2. Physical bypass tradeoff.
+3. Human review of video/audio.
+
 ## Round log
 
 | Round | Date | Focus | Outcome |
