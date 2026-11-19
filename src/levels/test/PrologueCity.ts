@@ -907,6 +907,14 @@ function addCrane(builder: CityBuilder): void {
   for (let index = 0; index < 9; index += 1) {
     builder.box(-40, 8 + index * 9.2, -34, 1.3, 0.12, 1.3, { material: "dark-metal" });
   }
+
+  // A second tower crane on the far side of the catwalk turn gives the open
+  // view a silhouette instead of a blank skyline wall.
+  builder.box(74, 20, -205, 1.4, 102, 1.4, { material: "metal", castShadow: false });
+  builder.box(74, 71.2, -205, 38, 0.8, 0.8, { material: "red", castShadow: false });
+  builder.box(74, 69.8, -219, 3.8, 2.6, 2.6, { material: "dark-metal", castShadow: false });
+  builder.box(55.5, 71.0, -205, 0.06, 18, 0.06, { material: "dark-metal", castShadow: false });
+  builder.box(55.5, 61.8, -205, 1.1, 0.5, 0.5, { material: "metal", castShadow: false });
 }
 
 function addLowerZone(builder: CityBuilder): void {
@@ -1180,6 +1188,10 @@ function addFinaleScaffold(builder: CityBuilder): void {
 function addCatwalk(builder: CityBuilder): void {
   // Red route paint along the outbound and return spans.
   for (let x = 10; x <= 44; x += 2.4) {
+    if (x > 23.4 && x < 26.4) {
+      continue;
+    }
+
     builder.box(x, 5.218, -122.8, 1.1, 0.02, 0.14, {
       material: "red",
       castShadow: false,
@@ -1224,8 +1236,6 @@ function addCatwalk(builder: CityBuilder): void {
     textColor: 0xf4f1e9,
     accentColor: 0xd52e36,
   });
-
-  builder.box(49, 6.3, -129.0, 2.8, 0.1, 0.1, { material: "red" });
 
   // Deck seams and a suspended construction load break the long span.
   for (let x = 14; x <= 44; x += 6) {
@@ -1341,7 +1351,7 @@ function addFarSkyline(builder: CityBuilder): void {
     const top = 24 + random() * 120;
     const material: LevelMaterialType =
       random() > 0.62 ? "glass-far" : random() > 0.5 ? "concrete" : "facade";
-    const crowdsCatwalkTurn = x > 30 && x < 95 && z < -112 && z > -175;
+    const crowdsCatwalkTurn = x > 20 && x < 95 && z < -112 && z > -260;
 
     if (crowdsCatwalkTurn) {
       continue;

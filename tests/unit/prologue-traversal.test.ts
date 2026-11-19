@@ -190,9 +190,33 @@ describe("Prologue lower-route traversal", () => {
     const harness = await createHarness({ x: 0, y: 6.1, z: -122.8 });
 
     step(harness, input(), 60);
-    for (let index = 0; index < 700; index += 1) {
-      harness.player.fixedUpdate(input({ move: { x: 0, y: 1 } }), -Math.PI / 2, DT);
+    let gapJumped = false;
+    let jumpHoldFrames = 0;
+
+    for (let index = 0; index < 900; index += 1) {
+      const position = harness.player.getPosition();
+      const jump =
+        !gapJumped &&
+        position.x > 23.4 &&
+        position.x < 24.6 &&
+        harness.player.getMovementSnapshot().grounded;
+
+      if (jump) {
+        gapJumped = true;
+        jumpHoldFrames = 14;
+      }
+
+      harness.player.fixedUpdate(
+        input({
+          move: { x: 0, y: 1 },
+          jumpPressed: jump,
+          jumpHeld: jumpHoldFrames > 0,
+        }),
+        -Math.PI / 2,
+        DT,
+      );
       harness.physics.step();
+      jumpHoldFrames = Math.max(0, jumpHoldFrames - 1);
 
       if (harness.player.getPosition().x > 47) {
         break;
@@ -201,6 +225,7 @@ describe("Prologue lower-route traversal", () => {
 
     const outbound = harness.player.getPosition();
 
+    expect(gapJumped).toBe(true);
     expect(outbound.x).toBeGreaterThan(46);
     expect(outbound.y).toBeGreaterThan(4.8);
 

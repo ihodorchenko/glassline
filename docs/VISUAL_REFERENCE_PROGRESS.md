@@ -781,6 +781,66 @@ checkpoint IDs, or section order.
 3. Consider a respawn-only safety beat without changing checkpoint IDs.
 4. Listening pass and final colour/motion calibration.
 
+---
+
+## Round 9 — turn vista and catwalk gap (2026-11-19)
+
+### Scope
+
+Round 8 opened the turn view but left it empty, and the catwalk was still a pure
+run. This round adds the first catwalk traversal beat and a deliberate distant
+silhouette, without changing route length or checkpoint IDs.
+
+### What changed
+
+- **Catwalk gap:** the outbound span is split at x 23.8…26.0 with a 2.2 m
+  construction gap. Red edge plates mark both sides; a rail-mounted `GAP / 2.2M`
+  sign sits above the north rail; deck seams and the suspended load continue
+  beyond it.
+- **Physical test:** the catwalk test now jumps the gap with held jump input,
+  then continues through the turn and back. A fall still respawns at the beam.
+- **Turn vista:** the far-skyline exclusion sector was widened to z > −260, so
+  the tall face that filled the south view is gone. A second distant tower crane
+  (x 74, jib at y 71) and a floating red accent removal give the turn an open
+  skyline silhouette instead of a wall.
+- **Catwalk/high-roof detail from Round 8** remains: suspended container, deck
+  seams, work lights, high-roof service kit, altitude wind.
+
+### Verification
+
+- `npm run validate` green: typecheck, Biome, **272 tests in 36 files**, build.
+- Catwalk physical test: gap jump + turn + return all pass.
+- Integration route unchanged (no trigger/checkpoint changes).
+- Performance **60.1 fps** (16.6 ms), start frame **10/13**.
+- Captures: gap close-up, open turn vista, catwalk detail.
+
+### Evidence
+
+| View | Image |
+|---|---|
+| Catwalk gap and suspended load | ![Gap](evidence/visual/round-9/gap.jpg) |
+| Turn vista with distant crane | ![Turn](evidence/visual/round-9/turn.jpg) |
+| Catwalk detail | ![Catwalk](evidence/visual/round-9/mid.jpg) |
+| Start regression | ![Start](evidence/visual/round-9/start.jpg) |
+
+### Honest gaps
+
+- The turn now opens to sky but is sparse; the crane is a silhouette, not a full
+  authored vista.
+- The 2.2 m gap is punishing with no mid-catwalk checkpoint; a fall returns to
+  the beam and repeats the climb.
+- Catwalk rails/white deck still repeat; only one real traversal beat was added.
+- High roof is dressed but still sparse; audio listening and final motion/menu
+  calibration remain open.
+- Uniform 0.8 m jump rhythm and no dedicated catwalk surface audio.
+
+### Next
+
+1. Add a mid-catwalk respawn anchor (without changing the five speedrun IDs).
+2. Author the turn vista (hero tower/billboard) and vary the gap approach.
+3. Add catwalk/grate surface audio; run the listening pass.
+4. Final menu/motion/colour calibration.
+
 ## Round log
 
 | Round | Date | Focus | Outcome |

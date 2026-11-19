@@ -328,9 +328,16 @@ export const PROLOGUE_ARENA_BOXES: readonly PrologueArenaBox[] = [
   }),
   // High catwalk U-turn over the city: out, east turn, and back to the roof.
   {
-    id: "geo_catwalk_out",
-    position: { x: 27, y: 5.1, z: -122.8 },
-    size: { x: 38, y: 0.2, z: 3.2 },
+    id: "geo_catwalk_out_west",
+    position: { x: 15.9, y: 5.1, z: -122.8 },
+    size: { x: 15.8, y: 0.2, z: 3.2 },
+    surfaceId: "surface_concrete",
+    material: "roof",
+  },
+  {
+    id: "geo_catwalk_out_east",
+    position: { x: 36, y: 5.1, z: -122.8 },
+    size: { x: 20, y: 0.2, z: 3.2 },
     surfaceId: "surface_concrete",
     material: "roof",
   },
