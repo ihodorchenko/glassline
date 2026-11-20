@@ -1,0 +1,138 @@
+{
+  "startedAt": "2026-11-20T14:57:30.955Z",
+  "baseUrl": "http://127.0.0.1:5173/",
+  "checks": [
+    {
+      "name": "initial document lang",
+      "passed": true,
+      "actual": "en",
+      "expected": "en"
+    },
+    {
+      "name": "English main menu title",
+      "passed": true,
+      "contains": "Glassline"
+    },
+    {
+      "name": "English main menu training",
+      "passed": true,
+      "contains": "Training"
+    },
+    {
+      "name": "English language value",
+      "passed": true,
+      "actual": "English",
+      "expected": "English"
+    },
+    {
+      "name": "Russian document lang after switch",
+      "passed": true,
+      "actual": "ru",
+      "expected": "ru"
+    },
+    {
+      "name": "Russian settings title",
+      "passed": true,
+      "contains": "Настройки"
+    },
+    {
+      "name": "Russian language tab",
+      "passed": true,
+      "contains": "Язык"
+    },
+    {
+      "name": "Russian language value",
+      "passed": true,
+      "contains": "Русский"
+    },
+    {
+      "name": "Russian reset category hint",
+      "passed": true,
+      "contains": "Сбросить раздел"
+    },
+    {
+      "name": "Russian language value text",
+      "passed": true,
+      "actual": "Русский",
+      "expected": "Русский"
+    },
+    {
+      "name": "Russian main menu training",
+      "passed": true,
+      "contains": "Тренировка"
+    },
+    {
+      "name": "Russian main menu prologue",
+      "passed": true,
+      "contains": "Пролог"
+    },
+    {
+      "name": "Russian main menu ranked prologue",
+      "passed": true,
+      "contains": "Рейтинговый пролог"
+    },
+    {
+      "name": "Russian main menu settings",
+      "passed": true,
+      "contains": "Настройки"
+    },
+    {
+      "name": "Russian main menu subtitle",
+      "passed": true,
+      "contains": "Паркур от первого лица"
+    },
+    {
+      "name": "document lang after reload",
+      "passed": true,
+      "actual": "ru",
+      "expected": "ru"
+    },
+    {
+      "name": "Russian persisted after reload",
+      "passed": true,
+      "contains": "Тренировка"
+    },
+    {
+      "name": "Russian settings after reload",
+      "passed": true,
+      "contains": "Настройки"
+    },
+    {
+      "name": "Russian language value after reload",
+      "passed": true,
+      "actual": "Русский",
+      "expected": "Русский"
+    },
+    {
+      "name": "document lang back to English",
+      "passed": true,
+      "actual": "en",
+      "expected": "en"
+    },
+    {
+      "name": "English main menu restored",
+      "passed": true,
+      "contains": "Training"
+    }
+  ],
+  "consoleErrors": [],
+  "pageErrors": [],
+  "screenshots": [
+    "captures/i18n/menu-en.png",
+    "captures/i18n/settings-en.png",
+    "captures/i18n/settings-ru.png",
+    "captures/i18n/menu-ru.png",
+    "captures/i18n/menu-ru-after-reload.png",
+    "captures/i18n/menu-en-restored.png"
+  ],
+  "failure": null,
+  "durationMs": 13766,
+  "finishedAt": "2026-11-20T14:57:45.382Z",
+  "summary": {
+    "totalChecks": 21,
+    "failedChecks": 0,
+    "consoleErrors": 0,
+    "pageErrors": 0,
+    "passed": true
+  }
+}

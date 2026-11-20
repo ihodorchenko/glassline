@@ -19,6 +19,7 @@ modified. The binding look evidence is blind review, not the metric columns.
 | G1 | Look foundation (grade, sky, materials, light) | gates closed after a fix round | [`reports/W1_ITERATION.md`](reports/W1_ITERATION.md) |
 | G2 | Content language (W2.1) | blind 6/6, canyon/rooftop 4/4 | [`reports/BLIND_REVIEW_W2.md`](reports/BLIND_REVIEW_W2.md) |
 | W2.2 | Residual polish | blind 6/6 | [`reports/W2_ITERATION.md`](reports/W2_ITERATION.md) §7 |
+| Post-G5 | cosmetic register + RU localization | closed: 6 review frames re-captured (deterministic), RU/EN switch shipped | [`reports/W5_RELEASE.md`](reports/W5_RELEASE.md) §7, [`evidence/i18n/`](evidence/i18n/) |
 | G3 | Level/route | route classes C1/C2/C3 finished, checkpoints validated (293+ tests) | [`reports/DECISIONS.md`](reports/DECISIONS.md) D-06 |
 | G4 | Audio foundation | 5/5 mix targets measured; **human listening pass remains open** | [`evidence/video/`](evidence/video/) audio rounds |
 | G5 | Release hygiene | blind 6/6, a11y audit, perf gate, docs; **G5 closed** | [`reports/W5_RELEASE.md`](reports/W5_RELEASE.md) |
@@ -228,7 +229,7 @@ Systems are not completely independent. Integration should happen continuously a
 | Input | 11 | Provide abstract input actions and device handling | In Progress |
 | Save | 10 | Establish IndexedDB persistence infrastructure | In Progress |
 | Settings | 25 | Establish configuration registry and runtime application | In Progress |
-| Localization | 27 | Establish translation resources and resolution | In Progress |
+| Localization | 27 | Establish translation resources and resolution | Complete (English + Russian, runtime switch) |
 
 ### 5.2. Core Player
 
@@ -361,7 +362,7 @@ Implemented and smoke-verified:
 - `PhysicsWorld`: Rapier init, fixed timestep matching the game loop, world stepping, deterministic disposal. Unit-tested with a falling rigid body.
 - `InputManager` + `InputActionResolver`: action registry, configurable keyboard/gamepad bindings, gameplay/menu contexts, pointer lock, mouse deltas, dead zones, pressed/held/released edges. Unit-tested without a DOM.
 - Settings System foundation: canonical definitions registry (`audio.*`, `controls.*`, `camera.*`, `display.*`, `hud.*`, `accessibility.*`, `gameplay.*`, `general.language`), validation, defaults, atomic updates, revisioned immutable snapshots, persistence through `SettingsRepository`, runtime application pipeline with domain adapters. Unit-tested.
-- Localization foundation: language registry (English), bundled resource loading through the shared `ResourceLoader`, translation resolution with fallback, interpolation, pluralization via `Intl.PluralRules`, runtime language switching wired to `general.language`. Unit-tested.
+- Localization: language registry (**English, Russian**), bundled resource loading through the shared `ResourceLoader`, translation resolution with fallback, interpolation, pluralization via `Intl.PluralRules` (Russian one/few/many), runtime language switching wired to `general.language` with immediate UI re-render, `documentElement.lang`, persisted preference and native language labels. Unit-tested (20 localization-RU tests on top of the existing suite). Remaining follow-up: content-owned strings (training exercise titles, level display names, in-world signage/boot screen) are still English.
 - Resource loading: `ResourceLoader` with in-flight deduplication, cancellation, timeouts, and structured `ResourceLoadError` values. Unit-tested.
 - Audio foundation: `AudioManager` with lazy `AudioContext` creation after a genuine user gesture, resume, master gain, Settings-owned volume/mute application, and deterministic disposal. Unit-tested with a fake context.
 - `Database` + `SaveSchema` + `SettingsRepository`: IndexedDB `GlasslineSaveData`, schema migrations, versioned stores, transactions, typed errors, malformed-payload rejection. Tested with fake-indexeddb.

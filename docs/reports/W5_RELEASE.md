@@ -111,3 +111,52 @@ copying reference frames.
 - Gate history: [`BASELINE.md`](BASELINE.md) (G0), [`W1_ITERATION.md`](W1_ITERATION.md)
   (G1), [`BLIND_REVIEW_W2.md`](BLIND_REVIEW_W2.md) (G2), [`W2_ITERATION.md`](W2_ITERATION.md)
   §7 (W2.2), this file (G5). Decisions: [`DECISIONS.md`](DECISIONS.md).
+
+## 7. Post-G5 pass — cosmetic register closed + Russian localization (2026-11-20)
+
+Owner request after G5: finish the post-G5 cosmetic register and add Russian
+localization with an RU/EN switch in Settings.
+
+### 7.1 Cosmetics (all register items closed)
+
+| Item | Result |
+|---|---|
+| first-gap underside | +2 props (vent + AC) and coping on the FG under-roof — underside reads as a dressed roof |
+| wallrun grille | recessed another 0.05 m, light steel louvers (0x9aa0a4 class) + visible frame — reads as a vent, not a dark block |
+| pipe-run flanges | sphere-ish "mushrooms" replaced by flat discs (0.05 m thick, −20 % diameter) in service-block MG-left and wallrun FG-right |
+| gantry stay cables | Ø0.02 → Ø0.03 against the sky |
+| finish-roof FG pipe-run | shifted +0.5 m right / out of the bottom frame edge |
+| BG spandrel contrast | thin towers (<18 m): dark spandrel bands + light windows, Δluma ≥0.15; heights/silhouettes unchanged |
+| glass-rail grazing | alpha falloff 0.22 → 0.18 (mean \|panel−background\| 77.33 → 73.96; panel still 23.9 luma darker than background, structure reads through) |
+
+Re-captured final frames `captures/postg5-final` → determinism **6/6
+byte-identical**, shifted **50/78** (unchanged), guardrails unchanged
+(sky-mask / red continuity / seam as in §2), headless perf `--strict`
+**6/6 PASS** (worst avg 60.00 at load 4.4). Evidence refreshed in
+[`docs/evidence/w5/`](../evidence/w5/) and metrics in
+[`postg5-metrics.md`](postg5-metrics.md); perf in [`postg5-perf.json`](postg5-perf.json).
+The AD reviewed the W5 final ↔ post-G5 side-by-side (A/B) and the cosmetics are
+recorded as closed; no new look or content risks were introduced.
+
+### 7.2 Russian localization with RU/EN switch
+
+- **`ru` language shipped:** registry entry (native label «Русский», locale
+  `ru-RU`, ltr), `src/localization/resources/ru.ts` with **212 keys** — zero
+  missing/extra keys, placeholders and plural categories verified (Russian
+  one/few/many/other; e.g. «1 попытка / 2 попытки / 5 попыток»).
+- **Switch:** Settings → Язык / Language (enum `general.language` = en/ru with
+  native labels); switching applies immediately without reload, re-renders the
+  visible screen, sets `documentElement.lang`, and persists (verified in the
+  live dev server: 21/21 checks, 0 console errors; RU survives reload, back to
+  EN restores English).
+- **Hardcoded strings localized:** loading network/detail lines, results
+  incomplete/attempts (plural), medals (`gold/silver/bronze/none`), records date
+  by locale, session-start error, language labels.
+- **Tests:** 20 new localization-RU tests (structure, placeholders, plurals,
+  switching, settings enum, UI re-render) → **322 tests**, `npm run validate`
+  green. Evidence: [`docs/evidence/i18n/`](../evidence/i18n/) (EN/RU screenshots
+  + `switch-report.json`).
+- **Follow-up (content-owned, still English):** training exercise
+  titles/objectives, level/checkpoint display names and the pre-localization
+  boot screen. In-world brand signage (`RUN`, `GLASSLINE`) stays English by
+  design (branding, confirmed by the art director). Tracked in DECISIONS D-22.

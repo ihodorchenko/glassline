@@ -562,3 +562,37 @@ the measured headed set; Safari/Firefox gameplay; human listening acceptance;
 Full record: `docs/reports/W5_RELEASE.md`, `W5_TARGETS.md`, `w5-metrics.*`,
 `w5-perf-*.json`. Nothing merges to `main`; owner acceptance is the remaining
 human gate.
+
+## D-22 — Post-G5 cosmetics closed; Russian localization shipped (2026-11-20)
+
+**Trigger.** After G5 the owner asked to finish the post-G5 cosmetic register and
+to add Russian localization with an RU/EN switch in Settings.
+
+**Post-G5 cosmetics (all closed in one pass, AD guided check):**
+first-gap underside +2 props (vent + AC + coping), wallrun grille recessed 0.05 m
+with light steel louvers/frame, pipe-run flanges replaced by flat discs (−20 %
+diameter, 0.05 m thick), gantry stay cables Ø0.02→0.03, finish-roof FG pipe-run
+shifted out of the frame edge, background spandrel/window Δluma ≥0.15 on thin
+towers, glass-rail grazing alpha 0.22→0.18 (mean |panel−background| 77.3→74.0,
+panel still 23.9 luma darker than background). Re-captured final frames:
+**determinism 6/6 byte-identical**, shifted **50/78** unchanged, guardrails
+unchanged, headless perf `--strict` green; committed evidence refreshed in
+`docs/evidence/w5/` and `reports/postg5-metrics.*`.
+
+**Russian localization (shipped):** `ru` language in the registry (native label
+«Русский»), complete `ru.ts` resource set (**212 keys**, zero missing/extra keys,
+placeholders/plural categories verified; Russian one/few/many + other), loader
+registration, `general.language` enum now en/ru with native labels, immediate
+runtime switch without reload (UI re-render, `documentElement.lang`,
+persistence; Playwright-verified in the live dev server with 21/21 checks and
+0 console errors), 10 previously hardcoded UI strings localized (loading,
+results, medals, records date, session-start error, language labels),
+**20 new tests → 322 total**, `npm run validate` green. Evidence:
+`docs/evidence/i18n/` (EN/RU screenshots + switch report).
+
+**Documented follow-up (not blocking):** content-owned strings remain English —
+training exercise titles/objectives, level/checkpoint display names and the
+pre-localization boot screen; they need a content-system localization pass (keys
+in training/level data + boot i18n). In-world brand signage (`RUN`, `GLASSLINE`)
+stays English by design (confirmed by the art director).
+Nothing merges to `main`.
