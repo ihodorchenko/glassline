@@ -160,3 +160,35 @@ recorded as closed; no new look or content risks were introduced.
   titles/objectives, level/checkpoint display names and the pre-localization
   boot screen. In-world brand signage (`RUN`, `GLASSLINE`) stays English by
   design (branding, confirmed by the art director). Tracked in DECISIONS D-22.
+
+### 7.3 Content-string localization (follow-up from §7.2 closed)
+
+The remaining content-owned English strings are localized with the same EN/RU
+architecture (authored English stays as a fallback, deterministic keys derive
+from stable content ids, resolution happens at the UI boundaries):
+
+- **Training:** 10 exercise titles, 10 descriptions and 23 objective
+  descriptions (43 keys), resolved in HUD title/objective and results.
+- **Levels:** level names (2), route name, section names (8) and checkpoint
+  names (8) for Prologue and Training, resolved in HUD section/split labels,
+  checkpoint toast, results splits and the speedrun route builder; interaction
+  prompts (2) resolved in the HUD prompt.
+- **Boot screen:** 9 stage labels/details + error label detected from
+  `navigator.language` (`ru*` → Russian, otherwise English) because settings are
+  not loaded at boot; boot timing/behavior unchanged.
+- **Totals:** resources now **295 keys** in both en and ru (212 → 295).
+  Content-key coverage, EN-equals-authored drift, no-stale-keys, language-switch
+  and route-with-resolver tests added → **334 tests**, `npm run validate` green.
+- **Live verification:** Playwright against the dev server with `ru-RU` and
+  `en-US` contexts: **35/35 checks, 0 console errors**, covering boot stages,
+  Training HUD, interaction prompt, checkpoint toast, HUD section splits and
+  results splits; screenshots + report in
+  [`docs/evidence/i18n-content/`](../evidence/i18n-content/). The six review
+  frames stayed **byte-identical** to the post-G5 capture (UI-only change).
+- **Still English by design:** in-world brand/decor signage (`RUN`,
+  `GLASSLINE`, section numerals, `FINISH`, `MOVEMENT YARD`), the static
+  pre-localization `index.html` boot chrome, and developer console/status
+  overlay. `level.metadata.description` is not displayed anywhere.
+
+Also fixed a pre-existing results nit found during the checks: the split list no
+longer shows double numbering (`1.` from the `<ol>` plus a manual prefix).

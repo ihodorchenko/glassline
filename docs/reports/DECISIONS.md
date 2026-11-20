@@ -596,3 +596,32 @@ pre-localization boot screen; they need a content-system localization pass (keys
 in training/level data + boot i18n). In-world brand signage (`RUN`, `GLASSLINE`)
 stays English by design (confirmed by the art director).
 Nothing merges to `main`.
+
+## D-23 — Content-string localization shipped (2026-11-20)
+
+**Trigger.** Owner chose option A after the RU/EN UI pass: localize the remaining
+content-owned strings.
+
+**Approach.** Authored English remains in the content definitions as a fallback;
+deterministic keys derive from stable ids (`training.exercise.<id>.title|description|
+objective.<oid>`, `level.<levelId>.name|route.name|section.<sid>.name|
+checkpoint.<cid>.name|interaction.<tid>.prompt`, `boot.stage.<stage>.label|detail`,
+`boot.error.label`); a fallback-safe helper resolves translations at the UI/event
+boundaries. A drift test keeps EN resources equal to the authored fallbacks, so
+content and resources cannot diverge; LevelTypes/TrainingTypes contracts and
+LevelValidator are unchanged.
+
+**Result.** Resources 212 → **295 keys** (en = ru), training exercises/objectives,
+level/section/checkpoint names, route name, interaction prompts and the boot
+screen are localized; runtime language switch refreshes HUD title/objective,
+interaction prompt, checkpoint toast and results/splits (route is built per
+session and the UI resolves from level content at render time, so no visible
+staleness). Boot language follows `navigator.language` because settings load
+after boot (documented behavior; gameplay UI always follows the setting). Live
+Playwright checks in `ru-RU`/`en-US` contexts: 35/35, 0 console errors; the six
+review frames stayed byte-identical (UI-only). Tests **334**, validate green.
+Also fixed the results split double-numbering nit.
+
+**Still English by design:** world brand/decor signage (`RUN`, `GLASSLINE`,
+section numerals, `FINISH`, `MOVEMENT YARD`), static `index.html` boot chrome,
+developer console/status overlay. Nothing merges to `main`.

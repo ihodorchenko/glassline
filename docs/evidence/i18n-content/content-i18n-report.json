@@ -1,0 +1,260 @@
+{
+  "startedAt": "2026-11-20T15:16:43.528Z",
+  "baseUrl": "http://127.0.0.1:5173/",
+  "viewport": {
+    "width": 1440,
+    "height": 900
+  },
+  "contexts": {
+    "ru": {
+      "navigatorLanguage": "ru-RU",
+      "bootSamples": ["Построение города | Городская сетка · дальний горизонт"]
+    },
+    "trainingHudRu": "Упражнение 1 / 10Основы движенияДвигайтесь со скоростью шага или быстрее 0,5 секунды. · 0 / 0.5",
+    "interactionPromptRu": {
+      "text": "Нажмите E, чтобы получить доступ к терминалу",
+      "visible": true
+    },
+    "speedrunHudRu": {
+      "toast": "Контрольная точка пройдена: Контрольная точка на крыше",
+      "toastVisible": true,
+      "splits": "1. Крыша · 00:03.0422. Промзона · 00:00.000",
+      "meta": "Контрольные точки 2 / 5",
+      "prompt": ""
+    },
+    "resultsRu": {
+      "text": "РезультатыРежим: Рейтинговый прологВремя: 00:04.146Время прохождения: 00:04.145Контрольные точки: 2 / 2Без медалиЗабег не засчитанКонтрольная точка на крыше · 00:03.042 (00:03.042)Контрольная точка в промзоне · 00:00.000 (00:03.042)ПовторитьГлавное меню",
+      "innerText": "Результаты\nРежим: Рейтинговый пролог\nВремя: 00:04.146\nВремя прохождения: 00:04.145\nКонтрольные точки: 2 / 2\nБез медали\nЗабег не засчитан\nКонтрольная точка на крыше · 00:03.042 (00:03.042)\nКонтрольная точка в промзоне · 00:00.000 (00:03.042)\nПОВТОРИТЬ\nГЛАВНОЕ МЕНЮ"
+    },
+    "en": {
+      "navigatorLanguage": "en-US",
+      "bootSamples": [
+        "RESTORING RUNNER DATA | Profile · settings · local records",
+        "READY | Enter the city"
+      ]
+    },
+    "trainingHudEn": "Exercise 1 / 10Basic MovementMove at walking speed or faster for 0.5 seconds. · 0 / 0.5",
+    "speedrunHudEn": {
+      "toast": "Checkpoint reached: Rooftop Checkpoint",
+      "toastVisible": true,
+      "splits": "1. Rooftop · 00:00.9352. Industrial · 00:00.000",
+      "meta": "Checkpoints 2 / 5",
+      "prompt": ""
+    },
+    "resultsEn": {
+      "text": "ResultsMode: Ranked PrologueTime: 00:02.035Completion time: 00:02.035Checkpoints: 2 / 2No medalInvalid runRooftop Checkpoint · 00:00.935 (00:00.935)Industrial Checkpoint · 00:00.000 (00:00.936)RetryMain Menu",
+      "innerText": "Results\nMode: Ranked Prologue\nTime: 00:02.035\nCompletion time: 00:02.035\nCheckpoints: 2 / 2\nNo medal\nInvalid run\nRooftop Checkpoint · 00:00.935 (00:00.935)\nIndustrial Checkpoint · 00:00.000 (00:00.936)\nRETRY\nMAIN MENU"
+    }
+  },
+  "checks": [
+    {
+      "name": "ru context navigator.language",
+      "passed": true,
+      "actual": "ru-RU",
+      "expected": "ru-RU"
+    },
+    {
+      "name": "boot screen renders Russian stage copy",
+      "passed": true,
+      "actual": true,
+      "expected": true
+    },
+    {
+      "name": "boot screen uses Russian stage labels",
+      "passed": true,
+      "pattern": "/Запуск|Восстановление данных|Построение города|Генерация материалов|Построение коллизий|Сборка крыш|Настройка звука|Открытие меню|Готово/"
+    },
+    {
+      "name": "boot screen uses Russian stage details",
+      "passed": true,
+      "pattern": "/Профиль · настройки · локальные рекорды|Городская сетка|Бетон · стекло|Секции · контрольные точки|Эмбиент · шаги|Бумага · чернила/"
+    },
+    {
+      "name": "initial UI language is English",
+      "passed": true,
+      "actual": "en",
+      "expected": "en"
+    },
+    {
+      "name": "document lang after switch",
+      "passed": true,
+      "actual": "ru",
+      "expected": "ru"
+    },
+    {
+      "name": "training HUD exercise counter (RU)",
+      "passed": true,
+      "contains": "Упражнение 1 / 10"
+    },
+    {
+      "name": "training HUD exercise title (RU)",
+      "passed": true,
+      "contains": "Основы движения"
+    },
+    {
+      "name": "training HUD objective (RU)",
+      "passed": true,
+      "contains": "Двигайтесь со скоростью шага"
+    },
+    {
+      "name": "interaction prompt visible (RU)",
+      "passed": true,
+      "actual": true,
+      "expected": true
+    },
+    {
+      "name": "interaction prompt copy (RU)",
+      "passed": true,
+      "actual": "Нажмите E, чтобы получить доступ к терминалу",
+      "expected": "Нажмите E, чтобы получить доступ к терминалу"
+    },
+    {
+      "name": "checkpoint toast visible (RU)",
+      "passed": true,
+      "actual": true,
+      "expected": true
+    },
+    {
+      "name": "checkpoint toast name (RU)",
+      "passed": true,
+      "contains": "Контрольная точка пройдена"
+    },
+    {
+      "name": "checkpoint toast checkpoint name (RU)",
+      "passed": true,
+      "pattern": "/Контрольная точка на крыше|Контрольная точка в промзоне/"
+    },
+    {
+      "name": "HUD splits section name (RU)",
+      "passed": true,
+      "contains": "Крыша"
+    },
+    {
+      "name": "HUD splits second section name (RU)",
+      "passed": true,
+      "contains": "Промзона"
+    },
+    {
+      "name": "HUD checkpoint counter (RU)",
+      "passed": true,
+      "contains": "Контрольные точки 2 / 5"
+    },
+    {
+      "name": "results title (RU)",
+      "passed": true,
+      "contains": "Результаты"
+    },
+    {
+      "name": "results mode row (RU)",
+      "passed": true,
+      "contains": "Режим: Рейтинговый пролог"
+    },
+    {
+      "name": "results split checkpoint name 1 (RU)",
+      "passed": true,
+      "contains": "Контрольная точка на крыше"
+    },
+    {
+      "name": "results split checkpoint name 2 (RU)",
+      "passed": true,
+      "contains": "Контрольная точка в промзоне"
+    },
+    {
+      "name": "results splits are not double-numbered (RU)",
+      "passed": true,
+      "actual": false,
+      "expected": false
+    },
+    {
+      "name": "en context navigator.language",
+      "passed": true,
+      "actual": "en-US",
+      "expected": "en-US"
+    },
+    {
+      "name": "boot screen renders English stage copy",
+      "passed": true,
+      "pattern": "/BOOTING|RESTORING RUNNER DATA|MAPPING THE CITY|GENERATING MATERIALS|BUILDING COLLISION|ASSEMBLING ROOFTOPS|TUNING THE MIX|OPENING THE MENU|READY/"
+    },
+    {
+      "name": "boot screen uses English stage details",
+      "passed": true,
+      "pattern": "/Initiating runner network|Profile · settings · local records|City grid · far skyline|Concrete · glass · signage|Capsule · roof colliders|Sections · checkpoints · props|Ambience · footsteps · score|Paper · ink · runner network|Enter the city/"
+    },
+    {
+      "name": "training HUD exercise counter (EN)",
+      "passed": true,
+      "contains": "Exercise 1 / 10"
+    },
+    {
+      "name": "training HUD exercise title (EN)",
+      "passed": true,
+      "contains": "Basic Movement"
+    },
+    {
+      "name": "training HUD objective (EN)",
+      "passed": true,
+      "contains": "Move at walking speed"
+    },
+    {
+      "name": "checkpoint toast name (EN)",
+      "passed": true,
+      "contains": "Rooftop Checkpoint"
+    },
+    {
+      "name": "HUD splits section name (EN)",
+      "passed": true,
+      "contains": "Rooftop"
+    },
+    {
+      "name": "results title (EN)",
+      "passed": true,
+      "contains": "Results"
+    },
+    {
+      "name": "results split checkpoint name (EN)",
+      "passed": true,
+      "contains": "Rooftop Checkpoint"
+    },
+    {
+      "name": "results splits are not double-numbered (EN)",
+      "passed": true,
+      "actual": false,
+      "expected": false
+    },
+    {
+      "name": "clean console (no errors)",
+      "passed": true,
+      "actual": 0,
+      "expected": 0
+    },
+    {
+      "name": "clean page (no uncaught errors)",
+      "passed": true,
+      "actual": 0,
+      "expected": 0
+    }
+  ],
+  "screenshots": [
+    "captures/i18n-content/boot-ru.png",
+    "captures/i18n-content/training-hud-ru.png",
+    "captures/i18n-content/interaction-prompt-ru.png",
+    "captures/i18n-content/speedrun-hud-ru-checkpoints.png",
+    "captures/i18n-content/results-ru-splits.png",
+    "captures/i18n-content/boot-en.png",
+    "captures/i18n-content/training-hud-en.png",
+    "captures/i18n-content/speedrun-hud-en-checkpoints.png",
+    "captures/i18n-content/results-en-splits.png"
+  ],
+  "consoleErrors": [],
+  "pageErrors": [],
+  "notes": [],
+  "failure": null,
+  "summary": {
+    "totalChecks": 35,
+    "failedChecks": 0,
+    "consoleErrors": 0,
+    "pageErrors": 0,
+    "passed": true
+  }
+}
