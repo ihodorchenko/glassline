@@ -24,6 +24,7 @@ function movementSnapshot(overrides: Partial<MovementModelSnapshot> = {}): Movem
     wallRunSide: null,
     landingRemainingSeconds: 0,
     landingIntensity: 0,
+    landingImpactSpeed: 0,
     ...overrides,
   };
 }

@@ -36,6 +36,7 @@ function movement(overrides: Partial<MovementModelSnapshot> = {}): MovementModel
     wallRunSide: null,
     landingRemainingSeconds: 0,
     landingIntensity: 0,
+    landingImpactSpeed: 0,
     ...overrides,
   };
 }
@@ -180,21 +181,28 @@ describe("CameraSystem posture and response", () => {
     expect(camera.getCurrentFov()).toBeCloseTo(75, 4);
   });
 
-  it("applies a landing dip proportional to landing intensity", () => {
+  it("applies a landing dip whose amplitude scales with impact speed", () => {
     const standing = createCamera();
-    const landing = createCamera();
+    const soft = createCamera();
+    const hard = createCamera();
+
+    const landingSnapshot = (impactSpeed: number) =>
+      movement({
+        landingIntensity: 1,
+        landingRemainingSeconds: DEFAULT_MOVEMENT_TUNING.landingRecoverySeconds / 2,
+        landingImpactSpeed: impactSpeed,
+      });
 
     renderFrames(standing, movement(), 60);
-    renderFrames(
-      landing,
-      movement({
-        landingIntensity: 0.5,
-        landingRemainingSeconds: DEFAULT_MOVEMENT_TUNING.landingRecoverySeconds / 2,
-      }),
-      60,
-    );
+    renderFrames(soft, landingSnapshot(1), 8);
+    renderFrames(hard, landingSnapshot(10), 8);
 
-    expect(landing.camera.position.y).toBeLessThan(standing.camera.position.y);
+    const softDip = standing.camera.position.y - soft.camera.position.y;
+    const hardDip = standing.camera.position.y - hard.camera.position.y;
+
+    expect(softDip).toBeGreaterThan(0);
+    // A hard fall produces a visibly deeper dip than a soft hop.
+    expect(hardDip).toBeGreaterThan(softDip * 1.5);
   });
 
   it("peaks the landing dip mid-recovery and returns to eye height after it", () => {
@@ -214,6 +222,7 @@ describe("CameraSystem posture and response", () => {
         movement: movement({
           landingIntensity: remaining / recovery,
           landingRemainingSeconds: remaining,
+          landingImpactSpeed: 10,
         }),
         playerPosition: PLAYER_POSITION,
         deltaSeconds: FIXED_DT,
@@ -247,6 +256,7 @@ describe("CameraSystem posture and response", () => {
     const landing = movement({
       landingIntensity: 1,
       landingRemainingSeconds: DEFAULT_MOVEMENT_TUNING.landingRecoverySeconds / 2,
+      landingImpactSpeed: 10,
       moving: true,
       speed: 2,
     });

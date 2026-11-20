@@ -73,6 +73,8 @@ export interface MovementModelSnapshot {
   readonly landingRemainingSeconds: number;
   /** 1 right after landing, decaying to 0 during the recovery window. */
   readonly landingIntensity: number;
+  /** Vertical impact speed of the current landing recovery (0 when not landing). */
+  readonly landingImpactSpeed: number;
 }
 
 export interface MovementStepEvents {
@@ -160,6 +162,8 @@ export class MovementModel {
   private stance: PlayerStance = "standing";
   private grounded = false;
   private landingRemainingSeconds = 0;
+  /** Vertical impact speed of the current landing recovery (0 when not landing). */
+  private landingImpactSpeed = 0;
   private jumpBufferSeconds = 0;
   private coyoteRemainingSeconds = 0;
   private sprintIntent = false;
@@ -412,10 +416,11 @@ export class MovementModel {
     if (wasAirborne && groundedAfter) {
       this.state = "LANDING";
       this.landingRemainingSeconds = this.tuning.landingRecoverySeconds;
+      this.landingImpactSpeed = Math.max(0, -verticalBefore);
       this.stepEvents = {
         ...NO_EVENTS,
         landed: true,
-        impactSpeed: Math.max(0, -verticalBefore),
+        impactSpeed: this.landingImpactSpeed,
       };
     } else if (groundedAfter) {
       this.groundStickArmed = false;
@@ -481,6 +486,7 @@ export class MovementModel {
       wallRunSide: this.wallRunSide,
       landingRemainingSeconds: this.landingRemainingSeconds,
       landingIntensity,
+      landingImpactSpeed: this.landingImpactSpeed,
     };
   }
 

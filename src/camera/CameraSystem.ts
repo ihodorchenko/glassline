@@ -15,6 +15,11 @@ const FOV_DAMPING = 8;
 const ROLL_DAMPING = 10;
 const WALL_RUN_ROLL_RADIANS = 0.06;
 const LANDING_DIP_METERS = 0.06;
+const LANDING_ROLL_AMPLITUDE_RADIANS = 0.012;
+/** Vertical impact speed at which the landing response reaches full amplitude. */
+const LANDING_IMPACT_REFERENCE_SPEED = 10;
+/** Soft landings still produce this fraction of the full response. */
+const LANDING_MIN_IMPACT_SCALE = 0.3;
 const BOB_AMPLITUDE_METERS = 0.018;
 
 export interface CameraLookConfiguration {
@@ -78,6 +83,8 @@ export class CameraSystem implements Disposable {
   /** Sign of the landing roll, fixed at touchdown so it never flips mid-recovery. */
   private landingRollSign = 1;
   private lastLandingRemainingSeconds = 0;
+  /** Vertical impact speed captured at the start of the landing recovery. */
+  private landingImpactSpeed = 0;
   private disposed = false;
 
   constructor(options: CameraSystemOptions) {
@@ -182,17 +189,29 @@ export class CameraSystem implements Disposable {
     // the (airborne-frozen) bob phase, so every landing looks identical instead
     // of ringing up/down at a random phase. Half-sine: zero on touchdown, peak
     // mid-recovery, zero again — no jolt at either end.
+    const landingRecovery = input.movement.landingRemainingSeconds;
+
+    if (landingRecovery > 0 && this.lastLandingRemainingSeconds <= 0) {
+      this.landingImpactSpeed = input.movement.landingImpactSpeed;
+      this.landingRollSign = Math.sin(this.bobPhase) >= 0 ? 1 : -1;
+    }
+
+    this.lastLandingRemainingSeconds = landingRecovery;
+
+    // Impact-proportional amplitude (GF-ISSUE-05, audit GF-08): a soft
+    // landing still gets a subtle response, a hard fall the full one.
+    const impactFactor =
+      LANDING_MIN_IMPACT_SCALE +
+      (1 - LANDING_MIN_IMPACT_SCALE) *
+        clamp(this.landingImpactSpeed / LANDING_IMPACT_REFERENCE_SPEED, 0, 1);
+
     const landingProgress =
-      input.movement.landingRemainingSeconds > 0 && this.tuning.landingRecoverySeconds > 0
-        ? clamp(
-            1 - input.movement.landingRemainingSeconds / this.tuning.landingRecoverySeconds,
-            0,
-            1,
-          )
+      landingRecovery > 0 && this.tuning.landingRecoverySeconds > 0
+        ? clamp(1 - landingRecovery / this.tuning.landingRecoverySeconds, 0, 1)
         : 0;
-    const landingDip = impactScale * LANDING_DIP_METERS * Math.sin(Math.PI * landingProgress);
-    const landingRoll =
-      impactScale * this.computeLandingRoll(input.movement.landingRemainingSeconds);
+    const landingDip =
+      impactScale * impactFactor * LANDING_DIP_METERS * Math.sin(Math.PI * landingProgress);
+    const landingRoll = impactScale * impactFactor * this.computeLandingRoll(landingProgress);
 
     this.camera.position.set(
       input.playerPosition.x,
@@ -243,6 +262,7 @@ export class CameraSystem implements Disposable {
     this.bobPhase = 0;
     this.landingRollSign = 1;
     this.lastLandingRemainingSeconds = 0;
+    this.landingImpactSpeed = 0;
     this.currentFov = this.view.baseFov;
     this.currentEyeHeightOffset = this.tuning.standingEyeHeight - this.tuning.capsuleHeight / 2;
   }
@@ -308,25 +328,17 @@ export class CameraSystem implements Disposable {
   }
 
   /**
-   * Tiny deterministic roll wobble during landing: a half-sine over the recovery
-   * window, signed once at touchdown (from the bob swing direction) so the same
-   * landing always looks the same instead of ringing at a random phase.
+   * Tiny deterministic roll wobble during landing: a half-sine over the
+   * recovery window with a sign fixed at touchdown (from the bob swing
+   * direction) so the same landing always looks the same.
    */
-  private computeLandingRoll(landingRemainingSeconds: number): number {
-    const recovery = this.tuning.landingRecoverySeconds;
-
-    if (recovery <= 0 || landingRemainingSeconds <= 0) {
+  private computeLandingRoll(landingProgress: number): number {
+    if (landingProgress <= 0 || landingProgress >= 1) {
       return 0;
     }
 
-    if (this.lastLandingRemainingSeconds <= 0) {
-      this.landingRollSign = Math.sin(this.bobPhase) >= 0 ? 1 : -1;
-    }
-
-    this.lastLandingRemainingSeconds = landingRemainingSeconds;
-
-    const progress = clamp(1 - landingRemainingSeconds / recovery, 0, 1);
-
-    return this.landingRollSign * 0.012 * Math.sin(Math.PI * progress);
+    return (
+      this.landingRollSign * LANDING_ROLL_AMPLITUDE_RADIANS * Math.sin(Math.PI * landingProgress)
+    );
   }
 }
