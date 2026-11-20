@@ -103,6 +103,18 @@ executed; full records are in
 Current validation after Group 6: `npm run validate` green (typecheck, biome,
 **401** tests, production build).
 
+**Stair ascent fix (owner report, GF-ISSUE-13):** walking up the 0.15 m stair
+flight bumped into the step edges (min climb speed 0.054 m/s in the
+deterministic world). Two confirmed causes in the step-glide path: the final
+glide sliver collapsed the velocity on every riser, and the face probe could
+miss the riser when the capsule was already touching it. Fixes: glide steps
+preserve the model's commanded horizontal momentum in the collision result,
+and the face probe casts from the capsule center at two heights. Result:
+deterministic min climb speed > 3 m/s, no per-step drops ≥ 2 m/s, zero stall
+steps; descent unchanged. New regression test added; suite now **402/402**.
+A pre-existing low-severity quirk remains: one phantom step (~0.21 m) right
+after teleport/respawn (GF-ISSUE-14, recorded in the audit report).
+
 **Group 5** (real-GPU performance) is measured on this Mac (M1 Pro / ANGLE
 Metal, headed run, 1600×900 DPR 1, sprint pose; full record in
 [`GAMEPLAY_FEEL_AUDIT_REPORT.md`](GAMEPLAY_FEEL_AUDIT_REPORT.md) §8.6):

@@ -66,6 +66,31 @@ approval of the improvement plan (Section 8) before Phase 1 work.**
 | Recommended correction | Bisect controller features in a minimal Rapier world; then adjust `PlayerSystem` configuration (snap distance, autostep, slide flag, or the -0.5 m/s slide ground bias) and re-verify GF-10/GF-17 plus the stair tests. |
 | Regression risk | Changes to controller config affect stairs/ledges (ground-stick tests), wall collisions, and slide-under-tunnel clearance — rerun the full player-physics, traversal-detection and prologue-traversal suites plus GF-09/GF-10 runtime checks. |
 
+### GF-ISSUE-13 — Jerky stair ascent (bumping into step edges) — ✅ FIXED (post-Group-6, owner report)
+
+| Field | Value |
+|---|---|
+| Severity | Medium (core traversal feel) |
+| Affected mechanic | Stair ascent (step-glide riser climb) |
+| Affected system | Movement (PlayerSystem.computeStepGlide, collision reconciliation) |
+| Description | Walking UP the prologue's 0.15 m stair flight felt like bumping into each step: measured speed sawtooth 0.2–0.5 ↔ 4.5 m/s with 11–12 near-stall steps; in the deterministic test world the minimum climb speed was **0.054 m/s**. Descent was already smooth (ground-stick ride). |
+| Root cause (confirmed, two mechanisms) | 1) The step-glide's final sliver step reconciled velocity against the tiny remaining travel (≈1 m/s collapse **on every riser**). 2) The riser face probe ray started at the capsule's FRONT surface: when the capsule was already touching the riser, the ray could start on/inside the face and miss it entirely → the controller ground into the step for several frames. |
+| Change made | 1) Glide steps now feed the collision result with the model's commanded horizontal momentum (the glide is kinematic by construction; only the actual vertical lift is taken from the movement). 2) The face probe now casts from the capsule center at two heights (feet+0.04 / feet+0.12), taking the nearest hit. No tuning constants changed. |
+| Verification after | Deterministic stair regression test: min climb speed **> 3 m/s** (was 0.054 on pre-fix HEAD), no single-step drop ≥ 2 m/s, zero stall steps; runtime probe: run speed holds exactly 6.0 m/s through the flight, sprint holds 8.5; descent unchanged (0 airborne steps). Full suite 402/402. |
+| Regression risk | The probe runs every grounded step (two short raycasts) — negligible cost; the stairs/step/ramp tests and the prologue route tests all pass. |
+
+### GF-ISSUE-14 — Phantom step after teleport/respawn (known, not fixed)
+
+- Severity: Low. Affected: Respawn/teleport. System: Movement (controller state).
+- Description: the first fixed step after `teleportTo` can produce a ~0.21 m
+  phantom horizontal movement with a zero command, inflating the model
+  velocity to ~12 m/s for ~0.7 s (decays at ground deceleration). Observed
+  only right after teleports/respawns; pre-existing, unrelated to the stair
+  work.
+- Recommendation: investigate the controller's internal state flush after
+  teleport (e.g. a zero-command warm-up compute before gameplay resumes);
+  low priority — one step and a brief speed inflation on respawn.
+
 ### GF-ISSUE-12 — Level reload leaked static-batch geometries — ✅ FIXED (Group 6)
 
 | Field | Value |

@@ -35,6 +35,7 @@ during this phase.
 | Group 3 fixes (this audit) | Vault profiles + interact buffer (GF-ISSUE-02/11), wall-run surface gating (GF-ISSUE-03), collision-validated vaults (GF-ISSUE-07) — committed (`e8e52c6`) |
 | Group 4 fixes (this audit) | Impact-scaled landing camera (GF-ISSUE-05), sprint-FOV intensity setting (GF-ISSUE-08) — committed (`1b9073d`, `e6c193d`) |
 | Group 6 (this audit) | slideFriction 2→4 tuning with records; GF-ISSUE-12 geometry-leak fix on level reload; GF-10 low entry / GF-11 slope / GF-18 resource gaps closed — see the report §8.5 |
+| Stair ascent fix (owner report) | GF-ISSUE-13: jerky stair climb fixed — center-origin two-height riser probe + momentum-preserving glide reconciliation; deterministic regression test (min climb speed 0.054 → >3 m/s); descent unchanged |
 | File content pins | `src/player/MovementModel.ts` sha256 `693537d…`-era variants were re-pinned several times during the audit (see §2.1) |
 | Browser | Microsoft Edge 157.0.4341.46, headless, WebGL2 on SwiftShader (software rasterizer) |
 | Resolution | 1600×900, DPR 1 |
@@ -128,7 +129,7 @@ Executed during the audit:
 | Command | Result |
 |---|---|
 | `npm run typecheck` | PASS (final state) |
-| `npm test` | **401/401 PASS** (400 after Group 4 + slope-slide test) |
+| `npm test` | **402/402 PASS** (401 after Group 6 + stair-ascent regression test) |
 | `npx biome check .` | PASS for project sources at final state; transiently red due to the audit's own scratch files (removed from the tree afterwards) and, mid-window, to uncommitted source formatting |
 | `node tools/capture/capture.mjs --iteration audit --shot start-roof` | PASS — 196 draw calls, 4,182,467 triangles, 0 console errors, 0 page errors |
 | Runtime scenario harness (custom, Playwright) | See §6 |
@@ -138,7 +139,7 @@ Coverage relevant to gameplay feel:
 - Movement model: 39 unit tests (locomotion, sprint, crouch, air caps, jump,
   buffer, coyote, variable jump, fall clamp, collision reconciliation, landing
   event, ground-stick, slide, vault, wall run, wall jump).
-- Player/physics integration: 13 tests (incl. ramp slide descent)
+- Player/physics integration: 14 tests (incl. ramp slide descent, stair-ascent velocity guard)
 - Input: 19 tests (incl. 3 pending-press edge tests)
 - Settings: 12 tests (incl. sprint FOV intensity); CameraSettingsAdapter: 2 tests
 - Traversal detection: 7 tests (incl. wall-run surface gating) (settle, move/strafe, jump+land, wall
