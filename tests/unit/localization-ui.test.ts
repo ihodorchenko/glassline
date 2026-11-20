@@ -67,8 +67,8 @@ const REQUIRED_UI_KEYS = [
 ];
 
 describe("UI localization resources", () => {
-  it("ships English as the initial supported language", () => {
-    expect(SUPPORTED_LANGUAGE_IDS).toEqual(["en"]);
+  it("ships English and Russian as supported languages", () => {
+    expect(SUPPORTED_LANGUAGE_IDS).toEqual(["en", "ru"]);
   });
 
   it("contains all required interface strings", () => {

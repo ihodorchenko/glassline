@@ -59,6 +59,9 @@ export const ENGLISH_RESOURCES: TranslationResources = {
   "loading.training": "Training",
   "loading.prologue": "Prologue",
   "loading.speedrun": "Ranked Prologue",
+  "loading.network": "Glassline / Runner Network",
+  "loading.preparing": "Preparing Run",
+  "loading.detail": "Generating city · collision · audio",
 
   "hud.training": "Training",
   "hud.exercise": "Exercise {current} / {total}",
@@ -79,6 +82,11 @@ export const ENGLISH_RESOURCES: TranslationResources = {
   "speedrun.invalid": "Invalid run",
   "speedrun.checkpoints": "Checkpoints: {completed} / {required}",
 
+  "medal.gold": "Gold",
+  "medal.silver": "Silver",
+  "medal.bronze": "Bronze",
+  "medal.none": "No medal",
+
   "results.title": "Results",
   "results.mode": "Mode: {mode}",
   "results.duration": "Time: {duration}",
@@ -87,6 +95,11 @@ export const ENGLISH_RESOURCES: TranslationResources = {
   "results.invalid": "Run invalid: {reason}",
   "results.splits": "Splits",
   "results.noResults": "No results available",
+  "results.incomplete": "— incomplete",
+  "results.attempts": {
+    one: "{count} attempt",
+    other: "{count} attempts",
+  },
 
   "settings.categories.audio": "Audio",
   "settings.categories.controls": "Controls",
@@ -144,6 +157,7 @@ export const ENGLISH_RESOURCES: TranslationResources = {
 
   "error.title": "Something went wrong",
   "error.return": "Return to Main Menu",
+  "error.sessionStart": "Session start failed.",
 
   "achievements.first_steps.title": "First Steps",
   "achievements.first_steps.description": "Complete your first Training exercise.",

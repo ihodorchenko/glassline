@@ -15,7 +15,7 @@ export interface LanguageDefinition {
 }
 
 /** Languages shipped in the initial release. */
-export const SUPPORTED_LANGUAGE_IDS = ["en"] as const;
+export const SUPPORTED_LANGUAGE_IDS = ["en", "ru"] as const;
 
 export const DEFAULT_LANGUAGE_ID = "en";
 
@@ -28,7 +28,16 @@ const ENGLISH: LanguageDefinition = {
   supported: true,
 };
 
-const BUILT_IN_LANGUAGES: readonly LanguageDefinition[] = [ENGLISH];
+const RUSSIAN: LanguageDefinition = {
+  id: "ru",
+  displayName: "Russian",
+  nativeDisplayName: "Русский",
+  locale: "ru-RU",
+  direction: "ltr",
+  supported: true,
+};
+
+const BUILT_IN_LANGUAGES: readonly LanguageDefinition[] = [ENGLISH, RUSSIAN];
 
 export class LanguageRegistry {
   private readonly languages = new Map<string, LanguageDefinition>();
@@ -57,3 +66,17 @@ export class LanguageRegistry {
 }
 
 export const DEFAULT_LANGUAGE_REGISTRY = new LanguageRegistry();
+
+/**
+ * Player-facing label for a language setting value. Uses the language's own
+ * name so the switcher is readable regardless of the active language
+ * ("English" / "Русский"), and falls back to the raw id for unknown values.
+ */
+export function getLanguageLabel(
+  languageId: string,
+  registry: LanguageRegistry = DEFAULT_LANGUAGE_REGISTRY,
+): string {
+  const language = registry.get(languageId);
+
+  return language?.nativeDisplayName ?? language?.displayName ?? languageId;
+}

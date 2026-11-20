@@ -350,6 +350,26 @@ export class Application implements Disposable {
       this.localizationStatus = `unavailable (${describeError(error)})`;
       console.warn("[Glassline] Localization is unavailable; using raw keys.", error);
     }
+
+    this.applyDocumentLanguage();
+  }
+
+  /**
+   * Keeps the document in sync with the active language so assistive
+   * technology, `:lang()` styles and the browser's text features (spellcheck,
+   * hyphenation, date/number defaults) follow the selected language.
+   */
+  private applyDocumentLanguage(): void {
+    const localization = this.localizationManager;
+
+    if (!localization || typeof document === "undefined") {
+      return;
+    }
+
+    const language = localization.activeLanguage;
+
+    document.documentElement.lang = language.id;
+    document.documentElement.dir = language.direction;
   }
 
   private initializeRendering(): void {
@@ -488,6 +508,7 @@ export class Application implements Disposable {
 
     this.ui = new UIManager({
       localize: (key, params) => this.localizationManager?.t(key, (params ?? {}) as never) ?? key,
+      locale: () => this.localizationManager?.activeLanguage.locale ?? "en-US",
       settings,
       actions,
       onScreenChanged: () => this.syncInputContext(),
@@ -1441,7 +1462,7 @@ export class Application implements Disposable {
       if (!result?.success) {
         console.error(`[Glassline] Session start failed: ${result?.error ?? "unknown"}`);
         this.flowManager?.navigate({ target: "error", reason: "error" });
-        this.ui?.showError(result?.error ?? "Session start failed.");
+        this.ui?.showError(result?.error ?? this.localize("error.sessionStart"));
 
         return;
       }
@@ -1646,6 +1667,7 @@ export class Application implements Disposable {
     if (!result.changed) {
       console.warn(`[Glassline] Language "${language}" could not be applied: ${result.error}`);
     } else {
+      this.applyDocumentLanguage();
       this.ui?.refreshLocalization();
       this.refreshLongTermPresentation();
     }

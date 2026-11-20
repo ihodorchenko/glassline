@@ -1,6 +1,7 @@
 import { ResourceLoadError, type ResourceLoader } from "../resources/ResourceLoader";
 import { DEFAULT_LANGUAGE_ID } from "./Language";
 import { ENGLISH_RESOURCES } from "./resources/en";
+import { RUSSIAN_RESOURCES } from "./resources/ru";
 import type { TranslationResources } from "./TranslationTypes";
 
 export interface LocalizationResourceSource {
@@ -68,6 +69,10 @@ export function createDefaultLocalizationResourceLoader(
       {
         languageId: DEFAULT_LANGUAGE_ID,
         load: async () => ENGLISH_RESOURCES,
+      },
+      {
+        languageId: "ru",
+        load: async () => RUSSIAN_RESOURCES,
       },
     ],
     resourceLoader,

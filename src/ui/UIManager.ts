@@ -1,6 +1,7 @@
 import type { UiCue } from "../audio/AudioManager";
 import type { InputContext } from "../input/InputActions";
 import type { InputFrame } from "../input/InputState";
+import { getLanguageLabel } from "../localization/Language";
 import type { SessionResults } from "../sessions/GameplaySessionManager";
 import type { SettingsManager } from "../settings/SettingsManager";
 import type { SettingDefinition, SettingsSnapshot, SettingValue } from "../settings/SettingsTypes";
@@ -35,6 +36,8 @@ export interface UIManagerOptions {
   readonly actions: UIActions;
   readonly parent?: HTMLElement;
   readonly onScreenChanged?: () => void;
+  /** Locale used for locale-sensitive formatting (dates, language labels). */
+  readonly locale?: () => string;
 }
 
 export interface HudTrainingState {
@@ -154,6 +157,17 @@ const SETTING_CATEGORY_ORDER = [
   "general",
 ] as const;
 
+/**
+ * Medal ids are gameplay data (`SpeedrunMedal`); the UI is the layer that maps
+ * them to player-facing labels so RU/EN wording follows the active language.
+ * `none` is rendered through `medal.none` instead of a template.
+ */
+const MEDAL_LABEL_KEYS: Readonly<Record<string, string>> = {
+  gold: "medal.gold",
+  silver: "medal.silver",
+  bronze: "medal.bronze",
+};
+
 const UNSUPPORTED_SETTING_IDS = new Set([
   "display.fullscreen",
   "display.resolution",
@@ -227,6 +241,7 @@ export class UIManager {
   private readonly settings: SettingsManager;
   private readonly actions: UIActions;
   private readonly onScreenChanged: (() => void) | null;
+  private readonly getLocale: () => string;
 
   private readonly root: HTMLDivElement;
   private readonly screensHost: HTMLDivElement;
@@ -284,6 +299,10 @@ export class UIManager {
     this.settings = options.settings;
     this.actions = options.actions;
     this.onScreenChanged = options.onScreenChanged ?? null;
+    this.getLocale =
+      options.locale ??
+      (() =>
+        typeof document === "undefined" ? "en-US" : document.documentElement.lang || "en-US");
 
     this.root = element("div", "gl-ui");
     this.screensHost = element("div", "gl-ui__screens");
@@ -388,14 +407,14 @@ export class UIManager {
     loader.setAttribute("role", "status");
     loader.setAttribute("aria-live", "polite");
     loader.append(
-      element("p", "gl-loading__network", "Glassline / Runner Network"),
+      element("p", "gl-loading__network", this.localize("loading.network")),
       element("div", "gl-loading__wordmark", "Glassline"),
       element("div", "gl-loading__rule", ""),
-      element("p", "gl-loading__eyebrow", "Preparing Run"),
+      element("p", "gl-loading__eyebrow", this.localize("loading.preparing")),
       element("h1", "gl-screen__title", this.localize("loading.mode", { mode: label })),
       element("p", "gl-screen__muted", this.localize("common.loading")),
       track,
-      element("p", "gl-loading__detail", "Generating city · collision · audio"),
+      element("p", "gl-loading__detail", this.localize("loading.detail")),
     );
     screen.append(loader);
     this.setScreen("loading", screen);
@@ -474,7 +493,9 @@ export class UIManager {
               `${colorIndependentStatusMarker(
                 exercise.completed ? "complete" : "incomplete",
                 this.colorIndependentStatus,
-              )}${exercise.title}${exercise.completed ? "" : " — incomplete"} · ${exercise.attempts} attempt(s)`,
+              )}${exercise.title}${
+                exercise.completed ? "" : ` ${this.localize("results.incomplete")}`
+              } · ${this.localize("results.attempts", { count: exercise.attempts })}`,
             ),
           );
         }
@@ -484,6 +505,7 @@ export class UIManager {
 
       if (results.speedrun) {
         const speedrun = results.speedrun;
+        const medal = this.formatMedal(speedrun.medal);
 
         body.append(
           element(
@@ -502,7 +524,9 @@ export class UIManager {
           element(
             "div",
             "gl-results__row",
-            this.localize("speedrun.medal", { medal: speedrun.medal }),
+            medal === null
+              ? this.localize("medal.none")
+              : this.localize("speedrun.medal", { medal }),
           ),
           element(
             "div",
@@ -581,11 +605,18 @@ export class UIManager {
         const list = element("ol", "gl-results__list");
 
         for (const record of records.slice(0, 5)) {
+          const medal = this.formatMedal(record.medal);
+          const medalText =
+            medal === null
+              ? this.localize("medal.none")
+              : this.localize("records.medalValue", { medal });
+          const completedAt = new Date(record.completedAt).toLocaleDateString(this.getLocale());
+
           list.append(
             element(
               "li",
               "gl-results__item",
-              `${formatRunTime(record.timeMs)} · ${this.localize("records.medalValue", { medal: record.medal })} · ${new Date(record.completedAt).toLocaleDateString()}`,
+              `${formatRunTime(record.timeMs)} · ${medalText} · ${this.localize("records.completedAt", { date: completedAt })}`,
             ),
           );
         }
@@ -1169,10 +1200,26 @@ export class UIManager {
     }
 
     if (definition.id === "general.language") {
-      return String(value).toUpperCase();
+      return getLanguageLabel(String(value));
     }
 
     return String(value);
+  }
+
+  /**
+   * Maps a `SpeedrunMedal` id to the localized label used by the
+   * `speedrun.medal` / `records.medalValue` templates. Returns `null` for
+   * "none" (and unknown ids), so callers render `medal.none` instead of
+   * producing a stray template.
+   */
+  private formatMedal(medal: string | null | undefined): string | null {
+    if (!medal || medal === "none") {
+      return null;
+    }
+
+    const key = MEDAL_LABEL_KEYS[medal];
+
+    return key ? this.localize(key) : medal;
   }
 
   private commitSetting(settingId: string, value: SettingValue): void {
