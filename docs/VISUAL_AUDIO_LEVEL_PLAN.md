@@ -40,6 +40,16 @@
 > [`reports/BLIND_REVIEW_W0.md`](reports/BLIND_REVIEW_W0.md) and
 > [`reports/DECISIONS.md`](reports/DECISIONS.md). Nothing is merged to `main`.
 
+> **W2 execution note (2026-11-20):** content-language iteration 1 landed and
+> the W2 canyon/rooftop gate (G2) is closed — blind review 6/6 PASS on unlabeled
+> pairs after the transparent skybridge rails, suspended load, side service
+> roofs, duct/door, stair nosings, facade detail and sky opening; frame density
+> grew (1.58M/2.38M triangles) while the perf probe stayed 60/60 poses; nothing
+> merged to `main`. Residual polish is queued as W2.2. See
+> [`reports/W2_ITERATION.md`](reports/W2_ITERATION.md),
+> [`reports/BLIND_REVIEW_W2.md`](reports/BLIND_REVIEW_W2.md) and
+> [`reports/DECISIONS.md`](reports/DECISIONS.md) D-16/D-17.
+
 **Status:** Draft for owner approval (W0–W2 partially executed, W4 foundation landed)
 **Date:** 2026-11-19
 **Scope:** Prologue route and Training arenas, renderer/post-processing, materials and city content, audio mix.

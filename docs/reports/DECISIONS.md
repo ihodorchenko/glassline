@@ -363,3 +363,74 @@ typecheck/lint/293 tests/build green.
 or reference-level realism: the residual gaps (mid-scale contrast/chroma,
 swirl-bump, skybridge structure, service interior content, sky vistas) are
 recorded as the W2 backlog in `W1_TARGETS.md` §8. Nothing is merged to `main`.
+
+## D-16 — W2 iteration 1: content language + transparent rails, look frozen (2026-11-20)
+
+**Trigger.** Owner resumed work after the W1 gate closed (D-15) with "продолжим".
+No hands-on acceptance notes were supplied, so W2 starts from the recorded backlog
+(`W1_TARGETS.md` §8) rather than from owner impressions; any hands-on feedback can
+be folded into the next W2 iteration.
+
+**Scope of W2.1** (bounded, one measurement→review loop):
+1. **Skybridge** (the only blind FAIL): transparent glass rails (new material key
+   used by the existing parapet geometry — material swap only, no size/position/
+   collider changes), rail posts/cap as decoration, suspended load above the
+   bridge, city-below vista.
+2. **Service-block:** duct edge/frame and a red door landmark (decorative only).
+3. **First-gap:** stair read (concrete + red nosing strips as decoration), lower-
+   roof dressing.
+4. **Start-roof:** bulkhead panels/vents; open sky at start and finish by lowering
+   **decorative** near-city towers (no collidable geometry touched).
+5. **Continuous red route** on start and finish decks (as done on the skybridge).
+6. **Materials:** straight-tile albedo/height separation for roof/concrete/plaster
+   (kills the swirl-bump), stains; no look/grade changes in W2.1.
+7. **Poses:** re-frame the skybridge and service-block shots (and start/finish if
+   vistas open) after content lands, per the art director's shot cards.
+
+**Frozen in W2.1:** the W1 look layer (PostPipeline/SkyDome/Renderer/RenderScene
+stay byte-identical so content effects are attributable), route geometry,
+colliders, triggers, sections, checkpoint logic, tutorial flow.
+
+**Ownership:** exec-materials → `MaterialLibrary.ts` + `LevelTypes.ts` (new
+`glass-rail` key); exec-content → `PrologueCity.ts` (decorations/city heights);
+exec-content-2 → `PrologueArena.ts` + `ReleaseArenaPolish.ts` (material swaps and
+env only, no size/position/collider edits); exec-boot →
+`src/diagnostics/captureShots.ts` (poses) after the art director's cards; lead →
+integration, metrics, perf, blind gate, reports, commits.
+
+**Gate for W2** (plan §6): art-director PASS on canyon and rooftop shots; near-
+white share in band; frame density without frame-rate loss (perf probe not worse
+than the W1 final run); no shot regresses more than one band. No merge to `main`.
+
+## D-17 — W2 gate closed; W2.1 verdict and residual W2.2 (2026-11-20)
+
+**Verdict.** The art director judged the final W2.1 iteration **6/6 blind PASS**
+and closed the canyon/rooftop gate (G2): all four frames satisfy the mandatory
+depth / continuous-red / BG-detail criteria plus ≥3 optional ones; no hacks were
+observed at 100 % zoom. The other gate conditions hold:
+- perf `--strict` probe: 60.00 fps on all six poses, 0/6 below 55, while frame
+  density grew (open frames 1.38M→1.58M triangles, service-block 1.38M→2.38M
+  with 194 draw calls) — headless cap caveat recorded; real-window number is W5;
+- determinism: 6/6 accepted under D-13 (5 byte-identical + 3 px at Δ1/255);
+- plan rule "no shot loses more than one band to gain another": no look/shot
+  edits in W2.1; the shifted-band drop (52→46/78) is the documented open-sky
+  family calibration (AD amended L*/sky-mask windows in W2_TARGETS §6
+  addendum 2–3), not a regression;
+- `npm run validate` green (typecheck, lint, 293 tests, build); route
+  geometry/colliders/triggers untouched (tests + validator green).
+
+**What W2.1 delivered.** Glass-rail material (transparent double-sided) with the
+skybridge parapet swap, concrete stair flight, straight-tile albedo/height split
+(swirl-bump removed, fewer texture fetches), suspended load + gantry, side
+service roofs and near-band below the skybridge, red door on the wallrun
+corridor, duct soffit with red frame and side ducts, first-gap nosings and
+lower-roof dressing, start-roof bulkhead panels/vents and continuous red strip,
+finish-roof sky opening + strip, background facade grids on cut/ring towers,
+floaters removed, widened red strips, deck joint colour, new shot poses for four
+frames.
+
+**Residual → W2.2 (non-blocking):** look chroma/zenith + prop-shadow coverage
+8–15 % + mid-scale local contrast; materials straight-tile on the remaining
+surfaces, red roughness 0.6, rail tint/opacity; content denser background grids,
+mid-deck prop clusters, first-gap lower-roof dressing; start-roof gantry support
+and wallrun grille; W5 real-window perf. Nothing merges to `main`.
