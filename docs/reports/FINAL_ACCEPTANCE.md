@@ -73,6 +73,13 @@ Both servers are running as managed background jobs. Controls (defaults):
 - [ ] Route readability: red line/handrails/nosing/hazard plate lead the eye;
       no visual holes, no floating props in view.
 
+### C2. HUD legibility
+- [ ] HUD text (Training block, speedrun timer, speed/splits) sits on a
+      semi-transparent dark plate with blur and reads on any background
+      (bright facades, white decks, sky); contrast measured ≥4.5:1; layout and
+      typography unchanged (evidence in [`docs/evidence/hud/`](../evidence/hud/),
+      owner screenshot fix post-G5.2).
+
 ### D. Accessibility + settings
 - [ ] Reduced motion, High contrast, Large text, Color-independent status
       (✓/✗ markers, ▸ active tab), Reduce film grain — each applies immediately

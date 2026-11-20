@@ -635,6 +635,10 @@ body {
   --glassline-paper-bright: #f8f6ef;
   --glassline-ink-strong: #12171a;
   --glassline-ink-soft: rgba(18, 23, 26, 0.62);
+  /* Translucent ink plate behind HUD text (W5 legibility). 0.75 is the measured
+     minimum for the dimmest HUD line to reach 4.5:1 over a pure-white facade:
+     at 0.55 (the reference toast plate) small meta text is only ~2.95:1. */
+  --glassline-hud-plate: rgba(12, 16, 19, 0.75);
 }
 
 .gl-screen,
@@ -858,10 +862,15 @@ body {
 }
 
 .gl-hud__panel {
-  background: transparent;
-  backdrop-filter: none;
+  /* W5 legibility fix (owner report): the reference "no boxes" HUD put white
+     type over a bright white facade with only a text-shadow. Restore a
+     translucent ink plate so timer/training/splits/checkpoint text is readable
+     in every lighting condition while the scene still reads through. */
+  background: var(--glassline-hud-plate);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
   border-left: 2px solid var(--glassline-accent);
-  padding: 2px 0 2px 10px;
+  padding: 8px 12px;
   color: #f7f5ee;
   text-shadow: 0 1px 9px rgba(0, 0, 0, 0.58);
 }
@@ -869,7 +878,7 @@ body {
 .gl-hud__panel--training {
   border-left: 0;
   border-right: 2px solid var(--glassline-accent);
-  padding: 2px 10px 2px 0;
+  padding: 8px 12px;
 }
 
 .gl-hud__timer {
@@ -893,11 +902,15 @@ body {
 }
 
 .gl-hud__speed {
+  /* Same HUD plate as the panels (W5 legibility) so the speed readout stays
+     readable over the bright deck; accent rule and mono readout unchanged. */
   left: 24px;
   bottom: 24px;
-  padding: 0 0 0 9px;
+  padding: 6px 10px;
   border-left: 2px solid var(--glassline-accent);
-  background: transparent;
+  background: var(--glassline-hud-plate);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
   color: #f7f5ee;
   font-weight: 600;
   letter-spacing: 0.04em;

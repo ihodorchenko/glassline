@@ -1,0 +1,344 @@
+{
+  "before": {
+    "training.trainingPanel": {
+      "screenshot": "captures/hud-contrast/training-before.png",
+      "panelBackgroundCss": "rgba(0, 0, 0, 0)",
+      "backdropFilterCss": "none",
+      "surface": "bright white facade",
+      "scenario": "training",
+      "lines": {
+        "gl-hud__meta": {
+          "text": "Упражнение 1 / 10",
+          "cssColor": "rgba(247, 245, 238, 0.76)",
+          "fontSizePx": 12.48,
+          "fontWeight": "400",
+          "backgroundSampledRgb": [
+            164,
+            185,
+            209
+          ],
+          "backgroundSamplePixels": 624,
+          "effectiveTextRgb": [
+            227,
+            231,
+            231
+          ],
+          "contrast": 1.61,
+          "passes45": false
+        },
+        "gl-hud__objective": {
+          "text": "Основы движения",
+          "cssColor": "rgb(247, 245, 238)",
+          "fontSizePx": 15.2,
+          "fontWeight": "600",
+          "backgroundSampledRgb": [
+            164,
+            185,
+            209
+          ],
+          "backgroundSamplePixels": 624,
+          "effectiveTextRgb": [
+            247,
+            245,
+            238
+          ],
+          "contrast": 1.84,
+          "passes45": false
+        },
+        "gl-hud__progress": {
+          "text": "Двигайтесь со скоростью шага или быстрее 0,5 секунды. · 0 / 0.5",
+          "cssColor": "rgb(247, 245, 238)",
+          "fontSizePx": 12.8,
+          "fontWeight": "400",
+          "backgroundSampledRgb": [
+            164,
+            185,
+            209
+          ],
+          "backgroundSamplePixels": 624,
+          "effectiveTextRgb": [
+            247,
+            245,
+            238
+          ],
+          "contrast": 1.84,
+          "passes45": false
+        }
+      }
+    },
+    "training.speedPanel": {
+      "screenshot": "captures/hud-contrast/training-before.png",
+      "panelBackgroundCss": "rgba(0, 0, 0, 0)",
+      "backdropFilterCss": "none",
+      "surface": "white deck",
+      "scenario": "training",
+      "lines": {
+        "gl-hud__speed is-visible": {
+          "text": "Скорость 0.0 m/s",
+          "cssColor": "rgb(247, 245, 238)",
+          "fontSizePx": 13.12,
+          "fontWeight": "600",
+          "backgroundSampledRgb": [
+            221,
+            221,
+            221
+          ],
+          "backgroundSamplePixels": 77,
+          "effectiveTextRgb": [
+            247,
+            245,
+            238
+          ],
+          "contrast": 1.25,
+          "passes45": false
+        }
+      }
+    },
+    "timerSky.timerPanel": {
+      "screenshot": "captures/hud-contrast/timer-before.png",
+      "panelBackgroundCss": "rgba(0, 0, 0, 0)",
+      "backdropFilterCss": "none",
+      "surface": "bright sky/horizon",
+      "scenario": "timerSky",
+      "lines": {
+        "gl-hud__timer": {
+          "text": "00:03.204",
+          "cssColor": "rgb(247, 245, 238)",
+          "fontSizePx": 27.2,
+          "fontWeight": "800",
+          "backgroundSampledRgb": [
+            220,
+            223,
+            226
+          ],
+          "backgroundSamplePixels": 1204,
+          "effectiveTextRgb": [
+            247,
+            245,
+            238
+          ],
+          "contrast": 1.23,
+          "passes45": false
+        },
+        "gl-hud__meta": {
+          "text": "Контрольные точки 0 / 5",
+          "cssColor": "rgba(247, 245, 238, 0.76)",
+          "fontSizePx": 12.48,
+          "fontWeight": "400",
+          "backgroundSampledRgb": [
+            220,
+            223,
+            226
+          ],
+          "backgroundSamplePixels": 1204,
+          "effectiveTextRgb": [
+            241,
+            240,
+            235
+          ],
+          "contrast": 1.17,
+          "passes45": false
+        }
+      }
+    },
+    "timerSky.speedPanel": {
+      "screenshot": "captures/hud-contrast/timer-before.png",
+      "panelBackgroundCss": "rgba(0, 0, 0, 0)",
+      "backdropFilterCss": "none",
+      "surface": "white deck",
+      "scenario": "timerSky",
+      "lines": {
+        "gl-hud__speed is-visible": {
+          "text": "Скорость 0.0 m/s",
+          "cssColor": "rgb(247, 245, 238)",
+          "fontSizePx": 13.12,
+          "fontWeight": "600",
+          "backgroundSampledRgb": [
+            226,
+            228,
+            231
+          ],
+          "backgroundSamplePixels": 77,
+          "effectiveTextRgb": [
+            247,
+            245,
+            238
+          ],
+          "contrast": 1.17,
+          "passes45": false
+        }
+      }
+    }
+  },
+  "after": {
+    "training.trainingPanel": {
+      "screenshot": "captures/hud-contrast/training-after.png",
+      "panelBackgroundCss": "rgba(12, 16, 19, 0.75)",
+      "backdropFilterCss": "blur(6px)",
+      "surface": "bright white facade",
+      "scenario": "training",
+      "lines": {
+        "gl-hud__meta": {
+          "text": "Упражнение 1 / 10",
+          "cssColor": "rgba(247, 245, 238, 0.76)",
+          "fontSizePx": 12.48,
+          "fontWeight": "400",
+          "backgroundSampledRgb": [
+            60,
+            64,
+            66
+          ],
+          "backgroundSamplePixels": 4860,
+          "effectiveTextRgb": [
+            202,
+            202,
+            197
+          ],
+          "contrast": 6.35,
+          "passes45": true
+        },
+        "gl-hud__objective": {
+          "text": "Основы движения",
+          "cssColor": "rgb(247, 245, 238)",
+          "fontSizePx": 15.2,
+          "fontWeight": "600",
+          "backgroundSampledRgb": [
+            60,
+            64,
+            66
+          ],
+          "backgroundSamplePixels": 4860,
+          "effectiveTextRgb": [
+            247,
+            245,
+            238
+          ],
+          "contrast": 9.61,
+          "passes45": true
+        },
+        "gl-hud__progress": {
+          "text": "Двигайтесь со скоростью шага или быстрее 0,5 секунды. · 0 / 0.5",
+          "cssColor": "rgb(247, 245, 238)",
+          "fontSizePx": 12.8,
+          "fontWeight": "400",
+          "backgroundSampledRgb": [
+            60,
+            64,
+            66
+          ],
+          "backgroundSamplePixels": 4860,
+          "effectiveTextRgb": [
+            247,
+            245,
+            238
+          ],
+          "contrast": 9.61,
+          "passes45": true
+        }
+      }
+    },
+    "training.speedPanel": {
+      "screenshot": "captures/hud-contrast/training-after.png",
+      "panelBackgroundCss": "rgba(12, 16, 19, 0.75)",
+      "backdropFilterCss": "blur(6px)",
+      "surface": "white deck",
+      "scenario": "training",
+      "lines": {
+        "gl-hud__speed is-visible": {
+          "text": "Скорость 0.0 m/s",
+          "cssColor": "rgb(247, 245, 238)",
+          "fontSizePx": 13.12,
+          "fontWeight": "600",
+          "backgroundSampledRgb": [
+            65,
+            68,
+            70
+          ],
+          "backgroundSamplePixels": 874,
+          "effectiveTextRgb": [
+            247,
+            245,
+            238
+          ],
+          "contrast": 9.0,
+          "passes45": true
+        }
+      }
+    },
+    "timerSky.timerPanel": {
+      "screenshot": "captures/hud-contrast/timer-after.png",
+      "panelBackgroundCss": "rgba(12, 16, 19, 0.75)",
+      "backdropFilterCss": "blur(6px)",
+      "surface": "bright sky/horizon",
+      "scenario": "timerSky",
+      "lines": {
+        "gl-hud__timer": {
+          "text": "00:03.209",
+          "cssColor": "rgb(247, 245, 238)",
+          "fontSizePx": 27.2,
+          "fontWeight": "800",
+          "backgroundSampledRgb": [
+            62,
+            67,
+            70
+          ],
+          "backgroundSamplePixels": 3946,
+          "effectiveTextRgb": [
+            247,
+            245,
+            238
+          ],
+          "contrast": 9.18,
+          "passes45": true
+        },
+        "gl-hud__meta": {
+          "text": "Контрольные точки 0 / 5",
+          "cssColor": "rgba(247, 245, 238, 0.76)",
+          "fontSizePx": 12.48,
+          "fontWeight": "400",
+          "backgroundSampledRgb": [
+            62,
+            67,
+            70
+          ],
+          "backgroundSamplePixels": 3946,
+          "effectiveTextRgb": [
+            203,
+            202,
+            198
+          ],
+          "contrast": 6.11,
+          "passes45": true
+        }
+      }
+    },
+    "timerSky.speedPanel": {
+      "screenshot": "captures/hud-contrast/timer-after.png",
+      "panelBackgroundCss": "rgba(12, 16, 19, 0.75)",
+      "backdropFilterCss": "blur(6px)",
+      "surface": "white deck",
+      "scenario": "timerSky",
+      "lines": {
+        "gl-hud__speed is-visible": {
+          "text": "Скорость 0.0 m/s",
+          "cssColor": "rgb(247, 245, 238)",
+          "fontSizePx": 13.12,
+          "fontWeight": "600",
+          "backgroundSampledRgb": [
+            60,
+            65,
+            69
+          ],
+          "backgroundSamplePixels": 874,
+          "effectiveTextRgb": [
+            247,
+            245,
+            238
+          ],
+          "contrast": 9.46,
+          "passes45": true
+        }
+      }
+    }
+  }
+}
