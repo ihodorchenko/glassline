@@ -237,6 +237,110 @@ export const ENGLISH_RESOURCES: TranslationResources = {
   "records.statCheckpoints": "Checkpoints",
   "records.noAchievements": "No achievements unlocked yet.",
 
+  // Content-owned strings. These mirror the authored English fallback in
+  // `TrainingExercises.ts`, the test levels and `BootLoader.ts`; a unit drift
+  // test keeps both sides in sync.
+  "training.exercise.ex_01_movement_basics.title": "Basic Movement",
+  "training.exercise.ex_01_movement_basics.description":
+    "Move continuously and reach the first rooftop marker.",
+  "training.exercise.ex_01_movement_basics.objective.move":
+    "Move at walking speed or faster for 0.5 seconds.",
+  "training.exercise.ex_01_movement_basics.objective.reach_rooftop":
+    "Reach the rooftop checkpoint marker.",
+  "training.exercise.ex_02_running.title": "Running",
+  "training.exercise.ex_02_running.description":
+    "Build running speed and approach the vault obstacle.",
+  "training.exercise.ex_02_running.objective.run_speed": "Maintain running speed for 0.8 seconds.",
+  "training.exercise.ex_02_running.objective.reach_approach": "Reach the vault approach zone.",
+  "training.exercise.ex_03_jumping.title": "Basic Jump",
+  "training.exercise.ex_03_jumping.description": "Jump twice and hold position before the vault.",
+  "training.exercise.ex_03_jumping.objective.jump_count": "Perform two jumps.",
+  "training.exercise.ex_03_jumping.objective.stay_ready": "Return to the take-off marker.",
+  "training.exercise.ex_04_vaulting.title": "Basic Vault",
+  "training.exercise.ex_04_vaulting.description":
+    "Vault over the white obstacle and land beyond it.",
+  "training.exercise.ex_04_vaulting.objective.vault": "Execute a vault.",
+  "training.exercise.ex_04_vaulting.objective.reach_landing":
+    "Reach the landing area beyond the obstacle.",
+  "training.exercise.ex_05_sliding.title": "Slide",
+  "training.exercise.ex_05_sliding.description": "Slide under the low ceiling and reach the exit.",
+  "training.exercise.ex_05_sliding.objective.slide": "Initiate a slide.",
+  "training.exercise.ex_05_sliding.objective.reach_exit": "Reach the tunnel exit.",
+  "training.exercise.ex_06_wall_running.title": "Wall Run",
+  "training.exercise.ex_06_wall_running.description":
+    "Wall run through the corridor and reach the far platform.",
+  "training.exercise.ex_06_wall_running.objective.wallrun": "Start a wall run.",
+  "training.exercise.ex_06_wall_running.objective.reach_corridor_end": "Reach the corridor exit.",
+  "training.exercise.ex_07_wall_jumping.title": "Wall Jump",
+  "training.exercise.ex_07_wall_jumping.description":
+    "Wall jump away from the wall and reach the final platform.",
+  "training.exercise.ex_07_wall_jumping.objective.walljump": "Perform a wall jump.",
+  "training.exercise.ex_07_wall_jumping.objective.reach_final": "Reach the final platform.",
+  "training.exercise.ex_08_landing_momentum.title": "Controlled Landing",
+  "training.exercise.ex_08_landing_momentum.description":
+    "Land twice while keeping momentum toward the finish area.",
+  "training.exercise.ex_08_landing_momentum.objective.landings": "Register two landings.",
+  "training.exercise.ex_08_landing_momentum.objective.momentum":
+    "Maintain running speed for 0.5 seconds.",
+  "training.exercise.ex_08_landing_momentum.objective.reach_finish_zone":
+    "Reach the finish approach zone.",
+  "training.exercise.ex_09_interaction.title": "Interaction Basics",
+  "training.exercise.ex_09_interaction.description":
+    "Approach the terminal and use the Interact action.",
+  "training.exercise.ex_09_interaction.objective.reach_terminal": "Reach the training terminal.",
+  "training.exercise.ex_09_interaction.objective.interact": "Access the training terminal.",
+  "training.exercise.ex_10_combined_traversal.title": "Parkour Sequence",
+  "training.exercise.ex_10_combined_traversal.description":
+    "Finish the training route with a final jump and landing.",
+  "training.exercise.ex_10_combined_traversal.objective.final_jump": "Perform a jump.",
+  "training.exercise.ex_10_combined_traversal.objective.final_landing": "Land safely.",
+  "training.exercise.ex_10_combined_traversal.objective.final_speed":
+    "Maintain speed toward the finish marker.",
+  "training.exercise.ex_10_combined_traversal.objective.final_zone": "Reach the finish marker.",
+
+  "level.prologue_test.name": "Prologue — Rooftop Run",
+  "level.prologue_test.route.name": "Prologue — Rooftop Run Route",
+  "level.prologue_test.section.sec_rooftop.name": "Rooftop",
+  "level.prologue_test.section.sec_industrial.name": "Industrial",
+  "level.prologue_test.section.sec_construction.name": "Construction",
+  "level.prologue_test.section.sec_skybridge.name": "Skybridge",
+  "level.prologue_test.section.sec_finish.name": "Finish",
+  "level.prologue_test.checkpoint.cp_rooftop.name": "Rooftop Checkpoint",
+  "level.prologue_test.checkpoint.cp_industrial.name": "Industrial Checkpoint",
+  "level.prologue_test.checkpoint.cp_construction.name": "Construction Checkpoint",
+  "level.prologue_test.checkpoint.cp_skybridge.name": "Skybridge Checkpoint",
+  "level.prologue_test.checkpoint.cp_finish.name": "Finish Checkpoint",
+  "level.prologue_test.interaction.test_terminal.prompt": "Press E to access the terminal",
+
+  "level.training_test.name": "Training — Movement Yard",
+  "level.training_test.section.sec_start.name": "Start",
+  "level.training_test.section.sec_traversal.name": "Traversal",
+  "level.training_test.section.sec_finish.name": "Finish",
+  "level.training_test.checkpoint.cp_rooftop.name": "Rooftop",
+  "level.training_test.checkpoint.cp_industrial.name": "Industrial",
+  "level.training_test.checkpoint.cp_skybridge.name": "Skybridge",
+  "level.training_test.interaction.test_terminal.prompt": "Press E to access the terminal",
+
+  "boot.stage.boot.label": "BOOTING",
+  "boot.stage.boot.detail": "Initiating runner network",
+  "boot.stage.storage.label": "RESTORING RUNNER DATA",
+  "boot.stage.storage.detail": "Profile · settings · local records",
+  "boot.stage.world.label": "MAPPING THE CITY",
+  "boot.stage.world.detail": "City grid · far skyline",
+  "boot.stage.materials.label": "GENERATING MATERIALS",
+  "boot.stage.materials.detail": "Concrete · glass · signage",
+  "boot.stage.physics.label": "BUILDING COLLISION",
+  "boot.stage.physics.detail": "Capsule · roof colliders",
+  "boot.stage.level.label": "ASSEMBLING ROOFTOPS",
+  "boot.stage.level.detail": "Sections · checkpoints · props",
+  "boot.stage.audio.label": "TUNING THE MIX",
+  "boot.stage.audio.detail": "Ambience · footsteps · score",
+  "boot.stage.ui.label": "OPENING THE MENU",
+  "boot.stage.ui.detail": "Paper · ink · runner network",
+  "boot.stage.ready.label": "READY",
+  "boot.stage.ready.detail": "Enter the city",
+  "boot.error.label": "UNABLE TO START",
+
   "time.seconds": {
     one: "{count} second",
     other: "{count} seconds",

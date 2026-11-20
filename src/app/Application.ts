@@ -18,10 +18,18 @@ import { InputManager } from "../input/InputManager";
 import { IDLE_INPUT_FRAME, type InputFrame } from "../input/InputState";
 import { InteractionSystem } from "../interaction/InteractionSystem";
 import { LevelRuntimeManager } from "../levels/LevelRuntimeManager";
-import type { SurfaceType } from "../levels/LevelTypes";
+import type { LevelDefinition, SurfaceType } from "../levels/LevelTypes";
 import type { TriggerEvent } from "../levels/TriggerManager";
 import { PROLOGUE_TEST_LEVEL_DEFINITIONS } from "../levels/test/PrologueTestLevel";
 import { TRAINING_TEST_LEVEL_DEFINITIONS } from "../levels/test/TrainingTestLevel";
+import {
+  levelCheckpointNameKey,
+  levelInteractionPromptKey,
+  levelSectionNameKey,
+  localizeContent,
+  trainingExerciseTitleKey,
+  trainingObjectiveDescriptionKey,
+} from "../localization/ContentLocalization";
 import { DEFAULT_LANGUAGE_ID, DEFAULT_LANGUAGE_REGISTRY } from "../localization/Language";
 import { LocalizationManager } from "../localization/LocalizationManager";
 import { createDefaultLocalizationResourceLoader } from "../localization/LocalizationResourceLoader";
@@ -900,7 +908,9 @@ export class Application implements Disposable {
       this.sessionDisposables.push(this.trainingSystem);
     } else if (context.mode === "speedrun") {
       this.speedrunSystem = new SpeedrunSystem({
-        route: createPrologueRoute(level),
+        route: createPrologueRoute(level, (key, fallback) =>
+          this.localizeContentText(key, fallback),
+        ),
         records: this.speedrunRecordStore,
       });
       this.speedrunSystem.prepare(context.sessionId);
@@ -1012,7 +1022,9 @@ export class Application implements Disposable {
 
             this.ui?.showToast(
               this.localize("hud.exerciseComplete", {
-                title: definition?.title ?? event.exerciseId,
+                title: definition
+                  ? this.localizeTrainingTitle(definition.id, definition.title)
+                  : event.exerciseId,
               }),
               performance.now(),
             );
@@ -1112,6 +1124,7 @@ export class Application implements Disposable {
       this.currentMode === "training" ? (tutorialSnapshot?.nextStep ?? null) : null;
     const speedrunSnapshot = this.speedrunSystem?.getSnapshot() ?? null;
     const movement = this.player?.getMovementSnapshot() ?? null;
+    const level = this.levelRuntime?.getCurrentLevel() ?? null;
 
     let training: HudState["training"] = null;
 
@@ -1124,8 +1137,14 @@ export class Application implements Disposable {
       training = {
         current: trainingSnapshot.exerciseIndex + 1,
         total: trainingSnapshot.exerciseCount,
-        title: exercise.definition.title,
-        objectiveDescription: objective?.description ?? "",
+        title: this.localizeTrainingTitle(exercise.definition.id, exercise.definition.title),
+        objectiveDescription: objective
+          ? this.localizeTrainingObjective(
+              exercise.definition.id,
+              objective.id,
+              objective.description,
+            )
+          : "",
         value: progress?.currentValue ?? 0,
         target: progress?.targetValue ?? 1,
       };
@@ -1140,6 +1159,7 @@ export class Application implements Disposable {
             index: split.index,
             splitTimeMs: split.splitTimeMs,
             totalTimeMs: split.totalTimeMs,
+            label: this.localizeSectionName(level, split.sectionId),
           })),
           medal: speedrunSnapshot.result?.medal ?? null,
         }
@@ -1149,7 +1169,7 @@ export class Application implements Disposable {
       mode: this.currentMode,
       training,
       speedrun,
-      interactionPrompt: this.interactionSystem?.getSnapshot().prompt ?? null,
+      interactionPrompt: this.localizeInteractionPrompt(level),
       tutorialHint: nextTutorialStep
         ? {
             title: this.localize(nextTutorialStep.titleKey),
@@ -1164,6 +1184,53 @@ export class Application implements Disposable {
 
   private localize(key: string, params: Readonly<Record<string, unknown>> = {}): string {
     return this.localizationManager?.t(key, params as never) ?? key;
+  }
+
+  /** Resolves a content-owned string, falling back to its authored English text. */
+  private localizeContentText(key: string, fallback: string): string {
+    return localizeContent(this.localizationManager, key, fallback);
+  }
+
+  private localizeTrainingTitle(exerciseId: string, fallback: string): string {
+    return this.localizeContentText(trainingExerciseTitleKey(exerciseId), fallback);
+  }
+
+  private localizeTrainingObjective(
+    exerciseId: string,
+    objectiveId: string,
+    fallback: string,
+  ): string {
+    return this.localizeContentText(
+      trainingObjectiveDescriptionKey(exerciseId, objectiveId),
+      fallback,
+    );
+  }
+
+  private localizeSectionName(level: LevelDefinition | null, sectionId: string): string {
+    const authored = level?.sections.find((section) => section.id === sectionId)?.displayName;
+
+    if (authored === undefined || level === null) {
+      return sectionId;
+    }
+
+    return this.localizeContentText(levelSectionNameKey(level.id, sectionId), authored);
+  }
+
+  private localizeInteractionPrompt(level: LevelDefinition | null): string | null {
+    const snapshot = this.interactionSystem?.getSnapshot();
+
+    if (!snapshot?.available || !snapshot.targetId || !snapshot.prompt) {
+      return null;
+    }
+
+    if (level === null) {
+      return snapshot.prompt;
+    }
+
+    return this.localizeContentText(
+      levelInteractionPromptKey(level.id, snapshot.targetId),
+      snapshot.prompt,
+    );
   }
 
   private toggleDiagnostics(): void {
@@ -1293,9 +1360,19 @@ export class Application implements Disposable {
 
       if (activation) {
         console.info(`[Glassline] Checkpoint activated: ${activation.checkpointId}`);
+        const definition = this.checkpointSystem?.getDefinition(activation.checkpointId);
+        const authoredName = definition?.displayName ?? activation.checkpointId;
+        const levelId =
+          this.levelRuntime?.getCurrentLevel()?.id ??
+          this.sessionManager?.getActiveSession()?.levelId ??
+          null;
         const displayName =
-          this.checkpointSystem?.getDefinition(activation.checkpointId)?.displayName ??
-          activation.checkpointId;
+          levelId === null
+            ? authoredName
+            : this.localizeContentText(
+                levelCheckpointNameKey(levelId, activation.checkpointId),
+                authoredName,
+              );
 
         this.ui?.showToast(
           `${this.localize("hud.checkpointReached")}: ${displayName}`,

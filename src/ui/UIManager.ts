@@ -1,6 +1,10 @@
 import type { UiCue } from "../audio/AudioManager";
 import type { InputContext } from "../input/InputActions";
 import type { InputFrame } from "../input/InputState";
+import {
+  levelCheckpointNameKey,
+  trainingExerciseTitleKey,
+} from "../localization/ContentLocalization";
 import { getLanguageLabel } from "../localization/Language";
 import type { SessionResults } from "../sessions/GameplaySessionManager";
 import type { SettingsManager } from "../settings/SettingsManager";
@@ -57,6 +61,8 @@ export interface HudSpeedrunState {
     readonly index: number;
     readonly splitTimeMs: number;
     readonly totalTimeMs: number;
+    /** Localized route-section name resolved by the Application. */
+    readonly label?: string;
   }[];
   readonly medal: string | null;
 }
@@ -486,6 +492,11 @@ export class UIManager {
         const list = element("ol", "gl-results__list");
 
         for (const exercise of results.training.exercises) {
+          const exerciseTitle = this.localizeWithFallback(
+            trainingExerciseTitleKey(exercise.exerciseId),
+            exercise.title,
+          );
+
           list.append(
             element(
               "li",
@@ -493,7 +504,7 @@ export class UIManager {
               `${colorIndependentStatusMarker(
                 exercise.completed ? "complete" : "incomplete",
                 this.colorIndependentStatus,
-              )}${exercise.title}${
+              )}${exerciseTitle}${
                 exercise.completed ? "" : ` ${this.localize("results.incomplete")}`
               } · ${this.localize("results.attempts", { count: exercise.attempts })}`,
             ),
@@ -540,11 +551,16 @@ export class UIManager {
         const splits = element("ol", "gl-results__list");
 
         for (const split of speedrun.splits) {
+          const checkpointName = this.localizeWithFallback(
+            levelCheckpointNameKey(results.levelId, split.checkpointId),
+            split.checkpointId,
+          );
+
           splits.append(
             element(
               "li",
               "gl-results__item",
-              `${split.index + 1}. ${split.checkpointId} · ${formatRunTime(split.splitTimeMs)} (${formatRunTime(split.totalTimeMs)})`,
+              `${checkpointName} · ${formatRunTime(split.splitTimeMs)} (${formatRunTime(split.totalTimeMs)})`,
             ),
           );
         }
@@ -783,8 +799,14 @@ export class UIManager {
       this.hudSpeedrunSplits.replaceChildren();
 
       for (const split of state.speedrun.splits.slice(-4)) {
+        const splitLabel = split.label === undefined ? "" : `${split.label} · `;
+
         this.hudSpeedrunSplits.append(
-          element("li", "gl-hud__split", `${split.index + 1}. ${formatRunTime(split.splitTimeMs)}`),
+          element(
+            "li",
+            "gl-hud__split",
+            `${split.index + 1}. ${splitLabel}${formatRunTime(split.splitTimeMs)}`,
+          ),
         );
       }
     }
@@ -1212,6 +1234,16 @@ export class UIManager {
    * "none" (and unknown ids), so callers render `medal.none` instead of
    * producing a stray template.
    */
+  /**
+   * Resolves a content-owned translation but keeps the authored fallback for
+   * missing resources (the resource manager returns the raw key otherwise).
+   */
+  private localizeWithFallback(key: string, fallback: string): string {
+    const value = this.localize(key);
+
+    return value === key ? fallback : value;
+  }
+
   private formatMedal(medal: string | null | undefined): string | null {
     if (!medal || medal === "none") {
       return null;

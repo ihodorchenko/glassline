@@ -251,6 +251,117 @@ export const RUSSIAN_RESOURCES: TranslationResources = {
   "records.statCheckpoints": "Контрольные точки",
   "records.noAchievements": "Достижений пока нет.",
 
+  // Контентные строки: зеркало authored-английского в `TrainingExercises.ts`,
+  // тестовых уровнях и `BootLoader.ts`; drift-тест держит обе стороны в синхроне.
+  "training.exercise.ex_01_movement_basics.title": "Основы движения",
+  "training.exercise.ex_01_movement_basics.description":
+    "Двигайтесь без остановки и доберитесь до первого маркера на крыше.",
+  "training.exercise.ex_01_movement_basics.objective.move":
+    "Двигайтесь со скоростью шага или быстрее 0,5 секунды.",
+  "training.exercise.ex_01_movement_basics.objective.reach_rooftop":
+    "Доберитесь до маркера контрольной точки на крыше.",
+  "training.exercise.ex_02_running.title": "Бег",
+  "training.exercise.ex_02_running.description":
+    "Разгонитесь и подойдите к препятствию для вольта.",
+  "training.exercise.ex_02_running.objective.run_speed": "Удерживайте скорость бега 0,8 секунды.",
+  "training.exercise.ex_02_running.objective.reach_approach":
+    "Доберитесь до зоны разбега перед вольтом.",
+  "training.exercise.ex_03_jumping.title": "Основной прыжок",
+  "training.exercise.ex_03_jumping.description": "Прыгните дважды и задержитесь перед вольтом.",
+  "training.exercise.ex_03_jumping.objective.jump_count": "Выполните два прыжка.",
+  "training.exercise.ex_03_jumping.objective.stay_ready": "Вернитесь к маркеру отталкивания.",
+  "training.exercise.ex_04_vaulting.title": "Основной вольт",
+  "training.exercise.ex_04_vaulting.description":
+    "Перепрыгните белое препятствие вольтом и приземлитесь за ним.",
+  "training.exercise.ex_04_vaulting.objective.vault": "Выполните вольт.",
+  "training.exercise.ex_04_vaulting.objective.reach_landing":
+    "Доберитесь до зоны приземления за препятствием.",
+  "training.exercise.ex_05_sliding.title": "Подкат",
+  "training.exercise.ex_05_sliding.description":
+    "Проскользните под низким потолком и доберитесь до выхода.",
+  "training.exercise.ex_05_sliding.objective.slide": "Начните подкат.",
+  "training.exercise.ex_05_sliding.objective.reach_exit": "Доберитесь до выхода из тоннеля.",
+  "training.exercise.ex_06_wall_running.title": "Бег по стене",
+  "training.exercise.ex_06_wall_running.description":
+    "Пробегите по стене через коридор и доберитесь до дальней площадки.",
+  "training.exercise.ex_06_wall_running.objective.wallrun": "Начните бег по стене.",
+  "training.exercise.ex_06_wall_running.objective.reach_corridor_end":
+    "Доберитесь до выхода из коридора.",
+  "training.exercise.ex_07_wall_jumping.title": "Прыжок от стены",
+  "training.exercise.ex_07_wall_jumping.description":
+    "Оттолкнитесь от стены и доберитесь до финальной площадки.",
+  "training.exercise.ex_07_wall_jumping.objective.walljump": "Выполните прыжок от стены.",
+  "training.exercise.ex_07_wall_jumping.objective.reach_final": "Доберитесь до финальной площадки.",
+  "training.exercise.ex_08_landing_momentum.title": "Контролируемое приземление",
+  "training.exercise.ex_08_landing_momentum.description":
+    "Приземлитесь дважды, сохраняя разгон к финишной зоне.",
+  "training.exercise.ex_08_landing_momentum.objective.landings": "Засчитайте два приземления.",
+  "training.exercise.ex_08_landing_momentum.objective.momentum":
+    "Удерживайте скорость бега 0,5 секунды.",
+  "training.exercise.ex_08_landing_momentum.objective.reach_finish_zone":
+    "Доберитесь до зоны перед финишем.",
+  "training.exercise.ex_09_interaction.title": "Основы взаимодействия",
+  "training.exercise.ex_09_interaction.description":
+    "Подойдите к терминалу и воспользуйтесь взаимодействием.",
+  "training.exercise.ex_09_interaction.objective.reach_terminal":
+    "Доберитесь до тренировочного терминала.",
+  "training.exercise.ex_09_interaction.objective.interact":
+    "Получите доступ к тренировочному терминалу.",
+  "training.exercise.ex_10_combined_traversal.title": "Паркур-связка",
+  "training.exercise.ex_10_combined_traversal.description":
+    "Завершите тренировочный маршрут финальным прыжком и приземлением.",
+  "training.exercise.ex_10_combined_traversal.objective.final_jump": "Выполните прыжок.",
+  "training.exercise.ex_10_combined_traversal.objective.final_landing": "Приземлитесь безопасно.",
+  "training.exercise.ex_10_combined_traversal.objective.final_speed":
+    "Удерживайте скорость на пути к финишному маркеру.",
+  "training.exercise.ex_10_combined_traversal.objective.final_zone":
+    "Доберитесь до финишного маркера.",
+
+  "level.prologue_test.name": "Пролог — прогулка по крышам",
+  "level.prologue_test.route.name": "Рейтинговый пролог",
+  "level.prologue_test.section.sec_rooftop.name": "Крыша",
+  "level.prologue_test.section.sec_industrial.name": "Промзона",
+  "level.prologue_test.section.sec_construction.name": "Стройка",
+  "level.prologue_test.section.sec_skybridge.name": "Небесный мост",
+  "level.prologue_test.section.sec_finish.name": "Финиш",
+  "level.prologue_test.checkpoint.cp_rooftop.name": "Контрольная точка на крыше",
+  "level.prologue_test.checkpoint.cp_industrial.name": "Контрольная точка в промзоне",
+  "level.prologue_test.checkpoint.cp_construction.name": "Контрольная точка на стройке",
+  "level.prologue_test.checkpoint.cp_skybridge.name": "Контрольная точка на небесном мосту",
+  "level.prologue_test.checkpoint.cp_finish.name": "Контрольная точка на финише",
+  "level.prologue_test.interaction.test_terminal.prompt":
+    "Нажмите E, чтобы получить доступ к терминалу",
+
+  "level.training_test.name": "Тренировка — двор движения",
+  "level.training_test.section.sec_start.name": "Старт",
+  "level.training_test.section.sec_traversal.name": "Трасса",
+  "level.training_test.section.sec_finish.name": "Финиш",
+  "level.training_test.checkpoint.cp_rooftop.name": "Крыша",
+  "level.training_test.checkpoint.cp_industrial.name": "Промзона",
+  "level.training_test.checkpoint.cp_skybridge.name": "Небесный мост",
+  "level.training_test.interaction.test_terminal.prompt":
+    "Нажмите E, чтобы получить доступ к терминалу",
+
+  "boot.stage.boot.label": "Запуск",
+  "boot.stage.boot.detail": "Инициализация сети бегунов",
+  "boot.stage.storage.label": "Восстановление данных",
+  "boot.stage.storage.detail": "Профиль · настройки · локальные рекорды",
+  "boot.stage.world.label": "Построение города",
+  "boot.stage.world.detail": "Городская сетка · дальний горизонт",
+  "boot.stage.materials.label": "Генерация материалов",
+  "boot.stage.materials.detail": "Бетон · стекло · вывески",
+  "boot.stage.physics.label": "Построение коллизий",
+  "boot.stage.physics.detail": "Капсула · коллайдеры крыш",
+  "boot.stage.level.label": "Сборка крыш",
+  "boot.stage.level.detail": "Секции · контрольные точки · объекты",
+  "boot.stage.audio.label": "Настройка звука",
+  "boot.stage.audio.detail": "Эмбиент · шаги · музыка",
+  "boot.stage.ui.label": "Открытие меню",
+  "boot.stage.ui.detail": "Бумага · чернила · сеть бегунов",
+  "boot.stage.ready.label": "Готово",
+  "boot.stage.ready.detail": "Добро пожаловать в город",
+  "boot.error.label": "НЕ УДАЛОСЬ ЗАПУСТИТЬ",
+
   "time.seconds": {
     one: "{count} секунда",
     few: "{count} секунды",

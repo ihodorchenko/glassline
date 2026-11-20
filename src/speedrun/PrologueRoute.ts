@@ -1,4 +1,10 @@
 import type { LevelDefinition } from "../levels/LevelTypes";
+import {
+  type ContentTranslator,
+  levelNameKey,
+  levelRouteNameKey,
+  levelSectionNameKey,
+} from "../localization/ContentLocalization";
 import type { SpeedrunRoute, SpeedrunRouteSection } from "./SpeedrunSystem";
 
 export const PROLOGUE_MEDAL_THRESHOLDS = {
@@ -7,13 +13,24 @@ export const PROLOGUE_MEDAL_THRESHOLDS = {
   gold: 120000,
 } as const;
 
+const IDENTITY_TRANSLATOR: ContentTranslator = (_key, fallback) => fallback;
+
 /**
  * Builds the authoritative Speedrun route from authored Prologue content.
  *
  * The route owns required checkpoint order only; checkpoint activation remains
  * with the Checkpoint System and level content owns physical triggers.
+ *
+ * `translate` localizes player-facing route/section names. The route is built
+ * once per session, so the fallback translator keeps authored English when no
+ * localization is supplied. Visible HUD/results paths resolve names from level
+ * content at render time instead, so a mid-session language switch is reflected
+ * immediately even though this route object keeps its build-time language.
  */
-export function createPrologueRoute(level: LevelDefinition): SpeedrunRoute {
+export function createPrologueRoute(
+  level: LevelDefinition,
+  translate: ContentTranslator = IDENTITY_TRANSLATOR,
+): SpeedrunRoute {
   if (level.mode !== "prologue") {
     throw new Error(`Level "${level.id}" is not a Prologue level.`);
   }
@@ -25,7 +42,7 @@ export function createPrologueRoute(level: LevelDefinition): SpeedrunRoute {
 
       return {
         id: section.id,
-        displayName: section.displayName,
+        displayName: translate(levelSectionNameKey(level.id, section.id), section.displayName),
         ...(checkpoint === undefined ? {} : { checkpointId: checkpoint.id }),
       };
     });
@@ -46,7 +63,10 @@ export function createPrologueRoute(level: LevelDefinition): SpeedrunRoute {
 
   return {
     id: `${level.id}_route`,
-    name: `${level.displayName} Route`,
+    name: translate(
+      levelRouteNameKey(level.id),
+      translate(levelNameKey(level.id), `${level.displayName} Route`),
+    ),
     version: 1,
     sections,
     checkpointOrder,

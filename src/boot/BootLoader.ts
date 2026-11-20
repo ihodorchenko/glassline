@@ -1,4 +1,12 @@
 import type { BootStage } from "../app/ApplicationConfig";
+import {
+  BOOT_ERROR_LABEL_KEY,
+  bootStageDetailKey,
+  bootStageLabelKey,
+} from "../localization/ContentLocalization";
+import { ENGLISH_RESOURCES } from "../localization/resources/en";
+import { RUSSIAN_RESOURCES } from "../localization/resources/ru";
+import type { TranslationResources } from "../localization/TranslationTypes";
 
 interface StageCopy {
   readonly label: string;
@@ -6,7 +14,12 @@ interface StageCopy {
   readonly progress: number;
 }
 
-const STAGE_COPY: Record<BootStage, StageCopy> = {
+/**
+ * Authored English boot copy. It is the fallback source for
+ * `boot.stage.<stage>.label|detail` resources (`docs/27` §2.2); a drift test
+ * keeps `en.ts` and this table in sync.
+ */
+export const BOOT_STAGE_COPY: Record<BootStage, StageCopy> = {
   boot: {
     label: "BOOTING",
     detail: "Initiating runner network",
@@ -54,8 +67,33 @@ const STAGE_COPY: Record<BootStage, StageCopy> = {
   },
 };
 
+/** Boot-screen language. Settings are not loaded yet, so the browser locale decides. */
+export type BootLanguageId = "en" | "ru";
+
+/**
+ * Picks the boot-screen language from `navigator.language` (`ru*` → Russian,
+ * everything else → English). The persisted `general.language` setting cannot be
+ * used here because the boot screen paints before settings/storage initialize;
+ * if the persisted preference differs, the in-game UI follows the setting while
+ * the boot chrome follows the browser locale.
+ */
+export function detectBootLanguage(navigatorLanguage?: string | null): BootLanguageId {
+  const language =
+    navigatorLanguage ??
+    (typeof navigator === "undefined" ? undefined : (navigator.language as string | undefined));
+
+  return language?.toLowerCase().startsWith("ru") === true ? "ru" : "en";
+}
+
+function bootResources(languageId: BootLanguageId): TranslationResources {
+  return languageId === "ru" ? RUSSIAN_RESOURCES : ENGLISH_RESOURCES;
+}
+
 const MIN_VISIBLE_MS = 900;
 const HIDE_TRANSITION_MS = 420;
+
+/** Authored fallback for the boot failure stage label. */
+export const BOOT_ERROR_LABEL_FALLBACK = "UNABLE TO START";
 
 /**
  * Styled paper/ink boot loader that exists in index.html before the bundle
@@ -68,16 +106,21 @@ export class BootLoader {
   private readonly fill: HTMLElement | null;
   private readonly percent: HTMLElement | null;
   private readonly track: HTMLElement | null;
+  private readonly resources: TranslationResources;
   private readonly startedAt = performance.now();
   private hidden = false;
 
-  constructor(documentRoot: Document = document) {
+  constructor(
+    documentRoot: Document = document,
+    languageId: BootLanguageId = detectBootLanguage(),
+  ) {
     this.root = documentRoot.getElementById("boot-loader");
     this.stage = documentRoot.getElementById("boot-stage");
     this.detail = documentRoot.getElementById("boot-detail");
     this.fill = documentRoot.getElementById("boot-fill");
     this.percent = documentRoot.getElementById("boot-percent");
     this.track = documentRoot.getElementById("boot-track");
+    this.resources = bootResources(languageId);
   }
 
   setStage(stage: BootStage): void {
@@ -85,7 +128,7 @@ export class BootLoader {
       return;
     }
 
-    const copy = STAGE_COPY[stage];
+    const copy = this.resolveStageCopy(stage);
 
     if (this.stage) {
       this.stage.textContent = copy.label;
@@ -122,7 +165,7 @@ export class BootLoader {
     this.root.classList.remove("is-ready");
 
     if (this.stage) {
-      this.stage.textContent = "UNABLE TO START";
+      this.stage.textContent = this.translate(BOOT_ERROR_LABEL_KEY, BOOT_ERROR_LABEL_FALLBACK);
     }
 
     if (this.detail) {
@@ -154,5 +197,21 @@ export class BootLoader {
     }
 
     this.track?.setAttribute("aria-valuenow", String(Math.round(value)));
+  }
+
+  private resolveStageCopy(stage: BootStage): StageCopy {
+    const authored = BOOT_STAGE_COPY[stage];
+
+    return {
+      ...authored,
+      label: this.translate(bootStageLabelKey(stage), authored.label),
+      detail: this.translate(bootStageDetailKey(stage), authored.detail),
+    };
+  }
+
+  private translate(key: string, fallback: string): string {
+    const value = this.resources[key];
+
+    return typeof value === "string" ? value : fallback;
   }
 }
