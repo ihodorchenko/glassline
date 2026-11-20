@@ -1,4 +1,5 @@
 import type { Vector2Like, Vector3Like } from "../shared/math";
+import { clamp } from "../shared/math";
 import type { MovementTuning } from "./MovementTuning";
 
 /** Canonical movement state set (`docs/02_TECHNICAL_ARCHITECTURE.md` §10.4). */
@@ -160,6 +161,8 @@ export class MovementModel {
   private jumpExecutedThisStep = false;
   /** True while the player is walking off ledges and should stick to the ground. */
   private groundStickArmed = false;
+  /** Slope angle (deg) of the current support surface while grounded. */
+  private slopeAngleDegrees = 0;
 
   private slideElapsedSeconds = 0;
   private vault: ActiveVault | null = null;
@@ -699,6 +702,43 @@ export class MovementModel {
     this.velocity.y = 0;
   }
 
+  /** Ground-speed multiplier for the current slope angle (1 on gentle slopes). */
+  private slopeSpeedFactor(): number {
+    const tuning = this.tuning;
+    const min = tuning.slopeEaseMinAngleDegrees;
+    const max = 50; // matches the controller's max climb angle
+
+    if (this.slopeAngleDegrees <= min || max <= min) {
+      return 1;
+    }
+
+    const t = clamp((this.slopeAngleDegrees - min) / (max - min), 0, 1);
+
+    return 1 - (1 - tuning.slopeEaseMaxFactor) * t;
+  }
+
+  /** Angle (deg) of the surface we are standing on; 0 when airborne or flat. */
+  getSlopeAngleDegrees(): number {
+    return this.grounded ? this.slopeAngleDegrees : 0;
+  }
+
+  /**
+   * Feeds the support-surface normal probed at the end of the previous fixed
+   * step (post-collision position), so locomotion eases speed on inclines.
+   */
+  setSlopeNormal(normal: Vector3Like | null): void {
+    if (!normal) {
+      this.slopeAngleDegrees = 0;
+
+      return;
+    }
+
+    const length = Math.hypot(normal.x, normal.y, normal.z);
+
+    this.slopeAngleDegrees =
+      length > 1e-6 ? (Math.acos(clamp(normal.y / length, -1, 1)) * 180) / Math.PI : 0;
+  }
+
   private resolveTargetVelocity(
     moveDirectionWorld: Vector3Like,
     moveMagnitude: number,
@@ -719,7 +759,10 @@ export class MovementModel {
           : moveMagnitude < 0.4
             ? this.tuning.walkSpeed
             : this.tuning.runSpeed;
-    const targetSpeed = baseSpeed * moveMagnitude;
+    // Gentle speed taper up steep inclines instead of the controller's harsh
+    // cosine projection, which nearly stops players around 30 degrees.
+    const slopeFactor = this.slopeSpeedFactor();
+    const targetSpeed = baseSpeed * moveMagnitude * slopeFactor;
 
     return { x: directionX * targetSpeed, y: directionZ * targetSpeed };
   }

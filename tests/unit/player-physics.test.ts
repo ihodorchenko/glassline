@@ -289,12 +289,77 @@ describe("PlayerSystem physics integration", () => {
       }
     }
 
-
     expect(reachedTop).toBe(true);
     // The climb over the riser is spread across several frames: no single fixed
     // step may throw the body up by more than ~0.06 m (raw autostep hops the
     // full 0.2 m in one frame).
     expect(maxLiftPerStep).toBeLessThan(0.06);
+  });
+
+  it("runs up a steep ramp without stalling", async () => {
+    const physics = new PhysicsWorld({
+      gravity: { x: 0, y: -9.81, z: 0 },
+      timestepSeconds: FIXED_DT,
+    });
+
+    await physics.initialize();
+
+    const world = physics.rapierWorld;
+    const groundBody = world.createRigidBody(
+      RAPIER.RigidBodyDesc.fixed().setTranslation(0, -0.1, 0),
+    );
+
+    world.createCollider(RAPIER.ColliderDesc.cuboid(30, 0.1, 60), groundBody);
+
+    // A 35° ramp rising toward -z (beyond Rapier's comfortable climb handling).
+    const angle = (35 * Math.PI) / 180;
+    const rampLength = 8;
+    const rampCenterY = Math.sin(angle) * (rampLength / 2) + 0.02;
+    const rampCenterZ = -(6 + Math.cos(angle) * (rampLength / 2));
+    const rampBody = world.createRigidBody(
+      RAPIER.RigidBodyDesc.fixed()
+        .setTranslation(0, rampCenterY, rampCenterZ)
+        .setRotation({ x: Math.sin(angle / 2), y: 0, z: 0, w: Math.cos(angle / 2) }),
+    );
+
+    world.createCollider(RAPIER.ColliderDesc.cuboid(6, 0.15, rampLength / 2), rampBody);
+
+    const player = new PlayerSystem(physics, {
+      tuning: DEFAULT_MOVEMENT_TUNING,
+      spawnPoint: { x: 0, y: 0.895, z: 0 },
+    });
+
+    player.activate();
+    activeHarnesses.push({ physics, player });
+
+    step({ physics, player }, input(), 60);
+
+    let minSpeedOnRamp = Number.POSITIVE_INFINITY;
+    let samples = 0;
+    let reachedTop = false;
+
+    for (let index = 0; index < 400; index += 1) {
+      player.fixedUpdate(input({ move: { x: 0, y: 1 } }), 0, FIXED_DT);
+      physics.step();
+
+      const position = player.getPosition();
+
+      if (position.z < -6 && position.z > -14 && player.getMovementSnapshot().grounded) {
+        minSpeedOnRamp = Math.min(minSpeedOnRamp, player.getMovementSnapshot().speed);
+        samples += 1;
+      }
+
+      if (position.z < -12 && position.y > 5) {
+        reachedTop = true;
+        break;
+      }
+    }
+
+    expect(samples).toBeGreaterThan(20);
+    // Before slope handling the body crawled at ~0.6 m/s and never climbed;
+    // now the incline keeps most of the run speed and the ramp is traversable.
+    expect(minSpeedOnRamp).toBeGreaterThan(2.5);
+    expect(reachedTop).toBe(true);
   });
 
   it("keeps the camera's vertical motion bounded while descending stairs", async () => {

@@ -32,6 +32,13 @@ export interface MovementTuning {
   readonly sprintSpeed: number;
   readonly crouchSpeedMultiplier: number;
 
+  /** Slope angle (deg) up to which full speed is kept when climbing. */
+  readonly slopeEaseMinAngleDegrees: number;
+  /** Fraction of target speed retained at `maxSlopeClimbAngle`. */
+  readonly slopeEaseMaxFactor: number;
+  /** Multiplier applied to the controller's slide down too-steep slopes. */
+  readonly slopeSlideSpeedMultiplier: number;
+
   readonly groundAcceleration: number;
   readonly groundDeceleration: number;
   readonly airAcceleration: number;
@@ -85,6 +92,10 @@ export const DEFAULT_MOVEMENT_TUNING: MovementTuning = {
   groundStickSpeed: 9,
   stepGlideSpeed: 4.5,
   stepGlideProbeAhead: 0.35,
+
+  slopeEaseMinAngleDegrees: 18,
+  slopeEaseMaxFactor: 0.72,
+  slopeSlideSpeedMultiplier: 2.2,
 
   walkSpeed: 3.5,
   runSpeed: 6,

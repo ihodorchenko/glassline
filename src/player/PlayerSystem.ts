@@ -92,6 +92,8 @@ export class PlayerSystem implements Disposable {
   private lastFilterDeltaSeconds = 1 / 60;
   /** Horizontal distance already glided up the current riser (meters). */
   private stepGlideProgress = 0;
+  /** Support-surface normal under the feet after the latest fixed step. */
+  private lastSlopeNormal: Vector3Like | null = null;
 
   constructor(physics: PhysicsWorld, options: PlayerSystemOptions) {
     this.physics = physics;
@@ -270,6 +272,60 @@ export class PlayerSystem implements Disposable {
       movement.x = glideTarget.dx;
       movement.y = glideTarget.dy;
       movement.z = glideTarget.dz;
+    } else if (grounded && this.lastSlopeNormal !== null) {
+      // The controller flattens our commanded motion onto the surface plane,
+      // which loses speed on inclines. Re-map the command along the steepest
+      // line of the slope so uphill keeps its push and downhill gains slide.
+      const normal = this.lastSlopeNormal;
+      const slopeCos = normal.y;
+
+      if (slopeCos < 0.995 && slopeCos > 0.05) {
+        let gx = normal.x;
+        let gz = normal.z;
+        const gLen = Math.hypot(gx, gz);
+
+        if (gLen > 1e-6) {
+          gx /= gLen;
+          gz /= gLen;
+
+          const commandX = this.desiredTranslation.x / deltaSeconds;
+          const commandZ = this.desiredTranslation.z / deltaSeconds;
+          const intentAlongDown = commandX * gx + commandZ * gz;
+
+          if (intentAlongDown < 0) {
+            // Climbing: the controller projected our command onto the surface
+            // plane (losing cos(slope) of travel) and its autostep only fires
+            // with strong intent, so inclines crawl and steep ones stall. Ride
+            // the slope line ourselves: horizontal travel keeps the commanded
+            // magnitude, vertical follows tan(slope) per unit — an exact ascent
+            // that hugs the ramp at any walk/run/sprint speed.
+            const slopeSin = Math.sqrt(Math.max(0, 1 - slopeCos * slopeCos));
+            const commanded = Math.hypot(this.desiredTranslation.x, this.desiredTranslation.z);
+
+            if (commanded > 1e-6) {
+              // Keep the full horizontal magnitude of the command — only its
+              // direction is rotated onto the steepest-ascent line. Shrinking
+              // it to the projected part re-introduces the cos(slope) loss and
+              // makes walking up steep ramps crawl.
+              movement.x = -gx * commanded;
+              movement.z = -gz * commanded;
+              movement.y += (commanded * slopeSin) / slopeCos;
+            }
+          } else if (slopeCos < Math.cos((35 * Math.PI) / 180)) {
+            // Sliding down a too-steep slope felt like crawling: accelerate the
+            // controller's slide along the downhill direction.
+            const along = movement.x * gx + movement.z * gz;
+
+            if (along < 0) {
+              const boosted = along * this.tuning.slopeSlideSpeedMultiplier;
+              const delta = boosted - along;
+
+              movement.x += gx * delta;
+              movement.z += gz * delta;
+            }
+          }
+        }
+      }
     }
 
     const nextX = translationBefore.x + movement.x;
@@ -291,6 +347,13 @@ export class PlayerSystem implements Disposable {
       deltaSeconds,
       this.controller.computedGrounded(),
     );
+
+    // Feed slope handling with the surface under the *final* pose of this step
+    // (post glide/collision), so incline easing matches where we actually are.
+    const groundedNow = this.controller.computedGrounded();
+
+    this.lastSlopeNormal = groundedNow ? this.probeSupportNormal(this.currentPosition) : null;
+    this.model.setSlopeNormal(this.lastSlopeNormal);
 
     this.emitMovementEvents();
   }
@@ -437,6 +500,29 @@ export class PlayerSystem implements Disposable {
     this.body.setNextKinematicTranslation(target);
     this.model.applyVaultMotion(movement, deltaSeconds);
     this.emitMovementEvents();
+  }
+
+  /** Unit normal of the surface directly under the feet, or null. */
+  private probeSupportNormal(translation: Vector3Like): Vector3Like | null {
+    const feetY = translation.y - this.postureHeight / 2;
+
+    for (const offset of [0, 0.14, -0.14]) {
+      const hit = this.physics.rapierWorld.castRayAndGetNormal(
+        new RAPIER.Ray({ x: translation.x + offset, y: feetY + 0.1, z: translation.z }, DOWN_RAY),
+        0.45,
+        true,
+        undefined,
+        undefined,
+        undefined,
+        this.body,
+      );
+
+      if (hit) {
+        return { x: hit.normal.x, y: hit.normal.y, z: hit.normal.z };
+      }
+    }
+
+    return null;
   }
 
   /**
