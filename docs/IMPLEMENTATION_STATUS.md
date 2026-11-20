@@ -2,9 +2,32 @@
 
 **Document:** `IMPLEMENTATION_STATUS.md`  
 **Project:** Glassline  
-**Last Updated:** 2026-11-17  
+**Last Updated:** 2026-11-20  
 **Project Stage:** Polished Initial Release Candidate  
-**Status:** Phases 0–8 Complete; Release Polish Pass Complete
+**Status:** Phases 0–8 Complete; Release Polish Pass Complete; Art/Audio/Level Pass W0–W5 Complete (G0–G5 closed)
+
+## 0. Art/Audio/Level Pass — W0–W5 status (2026-11-20)
+
+The art/audio/level pass defined in
+[`VISUAL_AUDIO_LEVEL_PLAN.md`](VISUAL_AUDIO_LEVEL_PLAN.md) is complete and its
+gates are closed. Branch `feat/art-audio-level` (22+ commits); `main` was not
+modified. The binding look evidence is blind review, not the metric columns.
+
+| Gate | Scope | Result | Record |
+|---|---|---|---|
+| G0 | Harness, metric spec, baseline | deterministic capture pipeline, metrics v2.3, baseline evidence | [`reports/BASELINE.md`](reports/BASELINE.md) |
+| G1 | Look foundation (grade, sky, materials, light) | gates closed after a fix round | [`reports/W1_ITERATION.md`](reports/W1_ITERATION.md) |
+| G2 | Content language (W2.1) | blind 6/6, canyon/rooftop 4/4 | [`reports/BLIND_REVIEW_W2.md`](reports/BLIND_REVIEW_W2.md) |
+| W2.2 | Residual polish | blind 6/6 | [`reports/W2_ITERATION.md`](reports/W2_ITERATION.md) §7 |
+| G3 | Level/route | route classes C1/C2/C3 finished, checkpoints validated (293+ tests) | [`reports/DECISIONS.md`](reports/DECISIONS.md) D-06 |
+| G4 | Audio foundation | 5/5 mix targets measured; **human listening pass remains open** | [`evidence/video/`](evidence/video/) audio rounds |
+| G5 | Release hygiene | blind 6/6, a11y audit, perf gate, docs; **G5 closed** | [`reports/W5_RELEASE.md`](reports/W5_RELEASE.md) |
+
+Current validation: `npm run validate` green (typecheck, biome, 302 tests,
+production build). Known limitations, the accepted-residual register,
+measurement caveats and the do-not-claim list are in
+[`reports/W5_RELEASE.md`](reports/W5_RELEASE.md); the owner's manual acceptance
+checklist is in §5 of the same file.
 
 ---
 

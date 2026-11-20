@@ -498,3 +498,67 @@ sit inside the reference per-frame spread or need GTAO/exposure unfreeze, which
 is a deliberate W5/quality-tier decision, not a silent tweak.
 
 Nothing is merged to `main`.
+
+## D-20 — W5 (integration and release hygiene) scope (2026-11-20)
+
+**Trigger.** Owner started W5 ("Запускай W5") after W2 was fully closed (D-19).
+Plan §6 W5 + the accepted-residual register (`W2_TARGETS.md` §8) define the work.
+
+**W5 scope, three parallel lines plus lead integration:**
+1. **Perf (`exec-perf-opt`):** spatial chunking of the static level batches
+   (`LevelContentLoader.ts`) so frustum culling can reject hidden chunks; target
+   the service-block 1 % low ≥55 fps (headed) with **pixel-identical** review
+   frames versus the W2.2 final capture. No visual change allowed.
+2. **Accessibility (`exec-a11y`):** end-to-end audit of the four existing
+   accessibility settings (reduced motion, high contrast, color-independent
+   status, large text) and a new `accessibility.reduce_grain` toggle wired to the
+   post pipeline with a **default that reproduces current pixels exactly**.
+   Audio-reactive visuals do not exist — documented rather than invented.
+3. **Look/materials/content policy (`AD-6`):** decide fix-now vs accepted
+   documented limitation for the residual register (LC, top_contrast, split,
+   service 1 % low) and authorize any retouching that would require a new final
+   capture + blind pass.
+4. **Lead:** final six-shot capture + metrics/guardrails, headless and headed
+   perf, final blind pass (if any pixel changed), release documentation
+   (`W5_RELEASE.md`, status pointer in `IMPLEMENTATION_STATUS.md`, README
+   sanity), `npm run validate`, final commit series on `feat/art-audio-level`.
+
+**G5 closing check** (plan §7): `npm run validate` green + documentation current +
+all gates recorded (G0–G5) + accepted-residual register explicit. No merge to
+`main`; human acceptance remains an owner gate outside the agent's claim.
+
+## D-21 — G5 closed; W5 release record and follow-up register (2026-11-20)
+
+**Outcome.** W5 (D-20) delivered and the release gate G5 is **closed** on the
+art director's verdict:
+- **blind 6/6 PASS** (same reference anchors as earlier passes; W2.2 frames not
+  in the blind set) with **canyon/rooftop 4/4** and no blocking regressions in
+  the guided side-by-side;
+- guardrails: plateau/pure255 = 0, seam 0.0031–0.0044 in the WATCH window, sky
+  mask in the amended windows, red continuity continuous ≥0.25, white point open
+  frames ≤6; service-block white point 7.2 is a **WATCH verified visually as
+  neutral-cool** in the blind (fix trigger did not fire);
+- perf: headed avg **68.95–94.22 fps on 6/6 poses**, service 1 % low **56.82**,
+  wallrun calm re-measure **57.47** (the earlier 40.98 was host load);
+  headless `--strict` 6/6 with the rAF-cap proxy caveat; determinism 6/6
+  byte-identical; `validate` green (302 tests);
+- W5 changes: ambient interier GTAO scene pass removed (pixel-identical open
+  frames, interior look re-authored in the grade pass), decor-batch chunking
+  measured and rejected (no fps, 2–4× draw calls; `LevelContentLoader.ts` back to
+  HEAD), authorised content density/cosmetics, rail opacity 0.32 + fresnel,
+  `accessibility.reduce_grain` added and the `color_independent_status` wiring
+  bug fixed.
+
+**Residual register (documented, does not reopen G5):** mid-scale LC on
+start/first-gap/skybridge/finish/service; top_contrast finish/start; skybridge
+split report-only (trigger > +20); service white point WATCH-verified;
+cosmetic post-G5 nudges (underside props, grille/flanges, cable Ø, finish
+pipe-run shift, spandrel contrast); headless rAF caveat; Firefox unverified;
+**W4 human listening remains open**.
+
+**Do-not-claim** (AD-6): photorealism/reference equivalence; real FPS outside
+the measured headed set; Safari/Firefox gameplay; human listening acceptance;
+"metrics = win"; closing the accepted LC/tc residuals; copying reference frames.
+Full record: `docs/reports/W5_RELEASE.md`, `W5_TARGETS.md`, `w5-metrics.*`,
+`w5-perf-*.json`. Nothing merges to `main`; owner acceptance is the remaining
+human gate.
