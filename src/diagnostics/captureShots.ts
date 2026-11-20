@@ -51,18 +51,24 @@ export interface CaptureShot {
  * - lower service roofs: y = -3, z = -23…-42 (2.4 m sprint gap at z ≈ -33);
  * - skybridge deck: y = -0.9, z = -42…-50;
  * - high finish roof: y = 5.2, z = -120…-135 (reached via the catwalk U-turn).
+ *
+ * Framing history: AD-2 (W0) set the six cards at FOV 50; W2.1 re-framed
+ * start-roof, service-block, skybridge and finish-roof so the new content
+ * (open sky, continuous red strip, dressed duct + red door, suspended load and
+ * the city layer below the span) is visible. first-gap and wallrun-corridor are
+ * unchanged since AD-2.
  */
 export const CAPTURE_SHOTS: readonly CaptureShot[] = [
   {
     id: "start-roof",
     title: "Prologue Start Roof",
     position: [-2.5, 1.65, 3.0],
-    lookAt: [0.0, 2.6, -8.7],
+    lookAt: [1.0, 3.2, -8.7],
     fov: CAPTURE_FOV_DEGREES,
     intent:
-      "AD-2 framing: dollied north to z=3 so the overhead canyon bridge leaves the frustum and " +
-      "the FG planters/barrels drop behind; 12 deg right yaw, 4.5 deg up pitch, horizon ~59 %, " +
-      "red maintenance ladder on the west facade as the leading red element.",
+      "W2.1 framing: 7 deg up pitch opens the canyon (cobalt sky, target sky-mask 12-22 %) while " +
+      "the 12 deg right yaw keeps the deck's continuous red route strip leading into MG, the " +
+      "west-facade red ladder on the left and the dressed bulkhead props in the middle ground.",
   },
   {
     id: "first-gap",
@@ -87,32 +93,35 @@ export const CAPTURE_SHOTS: readonly CaptureShot[] = [
   {
     id: "service-block",
     title: "Service Block Descent",
-    position: [0.0, 0.4, -6.3],
-    lookAt: [1.7, 0.75, -14.1],
+    position: [0.0, 0.4, -6.7],
+    lookAt: [1.5, 0.75, -13.8],
     fov: CAPTURE_FOV_DEGREES,
     intent:
-      "AD-2 framing: slide-eye kept at 0.4 m; dollied 1.4 m into the duct, 12 deg right yaw and " +
-      "2.5 deg up pitch so the duct edge reads in FG and the bright exit slit stays in MG.",
+      "W2.1-P2 framing: slide-eye 0.4 m with the dressed duct soffit edge and red perimeter frame " +
+      "in the FG top (0.95 m clearance read), ~12 deg right yaw placing the moved red service door " +
+      "(x -2.2, z -14.0) in MG-left and the bright exit slit in BG behind the steel pipe run.",
   },
   {
     id: "skybridge",
     title: "Skybridge Deck",
-    position: [0.0, 0.75, -47.5],
-    lookAt: [0.0, 1.8, -57.5],
+    position: [0.0, 0.75, -46.5],
+    lookAt: [0.0, 1.45, -56.5],
     fov: CAPTURE_FOV_DEGREES,
     intent:
-      "AD-2 framing: dollied 5 m along the span, ~6 deg up pitch; both glass-insert rails still " +
-      "converge on the finish silhouette while more sky enters the top of frame.",
+      "W2.1-P2 framing: eye height on the span itself so both transparent glass-rail balustrades " +
+      "are FG/MG and the city layer reads below through them; the suspended white/red service skip " +
+      "and gantry sit in the upper MG 15.5 m ahead, route centreline to the far silhouette clear.",
   },
   {
     id: "finish-roof",
     title: "High Finish Roof",
     position: [0.0, 6.8, -123.5],
-    lookAt: [1.4, 7.75, -132.4],
+    lookAt: [3.0, 8.6, -132.4],
     fov: CAPTURE_FOV_DEGREES,
     intent:
-      "AD-2 framing: dolly 2 m back, 9 deg right yaw and ~6 deg up pitch; FINISH gate sits in the " +
-      "left third, terminal fully in frame, clean deck in FG and ~45 % sky above.",
+      "W2.1 framing: 11 deg up pitch and 19 deg right yaw lift the gate into a clean silhouette " +
+      "against the opened sky (target sky-mask 8-18 %) with the continuous red strip and terminal " +
+      "on the deck below; single red monolith remains the only dominant accent.",
   },
 ];
 
