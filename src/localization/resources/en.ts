@@ -126,6 +126,7 @@ export const ENGLISH_RESOURCES: TranslationResources = {
   "settings.camera.field_of_view": "Field of view",
   "settings.camera.bob_intensity": "Camera bob intensity",
   "settings.camera.motion_intensity": "Camera motion intensity",
+  "settings.camera.sprint_fov_intensity": "Sprint FOV intensity",
   "settings.hud.enabled": "HUD enabled",
   "settings.hud.show_speed_indicator": "Show speed indicator",
   "settings.hud.show_speedrun_timer": "Show speedrun timer",

@@ -135,6 +135,7 @@ export const RUSSIAN_RESOURCES: TranslationResources = {
   "settings.camera.field_of_view": "Угол обзора",
   "settings.camera.bob_intensity": "Интенсивность покачивания камеры",
   "settings.camera.motion_intensity": "Интенсивность движения камеры",
+  "settings.camera.sprint_fov_intensity": "Интенсивность FOV при спринте",
   "settings.hud.enabled": "Показывать интерфейс",
   "settings.hud.show_speed_indicator": "Показывать индикатор скорости",
   "settings.hud.show_speedrun_timer": "Показывать таймер забега",

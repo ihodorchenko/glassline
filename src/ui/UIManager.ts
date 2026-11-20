@@ -133,6 +133,7 @@ export const SETTING_LABEL_KEYS: Readonly<Record<string, string>> = {
   "camera.field_of_view": "settings.camera.field_of_view",
   "camera.bob_intensity": "settings.camera.bob_intensity",
   "camera.motion_intensity": "settings.camera.motion_intensity",
+  "camera.sprint_fov_intensity": "settings.camera.sprint_fov_intensity",
   "hud.enabled": "settings.hud.enabled",
   "hud.show_speed_indicator": "settings.hud.show_speed_indicator",
   "hud.show_speedrun_timer": "settings.hud.show_speedrun_timer",

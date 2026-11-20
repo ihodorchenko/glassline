@@ -116,6 +116,24 @@ describe("SettingsManager", () => {
     expect(manager.getPersistenceStatus()).toBe("ready");
   });
 
+  it("registers the sprint FOV intensity with its default and range", async () => {
+    const manager = new SettingsManager({ persistence: null });
+
+    await manager.initialize();
+
+    expect(manager.getValue("camera.sprint_fov_intensity")).toBe(1);
+
+    const applied = await manager.update({ "camera.sprint_fov_intensity": 0.5 });
+
+    expect(applied.applied).toBe(true);
+    expect(manager.getValue("camera.sprint_fov_intensity")).toBe(0.5);
+
+    const rejected = await manager.update({ "camera.sprint_fov_intensity": 5 });
+
+    expect(rejected.applied).toBe(false);
+    expect(manager.getValue("camera.sprint_fov_intensity")).toBe(0.5);
+  });
+
   it("rejects invalid updates atomically", async () => {
     const manager = new SettingsManager({ persistence: null });
 

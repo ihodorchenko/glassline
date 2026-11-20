@@ -718,7 +718,7 @@ export class Application implements Disposable {
   }): void {
     if (event.type === "step:completed" && event.stepId) {
       this.ui?.showToast(
-        `${this.localize("tutorial.steps." + event.stepId + ".title")}`,
+        this.localize(`tutorial.steps.${event.stepId}.title`),
         performance.now(),
         1800,
       );

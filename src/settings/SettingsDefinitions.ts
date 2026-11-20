@@ -93,6 +93,7 @@ export const SETTING_DEFINITIONS: readonly SettingDefinition[] = [
   numberSetting("camera.field_of_view", "camera", 75, 60, 100),
   numberSetting("camera.bob_intensity", "camera", 1, 0, 1.5),
   numberSetting("camera.motion_intensity", "camera", 1, 0, 1.5),
+  numberSetting("camera.sprint_fov_intensity", "camera", 1, 0, 2),
 
   // 7.4 Display
   booleanSetting("display.fullscreen", "display", false, "requires_confirmation"),
