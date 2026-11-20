@@ -166,11 +166,13 @@ export class RenderScene implements Disposable {
 
     this.sun.castShadow = true;
     this.sun.shadow.mapSize.set(4096, 4096);
-    // PCF (Vogel-disk, 5 taps) with a ~1-texel radius: 4096 over the ~120 m
-    // light frustum puts one texel at ~3-4 cm, i.e. a crisp but soft edge.
+    // PCF (Vogel-disk, 5 taps) with a ~2-texel radius: 4096 over the ~120 m
+    // light frustum puts one texel at ~3-4 cm. P1: 1 -> 2 — the reference has
+    // visibly soft penumbrae on rooftop structures; ~6-8 cm stays readable
+    // while killing the razor-edge hard-shadow look.
     this.sun.shadow.bias = -0.0002;
     this.sun.shadow.normalBias = 0.02;
-    this.sun.shadow.radius = 1;
+    this.sun.shadow.radius = 2;
     this.sun.shadow.camera.near = 1;
     this.sun.shadow.camera.far = 280;
     this.sun.shadow.camera.left = -60;

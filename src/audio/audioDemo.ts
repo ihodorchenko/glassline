@@ -224,9 +224,13 @@ function scheduleAmbience(
     source.start();
   };
 
+  // P1 dark-mix calibration (2026-11-21): the reference prologue keeps ~2.5 %
+  // of energy above 2 kHz; this hiss layer carried the demo's high share to
+  // 0.060. Halved gain + a higher corner narrows the "open air" band. Mirrors
+  // the AMBIENCE_PROFILES air change in AudioManager (live mix parity).
   createIntroLayer("brown", "lowpass", 300, 0.016);
   createIntroLayer("pink", "lowpass", 95, 0.009);
-  createIntroLayer("pink", "highpass", 2600, 0.006);
+  createIntroLayer("pink", "highpass", 3200, 0.003);
 
   const hum = context.createGain();
 

@@ -104,6 +104,11 @@ const FRAGMENT_SHADER = /* glsl */ `
 
     // Horizon haze band: the distant canyon dissolves into pale sky, which is
     // what gives the reference its depth cue above the skyline.
+    // P1 note (2026-11-21, vision audit): the remaining blue dominance lives
+    // ABOVE this band (visible 10-30 deg sky, midBand chroma), not at the
+    // horizon — widening the haze was measured and reverted (no sky-share
+    // change, luma +0.003). Whitening the visible band is palette/chroma work
+    // for the P2 material round.
     float haze = clamp(exp(-h * 20.0) * 0.8, 0.0, 0.72);
     sky = mix(sky, uHorizonColor, haze);
 
@@ -114,8 +119,13 @@ const FRAGMENT_SHADER = /* glsl */ `
     // zenith a little brighter; with these two terms the rendered zenith lands
     // on the sampled reference #2050D8 and the mid band on #68A8C8 (verified by
     // sampling the captured frames, see W1 look report).
-    float skyChroma = mix(0.32, 0.22, smoothstep(0.40, 0.95, h));
-    float skyRadiance = mix(1.05, 0.88, smoothstep(0.30, 0.90, h));
+    // P1 (2026-11-21): W2.2 lowered chroma (0.32/0.22) and flipped the radiance
+    // slope (horizon 1.05 / zenith 0.88), which washed the frame into a bright
+    // pale-blue sky (sky-blue share 68 % vs the reference 43 %) and, through the
+    // PMREM environment map, cooled and darkened the white decks. Restored the
+    // verified W1 values.
+    float skyChroma = mix(0.55, 0.42, smoothstep(0.40, 0.95, h));
+    float skyRadiance = mix(1.0, 1.2, smoothstep(0.30, 0.90, h));
     sky = mix(vec3(skyLuma(sky)), sky, skyChroma) * skyRadiance;
 
     float sunAlignment = max(dot(direction, normalize(uSunDirection)), 0.0);

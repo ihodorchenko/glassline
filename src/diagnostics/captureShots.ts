@@ -63,12 +63,17 @@ export const CAPTURE_SHOTS: readonly CaptureShot[] = [
     id: "start-roof",
     title: "Prologue Start Roof",
     position: [-2.5, 1.65, 3.0],
-    lookAt: [1.0, 3.2, -8.7],
+    // P1 (2026-11-21): reverted to the AD-2/round-93 reference framing. The
+    // W2.1 7-deg-up pitch put ~2/3 of the frame into sky, which cannot match
+    // the reference composition (horizon ~59 %, sky-blue ~43 % of the upper
+    // band, architecture-dominant card); the 13 §2.1 metrics are only defined
+    // against the reference-like framing.
+    lookAt: [0.0, 2.6, -8.7],
     fov: CAPTURE_FOV_DEGREES,
     intent:
-      "W2.1 framing: 7 deg up pitch opens the canyon (cobalt sky, target sky-mask 12-22 %) while " +
-      "the 12 deg right yaw keeps the deck's continuous red route strip leading into MG, the " +
-      "west-facade red ladder on the left and the dressed bulkhead props in the middle ground.",
+      "AD-2 framing (reference card): horizon-level gaze with the red route " +
+      "leading into the middle ground; matches the Mirror's Edge prologue " +
+      "start composition the 13 §2.1 metrics are measured against.",
   },
   {
     id: "first-gap",

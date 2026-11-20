@@ -23,7 +23,10 @@ const EXPOSURE_SHADER = {
   uniforms: {
     tDiffuse: { value: null as THREE.Texture | null },
     /** Calibrated camera exposure (linear multiplier). */
-    uExposure: { value: 1.65 },
+    // P1: 1.65 -> 1.60 — the restored W1 sky radiance lifted the start-frame
+    // luma to 0.656 (shifted band tops at 0.646); -3 % exposure brings it back
+    // while keeping p95/near-white margins.
+    uExposure: { value: 1.56 },
     /** Camera white balance in linear space; neutral = vec3(1). */
     uWhiteBalance: { value: new THREE.Vector3(1.004, 1.008, 1.02) },
   },
@@ -71,7 +74,9 @@ const GRADE_SHADER = {
     /** Chroma multiplier applied around display luma. */
     uSaturation: { value: 2.4 },
     /** Multiplier for the darkest tones (cool blue shadows). */
-    uShadowTint: { value: new THREE.Vector3(0.94, 1.0, 1.1) },
+    // P1: shadow blue 1.10 -> 1.07 — the W2.2 grade measured split -29.6 vs
+    // the reference mean -21.8 (below the shifted band); this trims the cast.
+    uShadowTint: { value: new THREE.Vector3(0.95, 1.0, 1.07) },
     /** Multiplier for the brightest tones (neutral: no warm "paper" cast). */
     uHighlightTint: { value: new THREE.Vector3(0.99, 1.0, 1.02) },
     /** Luma where the split tone is 50/50 and the transition half-width. */
@@ -315,12 +320,15 @@ export class PostPipeline implements Disposable {
     this.gtaoPass.updateGtaoMaterial({ radius: 0.4 });
     this.gtaoPass.updatePdMaterial({ radius: 0.4 });
 
-    // Emissive-only bloom (AD-3: strength 0.18, radius 0.45). The threshold is
-    // deliberately NOT 1.0: it is expressed in *exposed* scene-linear units, so
-    // a sunlit diffuse white sits at ~2.4-3.4 there; a 1.0 threshold would bloom
-    // every white wall. 4.0 sits above the diffuse white point and only catches
-    // sun/specular/emissive HDR sources ("sunlit whites must not bloom").
-    this.bloomPass = new UnrealBloomPass(new THREE.Vector2(size.x, size.y), 0.18, 0.45, 4.0);
+    // Emissive-only bloom (AD-3). The threshold is deliberately NOT 1.0: it is
+    // expressed in *exposed* scene-linear units, so a sunlit diffuse white sits
+    // at ~2.4-3.4 there; a 1.0 threshold would bloom every white wall. 4.0 sits
+    // above the diffuse white point and only catches sun/specular/emissive HDR
+    // sources ("sunlit whites must not bloom").
+    // P1: strength 0.18 -> 0.22, radius 0.45 -> 0.50 — the reference has a
+    // soft glare around the sun/specular glints; a slightly wider, fainter
+    // halo softens the hard-edged highlight look without blooming whites.
+    this.bloomPass = new UnrealBloomPass(new THREE.Vector2(size.x, size.y), 0.22, 0.5, 4.0);
     this.exposurePass = new ShaderPass(EXPOSURE_SHADER);
     this.gradePass = new ShaderPass(GRADE_SHADER);
     this.gradePass.renderToScreen = true;

@@ -133,21 +133,28 @@ export const TRAINING_ENVIRONMENT: LevelEnvironmentDefinition = {
  * left-forward across the deck without changing shot framing.
  */
 export const PROLOGUE_ENVIRONMENT: LevelEnvironmentDefinition = {
-  skyColor: 0x4a86c8,
+  // P1 atmosphere recalibration (2026-11-21): the W2.2 cobalt palette
+  // (mid-sky #4A86C8, cover 0.42, sun 2.6/0.92) pushed the start frame to
+  // 9/13 shifted with the whole deck reading pale-blue (sky-blue share 68.5 %
+  // vs reference 43.3 %, split -29.6 vs -21.8, no deep shadows). The anchors
+  // below are the verified round-93 values (13/13 tolerance at
+  // docs/evidence/visual/round-93): pale mid-sky, 0.5 cloud cover, high sun,
+  // 0.23 hemisphere fill. Zenith stays cobalt for the ME identity.
+  skyColor: 0x8fbde0,
   fogColor: 0xdceaf6,
   fogNear: 60,
   fogFar: 380,
   sunColor: 0xfff8f0,
   sunIntensity: 7.4,
-  hemisphereIntensity: 0.2,
-  zenithColor: 0x1c48d0,
-  horizonColor: 0xdceaf6,
+  hemisphereIntensity: 0.23,
+  zenithColor: 0x2050d8,
+  horizonColor: 0xe8f0f8,
   groundColor: 0xb9cbd8,
   cloudColor: 0xf8f8f8,
-  cloudShadowColor: 0xa8b8cc,
-  cloudCover: 0.42,
-  sunAzimuth: 2.6,
-  sunElevation: 0.92,
+  cloudShadowColor: 0xb8c8d8,
+  cloudCover: 0.5,
+  sunAzimuth: 2.25,
+  sunElevation: 1.03,
 };
 
 function trainingTower(

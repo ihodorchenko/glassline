@@ -110,14 +110,18 @@ const AMBIENCE_PROFILES = {
     windFilter: 260,
     cityGain: 0.008,
     cityFilter: 85,
-    airGain: 0.009,
+    // P1 dark-mix calibration (2026-11-21): the reference prologue keeps only
+    // ~2.5 % of energy above 2 kHz; the air hiss layer carried our high share
+    // to 0.060. Halved gain + a higher corner (see startAmbienceNodes) pulls
+    // the mix toward the reference's dark profile without muting footsteps.
+    airGain: 0.0045,
   },
   prologue: {
     windGain: 0.018,
     windFilter: 330,
     cityGain: 0.012,
     cityFilter: 110,
-    airGain: 0.012,
+    airGain: 0.005,
   },
 } as const;
 
@@ -978,7 +982,10 @@ export class AudioManager implements Disposable {
       0.8,
       settings.cityGain,
     );
-    const air = createNoiseLayer(this.noiseBuffer("pink"), "highpass", 2400, 0.6, settings.airGain);
+    // P1: the air layer high-pass moved 2400 -> 3200 Hz, so the surviving
+    // brightness is a narrower "open air" band above the footsteps instead of
+    // broadband pink hiss (the reference high share is ~0.025, not 0.06).
+    const air = createNoiseLayer(this.noiseBuffer("pink"), "highpass", 3200, 0.6, settings.airGain);
 
     const humGain = context.createGain();
 
