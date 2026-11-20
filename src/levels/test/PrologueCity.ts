@@ -396,6 +396,73 @@ function addDeckPlanter(
   }
 }
 
+/**
+ * W5 density cluster: AC (1.6 x 1.0 x 1.2), vent (1.2 x 0.9 x 0.8), a 6 m
+ * pipe-run (0.15 dia) with brackets and an 8 m cable tray (0.3 x 0.1), plus a
+ * contact shadow. Purely decorative, batched by the existing materials.
+ */
+function addDensityCluster(
+  builder: CityBuilder,
+  x: number,
+  z: number,
+  baseY: number,
+  rotationY = 0,
+): void {
+  builder.box(x, baseY + 0.012, z, 4.8, 0.012, 2.4, {
+    color: 0x101820,
+    opacity: 0.3,
+    rotationY,
+    castShadow: false,
+    receiveShadow: false,
+  });
+
+  builder.box(x - 1.2, baseY + 0.5, z, 1.6, 1.0, 1.2, {
+    material: "metal",
+    rotationY,
+    castShadow: true,
+  });
+  builder.box(x - 1.2, baseY + 1.02, z, 1.4, 0.08, 1.0, {
+    material: "dark-metal",
+    rotationY,
+  });
+
+  builder.box(x + 0.7, baseY + 0.45, z + 1.1, 1.2, 0.9, 0.8, {
+    material: "metal",
+    rotationY,
+    castShadow: true,
+  });
+  builder.box(x + 0.7, baseY + 0.92, z + 1.1, 1.0, 0.06, 0.6, {
+    material: "dark-metal",
+    rotationY,
+  });
+
+  builder.cylinder(x + 2.1, baseY + 0.42, z - 0.4, 0.15, 6, {
+    material: "metal",
+    rotationX: Math.PI / 2,
+  });
+
+  for (const dz of [-2.4, -0.8, 0.8, 2.4]) {
+    builder.cylinder(x + 2.1, baseY + 0.42, z - 0.4 + dz, 0.3, 0.1, {
+      material: "dark-metal",
+      rotationX: Math.PI / 2,
+    });
+    builder.box(x + 2.1, baseY + 0.19, z - 0.4 + dz, 0.08, 0.38, 0.08, {
+      material: "metal",
+    });
+  }
+
+  builder.box(x - 2.2, baseY + 0.32, z + 0.4, 0.3, 0.1, 8, {
+    material: "metal",
+    rotationY,
+  });
+
+  for (const dz of [-3.2, 3.2]) {
+    builder.box(x - 2.2, baseY + 0.16, z + 0.4 + dz, 0.08, 0.34, 0.08, {
+      material: "dark-metal",
+    });
+  }
+}
+
 function addStairBulkhead(builder: CityBuilder): void {
   builder.box(7.8, 1.45, 16.8, 4.6, 2.9, 4.2, {
     material: "white",
@@ -1223,6 +1290,20 @@ function addSkybridge(builder: CityBuilder): void {
   });
   builder.box(0, 23.5, -118, 58.4, 0.18, 0.6, { material: "dark-metal" });
 
+  // W5: dedicated end posts + diagonal cables on the span ends (start MG).
+  for (const side of [-1, 1]) {
+    const endX = side * 29;
+    const inboardX = side * 17;
+
+    builder.box(endX, 26, -118, 0.12, 4, 0.12, { material: "metal" });
+    builder.box(endX, 28.1, -118, 0.3, 0.2, 0.3, { material: "dark-metal" });
+
+    builder.box((endX + inboardX) / 2, 25.85, -118, Math.hypot(inboardX - endX, 4.3), 0.02, 0.02, {
+      material: "metal",
+      rotationZ: Math.atan2(23.7 - 28.0, inboardX - endX),
+    });
+  }
+
   // The span is 24 m up: a bottom truss chord plus verticals make it read as a
   // truss bridge, and pier supports ground it instead of a thin floating strip.
   builder.box(0, 22.55, -118, 58, 0.2, 0.22, { material: "metal" });
@@ -1392,6 +1473,25 @@ function addServiceBlockLandmarks(builder: CityBuilder): void {
     builder.box(-2.17, 1.05, -14.0 + side * 0.48, 0.06, 2.16, 0.06, {
       material: "dark-metal",
     });
+  }
+
+  // W5 LC: two extra pipes on the tunnel ceiling / east wall.
+  builder.cylinder(-1.1, 1.3, -7.6, 0.15, 3.4, {
+    material: "metal",
+    rotationX: Math.PI / 2,
+  });
+
+  for (const z of [-6.2, -7.6, -9.0]) {
+    builder.box(-1.1, 1.33, z, 0.08, 0.12, 0.08, { material: "dark-metal" });
+  }
+
+  builder.cylinder(1.98, 2.0, -7.5, 0.15, 4.2, {
+    material: "metal",
+    rotationX: Math.PI / 2,
+  });
+
+  for (const z of [-5.6, -7.5, -9.4]) {
+    builder.box(2.02, 2.0, z, 0.1, 0.1, 0.08, { material: "dark-metal" });
   }
 
   // Steel pipe run along the west wall of the wall-run corridor.
@@ -1631,6 +1731,11 @@ function addLowerZone(builder: CityBuilder): void {
   addDeckCluster(builder, 7.4, -38.6, -3, 0.1);
   addDeckCluster(builder, -6.4, -40.2, -3, Math.PI);
 
+  // W5 density clusters (LC) on the lower decks either side of the stair.
+  addDensityCluster(builder, 7.0, -36.4, -3);
+  addDensityCluster(builder, -6.8, -38.8, -3);
+  addDensityCluster(builder, 7.8, -40.6, -3);
+
   for (const x of [-12.5, 12.5]) {
     builder.box(x, -1.3, -24.8, 0.14, 3.4, 0.14, { material: "metal" });
     builder.box(x, 0.35, -24.8, 0.5, 0.18, 0.5, {
@@ -1690,6 +1795,38 @@ function addLowerZone(builder: CityBuilder): void {
       material: "metal",
       rotationX: Math.PI / 2,
     });
+  }
+
+  // W5 first-gap underside: exactly four props on the lower-roof FG underside
+  // (vent x2, AC x1, pipe-run 0.15 x 4 x1) at z -24...-30, x +-6...10.
+  for (const [x, z] of [
+    [-8.5, -26.5],
+    [8.5, -27.5],
+  ] as const) {
+    builder.box(x, -2.55, z, 1.2, 0.9, 0.8, { material: "metal", castShadow: true });
+    builder.box(x, -2.08, z, 1.0, 0.08, 0.6, { material: "dark-metal" });
+  }
+
+  builder.box(-7.0, -2.5, -29.5, 1.6, 1.0, 1.2, { material: "metal", castShadow: true });
+  builder.box(-7.0, -1.98, -29.5, 1.4, 0.08, 1.0, { material: "dark-metal" });
+
+  builder.cylinder(9.5, -2.72, -26, 0.15, 4, {
+    material: "metal",
+    rotationX: Math.PI / 2,
+  });
+
+  for (const z of [-24.4, -26, -27.6]) {
+    builder.cylinder(9.5, -2.72, z, 0.3, 0.1, {
+      material: "dark-metal",
+      rotationX: Math.PI / 2,
+    });
+  }
+
+  // Coping caps on the FG underside roof edges.
+  builder.box(0, -18.56, -26.05, 30.2, 0.06, 0.6, { material: "dark-metal" });
+
+  for (const x of [-15.1, 15.1]) {
+    builder.box(x, -18.56, -28.4, 0.6, 0.06, 4.6, { material: "dark-metal" });
   }
 
   // Bridge supports down into the city canyon.
@@ -2239,26 +2376,51 @@ function addFarTowerFacade(
 ): void {
   const baseY = GROUND_Y;
   const nearFace = z + depth / 2 + 0.06;
-  const floors = Math.max(4, Math.min(12, Math.round((top - baseY) / 8)));
+  // W5: spandrel bands every 3 m and mullions at 1.5 m pitch; the bright
+  // concrete bands against the dark punched windows give the BG masses a
+  // readable authored facade at 100 % zoom (band dLuma well above 0.15).
+  const floors = Math.max(4, Math.min(16, Math.round((top - baseY) / 3)));
   const step = (top - baseY) / floors;
-  const windowHeight = Math.min(2.2, step * 0.38);
+  const columns = Math.max(2, Math.min(7, Math.round(width / 1.5)));
+  const bayWidth = width / columns;
+  const windowHeight = Math.min(2.0, step * 0.42);
 
   for (let floor = 1; floor < floors; floor += 1) {
     const y = baseY + floor * step;
+    const windowY = y + step * 0.46;
 
-    builder.box(x, y, nearFace, width * 0.92, 0.28, 0.18, {
+    builder.box(x, y, nearFace, width * 0.96, 0.34, 0.2, {
       material: "concrete",
       castShadow: false,
       receiveShadow: false,
     });
 
-    // Three punched windows per bay keep the grid dense like the reference.
-    for (const column of [-0.3, 0, 0.3]) {
-      builder.box(x + width * column, y + step * 0.44, nearFace, width * 0.2, windowHeight, 0.12, {
-        material: floor % 2 === 0 ? "glass" : "glass-far",
-        castShadow: false,
-        receiveShadow: false,
-      });
+    for (let column = 0; column < columns; column += 1) {
+      builder.box(
+        x - width / 2 + bayWidth * (column + 0.5),
+        windowY,
+        nearFace,
+        bayWidth * 0.7,
+        windowHeight,
+        0.12,
+        {
+          material: floor % 2 === 0 ? "glass" : "glass-far",
+          castShadow: false,
+          receiveShadow: false,
+        },
+      );
+    }
+
+    for (let column = 0; column <= columns; column += 1) {
+      builder.box(
+        x - width / 2 + bayWidth * column,
+        windowY,
+        nearFace + 0.02,
+        0.16,
+        Math.min(2.1, step * 0.52),
+        0.12,
+        { material: "white", castShadow: false, receiveShadow: false },
+      );
     }
   }
 
@@ -2284,6 +2446,37 @@ function addFarTowerFacade(
       material: "metal",
       castShadow: false,
     });
+  }
+}
+
+/**
+ * W5 tc: rooftop silhouettes on the BG towers that fill the upper third of the
+ * start-roof / finish-roof frames (mast 0.1 dia x 4.4 m + 0.8 x 0.4 x 0.6 cap
+ * and a rooftop unit). Tower heights/silhouettes themselves are unchanged.
+ */
+function addRooftopSilhouettes(builder: CityBuilder): void {
+  const roofMasts: readonly (readonly [number, number, number])[] = [
+    [22, 16.8, -96],
+    [32, 14.8, -50],
+    [64, 20.8, -64],
+    [-32, 20.8, -84],
+    [-30, 10.8, -48],
+    [4, 10.8, -215],
+    [8.7, 132.9, -289.5],
+    [23.5, 65.9, -301.6],
+    [18, 72.9, -330],
+    [82, 82.9, -318],
+    [50, 12.9, -290.7],
+  ];
+
+  for (const [x, top, z] of roofMasts) {
+    builder.cylinder(x, top + 2.2, z, 0.1, 4.4, { material: "metal", castShadow: false });
+    builder.box(x, top + 4.4, z, 0.8, 0.4, 0.6, { material: "dark-metal" });
+    builder.box(x - 1.4, top + 0.55, z, 1.0, 1.1, 1.0, {
+      material: "metal",
+      castShadow: false,
+    });
+    builder.box(x - 1.4, top + 1.14, z, 0.9, 0.1, 0.8, { material: "dark-metal" });
   }
 }
 
@@ -2418,6 +2611,12 @@ export function createPrologueCityDecorations(
   addDeckCluster(builder, -6.0, -10.2, 0, 0.15);
   addDeckCluster(builder, 6.8, -16.8, 0, Math.PI / 2);
   addDeckPlanter(builder, -8.0, -16.0, 0, 0.1);
+
+  // W5 density clusters (LC): four spread across the open deck, off the route.
+  addDensityCluster(builder, -7.2, -5.8, 0);
+  addDensityCluster(builder, 6.4, -6.2, 0);
+  addDensityCluster(builder, -3.6, -14.6, 0);
+  addDensityCluster(builder, 9.0, -12.6, 0);
   addServiceBlockLandmarks(builder);
   addLowerZone(builder);
   addFirstGapDressing(builder);
@@ -2430,6 +2629,12 @@ export function createPrologueCityDecorations(
   // monolith/AC already on the deck.
   addDeckCluster(builder, 5.0, -127.4, 5.2, -0.2);
   addDeckCluster(builder, 5.6, -129.6, 5.2, Math.PI / 2);
+
+  // W5 density clusters (LC): three more, all >= 3 m from the gate and off the
+  // centre route line.
+  addDensityCluster(builder, 2.2, -125.2, 5.2);
+  addDensityCluster(builder, 3.4, -125.8, 5.2);
+  addDensityCluster(builder, -1.6, -127.8, 5.2);
   addCheckpointBeacons(builder);
 
   addNearCity(builder);
@@ -2437,9 +2642,16 @@ export function createPrologueCityDecorations(
   addSkybridge(builder);
   addSkybridgeOverhead(builder);
   addSkybridgeSideRoofs(builder);
+
+  // W5 density clusters (LC) on the finished deck either side of the span,
+  // outside the bridge sightline.
+  addDensityCluster(builder, -4.2, -52.2, -0.9);
+  addDensityCluster(builder, 4.4, -53.4, -0.9);
+  addDensityCluster(builder, -4.8, -55.2, -0.9);
   addCrane(builder);
   addBillboards(builder);
   addFarSkyline(builder);
+  addRooftopSilhouettes(builder);
 
   return builder.decorations;
 }
