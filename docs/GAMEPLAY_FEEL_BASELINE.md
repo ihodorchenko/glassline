@@ -33,7 +33,8 @@ during this phase.
 | Group 1 fixes (this audit) | Committed by the owner: `33de0ac` (GF-ISSUE-01), `6796786` (GF-ISSUE-06) + regression tests |
 | Group 2 fixes (this audit) | Input edge queue (GF-ISSUE-10), slide steering (GF-ISSUE-04) — committed (`a902866`, `067356f`) |
 | Group 3 fixes (this audit) | Vault profiles + interact buffer (GF-ISSUE-02/11), wall-run surface gating (GF-ISSUE-03), collision-validated vaults (GF-ISSUE-07) — committed (`e8e52c6`) |
-| Group 4 fixes (this audit) | Impact-scaled landing camera (GF-ISSUE-05), sprint-FOV intensity setting (GF-ISSUE-08) — implemented and verified; see the report |
+| Group 4 fixes (this audit) | Impact-scaled landing camera (GF-ISSUE-05), sprint-FOV intensity setting (GF-ISSUE-08) — committed (`1b9073d`, `e6c193d`) |
+| Group 6 (this audit) | slideFriction 2→4 tuning with records; GF-ISSUE-12 geometry-leak fix on level reload; GF-10 low entry / GF-11 slope / GF-18 resource gaps closed — see the report §8.5 |
 | File content pins | `src/player/MovementModel.ts` sha256 `693537d…`-era variants were re-pinned several times during the audit (see §2.1) |
 | Browser | Microsoft Edge 157.0.4341.46, headless, WebGL2 on SwiftShader (software rasterizer) |
 | Resolution | 1600×900, DPR 1 |
@@ -108,7 +109,7 @@ Legend: spec = `docs/12_MOVEMENT_SYSTEM_SPEC.md` (movement), `13` camera,
 | Jump buffer / coyote | 0.12 / 0.14 | 0.12 / 0.14 |
 | Jump release gravity × | 2.5 | — |
 | Max fall speed | 35 | 35 |
-| Slide min entry / friction / min / max / exit | 5 / 2 / 0.25 / 1.2 / 2.5 | 5 / 2 / 0.25 / — / 2.5 |
+| Slide min entry / friction / min / max / exit | 5 / **4** (Group 6 tuning, was 2) / 0.25 / 1.2 / 2.5 | 5 / 2 / 0.25 / — / 2.5 |
 | Vault min/max height / duration / arc lift | 0.35 / 1.15 / 0.45 / 0.25 | 0.35 / 1.15 / — / — |
 | Wall-run min speed / max dur / gravity × / decay | 5 / 1.5 / 0.35 / 1 | 5 / 1.5 / 0.35 / — |
 | Wall jump outward / upward | 5.5 / 6 | configurable |
@@ -127,7 +128,7 @@ Executed during the audit:
 | Command | Result |
 |---|---|
 | `npm run typecheck` | PASS (final state) |
-| `npm test` | **400/400 PASS** (397 after Group 3 + camera impact tests, camera-settings adapter tests, sprint-FOV settings test) |
+| `npm test` | **401/401 PASS** (400 after Group 4 + slope-slide test) |
 | `npx biome check .` | PASS for project sources at final state; transiently red due to the audit's own scratch files (removed from the tree afterwards) and, mid-window, to uncommitted source formatting |
 | `node tools/capture/capture.mjs --iteration audit --shot start-roof` | PASS — 196 draw calls, 4,182,467 triangles, 0 console errors, 0 page errors |
 | Runtime scenario harness (custom, Playwright) | See §6 |
@@ -137,7 +138,7 @@ Coverage relevant to gameplay feel:
 - Movement model: 39 unit tests (locomotion, sprint, crouch, air caps, jump,
   buffer, coyote, variable jump, fall clamp, collision reconciliation, landing
   event, ground-stick, slide, vault, wall run, wall jump).
-- Player/physics integration: 12 tests
+- Player/physics integration: 13 tests (incl. ramp slide descent)
 - Input: 19 tests (incl. 3 pending-press edge tests)
 - Settings: 12 tests (incl. sprint FOV intensity); CameraSettingsAdapter: 2 tests
 - Traversal detection: 7 tests (incl. wall-run surface gating) (settle, move/strafe, jump+land, wall
@@ -305,6 +306,8 @@ After the fix (slide grounded bias removed, `MovementModel.applyVerticalMotion`)
 - Group 2 steering: a slide now bends toward lateral input at
   `slideSteeringAcceleration` (6 m/s²) without gaining speed — runtime probe:
   +2.76 m lateral drift across a full slide with D held, speed only decayed.
+- Group 6 low entry (5.93 m/s, friction 4): 0.86 s slide, exit 2.46 m/s at
+  the threshold — duration now emerges from friction (spec §6.3).
 
 ### GF-11 — Slide exit ✅ EXECUTED
 

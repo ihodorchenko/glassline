@@ -85,13 +85,28 @@ Owner-approved **Group 4** (camera and feedback) is implemented and verified:
 Current validation after Group 4: `npm run validate` green (typecheck, biome,
 **400** tests, production build).
 
-All baseline audit issues (GF-ISSUE-01…08, 10, 11) are fixed and verified.
-Remaining plan groups (5: real-GPU performance run; 6: controlled tuning,
-human camera/audio passes, and the pending runtime scenario gaps — low-speed
-slide entry, slide exit on slope, repeated-route resource check) are tracked
-in [`GAMEPLAY_FEEL_AUDIT_REPORT.md`](GAMEPLAY_FEEL_AUDIT_REPORT.md) §8.
-The Group 4 code is uncommitted at the time of writing (pending owner
-commit/merge decision).
+Owner-approved **Group 6** (fine tuning evaluation on this environment) is
+executed; full records are in
+[`GAMEPLAY_FEEL_AUDIT_REPORT.md`](GAMEPLAY_FEEL_AUDIT_REPORT.md) §8.5:
+
+| Item | Result |
+|---|---|
+| Tuning group evaluation | Ground accel/decel, sprint, jump grace/coyote, jump height, wall-run duration measured against spec targets — no change justified. |
+| Slide friction | **2 → 4 m/s²** (measured justification: at 2, every entry ≥5 m/s hit the 1.2 s max-duration cap and never the 2.5 m/s exit threshold — `12` §6.3 requires duration to emerge from friction). After: 5.93 m/s entry exits naturally at 2.46 m/s in 0.86 s; sprint slides use the cap as safety; GF-10/11/17 clean; 401/401 tests. |
+| GF-ISSUE-12 | Level reload leaked +8 merged static-batch geometries per restart (GF-18 resource check). Fixed: `mesh.geometry.dispose()` in `LevelContentLoader` unload. After: geometries constant (57) across 3 restarts. |
+| GF-10 low entry | Closed at runtime (record above). |
+| GF-11 slope | Arena has no slope geometry; closed with a deterministic ramp-slide physics test (slide descends 35° ramp, no kill, exits RUNNING grounded). |
+| GF-18 resource check | Closed: bodies/colliders/textures/programs/HUD stable across repeated route restarts after the leak fix. |
+| Ground-stick 6.2 | Measured: all walk-off directions ride small steps smoothly via snap-to-ground; no observable asymmetry — recommendation: keep current behavior (recorded). |
+| 6.3 slide audio | Blocked on the human listening pass. |
+
+Current validation after Group 6: `npm run validate` green (typecheck, biome,
+**401** tests, production build).
+
+Remaining blockers are environment/human: Group 5 (real-GPU performance run),
+the human camera/audio passes, and level-slope verification when slope
+geometry is authored. The Group 6 code is uncommitted at the time of writing
+(pending owner commit/merge decision).
 
 ---
 

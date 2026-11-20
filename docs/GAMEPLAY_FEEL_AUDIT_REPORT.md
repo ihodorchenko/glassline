@@ -66,6 +66,17 @@ approval of the improvement plan (Section 8) before Phase 1 work.**
 | Recommended correction | Bisect controller features in a minimal Rapier world; then adjust `PlayerSystem` configuration (snap distance, autostep, slide flag, or the -0.5 m/s slide ground bias) and re-verify GF-10/GF-17 plus the stair tests. |
 | Regression risk | Changes to controller config affect stairs/ledges (ground-stick tests), wall collisions, and slide-under-tunnel clearance — rerun the full player-physics, traversal-detection and prologue-traversal suites plus GF-09/GF-10 runtime checks. |
 
+### GF-ISSUE-12 — Level reload leaked static-batch geometries — ✅ FIXED (Group 6)
+
+| Field | Value |
+|---|---|
+| Severity | Medium (resource accumulation, GF-18) |
+| Affected | Level lifecycle / rendering |
+| Description | Each route restart leaked the merged static-batch `BufferGeometry` objects: measured +8 geometries per restart (57 → 65 → 73 → 81 over three cycles) while bodies/colliders/textures/programs stayed constant. |
+| Root cause | `LevelContentLoader.dispose` removed static-batch meshes from the scene but never disposed their merged geometry. |
+| Change made | `mesh.geometry.dispose()` in the unload loop. |
+| Verification after | Resource probe across 3 restarts: geometries constant at 57; full suite 401/401. |
+
 ### GF-ISSUE-06 — Wall-jump landing emits no `player:landed` event — ✅ FIXED (Group 1.3)
 
 | Field | Value |
@@ -291,6 +302,76 @@ in dependency order.
 
 ---
 
+## 8.5. Group 6 — Fine tuning evaluation records (this environment)
+
+Per the controlled tuning process (`GAMEPLAY_FEEL_AUDIT.md` §12), each tuning
+group was measured against its spec targets on this environment before any
+change. Records use the §12.3 format.
+
+### Tuning group evaluation table (measured, no change unless justified)
+
+| Group | Measured (this env) | Spec target | Decision |
+|---|---|---|---|
+| Ground accel/decel (18/14) | 0→6 m/s in ~0.33 s sim; stop ~0.43 s; smooth, no jolt | 18/14 (suggested) | No change — measured behavior matches the targets |
+| Sprint (8.5 m/s, X) | SPRINTING immediate, peak 8.50, exit settles to 6.0–6.1 | 8.5 | No change |
+| Jump grace/coyote (0.12/0.14 s) | Buffer executes on touchdown; coyote jump after edge ✓ | 0.12/0.14 | No change |
+| Jump height 1.6 / min ratio 0.6 (owner-tuned) | Held rise ≈1.4–1.6 m; tap rise ≈0.8–0.9 m (≥ the 0.45 m minimum) | 1.25 suggested; 0.45 min | No change — owner values are deliberate; tap stays above the minimum |
+| Wall-run duration (1.5 s max, decay 1) | 0.5–0.65 s wall runs; ends by contact/duration cleanly | 1.5 max | No change |
+| **Slide friction** | **2.0: every entry ≥5 m/s hit the 1.2 s max-duration cap (5.93 m/s entry exited the cap at 3.57 m/s, never at the 2.5 m/s threshold) — duration never emerged from friction, violating `12` §6.3** | 2.0 suggested; duration "primarily emerges from velocity and friction"; exit threshold 2.5 | **Changed 2 → 4 (see record below)** |
+
+### Change record — slideFriction 2.0 → 4.0
+
+| Field | Value |
+|---|---|
+| Previous value | 2.0 m/s² |
+| New value | 4.0 m/s² (single parameter, `MovementTuning`) |
+| Reason | With friction 2, 1.2 s of decay removes only 2.4 m/s — every valid entry (≥5 m/s) hit the max-duration cap and exited at ~3.6 m/s, so duration was determined solely by the cap. Spec `12` §6.3 requires duration to primarily emerge from velocity and friction. |
+| Expected effect | Run-speed slides (≈6 m/s) exit naturally at the 2.5 m/s threshold inside the 0.8–1.2 s target band; sprint slides still use the cap as the safety maximum. |
+| Test scenario | GF-10 (low + high entry), GF-11, GF-17, full suite. |
+| Actual result | Low entry 5.93 m/s → 0.86 s slide, **exit 2.46 m/s (natural threshold exit)**, decay 4.02 m/s² per step. High entry 8.43 m/s → 1.14 s (cap), exit 3.70 m/s. GF-11 release-exit 6.57 m/s, slide-jump intact; GF-17 sequence clean. |
+| Regression result | 401/401 tests; no route/timing test uses slides (verified); tunnel passage unaffected (sprint slide still covers >10 m). |
+
+### GF-10 low-speed entry — closed
+
+Measured at 5.93 m/s entry (friction 4): slide starts immediately, decays at
+exactly 4.02 m/s², exits at the 2.5 m/s threshold after 0.86 s — predictable
+and within the spec duration target.
+
+### GF-11 slide exit on slope — closed (unit-level)
+
+The arena has no slope geometry (the ramp work in `ba9e477` is controller
+handling; level ramps are not authored), so the scenario was closed with a
+deterministic physics test: a 35° ramp, backward downhill input into a slide —
+the slide runs the descent, no single-step velocity kill, and exits to
+RUNNING grounded at the ramp bottom. Level-side verification remains for
+when slope geometry is authored.
+
+### GF-18 repeated route→restart — closed, leak found and fixed (GF-ISSUE-12)
+
+- Measurement (before fix): engine resources across 3 route restarts —
+  bodies 89/89/89/89 ✓, colliders 89 ✓, textures 48 ✓, programs 34 ✓, HUD
+  nodes 14 ✓, **geometries 57 → 65 → 73 → 81 (+8 per restart)**.
+- Root cause: `LevelContentLoader.dispose` removed the static-batch meshes
+  from the scene but never disposed their merged `BufferGeometry`.
+- Fix: `mesh.geometry.dispose()` in the unload loop.
+- After: geometries stay 57 across all cycles. New issue: GF-ISSUE-12 (fixed).
+
+### 6.2 Ground-stick side/back walk-offs — evaluated, no change
+
+Measured at the step geometry (0.3 m riser): forward, backward and strafe
+walk-offs all ride down with **zero airborne steps** — the controller's
+snap-to-ground keeps the capsule glued in every direction, so the model-level
+forward-only stick arming produces no observable asymmetry on supported step
+heights. Beyond snap range (the pit) all directions fall into the kill volume
+as intended. **Recommendation: keep the current behavior** — the asymmetry
+only exists in model state and only matters beyond snap range, where falling
+is the intended outcome.
+
+### 6.3 Slide entry/exit audio polish — blocked
+
+Requires a human listening pass; the slide loop is already event-driven
+(start/stop on authoritative state). Deferred to the human audio pass.
+
 ## 9. Acceptance Assessment (per the rewritten audit methodology)
 
 The rewritten `GAMEPLAY_FEEL_AUDIT.md` evaluates each feel change through its
@@ -308,11 +389,10 @@ Still open before the audit can converge on "no critical or high issues":
   runtime scenario gaps (low-speed slide entry, slide exit on slope,
   repeated-route resource check) and the human camera/audio passes.
 
-**Decision: baseline complete; Groups 1–4 approved and implemented
-(slide-kill, wall-jump landing, input edge queue, slide steering, vault
-profiles + buffering, wall-run surface gating, collision-validated vaults,
-impact-scaled landing camera, sprint-FOV setting — 400/400 tests). Remaining:
-Group 5 (real-GPU performance run) and Group 6 (controlled tuning + the
-pending runtime scenario gaps: low-speed slide entry, slide exit on slope,
-repeated-route resource check, human camera pass). Awaiting owner approval
-before starting Group 5.**
+**Decision: Groups 1–6 executed. All baseline issues fixed and verified;
+Group 6 closed the remaining measurable gaps (GF-10 low entry, GF-11 slope
+via deterministic test, GF-18 resource check with the geometry-leak fix
+GF-ISSUE-12) and made one measurement-justified tuning change (slideFriction
+2→4 with before/after records). Remaining blockers are environment/human:
+Group 5 (real-GPU performance), the human camera/audio passes, and
+level-slope verification. 401/401 tests.**
