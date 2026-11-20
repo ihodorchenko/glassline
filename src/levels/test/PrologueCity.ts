@@ -317,7 +317,7 @@ function addPipeRun(
   });
 
   for (let z = zStart; z <= zStart + length; z += 2.2) {
-    builder.cylinder(x, y, z, 0.48, 0.16, {
+    builder.cylinder(x, y, z, 0.384, 0.05, {
       material: "dark-metal",
       rotationX: Math.PI / 2,
     });
@@ -442,7 +442,7 @@ function addDensityCluster(
   });
 
   for (const dz of [-2.4, -0.8, 0.8, 2.4]) {
-    builder.cylinder(x + 2.1, baseY + 0.42, z - 0.4 + dz, 0.3, 0.1, {
+    builder.cylinder(x + 2.1, baseY + 0.42, z - 0.4 + dz, 0.24, 0.05, {
       material: "dark-metal",
       rotationX: Math.PI / 2,
     });
@@ -1065,20 +1065,20 @@ function addWestTowerWall(builder: CityBuilder): void {
   builder.box(-7.9, 0.42, -8, 0.28, 0.84, 35.8, { material: "concrete" });
 
   for (const z of [4.5, -3.5, -10.5, -19]) {
-    // The grille is recessed flush with the plinth face and framed by dark
-    // steel; thin light-steel louvres sit just proud of the frame so it reads
-    // as a vent, not a floating dark block.
-    builder.box(-7.765, 0.82, z, 0.02, 0.5, 1.78, { material: "dark-metal" });
+    // Post-G5: the recessed dark panel sits 0.05 m deeper behind a lighter
+    // steel frame, and the louvres use the #9aa0a4-class steel so the vent
+    // reads as a grille instead of a dark block.
+    builder.box(-7.8, 0.82, z, 0.02, 0.5, 1.78, { material: "dark-metal" });
 
-    for (const y of [0.62, 0.82, 1.02]) {
-      builder.box(-7.735, y, z, 0.05, 0.05, 1.7, { material: "metal" });
+    for (const y of [0.6, 0.82, 1.04]) {
+      builder.box(-7.72, y, z, 0.05, 0.05, 1.7, { color: 0x9aa0a4 });
     }
 
-    builder.box(-7.745, 1.1, z, 0.05, 0.06, 1.94, { material: "dark-metal" });
-    builder.box(-7.745, 0.54, z, 0.05, 0.06, 1.94, { material: "dark-metal" });
+    builder.box(-7.735, 1.11, z, 0.06, 0.07, 1.94, { material: "metal" });
+    builder.box(-7.735, 0.53, z, 0.06, 0.07, 1.94, { material: "metal" });
 
     for (const dz of [-0.95, 0.95]) {
-      builder.box(-7.745, 0.82, z + dz, 0.05, 0.64, 0.06, { material: "dark-metal" });
+      builder.box(-7.735, 0.82, z + dz, 0.06, 0.7, 0.07, { material: "metal" });
     }
   }
 
@@ -1298,7 +1298,7 @@ function addSkybridge(builder: CityBuilder): void {
     builder.box(endX, 26, -118, 0.12, 4, 0.12, { material: "metal" });
     builder.box(endX, 28.1, -118, 0.3, 0.2, 0.3, { material: "dark-metal" });
 
-    builder.box((endX + inboardX) / 2, 25.85, -118, Math.hypot(inboardX - endX, 4.3), 0.02, 0.02, {
+    builder.box((endX + inboardX) / 2, 25.85, -118, Math.hypot(inboardX - endX, 4.3), 0.03, 0.03, {
       material: "metal",
       rotationZ: Math.atan2(23.7 - 28.0, inboardX - endX),
     });
@@ -1821,6 +1821,16 @@ function addLowerZone(builder: CityBuilder): void {
       rotationX: Math.PI / 2,
     });
   }
+
+  // Post-G5: two more underside props (vent + AC) on the lower service roof,
+  // plus one more coping segment so the pale underside reads as a dressed roof.
+  builder.box(6.5, -2.55, -25.2, 1.2, 0.9, 0.8, { material: "metal", castShadow: true });
+  builder.box(6.5, -2.08, -25.2, 1.0, 0.08, 0.6, { material: "dark-metal" });
+
+  builder.box(7.2, -2.5, -29.0, 1.6, 1.0, 1.2, { material: "metal", castShadow: true });
+  builder.box(7.2, -1.98, -29.0, 1.4, 0.08, 1.0, { material: "dark-metal" });
+
+  builder.box(0, -2.96, -24.3, 28, 0.06, 0.28, { material: "dark-metal" });
 
   // Coping caps on the FG underside roof edges.
   builder.box(0, -18.56, -26.05, 30.2, 0.06, 0.6, { material: "dark-metal" });
@@ -2384,13 +2394,17 @@ function addFarTowerFacade(
   const columns = Math.max(2, Math.min(7, Math.round(width / 1.5)));
   const bayWidth = width / columns;
   const windowHeight = Math.min(2.0, step * 0.42);
+  // Post-G5: the thinnest ring towers need a stronger band delta-luma at
+  // 100 % zoom: dark spandrel bands with light window bands (heights and
+  // silhouettes unchanged).
+  const thinTower = width < 18;
 
   for (let floor = 1; floor < floors; floor += 1) {
     const y = baseY + floor * step;
     const windowY = y + step * 0.46;
 
     builder.box(x, y, nearFace, width * 0.96, 0.34, 0.2, {
-      material: "concrete",
+      material: thinTower ? "dark-metal" : "concrete",
       castShadow: false,
       receiveShadow: false,
     });
@@ -2404,7 +2418,7 @@ function addFarTowerFacade(
         windowHeight,
         0.12,
         {
-          material: floor % 2 === 0 ? "glass" : "glass-far",
+          material: thinTower ? "white" : floor % 2 === 0 ? "glass" : "glass-far",
           castShadow: false,
           receiveShadow: false,
         },
@@ -2632,9 +2646,9 @@ export function createPrologueCityDecorations(
 
   // W5 density clusters (LC): three more, all >= 3 m from the gate and off the
   // centre route line.
-  addDensityCluster(builder, 2.2, -125.2, 5.2);
+  addDensityCluster(builder, 2.7, -125.7, 5.2);
   addDensityCluster(builder, 3.4, -125.8, 5.2);
-  addDensityCluster(builder, -1.6, -127.8, 5.2);
+  addDensityCluster(builder, -1.1, -131.0, 5.2);
   addCheckpointBeacons(builder);
 
   addNearCity(builder);
