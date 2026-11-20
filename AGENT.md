@@ -211,6 +211,8 @@ Movement is the primary gameplay experience.
 
 Mechanics must support fluid traversal, momentum management, and readable player control.
 
+For any change that can affect movement feel, traversal, input responsiveness, first-person camera feedback, or movement-related presentation, read and follow `docs/GAMEPLAY_FEEL_AUDIT.md`. Establish a baseline, inspect the existing implementation, make controlled changes, and verify relevant repeatable scenarios. This audit supplements the system specifications and does not change system ownership.
+
 Do not add mandatory mechanics outside the initial scope without an explicit project decision.
 
 ### 5.2. Frame-Rate Independence
