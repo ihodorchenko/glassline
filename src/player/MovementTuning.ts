@@ -63,6 +63,12 @@ export interface MovementTuning {
   readonly slideMinDurationSeconds: number;
   readonly slideMaxDurationSeconds: number;
   readonly slideExitSpeed: number;
+  /**
+   * Limited slide steering (`12_MOVEMENT_SYSTEM_SPEC.md` §13.3): how fast the
+   * slide velocity bends toward the current input direction. A third of the
+   * ground acceleration — the slide stays committed but is correctable.
+   */
+  readonly slideSteeringAcceleration: number;
 
   readonly vaultMinHeight: number;
   readonly vaultMaxHeight: number;
@@ -125,6 +131,7 @@ export const DEFAULT_MOVEMENT_TUNING: MovementTuning = {
   slideMinDurationSeconds: 0.25,
   slideMaxDurationSeconds: 1.2,
   slideExitSpeed: 2.5,
+  slideSteeringAcceleration: 6,
 
   vaultMinHeight: 0.35,
   vaultMaxHeight: 1.15,

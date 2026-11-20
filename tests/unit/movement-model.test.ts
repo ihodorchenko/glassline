@@ -482,6 +482,55 @@ describe("MovementModel sliding", () => {
     }
   });
 
+  it("decays a straight slide exactly at slide friction with no steering input", () => {
+    const model = new MovementModel(DEFAULT_MOVEMENT_TUNING);
+
+    simulate(model, input({ move: { x: 0, y: 1 }, sprintHeld: true }), 60, true);
+    model.step(input({ crouchHeld: true, sprintHeld: true }), FORWARD, environment(true), FIXED_DT);
+
+    const entrySpeed = model.getSnapshot().speed;
+
+    for (let step = 0; step < 10; step += 1) {
+      model.step(input({ crouchHeld: true }), FORWARD, environment(true), FIXED_DT);
+    }
+
+    expect(model.getSnapshot().speed).toBeCloseTo(
+      entrySpeed - DEFAULT_MOVEMENT_TUNING.slideFriction * 10 * FIXED_DT,
+      4,
+    );
+  });
+
+  it("steers a slide toward lateral input without gaining speed", () => {
+    const model = new MovementModel(DEFAULT_MOVEMENT_TUNING);
+
+    simulate(model, input({ move: { x: 0, y: 1 }, sprintHeld: true }), 60, true);
+    model.step(input({ crouchHeld: true, sprintHeld: true }), FORWARD, environment(true), FIXED_DT);
+
+    const entrySpeed = model.getSnapshot().speed;
+    // Forward + right: world direction { x: sqrt(1/2), z: -sqrt(1/2) }.
+    const diagonal = {
+      x: Math.SQRT1_2,
+      y: 0,
+      z: -Math.SQRT1_2,
+    };
+
+    for (let step = 0; step < 20 && model.getState() === "SLIDING"; step += 1) {
+      model.step(
+        input({ crouchHeld: true, move: { x: 1, y: 1 } }),
+        diagonal,
+        environment(true),
+        FIXED_DT,
+      );
+    }
+
+    const snapshot = model.getSnapshot();
+
+    // The slide bent to the right (velocity.x grew positive)…
+    expect(snapshot.velocity.x).toBeGreaterThan(0.05);
+    // …and steering never added speed: magnitude only decays.
+    expect(snapshot.speed).toBeLessThan(entrySpeed);
+  });
+
   it("ends the slide at its maximum duration", () => {
     const model = new MovementModel(DEFAULT_MOVEMENT_TUNING);
 

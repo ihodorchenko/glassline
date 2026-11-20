@@ -301,21 +301,21 @@ export class MovementModel {
     const sliding = this.state === "SLIDING";
 
     if (this.grounded || sliding) {
-      const acceleration = sliding
-        ? tuning.slideFriction
-        : hasMoveIntent
-          ? tuning.groundAcceleration
-          : tuning.groundDeceleration;
-      const next = moveTowards(
-        this.velocity.x,
-        this.velocity.z,
-        sliding ? 0 : targetHorizontal.x,
-        sliding ? 0 : targetHorizontal.y,
-        acceleration * deltaSeconds,
-      );
+      if (sliding) {
+        this.updateSlideMovement(moveDirectionWorld, moveMagnitude, deltaSeconds);
+      } else {
+        const acceleration = hasMoveIntent ? tuning.groundAcceleration : tuning.groundDeceleration;
+        const next = moveTowards(
+          this.velocity.x,
+          this.velocity.z,
+          targetHorizontal.x,
+          targetHorizontal.y,
+          acceleration * deltaSeconds,
+        );
 
-      this.velocity.x = next.x;
-      this.velocity.z = next.y;
+        this.velocity.x = next.x;
+        this.velocity.z = next.y;
+      }
     } else if (hasMoveIntent) {
       const next = moveTowards(
         this.velocity.x,
@@ -499,6 +499,47 @@ export class MovementModel {
       this.state = "FALLING";
       this.velocity.y = 0;
     }
+  }
+
+  /**
+   * Slide motion: `slideFriction` decays the speed magnitude while steering
+   * bends the velocity toward the current input direction at a limited,
+   * configurable rate (`slideSteeringAcceleration`). Without steering input
+   * the direction is preserved, so straight slides decay exactly at
+   * `slideFriction` per second; the target magnitude never exceeds the
+   * decayed speed, so steering cannot increase slide speed.
+   */
+  private updateSlideMovement(
+    moveDirectionWorld: Vector3Like,
+    moveMagnitude: number,
+    deltaSeconds: number,
+  ): void {
+    const tuning = this.tuning;
+    const currentSpeed = Math.hypot(this.velocity.x, this.velocity.z);
+    const decayedSpeed = Math.max(0, currentSpeed - tuning.slideFriction * deltaSeconds);
+
+    let directionX = 0;
+    let directionZ = 0;
+    const horizontalLength = Math.hypot(moveDirectionWorld.x, moveDirectionWorld.z);
+
+    if (moveMagnitude > 0.001 && horizontalLength > 1e-6) {
+      directionX = moveDirectionWorld.x / horizontalLength;
+      directionZ = moveDirectionWorld.z / horizontalLength;
+    } else if (currentSpeed > 1e-6) {
+      directionX = this.velocity.x / currentSpeed;
+      directionZ = this.velocity.z / currentSpeed;
+    }
+
+    const next = moveTowards(
+      this.velocity.x,
+      this.velocity.z,
+      directionX * decayedSpeed,
+      directionZ * decayedSpeed,
+      tuning.slideSteeringAcceleration * deltaSeconds,
+    );
+
+    this.velocity.x = next.x;
+    this.velocity.z = next.y;
   }
 
   private beginSlide(input: MovementInputSample): void {
