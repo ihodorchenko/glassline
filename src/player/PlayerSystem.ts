@@ -90,6 +90,8 @@ export class PlayerSystem implements Disposable {
    */
   private filteredY: number;
   private lastFilterDeltaSeconds = 1 / 60;
+  /** Horizontal distance already glided up the current riser (meters). */
+  private stepGlideProgress = 0;
 
   constructor(physics: PhysicsWorld, options: PlayerSystemOptions) {
     this.physics = physics;
@@ -254,9 +256,22 @@ export class PlayerSystem implements Disposable {
 
     const translationBefore = this.body.translation();
 
+    // Detect a climbable riser before consulting the controller; when found we
+    // override its result with our own slope-following displacement — same feel
+    // at any speed, no one-frame hop, no walking stall at low risers.
+    const glideTarget = this.computeStepGlide(translationBefore, deltaSeconds);
+
     this.controller.computeColliderMovement(this.collider, this.desiredTranslation);
 
-    const movement = this.controller.computedMovement(this.actualMovement);
+    const computed = this.controller.computedMovement(this.actualMovement);
+    const movement = { x: computed.x, y: computed.y, z: computed.z };
+
+    if (glideTarget) {
+      movement.x = glideTarget.dx;
+      movement.y = glideTarget.dy;
+      movement.z = glideTarget.dz;
+    }
+
     const nextX = translationBefore.x + movement.x;
     const nextY = translationBefore.y + movement.y;
     const nextZ = translationBefore.z + movement.z;
@@ -422,6 +437,119 @@ export class PlayerSystem implements Disposable {
     this.body.setNextKinematicTranslation(target);
     this.model.applyVaultMotion(movement, deltaSeconds);
     this.emitMovementEvents();
+  }
+
+  /**
+   * Deterministic step-up, purely kinematic (no shape sweeps): probe the feet
+   * level for a riser face ahead, then confirm a flat climbable top above it.
+   * When found, glide along the slope line at `stepGlideSpeed` — same feel at
+   * any speed, no one-frame autostep hop and no walking stall at low risers.
+   */
+  private computeStepGlide(
+    translationBefore: Vector3Like,
+    deltaSeconds: number,
+  ): { readonly dx: number; readonly dy: number; readonly dz: number } | null {
+    const desiredHorizontal = Math.hypot(this.desiredTranslation.x, this.desiredTranslation.z);
+
+    if (desiredHorizontal <= 1e-6) {
+      this.stepGlideProgress = 0;
+
+      return null;
+    }
+
+    const dirX = this.desiredTranslation.x / desiredHorizontal;
+    const dirZ = this.desiredTranslation.z / desiredHorizontal;
+    const lift = this.tuning.maxStepHeight;
+    const feetY = translationBefore.y - this.postureHeight / 2;
+
+    // Riser face: a horizontal ray at foot height hits something within reach.
+    const face = this.physics.rapierWorld.castRay(
+      new RAPIER.Ray(
+        {
+          x: translationBefore.x + dirX * this.tuning.capsuleRadius,
+          y: feetY + 0.08,
+          z: translationBefore.z + dirZ * this.tuning.capsuleRadius,
+        },
+        { x: dirX, y: 0, z: dirZ },
+      ),
+      this.tuning.stepGlideProbeAhead + 0.05,
+      true,
+      undefined,
+      undefined,
+      undefined,
+      this.body,
+    );
+
+    if (!face) {
+      this.stepGlideProgress = 0;
+
+      return null;
+    }
+
+    const wallX = translationBefore.x + dirX * (this.tuning.capsuleRadius + face.timeOfImpact);
+    const wallZ = translationBefore.z + dirZ * (this.tuning.capsuleRadius + face.timeOfImpact);
+
+    // Climbable top just behind the face?
+    const support = this.physics.rapierWorld.castRayAndGetNormal(
+      new RAPIER.Ray(
+        { x: wallX + dirX * 0.12, y: feetY + lift + 0.05, z: wallZ + dirZ * 0.12 },
+        DOWN_RAY,
+      ),
+      lift + 0.15,
+      true,
+      undefined,
+      undefined,
+      undefined,
+      this.body,
+    );
+
+    if (!support || support.normal.y < 0.9) {
+      this.stepGlideProgress = 0;
+
+      return null;
+    }
+
+    const surfaceFeetY = feetY + lift + 0.05 - support.timeOfImpact;
+    const rise = surfaceFeetY - feetY;
+
+    if (rise < 0.04 || rise > lift) {
+      this.stepGlideProgress = 0;
+
+      return null;
+    }
+
+    // Glide horizontally from here to where the capsule center sits over the
+    // step top (wall plane plus capsule radius).
+    const horizTarget = Math.max(0.02, this.tuning.capsuleRadius + face.timeOfImpact + 0.12);
+    const travel = Math.min(
+      desiredHorizontal,
+      this.tuning.stepGlideSpeed * deltaSeconds,
+      horizTarget - this.stepGlideProgress,
+    );
+
+    if (travel <= 1e-6) {
+      this.stepGlideProgress = 0;
+
+      return null;
+    }
+
+    const before = this.stepGlideProgress / horizTarget;
+    const after = (this.stepGlideProgress + travel) / horizTarget;
+
+    // Smoothstep easing: zero vertical acceleration at both ends of the ramp.
+    const ease = (t: number): number => t * t * (3 - 2 * t);
+
+    this.stepGlideProgress += travel;
+
+    if (this.stepGlideProgress >= horizTarget - 1e-4) {
+      this.stepGlideProgress = 0;
+    }
+
+    return {
+      dx: dirX * travel,
+      dz: dirZ * travel,
+      dy: rise * (ease(Math.min(1, after)) - ease(Math.min(1, before))),
+    };
   }
 
   private resolveForward(

@@ -236,6 +236,67 @@ describe("PlayerSystem physics integration", () => {
     expect(maxStepDropMeters).toBeLessThan(0.3);
   });
 
+  it("rides up a step edge as a smooth ramp, not a hop", async () => {
+    const physics = new PhysicsWorld({
+      gravity: { x: 0, y: -9.81, z: 0 },
+      timestepSeconds: FIXED_DT,
+    });
+
+    await physics.initialize();
+
+    const world = physics.rapierWorld;
+    const groundBody = world.createRigidBody(
+      RAPIER.RigidBodyDesc.fixed().setTranslation(0, -0.1, 0),
+    );
+
+    world.createCollider(RAPIER.ColliderDesc.cuboid(20, 0.1, 20), groundBody);
+
+    // A 0.2 m step ahead on the running line (front face at z = -6).
+    const stepBody = world.createRigidBody(
+      RAPIER.RigidBodyDesc.fixed().setTranslation(0, 0.1, -12),
+    );
+
+    world.createCollider(RAPIER.ColliderDesc.cuboid(6, 0.1, 6), stepBody);
+
+    const player = new PlayerSystem(physics, {
+      tuning: DEFAULT_MOVEMENT_TUNING,
+      spawnPoint: { x: 0, y: 0.895, z: 0 },
+    });
+
+    player.activate();
+    activeHarnesses.push({ physics, player });
+
+    step({ physics, player }, input(), 60);
+
+    let previousY = player.getPosition().y;
+    let maxLiftPerStep = 0;
+    let reachedTop = false;
+
+    for (let index = 0; index < 400; index += 1) {
+      player.fixedUpdate(input({ move: { x: 0, y: 1 } }), 0, FIXED_DT);
+      physics.step();
+
+      const position = player.getPosition();
+
+      maxLiftPerStep = Math.max(maxLiftPerStep, position.y - previousY);
+      previousY = position.y;
+
+      // The step block spans z in [-18, -6]; standing on it means z < -6.2
+      // with feet at the block top (center ≈ 0.895 + 0.2 = 1.095).
+      if (position.z < -6.2 && position.y > 1.0) {
+        reachedTop = true;
+        break;
+      }
+    }
+
+
+    expect(reachedTop).toBe(true);
+    // The climb over the riser is spread across several frames: no single fixed
+    // step may throw the body up by more than ~0.06 m (raw autostep hops the
+    // full 0.2 m in one frame).
+    expect(maxLiftPerStep).toBeLessThan(0.06);
+  });
+
   it("keeps the camera's vertical motion bounded while descending stairs", async () => {
     const harness = await createHarness({ withStairs: true });
 

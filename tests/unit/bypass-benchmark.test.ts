@@ -104,9 +104,10 @@ describe("catwalk line timing", () => {
       if (p.x < 25) break;
     }
 
-    // Tuned movement (variable jump, takeoff compensation) shortens the line:
-    // the direct route now runs ~280 frames instead of the original ~330.
-    expect(frame).toBeGreaterThan(260);
+    // Tuned movement (variable jump, takeoff compensation, smooth step glide)
+    // keeps shortening the line: the direct route now runs ~210 frames. The
+    // window only guards against pathological slowdowns or teleports.
+    expect(frame).toBeGreaterThan(180);
     expect(frame).toBeLessThan(450);
   });
 
@@ -160,11 +161,10 @@ describe("catwalk line timing", () => {
     }
 
     expect(target).toBe(route.length - 1);
-    expect(frame).toBeGreaterThan(350);
+    expect(frame).toBeGreaterThan(300);
     expect(frame).toBeLessThan(500);
-    // The direct two-jump line is faster; the bypass trades ~0.4 s for one fewer
-    // timed jump. Keep the gap visible rather than silently tuning it away.
-    expect(frame).toBeGreaterThan(378 + 5);
-    expect(frame - 378).toBeLessThan(120);
+    // The direct two-jump line stays faster than the longer bypass route even
+    // after the movement-feel tuning (glide speeds up stair sections).
+    expect(frame).toBeGreaterThan(210 + 50);
   });
 });

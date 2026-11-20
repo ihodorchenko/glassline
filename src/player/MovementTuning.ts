@@ -22,6 +22,10 @@ export interface MovementTuning {
    */
   readonly snapToGroundDistance: number;
   readonly groundStickSpeed: number;
+  /** Horizontal speed (m/s) at which the body glides up a step riser. */
+  readonly stepGlideSpeed: number;
+  /** How far ahead of the capsule edge to look for a climbable step top. */
+  readonly stepGlideProbeAhead: number;
 
   readonly walkSpeed: number;
   readonly runSpeed: number;
@@ -79,6 +83,8 @@ export const DEFAULT_MOVEMENT_TUNING: MovementTuning = {
   stepMinWidth: 0.08,
   snapToGroundDistance: 1.0,
   groundStickSpeed: 9,
+  stepGlideSpeed: 4.5,
+  stepGlideProbeAhead: 0.35,
 
   walkSpeed: 3.5,
   runSpeed: 6,
