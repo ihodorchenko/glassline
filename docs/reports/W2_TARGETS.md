@@ -234,3 +234,82 @@ prop-shadow coverage 8–15 % + mid-scale LC; materials straight tile (swirl),
 red roughness 0.6, rail tint/opacity; content denser grids on cut/ring towers +
 mid-deck prop clusters + first-gap lower-roof dress; gantry beam support on
 start-roof, wallrun grille; W5 real-window perf.
+
+## 7. W2.2 numeric look brief (AD-5, 2026-11-20)
+
+Numbers for the look executor (grade/sky/light only). Current values taken from
+the code: exposure 1.65, contrast 0.62, saturation 2.4, shadowTint
+(1.06,1.01,0.98), knee 0.92, vignette 0.03, grain 0.002, GTAO 0.70; env: sun
+7.4, hemi 0.23, zenith #2050D8, mid (skyColor) #8FBDE0, horizon #E8F0F8,
+cloudCover 0.5, cloudShadow #B8C8D8, azimuth 2.25 rad, elevation 1.03 rad.
+
+**Sky chroma.** The paleness is not the zenith but the mid stop #8FBDE0 and
+cloud cover 0.5. Targets: zenith **#1C48D0**, mid **#4A86C8**, horizon
+**#DCEAF6** (= fog), cloudCover **0.42**, cloudShadow **#A8B8CC**, cloudColor
+#F8F8F8 unchanged. Grade `uSaturation` **do not touch (2.4)** — red is already
+S≈0.99; chroma comes from the sky stops. Expected: open-sky sat mean +0.04–0.07
+(start 0.19→0.24–0.26, skybridge 0.17→0.22–0.25, finish 0.166→0.21–0.24),
+top_contrast +0.02–0.04 (≥0.235 open-sky), wallrun tc 0.228→≥0.235 via the sky
+strip + mullions.
+
+**Prop-shadow coverage 8–15 % on the deck.** Global azimuth is acceptable and
+sufficient: **2.25→2.6 rad** (sun right-behind, shadows rake left-forward across
+the deck); elevation **1.03→0.92 rad** (52.7°, shadow 0.76× object height, inside
+the 0.5–0.8 language); sunIntensity 7.4 stays; hemisphereIntensity **0.23→0.20**;
+shadowTint **(0.94, 1.00, 1.10)** (moderately cool; do not return to 0.88/1.14);
+PCFSoft 4096, penumbra 2–4 px unchanged. **Per-section azimuth deferred to
+W3/W5** (schema change). Coverage measured with a shadow mask on the deck, target
+8–15 % (8–14 % expected with the new content props).
+
+**Mid-scale LC.** Levers in order: contrast curve **0.62→0.68**; hemi 0.20;
+shadow structure from the sun key + content props; **GTAO stays 0.70**.
+Targets: start/first-gap/skybridge/finish/wallrun **≥0.274**, service **≥0.240**
+(amended interior family). Anti-hack boundary: LC gains must come with 8–15 %
+shadow coverage, seam ±0.001, plateau ≤1.5 %, white point |R−B|≤6; exposure 1.65
+and knee 0.92 **frozen** this iteration; grain/CA/vignette not raised.
+
+**Second look list by leverage:** (1) sky stops + cover; (2) sun
+elevation/azimuth + shadowTint; (3) contrast curve 0.68; (4) hemi 0.20; nothing
+else (exposure/knee/grain/CA/vignette/GTAO/bloom stay).
+
+**Blind windows W2.2:** sky-mask start 12–22, finish 8–18, skybridge 4–14
+(override 522), first-gap 1.5–25, wallrun 4–15, service report-only; L* start
+0.55–0.70, finish 0.55–0.80, skybridge 0.55–0.72, first-gap 0.506–0.646, wallrun
+0.44–0.60, service 0.44–0.60; near-white seam WATCH 0.0030–0.0047 with plateau
+≤1.5 %; red continuity visually continuous + component ≥0.3; LC targets above;
+sat start/gap/skybridge/wallrun 0.241–0.321, finish ≥0.20, service report-only
+≥0.12; split −28.2…−13.2, service report-only.
+
+**Hack checklist:** global sat push (red S >0.97 or white |R−B| >6) FAIL;
+cloudCover <0.35 (flat sky) FAIL; elevation <0.87 rad FAIL; exposure/knee push
+or plateau/clip FAIL; grain/CA/vignette for LC/tc FAIL; emissive additions,
+black-paint "depth", blue paint for sky-mask FAIL; shadowTint R <0.90 or B >1.16
+FAIL; per-section azimuth/schema changes disguised as look edits FAIL.
+
+## 8. W2.2 final record and accepted-residual register (2026-11-20)
+
+W2.2 closed after the AD's blind re-run (6/6 PASS) and guided review (no hacks).
+Final amended windows for the record: sky-mask start 12–22, finish 8–18,
+skybridge 4–14 (override 522), first-gap 1.5–25, **wallrun 1–15** (amended),
+service report-only; L\* families as in §7 (all satisfied); near-white seam
+WATCH 0.0030–0.0047 with plateau ≤1.5 % (fact 0); red continuity visually
+continuous + component **≥0.25** (amended); saturation start/gap/skybridge
+0.241–0.321, wallrun hairline 0.324 WATCH, **finish 0.20–0.40** (amended),
+service ≥0.12; split family **−42.5…−13.2**, skybridge/service report-only.
+
+**Accepted-residual register → W5 (not blocking W2):**
+1. `local_contrast` targets ≥0.274 (≥0.240 service) — current 0.237–0.257, inside
+   the reference p10–p90; look levers in hack bounds exhausted (contrast 0.68 +
+   tint gave +0.002–0.005); needs GTAO/exposure unfreeze or denser content.
+2. `top_contrast` ≥0.235 on finish-roof (0.189) and start-roof (0.229) —
+   structural (sky+gate upper third; flat open sky).
+3. `split` on gap/wallrun/finish inside the family window — mean-band strictness,
+   not a language break; skybridge report-only with trigger > +20 → content fix.
+4. service-block 1 % low 45.04 fps (headed) → W5 optimization (avg 66.77, gate
+   met headless and headed).
+5. Rail glass still milky at grazing angles (opacity 0.30 experiment), BG grids
+   density, first-gap underside props, gantry supports in this angle — cosmetic
+   W5/W6 content polish.
+
+Next per the plan: W3 (route validation/timing), W4 (audio listening pass with
+the owner), W5 (residual register + real-window perf + release hygiene).

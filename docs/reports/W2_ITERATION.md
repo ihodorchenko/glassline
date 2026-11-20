@@ -82,3 +82,37 @@ determinism 6/6 accepted.
 - Metrics: [`w2-metrics.md`](w2-metrics.md) / `.json` (with `--horizon-px 522`
   override for skybridge), perf: [`w2-perf.json`](w2-perf.json).
 - Targets and amendments: [`W2_TARGETS.md`](W2_TARGETS.md) §6.
+
+## 7. W2.2 residual polish (2026-11-20)
+
+One bounded iteration closing the non-blocking list from `BLIND_REVIEW_W2` /
+§5 (DECISIONS D-18). Look layer was unfrozen for this iteration only; route
+geometry/colliders/triggers untouched; `validate` green (293 tests).
+
+| Owner | Change |
+|---|---|
+| look (AD-5 numbers) | contrast curve 0.62→0.68, shadowTint (1.06,1.01,0.98)→(0.94,1.00,1.10), SkyDome chroma/radiance recalibrated to the new stops (skyChroma 0.55/0.42→0.32/0.22, skyRadiance 1.0/1.15→1.05/0.88); exposure 1.65, knee 0.92, sat 2.4, GTAO 0.70, bloom/grain/CA/vignette frozen |
+| env (content-2) | PROLOGUE_ENVIRONMENT: zenith `#1c48d0`, mid `#4a86c8`, horizon `#dceaf6`, cloudCover 0.42, cloudShadow `#a8b8cc`, sunAzimuth 2.6 rad, sunElevation 0.92 rad, hemisphereIntensity 0.20; sun 7.4 and fog 60/380 unchanged |
+| materials | straight-tile for `facade` (wallrun parapet walls), residual triplanar moiré removed via detail scale 3.3→2.3 / mix 0.12→0.05 on straight-tile maps; red roughness 0.45→0.60 (kills the mirror glints on route dashes); glass-rail tint `#1a2530` / opacity 0.35 |
+| content | denser background facade grids (rows 4–12, 3 punched windows per bay, 4 pilasters, roof caps/props), mid-deck prop clusters (3 on start roof, 2 on finish, 2 lower decks + planter), first-gap underside/deep-roof dressing, gantry beam now a cable-stayed truss with piers/masts/stays, wallrun grille recessed with frame/louvers; decorations 2623→3101, Δdraw calls 0 |
+
+**Numbers (W2.1 → W2.2 final):** shifted 46→**49/78** (traceability; family
+windows are the reading), luma families all inside AD windows (start 0.624,
+finish 0.600, skybridge 0.650, first-gap 0.614, wallrun 0.485, service 0.488),
+saturation start 0.295 / gap 0.275 / skybridge 0.252 in band, wallrun 0.324
+hairline, finish 0.371 (amended 0.20–0.40), service 0.248; plateau/clip clean
+(pure255 = 0, luma ≥0.995 = 0.00 %), white point |R−B| 3.9–5.8 ≤6, seam
+0.0032–0.0043 (WATCH window), sky-mask in windows (wallrun amended 1–15),
+red continuity continuous lines (component ≥0.25 amended).
+
+**Perf:** headless `--strict` worst 59.8 avg (0/6 <55) at 1.86 M open / 2.79 M
+service-block triangles; **real window (headed Edge, 120 Hz display) worst
+service-block 66.77 avg, median 66.23, 1 % low 45.04; other shots 84–96 avg** —
+the W5 real-window FPS item is materially answered (1 % low service remains a
+W5 optimization). Determinism 6/6 byte-identical.
+
+**Blind re-run: 6/6 PASS** ([`BLIND_REVIEW_W2.md`](BLIND_REVIEW_W2.md) re-run
+section). **W2.2 closed** with an accepted-residual register moved to W5
+(see `W2_TARGETS.md` §8): LC ≥0.274 (≥0.240 service), tc ≥0.235 on
+finish/start, split family window −42.5…−13.2, skybridge/service split
+report-only, service 1 % low ≥55.

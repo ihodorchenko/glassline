@@ -29,3 +29,24 @@ criteria; skybridge depth through the transparent rails is confirmed.
 red roughness, rail tint/opacity; content denser BG grids, mid-deck props,
 first-gap lower-roof dressing, gantry support, wallrun grille; W5 real-window
 perf.
+
+## Re-run after W2.2 (final)
+
+Six fresh unlabeled pairs (`captures/w2-2-final` vs reference): **6/6 PASS.**
+Guided check found no hacks/blockers (plateau/pure255 = 0, white point |R−B|
+3.9–5.8, seam in the WATCH window, emissive/void none, sky-mask in amended
+windows, red lines visually continuous). Remaining deviations are accepted
+residuals moved to W5:
+
+| Pair | Beat | Remaining deviation (accepted → W5) |
+|---|---|---|
+| P1 | start-roof | BG grids still thin in places; large empty white fields mid-deck (LC 0.241); gantry beam thin in this angle |
+| P2 | first-gap | pale underside FG; thin central BG slab grid; split −34.9 inside the reference spread |
+| P3 | wallrun-corridor | narrow sky strip (mask 1.4, amended 1–15); grille still reads dark; split −29.5 inside the spread |
+| P4 | service-block | residual glossy glint on the red strip; pale BG tower; split report-only |
+| P5 | skybridge | rails still milky at grazing angles; split +12.5 = shaded route red under the gantry (report-only); deck shadows ~8 % (low window) |
+| P6 | finish-roof | upper-third flat sky+gate (tc 0.189); sat 0.371 (amended 0.20–0.40); thin BG grid |
+
+No regressions against the W2.1 gate: chroma, shadows, props, matte red and
+rail tint all improved. Tint compromise was rejected (would push start/finish
+warm out of band and does not fix the structural skybridge split).

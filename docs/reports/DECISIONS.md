@@ -434,3 +434,67 @@ frames.
 surfaces, red roughness 0.6, rail tint/opacity; content denser background grids,
 mid-deck prop clusters, first-gap lower-roof dressing; start-roof gantry support
 and wallrun grille; W5 real-window perf. Nothing merges to `main`.
+
+## D-18 — W2.2: residual polish iteration (2026-11-20)
+
+**Trigger.** Owner approved the W2.2 residual list ("ок запускаем W2.2") after
+the W2 gate closed (D-17). Scope is exactly the non-blocking list from
+`BLIND_REVIEW_W2.md` / `W2_ITERATION.md` §5:
+
+1. **Look** (layer unfrozen for this iteration): sky chroma/zenith, prop-shadow
+   coverage 8–15 % on decks, mid-scale local contrast (0.203–0.248 → ≥0.274
+   where applicable) — numbers from the AD-5 brief (`task-34`).
+2. **Materials:** straight-tile on the remaining legacy surfaces (wallrun
+   parapet, service floor), red paint roughness 0.45→0.60 (kills the mirror
+   glints on route dashes), glass-rail tint `#1a2530` / opacity 0.35 instead of
+   the milky panel.
+3. **Content:** denser background facade grids, mid-deck prop clusters,
+   first-gap underside dressing, gantry beam supports on start-roof, wallrun
+   grille recessed.
+4. **W5 item** (real-window FPS + release hygiene) is **not** part of this
+   iteration's code scope; it follows immediately after as a measurement/
+   acceptance step with the owner (headed probe + preview server), because a
+   real-window FPS claim cannot be made headless.
+
+**Ownership (one writer per file):** exec-look → `PostPipeline.ts`,
+`SkyDome.ts`, `RenderScene.ts`, `Renderer.ts`; exec-materials →
+`MaterialLibrary.ts`; exec-content → `PrologueCity.ts`; lead → integration,
+metrics/guardrails, perf, blind gate, reports, commits. Route geometry,
+colliders, triggers and sections remain untouched.
+
+**Closing criteria for W2.2:** fresh six-shot deterministic capture → metrics
++ guardrails → perf `--strict` (plus a headed probe for the W5 item) → blind
+6 pairs by the art director (≥4/6 required, target 6/6) → `npm run validate`
+green → one logical commit series on `feat/art-audio-level`. Nothing merges to
+`main`.
+
+## D-19 — W2.2 closed; accepted-residual register → W5 (2026-11-20)
+
+**Trigger.** Owner started W2.2 to close the residual polish list from
+`BLIND_REVIEW_W2`/`W2_ITERATION` §5 (D-18).
+
+**Outcome.** One bounded pass (look + env + materials + content, one writer per
+file) delivered: sky stops deep cobalt (`#1c48d0`/`#4a86c8`/`#dceaf6`), cloud
+cover 0.42, sun azimuth 2.6 / elevation 0.92, hemi 0.20, shadow tint
+(0.94,1.00,1.10), contrast 0.68; straight-tile `facade` + residual moiré fix,
+red roughness 0.60, glass-rail `#1a2530`/0.35; denser BG facade grids, mid-deck
+prop clusters, first-gap underside/deep-roof dressing, cable-stayed gantry
+supports, recessed wallrun grille (decorations 2623→3101, Δdraw calls 0).
+Numbers: shifted 46→49/78; L\* families all inside windows; saturation in
+amended windows; plateau/clip clean; white point ≤6; seam WATCH; sky-mask in
+windows (wallrun amended); deterministic 6/6 byte-identical; `validate` green.
+Perf: headless `--strict` worst 59.8 avg (0/6 <55) at 1.86 M/2.79 M triangles;
+headed real window (120 Hz) worst service-block 66.77 avg / 1 % low 45.04, other
+shots 84–96 avg.
+
+**Gate.** Blind re-run **6/6 PASS**, guided review found no hacks; **W2.2 is
+closed** and W2 is now fully closed (W2.1 gate + W2.2 polish). AM/AD accepted
+tint compromise rejection (structural skybridge split, warm bands otherwise).
+
+**Accepted-residual register → W5** (recorded in `W2_TARGETS.md` §8): mid-scale
+LC targets, finish/start top_contrast, split family readings, service 1 % low,
+and cosmetic rail/grid/underside polish. None of them is a language break and all
+sit inside the reference per-frame spread or need GTAO/exposure unfreeze, which
+is a deliberate W5/quality-tier decision, not a silent tweak.
+
+Nothing is merged to `main`.

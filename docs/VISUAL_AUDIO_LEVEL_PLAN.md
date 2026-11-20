@@ -41,7 +41,11 @@
 > [`reports/DECISIONS.md`](reports/DECISIONS.md). Nothing is merged to `main`.
 
 > **W2 execution note (2026-11-20):** content-language iteration 1 landed and
-> the W2 canyon/rooftop gate (G2) is closed — blind review 6/6 PASS on unlabeled
+> the W2 canyon/rooftop gate (G2) is closed; the W2.2 residual polish iteration
+> followed the same day (cobalt sky stops, sun-key shadows, straight-tile
+> materials, rail tint, denser facades/props) and closed with a blind 6/6 and an
+> accepted-residual register moved to W5 — see
+> [`reports/W2_ITERATION.md`](reports/W2_ITERATION.md) §7. Original note: — blind review 6/6 PASS on unlabeled
 > pairs after the transparent skybridge rails, suspended load, side service
 > roofs, duct/door, stair nosings, facade detail and sky opening; frame density
 > grew (1.58M/2.38M triangles) while the perf probe stayed 60/60 poses; nothing
