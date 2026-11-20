@@ -111,6 +111,7 @@ const MATERIAL_SPECS: Record<MaterialKey, MaterialSpec> = {
     metalness: 0.05,
     uvScale: 0.16,
     texture: "facade",
+    heightFromAlpha: true,
   },
   glass: {
     color: 0x1a2530,
@@ -127,14 +128,14 @@ const MATERIAL_SPECS: Record<MaterialKey, MaterialSpec> = {
     envMapIntensity: 1.25,
   },
   "glass-rail": {
-    color: 0x9fb4c2,
+    color: 0x1a2530,
     roughness: 0.08,
     metalness: 0.2,
     uvScale: 0.4,
     envMapIntensity: 1.2,
     transparent: true,
     depthWrite: false,
-    opacity: 0.4,
+    opacity: 0.35,
     side: THREE.DoubleSide,
   },
   metal: {
@@ -155,7 +156,7 @@ const MATERIAL_SPECS: Record<MaterialKey, MaterialSpec> = {
   },
   red: {
     color: 0xd52e36,
-    roughness: 0.45,
+    roughness: 0.6,
     metalness: 0,
     uvScale: 0.3,
     texture: "red",
@@ -256,7 +257,7 @@ const TEXTURE_HEIGHT_BASE: Record<TextureKind, number> = {
   plaster: 0.86,
   concrete: 0.8,
   roof: 0.82,
-  facade: 0.5,
+  facade: 0.78,
   metal: 0.5,
   asphalt: 0.5,
   red: 0.5,
@@ -650,10 +651,13 @@ function paintTexture(kind: TextureKind): HTMLCanvasElement {
       break;
     }
     case "facade": {
-      fillBase(context, "#f6f5f3");
+      // Straight-tile facade: straight panel joints authored in the albedo and
+      // again as grooves in the alpha height channel; mottle, streaks and
+      // cracks stay albedo-only so long city walls keep no diagonal swirl.
+      beginTileMap(context, "#f6f5f3", 0.78);
       addMottle(context, random, 60, 0.04, "#ffffff", "#cfcfcb", 90);
-      drawSeams(context, 170, "#b9b8b4", 2, 0.28);
-      drawSeams(context, 85, "#d7d6d2", 1, 0.16);
+      drawSeams(context, 256, "#c9c8c4", 2, 0.26, -128);
+      drawSeams(context, 128, "#deddd9", 1, 0.14, -64);
       addCracks(context, random, 7, "#a4a39f", 0.1);
 
       for (let index = 0; index < 26; index += 1) {
@@ -668,6 +672,9 @@ function paintTexture(kind: TextureKind): HTMLCanvasElement {
 
       context.globalAlpha = 1;
       addSpeckle(context, random, 2200, ["#ffffff", "#deddda", "#cbcac6"], 1);
+      cutTileGrooves(context, 256, 6, 0.2, -128);
+      cutTileGrooves(context, 256, 1.8, 0.45, -128);
+      finishTileMap(context);
       break;
     }
     case "metal": {
@@ -793,8 +800,10 @@ function applyTriplanar(
   material.onBeforeCompile = (shader) => {
     shader.uniforms.uTriplanarScale = { value: scale };
     shader.uniforms.uBumpScale = { value: bumpScale };
-    shader.uniforms.uDetailScale = { value: 3.3 };
-    shader.uniforms.uDetailMix = { value: 0.12 };
+    // Straight-tile maps keep a little grain but avoid the 3.3x detail sample
+    // that moires into diagonal swirl on long floors and walls.
+    shader.uniforms.uDetailScale = { value: heightFromAlpha ? 2.3 : 3.3 };
+    shader.uniforms.uDetailMix = { value: heightFromAlpha ? 0.05 : 0.12 };
     shader.uniforms.uParallaxDepth = { value: 0.03 };
     shader.uniforms.uHeightFromAlpha = { value: heightFromAlpha ? 1 : 0 };
     shader.uniforms.uHeightBase = { value: heightBase };

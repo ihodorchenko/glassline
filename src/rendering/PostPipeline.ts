@@ -60,11 +60,11 @@ const GRADE_SHADER = {
     uResolution: { value: new THREE.Vector2(1, 1) },
     uTime: { value: 0 },
     /** Monotone S-curve amplitude (0 = off; 0.5–0.9 for the reference look). */
-    uContrast: { value: 0.62 },
+    uContrast: { value: 0.68 },
     /** Chroma multiplier applied around display luma. */
     uSaturation: { value: 2.4 },
     /** Multiplier for the darkest tones (cool blue shadows). */
-    uShadowTint: { value: new THREE.Vector3(1.06, 1.01, 0.98) },
+    uShadowTint: { value: new THREE.Vector3(0.94, 1.0, 1.1) },
     /** Multiplier for the brightest tones (neutral: no warm "paper" cast). */
     uHighlightTint: { value: new THREE.Vector3(0.99, 1.0, 1.02) },
     /** Luma where the split tone is 50/50 and the transition half-width. */

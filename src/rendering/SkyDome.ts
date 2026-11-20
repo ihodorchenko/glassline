@@ -114,8 +114,8 @@ const FRAGMENT_SHADER = /* glsl */ `
     // zenith a little brighter; with these two terms the rendered zenith lands
     // on the sampled reference #2050D8 and the mid band on #68A8C8 (verified by
     // sampling the captured frames, see W1 look report).
-    float skyChroma = mix(0.55, 0.42, smoothstep(0.40, 0.95, h));
-    float skyRadiance = mix(1.0, 1.2, smoothstep(0.30, 0.90, h));
+    float skyChroma = mix(0.32, 0.22, smoothstep(0.40, 0.95, h));
+    float skyRadiance = mix(1.05, 0.88, smoothstep(0.30, 0.90, h));
     sky = mix(vec3(skyLuma(sky)), sky, skyChroma) * skyRadiance;
 
     float sunAlignment = max(dot(direction, normalize(uSunDirection)), 0.0);

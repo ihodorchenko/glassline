@@ -124,29 +124,30 @@ export const TRAINING_ENVIRONMENT: LevelEnvironmentDefinition = {
 
 /**
  * Prologue atmosphere: neutral high-summer daylight over the city.
- * Palette/light anchors from docs/reports/ART_BRIEF.md §2: cobalt zenith
- * #2050D8, horizon haze #E8F0F8/#DCEAF6, neutral sun (#FFF8F0), sun
- * elevation 59° (shadows 0.5–0.8× object height), low hemisphere fill so
- * shadows stay cool and readable. sunAzimuth 2.25 rad was kept: it puts the
- * sun 51° off the +Z (behind) axis, i.e. behind-right of the route view, so
- * the key reads as side/back light without changing shot framing.
+ * Palette/light anchors from docs/reports/ART_BRIEF.md §2 and the W2.2 numeric
+ * brief (W2_TARGETS.md §7): cobalt zenith #1C48D0, mid-sky #4A86C8, horizon
+ * haze #DCEAF6 (= fog), neutral sun (#FFF8F0), sun elevation 52.7° (shadows
+ * 0.76× object height, inside the 0.5–0.8× language), low hemisphere fill so
+ * shadows stay cool and readable. sunAzimuth 2.6 rad: the sun 31° off the +Z
+ * (behind) axis, right-behind the route view, so the key rakes shadows
+ * left-forward across the deck without changing shot framing.
  */
 export const PROLOGUE_ENVIRONMENT: LevelEnvironmentDefinition = {
-  skyColor: 0x8fbde0,
+  skyColor: 0x4a86c8,
   fogColor: 0xdceaf6,
   fogNear: 60,
   fogFar: 380,
   sunColor: 0xfff8f0,
   sunIntensity: 7.4,
-  hemisphereIntensity: 0.23,
-  zenithColor: 0x2050d8,
-  horizonColor: 0xe8f0f8,
+  hemisphereIntensity: 0.2,
+  zenithColor: 0x1c48d0,
+  horizonColor: 0xdceaf6,
   groundColor: 0xb9cbd8,
   cloudColor: 0xf8f8f8,
-  cloudShadowColor: 0xb8c8d8,
-  cloudCover: 0.5,
-  sunAzimuth: 2.25,
-  sunElevation: 1.03,
+  cloudShadowColor: 0xa8b8cc,
+  cloudCover: 0.42,
+  sunAzimuth: 2.6,
+  sunElevation: 0.92,
 };
 
 function trainingTower(
