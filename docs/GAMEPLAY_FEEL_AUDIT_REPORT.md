@@ -119,20 +119,26 @@ approval of the improvement plan (Section 8) before Phase 1 work.**
 - Regression risk: low — the straight-line path is mathematically unchanged;
   guarded by the exact-decay test.
 
-### GF-ISSUE-05 — Landing camera response ignores impact intensity
+### GF-ISSUE-05 — Landing camera response ignores impact intensity — ✅ FIXED (Group 4.1)
 
-- Severity: Medium (feedback). Affected: Landing camera. System: Camera.
-- Description: `LANDING_DIP_METERS = 0.06` and the landing roll amplitude are
-  constants — a 0.5 m hop and a 15 m/s fall produce identical camera response.
+- Severity: Medium (feedback). Affected: Landing camera. System: Camera/Movement.
+- Description (before): `LANDING_DIP_METERS = 0.06` and the roll amplitude were
+  constants — a 0.5 m hop and a 15 m/s fall produced identical camera response.
   `13_CAMERA_SYSTEM_SPEC.md` §11.6 requires proportionality to vertical impact
-  speed; the rewritten audit doc's GF-08 also explicitly expects "distinct,
-  proportional landing response" for low vs high falls. The impact data
-  (`impactSpeed`) already exists on the movement snapshot/event path.
-- Recommended: scale dip/roll amplitude by a clamped impact factor (e.g.
-  `clamp(impactSpeed / 10, 0.25, 1)`), keep the half-sine recovery; add camera
-  unit tests for two impact levels; verify Reduced Motion still zeroes it.
-- Risk: low; subjective intensity must be human-checked (landing shake was
-  flagged "untuned/unverified by human" in IMPLEMENTATION_STATUS Rounds 39/40).
+  speed; the rewritten audit doc's GF-08 explicitly expects "distinct,
+  proportional landing response".
+- Change made: `MovementModelSnapshot.landingImpactSpeed` (authoritative
+  movement data, spec `12` §19.1 `landingImpact`); `CameraSystem` captures it
+  at the landing onset and scales dip/roll by
+  `0.3 + 0.7 · clamp(impact / 10 m/s, 0, 1)` — soft landings keep a subtle
+  response, hard falls reach the full 0.06 m dip. Half-sine recovery, sign
+  logic and Reduced Motion behavior unchanged.
+- Verification after: camera unit tests (soft vs hard proportionality,
+  mid-recovery peak, motion-intensity zeroing); runtime probe: impact 2 m/s →
+  0.026 m dip, impact 12 m/s → 0.060 m dip. Human calibration remains for
+  Group 6 (project-wide "untuned by human" caveat).
+- Regression risk: low; landing onset capture is guarded by the recovery
+  window so consecutive landings re-capture correctly.
 
 ### GF-ISSUE-09 — Jump-release grace window was unstable during the window
 
@@ -173,7 +179,7 @@ approval of the improvement plan (Section 8) before Phase 1 work.**
 | GF-ISSUE-02 | Vaulting implements a single profile (fixed 0.45 s, arc lift 0.25); no Standard/Speed distinction, no speed-based selection, no minimum approach speed, and `player:vault-started` carries `{speed}` instead of the vault type | `12` §14.4 (two profiles + deterministic selection + type in event), `03` §10.4 | **High** (explicit "must" in spec) — **FIXED (Group 3.1)** | Two profiles with tuning values (`vaultMinEntrySpeed 2.5`, `vaultSpeedMinEntrySpeed 6`, `vaultSpeedDurationSeconds 0.3`, per-profile retention 0.85/0.95); event carries `vaultType`; plus the spec-mandated interact buffer (`vaultInteractBufferSeconds 0.15`, GF-ISSUE-11). 6 model tests + physics event test |
 | GF-ISSUE-03 | Wall-run eligibility ignores `wallRunSurface`/`wallJumpSurface` surface metadata authored in the level; any near-vertical collider within 0.75 m qualifies (including `surface_boundary` walls marked not wall-runnable) | `12` §15.2 ("correct collision category or metadata"), `12` §22 (surface metadata) | **Medium** — **FIXED (Group 3.2)** | `WallRunDetectorOptions.isWallRunnable` gate at the hit point; `PlayerSystemOptions.isWallRunnable`; Application resolves via new `SurfaceRegistry.getSurfaceContaining`. Detector + physics tests; runtime: corridor wall still runnable, boundary parapet no longer triggers wall runs |
 | GF-ISSUE-07 | Vault traversal bypasses collision: the body is moved by direct `setNextKinematicTranslation` along the scripted arc for 0.45 s without controller/collision checks and without cancellation if the destination becomes invalid | `12` §14.6 (fail safely / cancel), `03` §10.5 ("must remain integrated with physics and collision validation") | **Medium** — **FIXED (Group 3.3)** | The scripted arc now moves through `computeColliderMovement` (snap-to-ground suspended for the traversal, restored after); the arc lift is clearance-aware so the capsule sweeps over the obstacle instead of through it. `intersectionPair`-based penetration regression test |
-| GF-ISSUE-08 | Camera spec defines a sprint-FOV intensity setting and dynamic-FOV toggle; the Settings registry (`25` §B.1.3) has no such keys — sprint FOV is hard-coded to base+7 | `13` §9.6 vs `25` settings registry | **Low** (spec-vs-spec inconsistency; implement per settings registry) | `CameraSystem` constructor `sprintFov: baseFov + 7` |
+| GF-ISSUE-08 | Camera spec defines a sprint-FOV intensity setting and dynamic-FOV toggle; the Settings registry (`25` §B.1.3) has no such keys — sprint FOV is hard-coded to base+7 | `13` §9.6 vs `25` settings registry | **Low** — **FIXED (Group 4.2)** | New `camera.sprint_fov_intensity` (default 1, range 0–2) in `SettingsDefinitions`; `CameraSettingsAdapter` derives `sprintFov = base + 7 · intensity` (0 = dynamic FOV off); UI label + EN/RU localization; settings + adapter tests; runtime: 75/82/89° at 0/1/2 |
 | — | Jump tuning at audit end (height 1.6 m, min ratio 0.6) differs from `12` §6.2 suggested values (1.25 m) — permitted ("starting points", §17.2 forbids blind application; values must be justified by playtest) | `12` §6.2 note | Info | `MovementTuning.ts` |
 
 ---
@@ -260,13 +266,13 @@ in dependency order.
 | 3.2 | Wall-run eligibility gated by `wallRunSurface` metadata (GF-ISSUE-03) | **Done** — detector + physics tests; runtime: corridor wall runnable, boundary parapet rejected |
 | 3.3 | Vault traversal through the character controller + clearance-aware arc (GF-ISSUE-07) | **Done** — `intersectionPair` penetration regression test; runtime GF-12 clean |
 
-### Group 4 — Camera and feedback
+### Group 4 — Camera and feedback — ✅ DONE (2026-11-20)
 
-| # | Change | Benefit | Risk |
-|---|---|---|---|
-| 4.1 | Impact-scaled landing dip/roll (GF-ISSUE-05) + unit tests | Landings communicate weight | Subjective intensity; human check required; keep Reduced Motion zeroing |
-| 4.2 | Sprint-FOV intensity setting (GF-ISSUE-08) wired through the settings pipeline | Spec-aligned configurability | Settings registry + camera application; small |
-| 4.3 | Human pass over bob/roll/dip intensities at 60+ fps on real hardware (deferred until hardware runs are available) | Calibrated feedback | — |
+| # | Change | Status |
+|---|---|---|
+| 4.1 | Impact-scaled landing dip/roll (GF-ISSUE-05) + unit tests | **Done** — `landingImpactSpeed` in the movement snapshot, camera scales dip/roll by the clamped impact factor; runtime 0.026 m (2 m/s) vs 0.060 m (12 m/s) |
+| 4.2 | Sprint-FOV intensity setting (GF-ISSUE-08) | **Done** — `camera.sprint_fov_intensity` through Settings → adapter → camera; UI + EN/RU; runtime 75/82/89° at 0/1/2 |
+| 4.3 | Human pass over bob/roll/dip intensities | Deferred (needs real hardware + human verdict) — tracked for Group 6 |
 
 ### Group 5 — Performance
 
@@ -296,16 +302,17 @@ change, scenario verification, regression tests, honest reporting.
 
 Still open before the audit can converge on "no critical or high issues":
 
-- GF-ISSUE-05 (landing camera not impact-proportional — now an explicit GF-08
-  requirement in the rewritten audit doc) and GF-ISSUE-08 (sprint-FOV
-  setting) — the Group 4 scope.
-- Remaining plan groups 5–6 (performance, tuning) plus the pending runtime
-  scenario gaps (low-speed slide entry, slide exit on slope, repeated-route
-  resource check).
+- No open GF-ISSUE items from the baseline remain: all confirmed issues and
+  spec deviations (GF-ISSUE-01…08, 10, 11) are fixed and verified.
+- Remaining plan groups 5–6 (performance, controlled tuning) plus the pending
+  runtime scenario gaps (low-speed slide entry, slide exit on slope,
+  repeated-route resource check) and the human camera/audio passes.
 
-**Decision: baseline complete; Groups 1–3 approved and implemented
+**Decision: baseline complete; Groups 1–4 approved and implemented
 (slide-kill, wall-jump landing, input edge queue, slide steering, vault
-profiles + buffering, wall-run surface gating, collision-validated vaults —
-397/397 tests). Next increment per the plan: Group 4 (impact-scaled landing
-camera response, sprint-FOV intensity setting). Awaiting owner approval
-before starting Group 4.**
+profiles + buffering, wall-run surface gating, collision-validated vaults,
+impact-scaled landing camera, sprint-FOV setting — 400/400 tests). Remaining:
+Group 5 (real-GPU performance run) and Group 6 (controlled tuning + the
+pending runtime scenario gaps: low-speed slide entry, slide exit on slope,
+repeated-route resource check, human camera pass). Awaiting owner approval
+before starting Group 5.**

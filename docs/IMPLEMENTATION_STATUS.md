@@ -75,10 +75,22 @@ and verified:
 Current validation after Group 3: `npm run validate` green (typecheck, biome,
 **397** tests, production build).
 
-Open audit issues and the remaining plan groups (4: impact-scaled landing
-camera response + sprint-FOV setting; 5: performance; 6: tuning) are tracked
+Owner-approved **Group 4** (camera and feedback) is implemented and verified:
+
+| Item | Change | Status |
+|---|---|---|
+| GF-ISSUE-05 | Landing camera response is now impact-proportional: `MovementModelSnapshot.landingImpactSpeed` feeds `CameraSystem`, which scales the dip/roll by `0.3 + 0.7 · clamp(impact / 10 m/s, 0, 1)`. Soft landings keep a subtle response; hard falls reach the full 0.06 m dip. Half-sine recovery, sign logic and Reduced Motion behavior unchanged. | **Fixed** — camera unit tests; runtime probe 0.026 m (2 m/s) vs 0.060 m (12 m/s) |
+| GF-ISSUE-08 | New `camera.sprint_fov_intensity` setting (default 1, range 0–2): `CameraSettingsAdapter` derives `sprintFov = baseFov + 7 · intensity` (0 disables dynamic FOV). UI label + EN/RU localization included. | **Fixed** — settings + adapter tests; runtime 75/82/89° at 0/1/2 |
+
+Current validation after Group 4: `npm run validate` green (typecheck, biome,
+**400** tests, production build).
+
+All baseline audit issues (GF-ISSUE-01…08, 10, 11) are fixed and verified.
+Remaining plan groups (5: real-GPU performance run; 6: controlled tuning,
+human camera/audio passes, and the pending runtime scenario gaps — low-speed
+slide entry, slide exit on slope, repeated-route resource check) are tracked
 in [`GAMEPLAY_FEEL_AUDIT_REPORT.md`](GAMEPLAY_FEEL_AUDIT_REPORT.md) §8.
-The Group 3 code is uncommitted at the time of writing (pending owner
+The Group 4 code is uncommitted at the time of writing (pending owner
 commit/merge decision).
 
 ---

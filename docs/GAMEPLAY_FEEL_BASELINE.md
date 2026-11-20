@@ -32,7 +32,8 @@ during this phase.
 | Uncommitted work at audit end | None in `src/` (owner work committed); only documentation changes |
 | Group 1 fixes (this audit) | Committed by the owner: `33de0ac` (GF-ISSUE-01), `6796786` (GF-ISSUE-06) + regression tests |
 | Group 2 fixes (this audit) | Input edge queue (GF-ISSUE-10), slide steering (GF-ISSUE-04) — committed (`a902866`, `067356f`) |
-| Group 3 fixes (this audit) | Vault profiles + interact buffer (GF-ISSUE-02/11), wall-run surface gating (GF-ISSUE-03), collision-validated vaults (GF-ISSUE-07) — implemented and verified; see the report |
+| Group 3 fixes (this audit) | Vault profiles + interact buffer (GF-ISSUE-02/11), wall-run surface gating (GF-ISSUE-03), collision-validated vaults (GF-ISSUE-07) — committed (`e8e52c6`) |
+| Group 4 fixes (this audit) | Impact-scaled landing camera (GF-ISSUE-05), sprint-FOV intensity setting (GF-ISSUE-08) — implemented and verified; see the report |
 | File content pins | `src/player/MovementModel.ts` sha256 `693537d…`-era variants were re-pinned several times during the audit (see §2.1) |
 | Browser | Microsoft Edge 157.0.4341.46, headless, WebGL2 on SwiftShader (software rasterizer) |
 | Resolution | 1600×900, DPR 1 |
@@ -83,7 +84,7 @@ Legend: spec = `docs/12_MOVEMENT_SYSTEM_SPEC.md` (movement), `13` camera,
 | Wall jumping | Jump during wall run: tangent·speed·0.9 + normal·5.5, vy 6; WALLJUMP 0.25 s; `player:walljumped` | MovementModel | Movement | Yes (`12` §16) | Yes | No landing event afterwards (see Landing row) |
 | Ground-stick (new) | Walk-off ledges while pushing forward: stick to surfaces ≤1 m below at ≤9 m/s instead of micro free-fall; disarms on jump/wall-kick/snap miss | MovementModel + PlayerSystem | Movement | New behavior; `12` §18 (slopes/uneven geometry) motivation | 2 model tests + stairs tests | New uncommitted-until-`aeb7625` behavior; only forward walk-offs stick (side/back walk-offs still fall) |
 | Input | DOM → abstract actions; held-keys set + per-frame pressed/held/released edges **+ pending-press queue (Group 2)**; mouse deltas accumulated; gamepad polling; pointer lock lifecycle; contexts; focus-loss clearing | `src/input/InputManager.ts`, `InputState.ts` | Input | Yes (`11`) | `input.test.ts` (19) | Within-frame taps preserved via `pendingPresses`; edges stay one-shot for catch-up steps |
-| Camera | Yaw/pitch ±85°, 0.0022 rad/px mouse (no smoothing), gamepad rate path, FOV 75→82 sprint damped, eye-height damping, bob 0.018 m, landing dip 0.06 m + tiny roll, wall-run roll ±0.06 rad, Reduced Motion zeroes effects | `src/camera/CameraSystem.ts` | Camera | Mostly (`13`) | `camera.test.ts` (19) | **Landing dip amplitude is constant — not proportional to impact speed** (`13` §11.6); no sprint-FOV intensity setting exists (`13` §9.6 vs `25` settings registry) |
+| Camera | Yaw/pitch ±85°, 0.0022 rad/px mouse (no smoothing), gamepad rate path, FOV 75→82 sprint damped (intensity setting 0–2), eye-height damping, bob 0.018 m, **impact-scaled landing dip 0.006–0.06 m** + roll, wall-run roll ±0.06 rad, Reduced Motion zeroes effects | `src/camera/CameraSystem.ts` | Camera | Yes (`13`) | `camera.test.ts` (20) + adapter tests | Group 4 resolved the constant dip (GF-ISSUE-05) and added the sprint-FOV intensity setting (GF-ISSUE-08) |
 | View model | Two-arm rig with bob/air/slide/wall-run/landing poses | `src/rendering/ViewModel.ts` | Rendering | Yes | — | Fine |
 | Audio feedback | Footsteps (speed interval, surface-aware), jump/landing/slide loop/vault/wallrun loop/walljump one-shots, wind by speed/altitude; all event-driven | `src/audio/AudioManager.ts` + Application wiring | Audio | Yes (`08`) | `audio.test.ts` (18) | Never human-listened (documented project-wide limitation) |
 | HUD | Speed indicator (m/s, bottom-left), interaction prompts, checkpoint/toast notifications | `src/ui/UIManager.ts` | HUD | Yes (`23`) | — | Verified visually at runtime |
@@ -126,7 +127,7 @@ Executed during the audit:
 | Command | Result |
 |---|---|
 | `npm run typecheck` | PASS (final state) |
-| `npm test` | **397/397 PASS** (387 after Group 2 + 6 vault-profile/buffer tests + 1 detector test + 3 physics tests) |
+| `npm test` | **400/400 PASS** (397 after Group 3 + camera impact tests, camera-settings adapter tests, sprint-FOV settings test) |
 | `npx biome check .` | PASS for project sources at final state; transiently red due to the audit's own scratch files (removed from the tree afterwards) and, mid-window, to uncommitted source formatting |
 | `node tools/capture/capture.mjs --iteration audit --shot start-roof` | PASS — 196 draw calls, 4,182,467 triangles, 0 console errors, 0 page errors |
 | Runtime scenario harness (custom, Playwright) | See §6 |
@@ -138,9 +139,10 @@ Coverage relevant to gameplay feel:
   event, ground-stick, slide, vault, wall run, wall jump).
 - Player/physics integration: 12 tests
 - Input: 19 tests (incl. 3 pending-press edge tests)
+- Settings: 12 tests (incl. sprint FOV intensity); CameraSettingsAdapter: 2 tests
 - Traversal detection: 7 tests (incl. wall-run surface gating) (settle, move/strafe, jump+land, wall
   block, body sync, reset, stair descent with ground-stick, camera filter).
-- Camera: 19 tests (look, pitch clamp, FOV, reduced motion, etc.).
+- Camera: 20 tests (incl. impact-scaled landing response).
 - Input: 16 tests. Game loop: 8 tests. Traversal detection: 6 tests.
 - Prologue traversal (real Rapier world): 6 tests incl. lower-gap sprint jump,
   scaffold ascent, catwalk, slide tunnel clearance, bridge/finish.
@@ -257,6 +259,8 @@ keyboard/mouse input; player/camera state was recorded per physics step
 
 - Actual: horizontal speed 8.5 → 8.5 m/s across landing (momentum fully
   preserved); landing recovery 0.18 s; impact vertical speed ≈7.7 m/s.
+- Group 4: camera dip now scales with the impact — runtime probe: 0.026 m at
+  2 m/s vs 0.060 m at 12 m/s (full amplitude at the 10 m/s reference).
 - Problems: camera dip/roll is the same for every landing regardless of impact
   (GF-ISSUE-05) — feedback, not physics.
 
