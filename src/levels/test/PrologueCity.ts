@@ -2383,6 +2383,7 @@ function addFarTowerFacade(
   depth: number,
   top: number,
   radius: number,
+  bodyMaterial: string,
 ): void {
   const baseY = GROUND_Y;
   const nearFace = z + depth / 2 + 0.06;
@@ -2398,12 +2399,16 @@ function addFarTowerFacade(
   // 100 % zoom: dark spandrel bands with light window bands (heights and
   // silhouettes unchanged).
   const thinTower = width < 18;
+  // Post-G5.1 parity: thick bands survive distance fog, and non-thin towers
+  // keep dark windows on every floor so the grid never reads pale.
+  const bandHeight = thinTower ? 0.9 : 0.45;
+  const mullionWidth = thinTower ? 0.3 : 0.16;
 
   for (let floor = 1; floor < floors; floor += 1) {
     const y = baseY + floor * step;
     const windowY = y + step * 0.46;
 
-    builder.box(x, y, nearFace, width * 0.96, 0.34, 0.2, {
+    builder.box(x, y, nearFace, width * 0.96, bandHeight, 0.2, {
       material: thinTower ? "dark-metal" : "concrete",
       castShadow: false,
       receiveShadow: false,
@@ -2418,7 +2423,7 @@ function addFarTowerFacade(
         windowHeight,
         0.12,
         {
-          material: thinTower ? "white" : floor % 2 === 0 ? "glass" : "glass-far",
+          material: thinTower ? "white" : bodyMaterial === "glass-far" ? "dark-metal" : "glass",
           castShadow: false,
           receiveShadow: false,
         },
@@ -2430,7 +2435,7 @@ function addFarTowerFacade(
         x - width / 2 + bayWidth * column,
         windowY,
         nearFace + 0.02,
-        0.16,
+        mullionWidth,
         Math.min(2.1, step * 0.52),
         0.12,
         { material: "white", castShadow: false, receiveShadow: false },
@@ -2468,6 +2473,45 @@ function addFarTowerFacade(
  * start-roof / finish-roof frames (mast 0.1 dia x 4.4 m + 0.8 x 0.4 x 0.6 cap
  * and a rooftop unit). Tower heights/silhouettes themselves are unchanged.
  */
+
+/**
+ * Post-G5.1 parity: the finish-roof right slab is a ring tower seen mostly on
+ * its -x face, which the +z ring-facade helper never details. This adds the
+ * same authored rhythm (3 m spandrels, 1.5 m mullions, dark punched windows)
+ * on that face; tower height/silhouette unchanged.
+ */
+function addSideFacadeParity(builder: CityBuilder): void {
+  const x = 160.4;
+  const z = -275.8;
+  const width = 33.4;
+  const depth = 26.6;
+  const baseY = GROUND_Y;
+  const topY = 58.9;
+  const faceX = x - width / 2 - 0.06;
+  const halfDepth = (depth * 0.94) / 2;
+
+  for (let y = baseY + 3; y < topY - 2; y += 3) {
+    builder.box(faceX, y, z, 0.14, 0.5, halfDepth * 2, {
+      material: "concrete",
+      castShadow: false,
+      receiveShadow: false,
+    });
+    builder.box(faceX, y + 1.55, z, 0.12, 1.9, halfDepth * 1.7, {
+      material: "dark-metal",
+      castShadow: false,
+      receiveShadow: false,
+    });
+  }
+
+  for (let dz = -halfDepth; dz <= halfDepth + 0.01; dz += 1.5) {
+    builder.box(faceX, (baseY + topY) / 2, z + dz, 0.12, topY - baseY, 0.18, {
+      material: "white",
+      castShadow: false,
+      receiveShadow: false,
+    });
+  }
+}
+
 function addRooftopSilhouettes(builder: CityBuilder): void {
   const roofMasts: readonly (readonly [number, number, number])[] = [
     [22, 16.8, -96],
@@ -2533,7 +2577,7 @@ function addFarSkyline(builder: CityBuilder): void {
     });
 
     if (z < -100 && Math.abs(x) < 200) {
-      addFarTowerFacade(builder, x, z, width, depth, cutTop, radius);
+      addFarTowerFacade(builder, x, z, width, depth, cutTop, radius, material);
     }
 
     if (radius < 220 && random() > 0.35) {
@@ -2657,6 +2701,34 @@ export function createPrologueCityDecorations(
   addSkybridgeOverhead(builder);
   addSkybridgeSideRoofs(builder);
 
+  // Post-G5.1: shadow-casting props on the deck side shoulders (x +-1.2...1.5)
+  // to lift deck shadow coverage into the 10-12 % window. The fixed skybridge
+  // frustum only shows the deck from z ~ -50.8 onward, so the props sit at the
+  // nearest visible shoulders (z -51.6...-54.4) rather than -44...-48.
+  for (const [x, z] of [
+    [1.35, -51.6],
+    [-1.35, -53.0],
+  ] as const) {
+    builder.box(x, -0.45, z, 1.2, 0.9, 0.8, { material: "metal", castShadow: true });
+    builder.box(x, -0.02, z, 1.0, 0.08, 0.6, { material: "dark-metal" });
+  }
+
+  builder.cylinder(1.35, -0.35, -54.4, 0.12, 1.1, { material: "metal", castShadow: true });
+  builder.cylinder(1.35, 0.22, -54.4, 0.22, 0.06, { material: "dark-metal" });
+
+  for (const [x, z, w] of [
+    [1.35, -51.6, 1.7],
+    [-1.35, -53.0, 1.7],
+    [1.35, -54.4, 1.0],
+  ] as const) {
+    builder.box(x, -0.885, z, w, 0.012, w * 0.8, {
+      color: 0x101820,
+      opacity: 0.35,
+      castShadow: false,
+      receiveShadow: false,
+    });
+  }
+
   // W5 density clusters (LC) on the finished deck either side of the span,
   // outside the bridge sightline.
   addDensityCluster(builder, -4.2, -52.2, -0.9);
@@ -2666,6 +2738,7 @@ export function createPrologueCityDecorations(
   addBillboards(builder);
   addFarSkyline(builder);
   addRooftopSilhouettes(builder);
+  addSideFacadeParity(builder);
 
   return builder.decorations;
 }
