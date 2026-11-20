@@ -95,6 +95,20 @@ const HIDE_TRANSITION_MS = 420;
 /** Authored fallback for the boot failure stage label. */
 export const BOOT_ERROR_LABEL_FALLBACK = "UNABLE TO START";
 
+/** Static tagline authored in `index.html`; the no-JS fallback stays English. */
+export const BOOT_TAGLINE_FALLBACK = "First-person parkour";
+export const BOOT_TAGLINE_KEY = "boot.tagline";
+
+/**
+ * Resolves the boot tagline for a boot language. The brand line
+ * (`GLASSLINE / RUNNER NETWORK`) intentionally stays English.
+ */
+export function bootTagline(languageId: BootLanguageId): string {
+  const value = bootResources(languageId)[BOOT_TAGLINE_KEY];
+
+  return typeof value === "string" ? value : BOOT_TAGLINE_FALLBACK;
+}
+
 /**
  * Styled paper/ink boot loader that exists in index.html before the bundle
  * loads, then tracks Application initialization stages.
@@ -103,6 +117,7 @@ export class BootLoader {
   private readonly root: HTMLElement | null;
   private readonly stage: HTMLElement | null;
   private readonly detail: HTMLElement | null;
+  private readonly tagline: HTMLElement | null;
   private readonly fill: HTMLElement | null;
   private readonly percent: HTMLElement | null;
   private readonly track: HTMLElement | null;
@@ -117,10 +132,18 @@ export class BootLoader {
     this.root = documentRoot.getElementById("boot-loader");
     this.stage = documentRoot.getElementById("boot-stage");
     this.detail = documentRoot.getElementById("boot-detail");
+    this.tagline = documentRoot.querySelector<HTMLElement>(".boot-loader__tagline");
     this.fill = documentRoot.getElementById("boot-fill");
     this.percent = documentRoot.getElementById("boot-percent");
     this.track = documentRoot.getElementById("boot-track");
     this.resources = bootResources(languageId);
+
+    // index.html keeps the static English tagline for the no-JS case; the
+    // localized tagline is applied as soon as the bundle runs, before the first
+    // boot stage update, so the browser-locale language is visible early.
+    if (this.tagline) {
+      this.tagline.textContent = bootTagline(languageId);
+    }
   }
 
   setStage(stage: BootStage): void {

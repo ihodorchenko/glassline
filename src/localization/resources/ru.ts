@@ -361,6 +361,7 @@ export const RUSSIAN_RESOURCES: TranslationResources = {
   "boot.stage.ready.label": "Готово",
   "boot.stage.ready.detail": "Добро пожаловать в город",
   "boot.error.label": "НЕ УДАЛОСЬ ЗАПУСТИТЬ",
+  "boot.tagline": "Паркур от первого лица",
 
   "time.seconds": {
     one: "{count} секунда",

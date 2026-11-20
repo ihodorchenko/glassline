@@ -237,6 +237,17 @@ function humanizeSettingId(settingId: string): string {
 }
 
 /**
+ * Post-G5.1 contrast fix: the language value sits over the bright 3D backdrop at
+ * 1280×720. It receives a solid paper/ink chip (`.gl-setting__value--chip`) so
+ * its contrast no longer depends on whatever is rendered behind the panel.
+ */
+export function settingValueClassName(settingId: string): string {
+  return settingId === "general.language"
+    ? "gl-setting__value gl-setting__value--chip"
+    : "gl-setting__value";
+}
+
+/**
  * Presentation layer for gameplay screens and HUD (`docs/07`, `docs/23`, `docs/24`).
  *
  * It renders authoritative snapshots provided by the Application and forwards
@@ -1103,7 +1114,7 @@ export class UIManager {
     );
     const value = element(
       "div",
-      "gl-setting__value",
+      settingValueClassName(definition.id),
       this.formatSettingValue(definition, this.currentSettingValue(definition)),
     );
 

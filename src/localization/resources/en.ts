@@ -340,6 +340,7 @@ export const ENGLISH_RESOURCES: TranslationResources = {
   "boot.stage.ready.label": "READY",
   "boot.stage.ready.detail": "Enter the city",
   "boot.error.label": "UNABLE TO START",
+  "boot.tagline": "First-person parkour",
 
   "time.seconds": {
     one: "{count} second",

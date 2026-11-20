@@ -1,9 +1,15 @@
+import { readFileSync } from "node:fs";
+import { resolve } from "node:path";
+
 import { describe, expect, it } from "vitest";
 
 import type { BootStage } from "../../src/app/ApplicationConfig";
 import {
   BOOT_ERROR_LABEL_FALLBACK,
   BOOT_STAGE_COPY,
+  BOOT_TAGLINE_FALLBACK,
+  BOOT_TAGLINE_KEY,
+  bootTagline,
   detectBootLanguage,
 } from "../../src/boot/BootLoader";
 import { PROLOGUE_TEST_LEVEL } from "../../src/levels/test/PrologueTestLevel";
@@ -32,6 +38,7 @@ import type { TranslationValue } from "../../src/localization/TranslationTypes";
 import { ResourceLoader } from "../../src/resources/ResourceLoader";
 import { createPrologueRoute } from "../../src/speedrun/PrologueRoute";
 import { TRAINING_EXERCISES } from "../../src/training/TrainingExercises";
+import { settingValueClassName } from "../../src/ui/UIManager";
 
 interface ContentExpectation {
   readonly key: string;
@@ -95,7 +102,10 @@ function contentExpectations(): ContentExpectation[] {
     );
   }
 
-  expectations.push({ key: BOOT_ERROR_LABEL_KEY, fallback: BOOT_ERROR_LABEL_FALLBACK });
+  expectations.push(
+    { key: BOOT_ERROR_LABEL_KEY, fallback: BOOT_ERROR_LABEL_FALLBACK },
+    { key: BOOT_TAGLINE_KEY, fallback: BOOT_TAGLINE_FALLBACK },
+  );
 
   return expectations;
 }
@@ -319,3 +329,77 @@ describe("boot screen language strategy", () => {
     expect(typeof RUSSIAN_RESOURCES[BOOT_ERROR_LABEL_KEY]).toBe("string");
   });
 });
+
+describe("post-G5.1 UI cosmetics", () => {
+  it("maps the boot tagline to the boot language and keeps the no-JS English fallback", () => {
+    const english = ENGLISH_RESOURCES[BOOT_TAGLINE_KEY];
+    const russian = RUSSIAN_RESOURCES[BOOT_TAGLINE_KEY];
+
+    expect(english).toBe(BOOT_TAGLINE_FALLBACK);
+    expect(typeof russian).toBe("string");
+    expect(russian).toBe("Паркур от первого лица");
+    expect(bootTagline("ru")).toBe(russian);
+    expect(bootTagline("en")).toBe(BOOT_TAGLINE_FALLBACK);
+    expect(russian).not.toBe(english);
+
+    // index.html stays the no-JS English fallback; the brand line stays English
+    // by design and must not be replaced by the localized tagline.
+    const indexHtml = readFileSync(resolve(process.cwd(), "index.html"), "utf8");
+
+    expect(indexHtml).toContain(">First-person parkour<");
+    // Authored brand line stays English; CSS uppercases it at runtime.
+    expect(indexHtml).toContain("Glassline / Runner Network");
+    expect(indexHtml).not.toContain("Паркур от первого лица");
+  });
+
+  it("gives the language value a solid paper/ink chip with >=4.5:1 contrast", () => {
+    expect(settingValueClassName("general.language")).toBe(
+      "gl-setting__value gl-setting__value--chip",
+    );
+    expect(settingValueClassName("audio.master_volume")).toBe("gl-setting__value");
+    expect(settingValueClassName("accessibility.large_text")).toBe("gl-setting__value");
+
+    const css = readFileSync(resolve(process.cwd(), "src/styles/main.css"), "utf8");
+    const chipStart = css.indexOf(".gl-setting__value--chip");
+    const chipBlock = css.slice(chipStart, css.indexOf("}", chipStart) + 1);
+
+    expect(chipStart).toBeGreaterThan(-1);
+    expect(chipBlock).toContain("background: #f1f1ed");
+    expect(chipBlock).toContain("color: #1a1a1a");
+    expect(chipBlock).toContain("white-space: nowrap");
+    expect(chipBlock).toContain("var(--glassline-accent)");
+    expect(css).toContain(".gl-ui--high-contrast .gl-setting__value--chip");
+
+    const ratio = contrastRatio("#1a1a1a", "#f1f1ed");
+
+    expect(ratio).toBeGreaterThanOrEqual(4.5);
+    expect(ratio).toBeCloseTo(15.4, 1);
+  });
+});
+
+function hexToRgb(hex: string): readonly [number, number, number] {
+  const normalized = hex.replace("#", "");
+
+  expect(normalized).toHaveLength(6);
+
+  const value = Number.parseInt(normalized, 16);
+
+  return [(value >> 16) & 0xff, (value >> 8) & 0xff, value & 0xff];
+}
+
+function relativeLuminance(hex: string): number {
+  const channels = hexToRgb(hex).map((channel) => {
+    const value = channel / 255;
+
+    return value <= 0.04045 ? value / 12.92 : ((value + 0.055) / 1.055) ** 2.4;
+  }) as [number, number, number];
+
+  return 0.2126 * channels[0] + 0.7152 * channels[1] + 0.0722 * channels[2];
+}
+
+function contrastRatio(foreground: string, background: string): number {
+  const lighter = Math.max(relativeLuminance(foreground), relativeLuminance(background));
+  const darker = Math.min(relativeLuminance(foreground), relativeLuminance(background));
+
+  return (lighter + 0.05) / (darker + 0.05);
+}

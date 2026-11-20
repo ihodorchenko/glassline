@@ -1096,3 +1096,21 @@ body {
     width: 62%;
   }
 }
+
+/* Post-G5.1: solid paper/ink chip for the language value.
+   The value column sits over the bright 3D backdrop at narrow widths (1280×720),
+   so the text gets its own opaque surface: ink (#1A1A1A) on paper (#F1F1ED),
+   contrast 15.4:1 and independent of whatever the scene renders behind the
+   translucent panel. Kept explicit for high-contrast mode, whose generic
+   `.gl-ui--high-contrast .gl-setting__value` rule paints values white. */
+.gl-setting__value--chip,
+.gl-ui--high-contrast .gl-setting__value--chip {
+  justify-self: end;
+  padding: 3px 9px;
+  border-left: 2px solid var(--glassline-accent);
+  background: #f1f1ed;
+  color: #1a1a1a;
+  font-weight: 600;
+  line-height: 1.35;
+  white-space: nowrap;
+}
