@@ -250,6 +250,12 @@ type RespawnReason =
     | "system-recovery";
 ```
 
+**Implementation note:** the initial implementation (`RespawnManager`) uses a
+reduced set — `"fall" | "manual-restart" | "training-restart" | "scripted" |
+"recovery"` (kill-volume falls are reported as `fall`). The expanded union
+above remains the design contract for the recovery sources that may be
+introduced later.
+
 ```ts
 type RespawnRequestSource =
     | "movement"
@@ -414,6 +420,11 @@ type RespawnState =
     | "failed"
     | "cancelled";
 ```
+
+**Implementation note:** the initial implementation uses a reduced set —
+`"idle" | "respawning" | "failed"` — because the recovery sequence executes
+within a single controlled step of `RespawnManager`. The expanded lifecycle
+above is the design contract for a staged recovery flow.
 
 ### 8.2 Expected State Flow
 

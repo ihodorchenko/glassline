@@ -811,10 +811,15 @@ Use clear status values:
 - `IN PROGRESS`
 - `BLOCKED`
 - `IMPLEMENTED`
+- `INTEGRATED`
 - `VERIFIED`
 - `DEFERRED`
 
 **IMPLEMENTED does not mean VERIFIED.**
+
+`IMPLEMENTED` means the initial implementation exists; `INTEGRATED` means it is
+connected to its required dependencies; `VERIFIED` means the applicable
+acceptance criteria have been tested.
 
 A feature becomes `VERIFIED` only after its acceptance criteria have been tested.
 

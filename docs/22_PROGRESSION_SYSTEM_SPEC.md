@@ -384,21 +384,18 @@ Content unlocked in response to an achievement is expressed as an unlock rule ov
 
 ### 6.3 Initial Content
 
-Initial content identifiers should include:
+Initial content identifiers (implemented set,
+`src/progression/ProgressionContent.ts`):
 
 ```text
-training_movement
-training_running
-training_jumping
-training_sliding
-training_vaulting
-training_wall_running
-training_wall_jumping
-training_landing
-training_interaction
-training_combined_traversal
-
 prologue
+ranked_prologue
+first_training_exercise
+all_training_exercises
+first_prologue_completion
+tutorial_graduate
+gold_standard_route
+checkpoint_master
 ```
 
 Individual exercise IDs are defined by Training System content definitions.
@@ -480,10 +477,10 @@ Initial rules should be simple.
 
 Examples:
 
-- First Training section is unlocked by default.
-- Completing mandatory Movement Basics unlocks Running and Sprinting.
-- Completing Jumping unlocks more advanced traversal exercises.
-- Completing the required introductory Training content may unlock a Prologue recommendation.
+- The first Training exercise is unlocked by default (`first_training_exercise`).
+- Completing the first Training exercise unlocks further Training content.
+- Completing all Training exercises unlocks `all_training_exercises`.
+- Completing the first Prologue run unlocks `first_prologue_completion`.
 - Prologue remains accessible without mandatory Training completion unless the Gameplay design explicitly changes this requirement.
 
 Training progression and Prologue access must not be coupled so tightly that players cannot skip Training.
@@ -577,17 +574,16 @@ An achievement must not require a progression milestone that itself requires tha
 
 Progression receives events from specialized systems.
 
-Examples:
+Examples (canonical domain events and long-term envelopes):
 
-- `training_exercise_completed`
-- `training_exercise_mastered`
-- `training_section_completed`
-- `level_completed`
-- `prologue_completed`
-- `speedrun_completed`
-- `achievement_unlocked`
+- `training.exercise_completed`
+- `training.session_completed`
+- `level.completed`
+- `run:finished` / `speedrun.completed`
+- `tutorial.completed`
+- `achievement.unlocked`
 
-`achievement_unlocked` is published by the Achievement System and consumed by Progression as an input. Progression must not emit it.
+`achievement.unlocked` is published by the Achievement System and consumed by Progression as an input. Progression must not emit it.
 
 Only supported authoritative events may change progression.
 
@@ -691,12 +687,12 @@ They provide a lightweight progression narrative without introducing a quest sys
 
 ### 10.2 Initial Milestones
 
-- First Training Exercise.
-- Training Foundations Complete.
-- Advanced Movement Complete.
-- Prologue Unlocked Recommendation.
-- First Prologue Completion.
-- First Validated Speedrun.
+- First Training Exercise (`first_training_exercise`).
+- All Training Exercises (`all_training_exercises`).
+- First Prologue Completion (`first_prologue_completion`).
+- Tutorial Graduate (`tutorial_graduate`).
+- Gold Standard Route (`gold_standard_route`).
+- Checkpoint Master (`checkpoint_master`).
 
 ### 10.3 Milestone Evaluation
 

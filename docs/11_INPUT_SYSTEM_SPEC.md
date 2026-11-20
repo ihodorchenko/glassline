@@ -519,7 +519,7 @@ Recommended initial values:
 ```typescript
 const DEFAULT_LEFT_STICK_DEADZONE = 0.15;
 
-const DEFAULT_RIGHT_STICK_DEADZONE = 0.12;
+const DEFAULT_RIGHT_STICK_DEADZONE = 0.10;
 ```
 
 Use radial dead-zone processing.
@@ -838,9 +838,15 @@ The implementation must prevent accidental duplicate context registration.
 
 ## 11.1 Requirements
 
-The player must be able to change keyboard bindings.
+Keyboard remapping is an optional capability, not part of the initial release
+scope: the initial implementation ships fixed default bindings (see §5) and
+configurable sensitivity/dead-zone preferences. The architecture keeps
+remapping as a future extension: the binding model below and the Save System
+integration point must remain available so gameplay code never needs changes
+when remapping is introduced.
 
-The architecture must also support configurable gamepad bindings.
+The architecture must also support configurable gamepad bindings when
+remapping lands.
 
 Remapping must not require changes to gameplay code.
 

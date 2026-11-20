@@ -1372,33 +1372,34 @@ interface GameplaySessionEvent {
 
 ### 14.2 Event Types
 
+Published session events use the canonical domain-event naming
+(`session:<verb>`, as in the implemented `GameplaySessionManager`):
+
 ```ts
 type GameplaySessionEventType =
-    | "session_created"
-    | "session_preparing"
-    | "session_loading"
-    | "session_initializing"
-    | "session_ready"
-    | "session_started"
-    | "session_paused"
-    | "session_resuming"
-    | "session_restarted"
-    | "session_completing"
-    | "session_completed"
-    | "session_abandoning"
-    | "session_abandoned"
-    | "session_failed"
-    | "session_unloading"
-    | "session_unloaded";
+    | "session:created"
+    | "session:started"
+    | "session:paused"
+    | "session:resumed"
+    | "session:restarted"
+    | "session:completed"
+    | "session:failed"
+    | "session:abandoned"
+    | "session:finalized";
 ```
+
+Intermediate preparation states (`preparing`, `loading`, `initializing`,
+`ready`, `unloading`) are internal lifecycle detail of the session state
+machine; they are not published as public events unless a consuming system
+explicitly requires one.
 
 ### 14.3 Event Ordering
 
 Events must be emitted after the corresponding state transition has been committed.
 
-Consumers must not infer successful initialization from a `session_initializing` event.
+Consumers must not infer successful initialization from an intermediate internal state.
 
-A `session_ready` event guarantees that all required initialization operations have completed.
+A `session:started` event guarantees that all required initialization operations have completed.
 
 ### 14.4 Stale Event Handling
 

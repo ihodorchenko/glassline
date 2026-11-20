@@ -661,17 +661,19 @@ interface MedalThresholds {
 
 All values are milliseconds.
 
-Example configuration:
+Example configuration (implemented initial release values, `PrologueRoute.ts`):
 
 ```typescript
 const prologueMedals = {
-    bronze: 180000,
-    silver: 150000,
+    bronze: 240000,
+    silver: 180000,
     gold: 120000
 };
 ```
 
-These are initial balancing placeholders, not final gameplay targets.
+Thresholds live in the route configuration and may be rebalanced through
+playtesting; historical records must preserve the threshold configuration used
+at the time of completion.
 
 ## 9.3 Medal Evaluation
 
@@ -1232,17 +1234,21 @@ The Speedrun System never talks to IndexedDB directly; persistence is accessed t
 
 Gameplay systems should communicate through explicit events.
 
-Suggested events:
+Suggested events (implemented as canonical domain events):
 
 ```typescript
 type SpeedrunEvent =
-    | { type: "RUN_STARTED" }
-    | { type: "CHECKPOINT_REACHED"; checkpointId: string }
-    | { type: "SECTION_COMPLETED"; sectionId: string }
-    | { type: "RUN_FINISHED" }
-    | { type: "RUN_FAILED"; reason: string }
-    | { type: "RUN_ABANDONED" };
+    | { type: "run:prepared" }
+    | { type: "run:started" }
+    | { type: "run:checkpoint"; checkpointId: string }
+    | { type: "run:finished" }
+    | { type: "run:invalidated" }
+    | { type: "run:abandoned" };
 ```
+
+Section activation is published by the Level Runtime as `section:activated` /
+`section:deactivated`; invalid runs publish `run:invalidated` instead of a
+separate failure event.
 
 Events must be emitted once per valid transition.
 

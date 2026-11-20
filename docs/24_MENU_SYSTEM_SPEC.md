@@ -185,6 +185,7 @@ Screen implementations:
 - `SettingsScreen`
 - `ResultsScreen`
 - `LocalRecordsScreen`
+- `CreditsScreen`
 - `ConfirmationDialog`
 - `ErrorScreen`
 
@@ -192,7 +193,6 @@ Optional screens:
 
 - `ProgressionScreen`
 - `AchievementsScreen`
-- `CreditsScreen`
 
 ### 4.2 Component Responsibilities
 
@@ -428,15 +428,17 @@ It should immediately communicate the game's identity and provide fast access to
 
 ### 7.2 Content
 
-Initial actions:
+Initial actions (implemented main menu):
 
-1. Continue.
-2. Training.
-3. Prologue.
+1. Training.
+2. Prologue.
+3. Ranked Prologue (authoritative speedrun).
 4. Local Records.
 5. Settings.
 6. Credits.
-7. Exit, where supported.
+
+`Continue` (resumable session) and `Exit` are optional items for platforms that
+support them; the initial browser release does not show them.
 
 Optional information:
 
@@ -504,9 +506,11 @@ Provides a dedicated selection screen when the project supports multiple gamepla
 ### 8.2 Initial Modes
 
 - Training.
-- Prologue.
+- Prologue (casual run).
+- Ranked Prologue (authoritative speedrun entry: same route, speedrun mode).
 
-Speedrun is initially a gameplay variant or session configuration associated with the Prologue, rather than necessarily a separate world or level.
+Speedrun is a session configuration of the Prologue route; the initial release
+exposes it as a separate main-menu entry.
 
 The exact entry point should follow `03_GAMEPLAY_SPEC.md` and `09_SPEEDRUN_SYSTEM_SPEC.md`.
 
@@ -545,18 +549,19 @@ Allows the player to browse and start Training exercises.
 
 ### 9.2 Content Structure
 
-Training Selection should organize exercises into sections:
+Training Selection should organize exercises into sections (implemented
+exercise set):
 
-1. Movement Basics.
-2. Running and Sprinting.
-3. Jumping.
-4. Crouching and Sliding.
-5. Vaulting.
-6. Wall Running.
-7. Wall Jumping.
-8. Landing and Momentum.
-9. Interaction.
-10. Combined Traversal.
+1. Basic Movement.
+2. Running.
+3. Basic Jump.
+4. Basic Vault.
+5. Slide.
+6. Wall Run.
+7. Wall Jump.
+8. Controlled Landing.
+9. Interaction Basics.
+10. Parkour Sequence.
 
 The Training System remains authoritative for exercise definitions and requirements.
 
@@ -776,12 +781,12 @@ Allows the player to temporarily leave active gameplay presentation without unlo
 
 ### 13.2 Content
 
-Initial actions:
+Initial actions (implemented pause menu):
 
 1. Resume.
 2. Restart.
 3. Settings.
-4. Return to Main Menu.
+4. Abandon to Main Menu.
 
 Optional contextual information:
 
@@ -910,8 +915,12 @@ Initial settings:
 - Field of View.
 - Camera Bob Intensity.
 - Camera Motion Intensity.
-- Look Sensitivity.
-- Reduced Motion.
+- Sprint FOV Intensity.
+
+Look sensitivity is an Input System preference (`controls.mouse_sensitivity`,
+`controls.gamepad_sensitivity`); Reduced Motion is a shared accessibility
+preference (`accessibility.reduced_motion`). Neither is a camera category
+setting.
 
 The Camera System owns runtime application.
 
@@ -1287,15 +1296,10 @@ It must not listen directly to raw keyboard or gamepad events.
 
 ### 19.2 Required Actions
 
-- Navigate Up.
-- Navigate Down.
-- Navigate Left.
-- Navigate Right.
+- Navigate (axis2d: Up / Down / Left / Right).
 - Confirm.
 - Cancel.
-- Back.
 - Pause.
-- Adjust Value.
 
 ### 19.3 Focus Model
 

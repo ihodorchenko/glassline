@@ -403,15 +403,13 @@ A single raycast can miss objects that are slightly outside the camera center or
 
 ### 7.3 Detection Range
 
-Initial default:
+The initial implementation has no separate global detection range: each
+interactable is authored with its own `radius`, and range validation compares
+the player distance against that per-target radius only.
 
-```text
-interactionDetectionRange = 3.0 m
-```
+Example (level content): the Prologue terminal uses `radius: 2.5` m.
 
-Each interactable may define its own maximum interaction distance.
-
-The effective range is:
+A global detection range may be introduced later as a cap:
 
 ```text
 effectiveRange = min(
@@ -597,13 +595,15 @@ For asynchronous interactions:
 
 ### 9.4 Interaction Cooldown
 
-Initial global cooldown:
+Initial global cooldown (implemented default in `InteractionSystem`):
 
 ```text
-interactionCooldown = 0.15 seconds
+interactionCooldown = 0.6 seconds
 ```
 
-Individual interactables may define their own cooldown.
+The initial implementation uses a single system-wide cooldown. Per-target
+cooldowns remain an extension point; individual interactables may define their
+own cooldown when that is introduced.
 
 Cooldowns should prevent accidental repeated activation without making interaction feel sluggish.
 

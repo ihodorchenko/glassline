@@ -42,7 +42,7 @@ castShadow). Same start pose:
 | Metric | Round 78 | Round 80 |
 |---|---:|---:|
 | Draw calls | 488 | **448** |
-| Triangles | 3.99M | 4.02M |
+| Triangles | 4.02M | 4.02M |
 | Geometries | 54 | 54 |
 | FPS | 60.3 | 60.3 |
 

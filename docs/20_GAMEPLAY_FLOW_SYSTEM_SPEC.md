@@ -197,7 +197,9 @@ Main Menu
 
 The diagram describes logical navigation, not a requirement to create a separate scene for every state.
 
-Local Leaderboard is reachable from Main Menu and Results and does not participate in the gameplay session lifecycle.
+Local Records is reachable from Main Menu (and the records action is enabled in
+the pause-menu and results contexts) and does not participate in the gameplay
+session lifecycle.
 
 ### 4.2 Initial Screens
 
@@ -521,14 +523,17 @@ Only one blocking navigation transition may execute at a time.
 
 Main Menu is the primary entry point.
 
-Initial options:
+Initial options (implemented main menu):
 
-- Continue.
 - Training.
 - Prologue.
-- Local Leaderboard.
+- Ranked Prologue (authoritative speedrun).
+- Local Records.
 - Settings.
-- Exit / Return to Title where supported.
+- Credits.
+
+`Continue` and `Exit / Return to Title` are optional for platforms that support
+them; the initial browser release does not show them.
 
 The exact menu content must follow `07_UI_UX_SPEC.md`.
 

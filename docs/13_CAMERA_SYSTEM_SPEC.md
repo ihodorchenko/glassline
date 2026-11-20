@@ -639,10 +639,10 @@ During wall running, the camera may roll toward the wall.
 
 The effect should communicate that the player is moving along a vertical surface.
 
-Initial target:
+Initial target (implemented value in `CameraSystem`):
 
 ```text
-maximumWallRunRoll = 8 degrees
+maximumWallRunRoll = 0.06 radians (≈ 3.4 degrees)
 ```
 
 The value should be configurable.

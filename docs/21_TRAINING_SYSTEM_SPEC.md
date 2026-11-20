@@ -176,65 +176,54 @@ It should feel like a controlled urban training facility rather than a generic t
 
 ### 4.2 Training Sections
 
-The initial Training mode should be divided into the following sections:
+The implemented Training level is a single movement yard divided into ten
+exercises (one per mechanic, in teaching order — `src/training/TrainingExercises.ts`):
 
-1. Movement Basics.
-2. Running and Sprinting.
-3. Jumping.
-4. Crouching and Sliding.
-5. Vaulting.
-6. Wall Running.
-7. Wall Jumping.
-8. Landing and Momentum.
-9. Interaction.
-10. Combined Traversal.
+1. Basic Movement (`ex_01_movement_basics`).
+2. Running (`ex_02_running`).
+3. Basic Jump (`ex_03_jumping`).
+4. Basic Vault (`ex_04_vaulting`).
+5. Slide (`ex_05_sliding`).
+6. Wall Run (`ex_06_wall_running`).
+7. Wall Jump (`ex_07_wall_jumping`).
+8. Controlled Landing (`ex_08_landing_momentum`).
+9. Interaction Basics (`ex_09_interaction`).
+10. Parkour Sequence (`ex_10_combined_traversal`).
 
-The sections should become available progressively.
+The exercises should become available progressively.
 
 The player must be able to replay previously completed exercises.
 
 ### 4.3 Exercise Structure
 
-Each section contains one or more exercises.
+Each exercise focuses on one primary mechanic or a small combination of
+mechanics and defines its own objectives (activation condition, instructions,
+required action, completion condition, retry behavior).
 
-An exercise should focus on one primary mechanic or a small combination of mechanics.
-
-Example:
+Example (implemented structure):
 
 ```text
 Training
     |
-    +-- Movement Basics
-    |       |
-    |       +-- Walk
-    |       +-- Directional Movement
+    +-- Basic Movement
     |
-    +-- Running and Sprinting
-    |       |
-    |       +-- Run
-    |       +-- Sprint
+    +-- Running
     |
-    +-- Jumping
-    |       |
-    |       +-- Basic Jump
-    |       +-- Jump Distance
+    +-- Basic Jump
     |
-    +-- Crouching and Sliding
-    |       |
-    |       +-- Crouch
-    |       +-- Slide Under Obstacle
+    +-- Basic Vault
     |
-    +-- Vaulting
+    +-- Slide
     |
-    +-- Wall Running
+    +-- Wall Run
     |
-    +-- Wall Jumping
+    +-- Wall Jump
     |
-    +-- Landing and Momentum
+    +-- Controlled Landing
     |
-    +-- Interaction
+    +-- Interaction Basics
     |
-    +-- Combined Traversal
+    +-- Parkour Sequence
 ```
 
 ### 4.4 Exercise Availability
@@ -552,15 +541,15 @@ interface TrainingObjectiveProgress {
 
 Objective evaluation must use authoritative events from the owning gameplay systems.
 
-Examples:
+Examples (canonical domain events):
 
-- `jump_performed` from Movement System.
-- `slide_started` from Movement System.
-- `vault_completed` from Movement System.
-- `wall_run_completed` from Movement System.
-- `interaction_completed` from Interaction System.
-- `checkpoint_activated` from Checkpoint System.
-- `entered_training_zone` from Level Runtime.
+- `player:jumped` from Movement System.
+- `player:sliding-started` from Movement System.
+- `player:vault-started` from Movement System.
+- `player:wallrun-started` from Movement System.
+- `interaction.completed` from Interaction System (long-term envelope).
+- `checkpoint.activated` from Checkpoint System (long-term envelope).
+- `exercise:started` / `exercise:completed` from Training System.
 
 The Training System must not infer a successful vault from player position alone when Movement System already exposes a vault completion event.
 
@@ -587,7 +576,17 @@ Optional objectives may improve the result but must not block completion.
 
 ## 8. Training Exercise Definitions
 
-The initial implementation should include the following exercise set.
+> **Implementation note:** the shipped exercise set is the ten exercises listed
+> in §4.2 (one per mechanic, ids `ex_01…ex_10`, see
+> `src/training/TrainingExercises.ts`). The catalogue below is the extended
+> design reference: it describes per-mechanic objectives that the implemented
+> exercises realize through their objective lists, plus candidate exercises
+> that may be introduced in a future pass. Where an entry below does not exist
+> as a standalone implemented exercise (e.g. Directional Control, Sprinting,
+> Jump Distance, Crouch, Momentum Preservation), it is a design candidate, not
+> shipped content.
+
+The design reference catalogue below covers the following exercise set.
 
 ### 8.1 Movement Basics
 
@@ -1363,7 +1362,10 @@ Audio System presents Training-related sound feedback.
 
 ### 17.13 Progression, Achievement, and Statistics Systems
 
-Training publishes authoritative exercise result events, for example `training_exercise_completed` and `training_exercise_mastered`.
+Training publishes authoritative exercise result events: `exercise:started`,
+`objective:completed`, and `exercise:completed` (plus the long-term envelope
+event `training.exercise_completed` consumed by Progression, Achievement, and
+Statistics).
 
 - The Progression System consumes them to update persistent progression and content unlock state (`22_PROGRESSION_SYSTEM_SPEC.md`).
 - The Achievement System consumes them for achievement evaluation (`29_ACHIEVEMENT_SYSTEM_SPEC.md`).
@@ -1555,34 +1557,34 @@ Test a complete Training sequence:
 Start Training Session
     |
     v
-Movement Basics
+Basic Movement
     |
     v
-Running and Sprinting
+Running
     |
     v
-Jumping
+Basic Jump
     |
     v
-Crouching and Sliding
+Basic Vault
     |
     v
-Vaulting
+Slide
     |
     v
-Wall Running
+Wall Run
     |
     v
-Wall Jumping
+Wall Jump
     |
     v
-Landing and Momentum
+Controlled Landing
     |
     v
-Interaction
+Interaction Basics
     |
     v
-Combined Traversal
+Parkour Sequence
     |
     v
 Training Results

@@ -32,7 +32,7 @@ The system is responsible for:
 - Missing translation detection.
 - Translation resource validation.
 
-The initial implementation must support English as the primary development language and provide an architecture that allows additional languages to be added without changing gameplay systems.
+The initial implementation ships **English** and **Russian** (`SUPPORTED_LANGUAGE_IDS = ["en", "ru"]`); English is the default and fallback language. The architecture allows additional languages to be added without changing gameplay systems.
 
 ---
 
@@ -235,9 +235,9 @@ Provides development-time translation diagnostics.
 
 ## 5. Supported Languages
 
-### 5.1 Initial Language
+### 5.1 Initial Languages
 
-English is the initial development and fallback language.
+Shipped languages: English (`en`, default and fallback) and Russian (`ru`).
 
 The architecture must allow additional languages to be registered without changes to core gameplay systems.
 

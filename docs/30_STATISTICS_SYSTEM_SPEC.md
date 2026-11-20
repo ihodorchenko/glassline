@@ -1076,18 +1076,19 @@ For example, Movement System may emit a sprint duration summary when sprinting e
 
 Movement System is the authoritative source of movement-related events.
 
-Statistics System may consume:
+Statistics System may consume (implemented long-term envelopes):
 
-- Jump completed.
-- Vault completed.
-- Slide completed.
-- Wall-run completed.
-- Wall-jump completed.
-- Landing completed.
-- Sprint started.
-- Sprint ended.
-- Movement distance summary.
-- Maximum speed update.
+- `movement.jump` (jump completed).
+- `movement.vault` (vault started).
+- `movement.slide` (slide started).
+- `movement.wall_run` (wall run started).
+- `movement.wall_jump` (wall jump).
+- `movement.landing` (landing completed).
+- `movement.distance` (distance summary).
+- `movement.maximum_speed` (maximum speed update).
+- `movement.started` / `movement.fall`.
+
+The Movement System is the authoritative source of these facts.
 
 ### 11.1 Distance Tracking
 
@@ -1631,7 +1632,10 @@ Already completed milestones should normally remain completed unless the owning 
 
 Statistics System exposes read-only snapshots.
 
-Menu System may display a detailed statistics screen (`24_MENU_SYSTEM_SPEC.md`).
+A dedicated statistics screen is not part of the initial release menu; the
+Local Records screen presents the lifetime statistics summary. If a full
+statistics screen is introduced later, it belongs to the Menu System
+(`24_MENU_SYSTEM_SPEC.md`).
 
 Suggested sections:
 

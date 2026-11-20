@@ -1409,6 +1409,8 @@ All **13/13** start-frame metrics now pass:
 | Sky % | 34.5 | 43.3 |
 | Red | 2.22 | 2.39 |
 
+(Table lists the 9 rebalanced metrics; the remaining four metrics were already passing and are omitted.)
+
 ### Verification
 
 - `npm run validate`: typecheck, Biome, **275 tests in 36 files**, build.
@@ -3081,7 +3083,7 @@ Prepare the round-60 decision with a single honest status document.
 - Added [`FINAL_REPORT.md`](FINAL_REPORT.md): achieved design/graphics/sound,
   automated gates, unmet perceptual/cross-browser/full-run gaps, and options
   A/B/C.
-- Final gate check: 279 tests, 13/13 start, prologue 5/5 + high-route 5/5,
+- Final gate check: 282 tests, 13/13 start, prologue 5/5 + high-route 5/5,
   **60.4 fps**, 0 broken links, manifest OK.
 - No game/visual/audio code changes.
 
@@ -3102,7 +3104,7 @@ and the decision options.
 
 - Added [`DECISION_AT_60.md`](DECISION_AT_60.md): gates, why the goal is **not**
   marked complete, options A/B/C, recommended A or C.
-- Final gates remain: 279 tests, 13/13 start, prologue 5/5, high-route 5/5,
+- Final gates remain: 282 tests, 13/13 start, prologue 5/5, high-route 5/5,
   ~60 fps, 0 broken links, manifest OK.
 - Goal remains active; automatic rounds are exhausted (60/60).
 

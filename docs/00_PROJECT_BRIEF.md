@@ -7,7 +7,7 @@
 **Rendering Engine:** Three.js  
 **Language:** TypeScript  
 **Target Platform:** Desktop Browsers  
-**Project Stage:** Pre-Implementation
+**Project Stage:** Implemented — Polished Release Candidate (Phases 0–8 complete)
 
 ---
 
@@ -265,18 +265,18 @@ Advanced traversal features are not mandatory for the initial release unless exp
 
 Training is an interactive environment designed to teach the player the core movement mechanics and interactions.
 
-Training is divided into ten exercises:
+Training is divided into ten exercises (implemented set, `src/training/TrainingExercises.ts`):
 
-1. Movement Basics.
-2. Running and Sprinting.
-3. Jumping.
-4. Crouching and Sliding.
-5. Vaulting.
-6. Wall Running.
-7. Wall Jumping.
-8. Landing and Momentum.
-9. Interaction.
-10. Combined Traversal.
+1. Basic Movement.
+2. Running.
+3. Basic Jump.
+4. Basic Vault.
+5. Slide.
+6. Wall Run.
+7. Wall Jump.
+8. Controlled Landing.
+9. Interaction Basics.
+10. Parkour Sequence.
 
 Each exercise should:
 
@@ -308,11 +308,11 @@ The route must combine the movement mechanics introduced in Training.
 
 It must contain five required checkpoints:
 
-- `prologue_rooftop`
-- `prologue_industrial`
-- `prologue_construction`
-- `prologue_skybridge`
-- `prologue_finish`
+- `cp_rooftop`
+- `cp_industrial`
+- `cp_construction`
+- `cp_skybridge`
+- `cp_finish`
 
 The route must support:
 

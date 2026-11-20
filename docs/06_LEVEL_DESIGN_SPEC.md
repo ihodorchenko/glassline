@@ -272,7 +272,8 @@ Entering an exercise zone does not complete an exercise. Completion is evaluated
 
 ### 5.2 Environment
 
-Training takes place on an isolated rooftop facility.
+Training takes place in a daylight movement yard (`Training — Movement Yard`,
+`training_test`), not on a rooftop.
 
 Visual characteristics:
 
@@ -288,7 +289,7 @@ The environment should feel like a purpose-built training facility rather than a
 
 ### 5.3 Spatial Organization
 
-Use a sequence of ten exercise zones corresponding to the canonical exercise set defined in `21_TRAINING_SYSTEM_SPEC.md` §8.
+Use a sequence of ten exercise zones corresponding to the implemented exercise set defined in `21_TRAINING_SYSTEM_SPEC.md` §4.2.
 
 Recommended structure:
 
@@ -296,40 +297,40 @@ Recommended structure:
 Training Spawn
       |
       v
-01 Movement Basics
+01 Basic Movement (ex_01)
       |
       v
-02 Running and Sprinting
+02 Running (ex_02)
       |
       v
-03 Jumping
+03 Basic Jump (ex_03)
       |
       v
-04 Crouching and Sliding
+04 Basic Vault (ex_04)
       |
       v
-05 Vaulting
+05 Slide (ex_05)
       |
       v
-06 Wall Running
+06 Wall Run (ex_06)
       |
       v
-07 Wall Jumping
+07 Wall Jump (ex_07)
       |
       v
-08 Landing and Momentum
+08 Controlled Landing (ex_08)
       |
       v
-09 Interaction
+09 Interaction Basics (ex_09)
       |
       v
-10 Combined Traversal
+10 Parkour Sequence (ex_10)
       |
       v
 Training Complete
 ```
 
-The areas may be arranged linearly, around a central rooftop, or across connected rooftop platforms.
+The areas may be arranged linearly or around a central yard.
 
 The exact layout should prioritize clarity and short transitions between exercises.
 
@@ -344,15 +345,15 @@ The physical order should follow the instructional order, but the Training Syste
 
 ---
 
-## 6. Exercise Environments 01–02 — Movement Basics, Running and Sprinting
+## 6. Exercise Environments 01–02 — Basic Movement, Running
 
-These environments support canonical exercises 1 and 2 (`21_TRAINING_SYSTEM_SPEC.md` §8.1–8.2).
+These environments support the implemented exercises 1 and 2 (`ex_01_movement_basics`, `ex_02_running`; see `21_TRAINING_SYSTEM_SPEC.md` §4.2).
 
 ### 6.1 Purpose
 
 Introduce locomotion, directional control, running, and sprinting in a hazard-free environment.
 
-### 6.2 Movement Basics Environment
+### 6.2 Basic Movement Environment
 
 A wide, unobstructed rooftop lane.
 
@@ -365,7 +366,7 @@ Required elements:
 
 Avoid hazards during the introductory movement area.
 
-### 6.3 Running and Sprinting Environment
+### 6.3 Running Environment
 
 A longer straight lane for controlled acceleration and sprinting.
 
@@ -405,9 +406,9 @@ If the player leaves the intended area, an out-of-bounds recovery volume must re
 
 ---
 
-## 7. Exercise Environment 03 — Jumping
+## 7. Exercise Environment 03 — Basic Jump
 
-This environment supports canonical exercise 3 (`21_TRAINING_SYSTEM_SPEC.md` §8.3).
+This environment supports the implemented exercise 3 (`ex_03_jumping`; see `21_TRAINING_SYSTEM_SPEC.md` §4.2).
 
 ### 7.1 Purpose
 
@@ -457,9 +458,9 @@ Exercise progress must be preserved and immediate retry must be possible.
 
 ---
 
-## 8. Exercise Environment 04 — Crouching and Sliding
+## 8. Exercise Environment 05 — Slide
 
-This environment supports canonical exercise 4 (`21_TRAINING_SYSTEM_SPEC.md` §8.4).
+This environment supports the implemented exercise 5 (`ex_05_sliding`; see `21_TRAINING_SYSTEM_SPEC.md` §4.2). In the implemented course the vault exercise (`ex_04`) precedes it; this section keeps the crouch/slide environment for the slide mechanic.
 
 ### 8.1 Purpose
 
@@ -508,9 +509,9 @@ If the player becomes blocked or falls, recovery returns the player to the exerc
 
 ---
 
-## 9. Exercise Environment 05 — Vaulting
+## 9. Exercise Environment 04 — Basic Vault
 
-This environment supports canonical exercise 5 (`21_TRAINING_SYSTEM_SPEC.md` §8.5).
+This environment supports the implemented exercise 4 (`ex_04_vaulting`; see `21_TRAINING_SYSTEM_SPEC.md` §4.2).
 
 ### 9.1 Purpose
 
@@ -558,9 +559,9 @@ If the player falls or becomes blocked, recovery returns the player to the exerc
 
 ---
 
-## 10. Exercise Environment 06 — Wall Running
+## 10. Exercise Environment 06 — Wall Run
 
-This environment supports canonical exercise 6 (`21_TRAINING_SYSTEM_SPEC.md` §8.6).
+This environment supports the implemented exercise 6 (`ex_06_wall_running`; see `21_TRAINING_SYSTEM_SPEC.md` §4.2).
 
 ### 10.1 Purpose
 
@@ -606,9 +607,9 @@ If the player falls or loses contact, recovery returns the player to the exercis
 
 ---
 
-## 11. Exercise Environment 07 — Wall Jumping
+## 11. Exercise Environment 07 — Wall Jump
 
-This environment supports canonical exercise 7 (`21_TRAINING_SYSTEM_SPEC.md` §8.7).
+This environment supports the implemented exercise 7 (`ex_07_wall_jumping`; see `21_TRAINING_SYSTEM_SPEC.md` §4.2).
 
 ### 11.1 Purpose
 
@@ -650,9 +651,9 @@ If the player misses the platform, recovery returns the player to the exercise s
 
 ---
 
-## 12. Exercise Environment 08 — Landing and Momentum
+## 12. Exercise Environment 08 — Controlled Landing
 
-This environment supports canonical exercise 8 (`21_TRAINING_SYSTEM_SPEC.md` §8.8).
+This environment supports the implemented exercise 8 (`ex_08_landing_momentum`; see `21_TRAINING_SYSTEM_SPEC.md` §4.2).
 
 ### 12.1 Purpose
 
@@ -705,9 +706,9 @@ The momentum lane should keep recovery local so the exercise can be retried with
 
 ---
 
-## 13. Exercise Environments 09–10 — Interaction and Combined Traversal
+## 13. Exercise Environments 09–10 — Interaction Basics and Parkour Sequence
 
-These environments support canonical exercises 9 and 10 (`21_TRAINING_SYSTEM_SPEC.md` §8.9–8.10).
+These environments support the implemented exercises 9 and 10 (`ex_09_interaction`, `ex_10_combined_traversal`; see `21_TRAINING_SYSTEM_SPEC.md` §4.2).
 
 ### 13.1 Purpose
 
@@ -905,8 +906,6 @@ The introduction must not inflate the recorded speedrun time unless the timer ru
 
 ## 16. Section 01 — Rooftop
 
-<escape> </escape>
-
 **Environment:** Open rooftop and surrounding office buildings.
 
 **Gameplay purpose:** Establish movement and introduce the first route decisions.
@@ -942,7 +941,8 @@ Recommended sequence:
 
 ### 16.4 Checkpoint
 
-Place a checkpoint at the transition into the Industrial section.
+Place the first checkpoint inside the Rooftop section, at the start roof
+(implemented as `cp_rooftop`). It doubles as the initial fall-recovery anchor.
 
 The checkpoint should be activated automatically when crossed.
 
@@ -990,7 +990,8 @@ Do not require the player to perform an extremely precise wallrun immediately af
 
 ### 17.4 Checkpoint
 
-Place a checkpoint after the wallrun exit, before entering the Construction section.
+Place the second checkpoint inside the Industrial section, after the wallrun
+exit (implemented as `cp_industrial`).
 
 ---
 
@@ -1036,7 +1037,8 @@ Wallrun and walljump surfaces must expose correct metadata and provide a safe la
 
 ### 18.4 Checkpoint
 
-Place a checkpoint at the exit from the construction area.
+Place the third checkpoint inside the Construction section, at the exit from
+the construction stair climb (implemented as `cp_construction`).
 
 This should provide a stable recovery point before the Skybridge section.
 
@@ -1086,7 +1088,8 @@ The section should provide a clear view of the finish area.
 
 ### 19.4 Checkpoint
 
-Place a checkpoint after the major jump and momentum sequence.
+Place the fourth checkpoint inside the Skybridge section, after the major jump
+and momentum sequence (implemented as `cp_skybridge`).
 
 The player should not have to repeat the entire Skybridge after a failure near the finish.
 
@@ -1117,6 +1120,11 @@ The player should be able to recognize the finish area without confusing it with
 The level provides a single unambiguous finish trigger.
 
 Run completion is determined by the Speedrun System (`09_SPEEDRUN_SYSTEM_SPEC.md`). The level must not decide completion itself.
+
+### 20.4 Checkpoint
+
+Place the fifth and final required checkpoint inside the Finish section,
+before the finish trigger (implemented as `cp_finish`).
 
 The authored finish area must make it impossible to reach the finish trigger before the intended route under normal traversal, and the trigger must not overlap unrelated geometry.
 
@@ -1603,20 +1611,20 @@ Implement the levels in the following order.
 
 1. Create the Training level shell.
 2. Add spawn and level bounds.
-3. Build a simple rooftop environment.
-4. Implement the Movement Basics and Running/Sprinting environments.
+3. Build the movement yard environment.
+4. Implement the Basic Movement and Running environments.
 5. Add exercise start points and recovery volumes.
 
 ### Phase 2 — Training Mechanics
 
-6. Add the Jumping environment.
-7. Add the Crouching and Sliding environment.
-8. Add the Vaulting environment.
-9. Add the Wall Running environment.
-10. Add the Wall Jumping environment.
-11. Add the Landing and Momentum environment.
-12. Add the Interaction environment.
-13. Add the Combined Traversal environment.
+6. Add the Basic Jump environment.
+7. Add the Basic Vault environment.
+8. Add the Slide environment.
+9. Add the Wall Run environment.
+10. Add the Wall Jump environment.
+11. Add the Controlled Landing environment.
+12. Add the Interaction Basics environment.
+13. Add the Parkour Sequence environment.
 
 Exercise objectives and evaluation are implemented in `21_TRAINING_SYSTEM_SPEC.md`; this phase delivers the environments and the metadata they expose.
 

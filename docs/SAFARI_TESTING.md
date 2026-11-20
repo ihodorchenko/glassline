@@ -4,7 +4,8 @@
 
 Safari **27.2** / macOS **27.2.1**: production Training, Prologue and a full
 **0-respawn Prologue run** passed via `safaridriver --mcp`
-(Results 00:33.542), start metrics 13/13. See
+(Results 00:33.542; final regression after the visual fixes — **00:27.037**),
+start metrics 13/13. See
 `docs/evidence/cross-browser/safari/`. FPS probes through safaridriver are
 throttled and not representative.
 

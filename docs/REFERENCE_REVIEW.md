@@ -4,7 +4,7 @@
 
 **Быстрый просмотр:** [нормализованный полный забег спавн→финиш](evidence/review/full-run-review.mp4) (22,6 с, звук −26 LUFS, 0 респавнов, Results 23.123). Ниже — исходные live-записи и полный чек-лист.
 
-Обновлено: 2026-11-19, раунд 88. Предел текущей итерации — **раунд 60**.
+Обновлено: 2026-11-19, раунд 88. Итоговое решение — [`DECISION_AT_100.md`](DECISION_AT_100.md).
 
 Этот файл сводит воедино доказательства, известные пробелы и варианты решения.
 Цель — не заменить вашу оценку, а сделать её быстрой и предметной.
@@ -14,7 +14,7 @@
 ## 0. Итоговая верификация
 
 Сводный статус и рекомендация: [`FINAL_REPORT.md`](FINAL_REPORT.md).
-Финальная развилка: [`DECISION_AT_60.md`](DECISION_AT_60.md).
+Финальная развилка: [`DECISION_AT_100.md`](DECISION_AT_100.md) (ранее — [`DECISION_AT_60.md`](DECISION_AT_60.md)).
 
 Хэши ключевых файлов: [`evidence/MANIFEST.md`](evidence/MANIFEST.md).
 
@@ -28,7 +28,7 @@
 | Стартовый кадр против референса | **13/13** метрик | [`round-42/metrics.json`](evidence/visual/round-42/metrics.json) |
 | Офлайн-звук Пролога | **5/5** полос | [`round-2`](evidence/audio/round-2/) |
 | High-route звук | **5/5** полос | [`round-15`](evidence/audio/round-15/) |
-| Тесты | **282 в 37 файлах** | `npm run validate` |
+| Тесты | **282 в 38 файлах** | `npm run validate` |
 | Typecheck / Biome / build | зелёные | `npm run validate` |
 | Производительность | **~60 fps** | `npm run perf` |
 | Маршрут | ~220 м, 5 секций/чекпоинтов | `docs/VISUAL_REFERENCE_PROGRESS.md` |
@@ -36,8 +36,10 @@
 | Живой звук | high/ground WAV + gameplay WAV | [`round-29`](evidence/audio/round-29/), [`round-31`](evidence/video/round-31/) |
 | Видео | 17,5 с cinematic + 9 с gameplay | [`round-30`](evidence/video/round-30/), [`round-31`](evidence/video/round-31/) |
 
-Последние значения старта: **luma 0,608 · p25 0,352 · near-white 20,8% ·
-deep-shadow 1,72% · sky 39,8% · split −16,69 · red 3,28**.
+Последние значения старта (раунд 88): **luma 0,608 · p25 0,352 · near-white 20,8% ·
+deep-shadow 1,72% · sky 39,8% · split −16,69 · red 3,28**. Финальный
+замороженный снапшот верификации — в [`VERIFICATION.md`](VERIFICATION.md)
+(значения раунда 95).
 
 ---
 
@@ -53,7 +55,7 @@ deep-shadow 1,72% · sky 39,8% · split −16,69 · red 3,28**.
    - [finish-terminal-run.mp4](evidence/video/round-49/finish-terminal-run.mp4) — 14,40 с, catwalk + терминал FINISH
    - [finish-results-run.mp4](evidence/video/round-53/finish-results-run.mp4) — 13,7 с, физический финиш + Results (15,594 с)
    - [full-run.mp4](evidence/video/round-62/full-run.mp4) — полный забег от спавна, 32,7 с (ранний)
-   - [clean-full-run.mp4](evidence/video/round-65/clean-full-run.mp4) — **чистый полный забег, 24,014 с, 0 респавнов**
+   - [clean-full-run.mp4](evidence/video/round-65/clean-full-run.mp4) — **чистый полный забег, 0 респавнов** (Results 24,014 с; длительность видео 23,13 с)
    - [cinematic-route.mp4](evidence/video/round-30/cinematic-route.mp4)
 3. **Посмотреть стартовый кадр и Training**:
    - [start.jpg](evidence/visual/round-42/start.jpg)

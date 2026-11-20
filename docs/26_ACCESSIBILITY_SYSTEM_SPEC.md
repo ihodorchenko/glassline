@@ -1066,6 +1066,7 @@ Initial canonical IDs:
 - `accessibility.high_contrast`
 - `accessibility.color_independent_status`
 - `accessibility.large_text`
+- `accessibility.reduce_grain`
 - `hud.ui_scale`
 
 ### 20.2 Ownership

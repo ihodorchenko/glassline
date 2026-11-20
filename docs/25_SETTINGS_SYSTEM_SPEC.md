@@ -465,6 +465,7 @@ Settings System may coordinate their persistence, but must not introduce a compe
 | `camera.field_of_view` | Number | 75 | 60–100 |
 | `camera.bob_intensity` | Number | 1.0 | 0.0–1.5 |
 | `camera.motion_intensity` | Number | 1.0 | 0.0–1.5 |
+| `camera.sprint_fov_intensity` | Number | 1.0 | 0.0–2.0 |
 
 Camera System applies camera-specific parameters.
 
@@ -510,6 +511,7 @@ HUD System owns presentation behavior.
 | `accessibility.high_contrast` | Boolean | false |
 | `accessibility.color_independent_status` | Boolean | true |
 | `accessibility.large_text` | Boolean | false |
+| `accessibility.reduce_grain` | Boolean | false |
 
 Accessibility settings may affect multiple presentation systems.
 
@@ -1109,7 +1111,10 @@ Camera System owns camera runtime behavior.
 - Field of View.
 - Camera Bob Intensity.
 - Camera Motion Intensity.
-- Reduced Motion.
+- Sprint FOV Intensity.
+
+Reduced Motion is an accessibility preference (`accessibility.reduced_motion`,
+§7.6) consumed by the camera; it is not a camera-category setting.
 
 ### 17.3 Effective Configuration
 

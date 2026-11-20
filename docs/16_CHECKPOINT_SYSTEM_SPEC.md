@@ -562,7 +562,8 @@ For a repeatable checkpoint:
 - Activation history may record repeated activations.
 - The checkpoint may become the active respawn checkpoint again.
 
-The default for Prologue checkpoints is non-repeatable.
+The default for checkpoints is repeatable (`repeatable ?? true` in the
+implementation); all five Prologue checkpoints are authored `repeatable: true`.
 
 ### 9.6 Atomicity
 
@@ -686,11 +687,11 @@ They correspond to the five main sections:
 
 | Sequence | Section | Checkpoint ID |
 |---|---|---|
-| 1 | Rooftop | `prologue_rooftop` |
-| 2 | Industrial | `prologue_industrial` |
-| 3 | Construction | `prologue_construction` |
-| 4 | Skybridge | `prologue_skybridge` |
-| 5 | Finish | `prologue_finish` |
+| 1 | Rooftop | `cp_rooftop` |
+| 2 | Industrial | `cp_industrial` |
+| 3 | Construction | `cp_construction` |
+| 4 | Skybridge | `cp_skybridge` |
+| 5 | Finish | `cp_finish` |
 
 These IDs are stable identifiers, not display names.
 

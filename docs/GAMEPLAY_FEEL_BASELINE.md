@@ -4,7 +4,7 @@ Project: Glassline
 Document: Gameplay Feel Baseline (Phase 0 — Baseline Audit)
 Status: Active
 Priority: High
-Produced by: Gameplay Feel Audit, Phase 0 (per `docs/GAMEPLAY_FEEL_AUDIT.md` §18)
+Produced by: Gameplay Feel Audit, Phase 0 (per `docs/GAMEPLAY_FEEL_AUDIT.md` §5)
 Date: 2026-11-20
 
 ---
@@ -17,7 +17,7 @@ scenario-by-scenario runtime results, known limitations, performance
 observations, unverified areas, and reproduction instructions.
 
 It is the Phase 0 deliverable of the audit process defined in
-`docs/GAMEPLAY_FEEL_AUDIT.md` §4/§18. No gameplay tuning changes were made
+`docs/GAMEPLAY_FEEL_AUDIT.md` §5. No gameplay tuning changes were made
 during this phase.
 
 ---
@@ -53,10 +53,11 @@ part of the work was committed as `aeb7625` ("fix fizics") during the window.
 Consequences for this baseline:
 
 - Runtime numbers that depend on jump tuning are **point-in-time observations**:
-  the jump height was observed at 1.25 m (spec value), then ≈1.46 m, then 1.6 m
-  across three file states within ~20 minutes.
+  the jump height was observed at 1.25 m (spec value), then ≈1.46 m, then
+  temporarily 1.6 m across three file states within ~20 minutes; it was
+  afterwards returned to 1.25 m (owner value).
 - The audit harness therefore pinned every measurement to a recording file with
-  per-step timestamps (see §12). Conclusions that are structural (code-level)
+  per-step timestamps (see §9). Conclusions that are structural (code-level)
   are hash-pinned and were re-verified against the final state.
 - Two test-suite states were observed: (a) 2–3 failing tests with `npm run
   validate` red during the early window; (b) **377/377 passing at audit end**.
@@ -80,7 +81,7 @@ Legend: spec = `docs/12_MOVEMENT_SYSTEM_SPEC.md` (movement), `13` camera,
 | Jumping | sqrt(2·g·h) impulse, jump buffer 0.12 s, coyote 0.14 s, variable height (release cut at `airborneStepsSinceJump >= 2`, ratio 0.6), release gravity ×2.5, max fall 35 m/s | MovementModel | Movement | Yes (`12` §11) | Yes (28 tests incl. buffer/coyote/variable) | Tapped-vs-held feel depends on the grace window being finalized (was actively retuned) |
 | Landing | LANDING state 0.18 s, `player:landed {impactSpeed}`, horizontal velocity preserved | MovementModel + PlayerSystem | Movement | Yes (`12` §17) | Partial — no test asserts horizontal-speed preservation at landing | Wall-jump landings do **not** emit `player:landed` (see report GF-ISSUE-06) |
 | Crouch | Posture height 1.15, speed ×0.5, stand-up clearance ray | MovementModel/PlayerSystem | Movement | Yes (`12` §12) | `player-traversal` slide-tunnel test | Verified working incl. ceiling block |
-| Sliding | Entry ≥5 m/s + crouch, friction 2 m/s² toward zero, min 0.25 s / max 1.2 s, exit <2.5 m/s, slide jump after min duration | MovementModel | Movement | Partial (`12` §13) | 4 model tests | **No steering during slide** (velocity target is zero; `12` §13.3 requires configurable steering); **velocity-kill bug**; exit observed at full stop instead of 2.5 m/s threshold due to the bug |
+| Sliding | Entry ≥5 m/s + crouch, friction 4 m/s² toward zero (2 at baseline; Group 6 tuned to 4), min 0.25 s / max 1.2 s, exit <2.5 m/s, slide jump after min duration | MovementModel | Movement | Partial (`12` §13) | 4 model tests | **No steering during slide** (velocity target is zero; `12` §13.3 requires configurable steering); **velocity-kill bug**; exit observed at full stop instead of 2.5 m/s threshold due to the bug |
 | Vaulting | E-press contextual vault (interact-buffered 0.15 s): forward ray + top probe + landing probe + head clearance; Standard/Speed profiles (2.5/6 m/s thresholds, 0.45/0.3 s, retention 0.85/0.95); clearance-aware arc moved through the character controller; `player:vault-started {speed, vaultType}` | `detection/VaultDetector.ts` + MovementModel + PlayerSystem | Movement | Yes (`12` §14) | 8 model + 3 detector tests | Group 3 resolved the single-profile deviation, unbuffered presses and the collision bypass |
 | Wall running | Airborne ≥5 m/s, side raycasts ≤0.75 m, wall normal |y|≤0.35, tangent alignment ≥0.4, **`wallRunSurface` metadata gate at the hit point**; gravity ×0.35, speed −1 m/s/s (min 5), max 1.5 s; camera roll 3.4° | `detection/WallRunDetector.ts` + MovementModel + CameraSystem | Yes (`12` §15.2) | 4 model + 4 detector tests + physics test | Boundary walls no longer trigger wall runs (runtime-verified) |
 | Wall jumping | Jump during wall run: tangent·speed·0.9 + normal·5.5, vy 6; WALLJUMP 0.25 s; `player:walljumped` | MovementModel | Movement | Yes (`12` §16) | Yes | No landing event afterwards (see Landing row) |
@@ -105,7 +106,7 @@ Legend: spec = `docs/12_MOVEMENT_SYSTEM_SPEC.md` (movement), `13` camera,
 | Ground accel / decel | 18 / 14 | 18 / 14 |
 | Air accel / max air speed | 5 / 9.5 | 5 / 9.5 |
 | Gravity | 22 | 22 |
-| Jump height | **1.6** (was 1.25 at audit start; spec target 1.25) | 1.25 |
+| Jump height | **1.25** (owner value; temporarily raised to 1.6 m during the audit, then returned) | 1.25 |
 | Min jump velocity ratio | **0.6** (was 0.55) | min height 0.45 m |
 | Jump buffer / coyote | 0.12 / 0.14 | 0.12 / 0.14 |
 | Jump release gravity × | 2.5 | — |
@@ -142,10 +143,9 @@ Coverage relevant to gameplay feel:
 - Player/physics integration: 14 tests (incl. ramp slide descent, stair-ascent velocity guard)
 - Input: 19 tests (incl. 3 pending-press edge tests)
 - Settings: 12 tests (incl. sprint FOV intensity); CameraSettingsAdapter: 2 tests
-- Traversal detection: 7 tests (incl. wall-run surface gating) (settle, move/strafe, jump+land, wall
-  block, body sync, reset, stair descent with ground-stick, camera filter).
+- Traversal detection: 7 tests (incl. wall-run surface gating).
 - Camera: 20 tests (incl. impact-scaled landing response).
-- Input: 16 tests. Game loop: 8 tests. Traversal detection: 6 tests.
+- Game loop: 8 tests.
 - Prologue traversal (real Rapier world): 6 tests incl. lower-gap sprint jump,
   scaffold ascent, catwalk, slide tunnel clearance, bridge/finish.
 
@@ -153,11 +153,11 @@ Coverage relevant to gameplay feel:
 
 1. No test asserts horizontal-velocity preservation across a landing
    (`12` §31.1 momentum preservation) — behavior was only verified at runtime.
-1b. No test covers slide entry at low speed (new GF-10) or slide exit on a slope (new GF-11).
-2. No vault-profile tests (Standard vs Speed) because profiles do not exist
-   (see GF-ISSUE-02).
-3. No wall-run surface-metadata tests (detector ignores metadata by design —
-   see GF-ISSUE-03).
+1b. ~~No test covers slide entry at low speed (new GF-10) or slide exit on a slope (new GF-11).~~ — closed — Group 6.
+2. ~~No vault-profile tests (Standard vs Speed) because profiles do not exist
+   (see GF-ISSUE-02).~~ — closed — Group 3.
+3. ~~No wall-run surface-metadata tests (detector ignores metadata by design —
+   see GF-ISSUE-03).~~ — closed — Group 3.
 4. ~~No wall-jump → landing event test~~ — added in Group 1 (the event was never emitted; GF-ISSUE-06 fixed).
 5. No movement-outcome tests at 30/120 Hz or unstable frame rates
    (`12` §31.4); only loop mechanics are unit-tested.
@@ -200,7 +200,7 @@ Observations:
 All scenarios were executed against the current dev tree with real DOM
 keyboard/mouse input; player/camera state was recorded per physics step
 (60 Hz) inside the page. Each entry lists the recording file under
-`/tmp/glassline-rt/` (audit working copies; see §12).
+`/tmp/glassline-rt/` (audit working copies; see §9).
 
 ### GF-01 — Ground movement ✅ EXECUTED
 
@@ -296,7 +296,8 @@ After the fix (slide grounded bias removed, `MovementModel.applyVerticalMotion`)
 
 - Actual: slide at 8.5 m/s entry now decays at exactly 2 m/s² per step
   (0.033–0.034 m/s per fixed step measured), runs the full 1.17 s to the
-  1.2 s max-duration cap at ≈5.7–6.0 m/s, then exits to RUNNING/SPRINTING.
+  1.2 s max-duration cap at ≈5.7–6.0 m/s, then exits to RUNNING/SPRINTING
+  (measured at friction 2 m/s², before the Group 6 tuning to 4 m/s²).
   No velocity kills across GF-10, GF-11, GF-17 re-runs.
 - Regression coverage: model test (grounded slide keeps vy = 0), physics
   regression test that fails on pre-fix HEAD and passes with the fix
@@ -420,7 +421,7 @@ recommendations: `GAMEPLAY_FEEL_AUDIT_REPORT.md` §8.6.
 3. Audio was verified structurally (events wired, loops stop on exit) but
    **not listened to** — the project-wide "no human listening pass" limitation
    remains.
-4. Full human Prologue run (GF-15 of the doc's numbering / Phase D) was not
+4. Full human Prologue run (GF-17 of the doc's numbering) was not
    performed — only the automated waypoint/traversal tests and section-level
    scenario runs.
 5. Training-mode exercises were not individually played; training geometry was
@@ -435,7 +436,7 @@ recommendations: `GAMEPLAY_FEEL_AUDIT_REPORT.md` §8.6.
 - Human audio pass.
 - Real-hardware frame pacing and vsync behavior.
 - Mouse-look feel at >60 Hz displays.
-- Full route repeated-attempt learning curve (GF-16 in the doc's numbering).
+- Full route repeated-attempt learning curve.
 
 ---
 

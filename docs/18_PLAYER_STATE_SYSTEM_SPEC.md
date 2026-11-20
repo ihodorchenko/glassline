@@ -131,20 +131,21 @@ This state is used during session teardown, entity destruction, or unrecoverable
 
 The Player State System must consume the Movement System's current state without redefining it.
 
-Examples:
+Examples (the canonical movement state set, see `12_MOVEMENT_SYSTEM_SPEC.md`
+§7.1):
 
-- Grounded.
-- Walking.
-- Running.
-- Sprinting.
-- Crouching.
-- Sliding.
-- Jumping.
-- Falling.
-- Landing.
-- Vaulting.
-- WallRunning.
-- WallJumping.
+- IDLE.
+- RUNNING (walking is a speed band within this state).
+- SPRINTING.
+- JUMPING.
+- FALLING.
+- LANDING.
+- SLIDING.
+- VAULTING.
+- WALLRUN.
+- WALLJUMP.
+
+Crouching is a posture modifier, not a separate canonical movement state.
 
 The exact state definitions and transitions remain governed by `12_MOVEMENT_SYSTEM_SPEC.md`.
 

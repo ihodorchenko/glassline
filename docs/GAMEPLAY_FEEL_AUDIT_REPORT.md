@@ -50,7 +50,7 @@ approval of the improvement plan (Section 8) before Phase 1 work.**
 
 ## 2. Confirmed Bugs
 
-### GF-ISSUE-01 — Slide velocity-kill (mid-slide full stop)
+### GF-ISSUE-01 — Slide velocity-kill (mid-slide full stop) — ✅ FIXED (Group 1.1)
 
 | Field | Value |
 |---|---|
@@ -59,9 +59,9 @@ approval of the improvement plan (Section 8) before Phase 1 work.**
 | Affected system | Movement (PlayerSystem character-controller integration, `KinematicCharacterController` config) |
 | Description | During a slide, horizontal speed suddenly drops from ~7–8 m/s to ~0.3 m/s in one fixed step with zero controller movement; the slide then exits at near-standstill. Occurred 3× at runtime (GF-10, GF-17) and reproducibly in a scripted probe. The kill point is position-dependent and non-geometric: with no collider at the block location, shifting the run by 1 mm moved the kill point from z≈2.61 to z≈-0.08. |
 | Reproduction | `node /tmp/glassline-audit/slide-probe2.mjs` (slide dies at step 44/45) and `slide-probe4.mjs` (kill point moves with 1 mm lateral offset); or GF-10 of the eval harness: sprint to 8.5 m/s, hold Shift, observe speed crater. |
-| Expected | Slide decelerates smoothly at ~2 m/s² and exits at the 2.5 m/s threshold (~0.8–1.2 s at sprint entry). |
+| Expected | Slide decelerates smoothly at ~2 m/s² and exits at the 2.5 m/s threshold (~0.8–1.2 s at sprint entry; the 0.8–1.2 s band applies after the Group 6 friction tuning to 4 m/s² — at friction 2 the sprint slide hit the 1.2 s cap). |
 | Actual | Velocity killed to ~0 in one step; slide ends in 0.3–0.75 s at standstill. |
-| Root cause (current hypothesis) | Interaction of Rapier's `KinematicCharacterController` features enabled for the new ground-stick work: `enableSnapToGround(1.0)` + autostep with downcast + `setSlideEnabled(true)` against the shortened slide capsule (half-height 0.15). Probe variants: with snap-to-ground off the crash no longer reproduced but the slide ended early at ~19 steps; with `setSlideEnabled(false)` it ended after ~5 steps. The controller refuses horizontal movement while reporting grounded on both sides of the step. Needs a focused Rapier-level repro (minimal world, no game code) to separate engine behavior from configuration. |
+| Root cause (confirmed via minimal Rapier repro) | Interaction of Rapier's `KinematicCharacterController` features enabled for the new ground-stick work: `enableSnapToGround(1.0)` + autostep with downcast + `setSlideEnabled(true)` against the shortened slide capsule (half-height 0.15). Probe variants: with snap-to-ground off the crash no longer reproduced but the slide ended early at ~19 steps; with `setSlideEnabled(false)` it ended after ~5 steps. The controller refuses horizontal movement while reporting grounded on both sides of the step. A minimal Rapier repro (no game code) confirmed the trigger: snap-to-ground combined with the grounded slide's −0.5 m/s downward bias — removing the bias alone → 0 kills across all repro variants. |
 | Supporting evidence | `/tmp/glassline-rt/gf10.json`, `slide-probe2/4` traces; no collider within the block volume (runtime collider sweep). |
 | Recommended correction | Bisect controller features in a minimal Rapier world; then adjust `PlayerSystem` configuration (snap distance, autostep, slide flag, or the -0.5 m/s slide ground bias) and re-verify GF-10/GF-17 plus the stair tests. |
 | Regression risk | Changes to controller config affect stairs/ledges (ground-stick tests), wall collisions, and slide-under-tunnel clearance — rerun the full player-physics, traversal-detection and prologue-traversal suites plus GF-09/GF-10 runtime checks. |
@@ -216,7 +216,7 @@ approval of the improvement plan (Section 8) before Phase 1 work.**
 | GF-ISSUE-03 | Wall-run eligibility ignores `wallRunSurface`/`wallJumpSurface` surface metadata authored in the level; any near-vertical collider within 0.75 m qualifies (including `surface_boundary` walls marked not wall-runnable) | `12` §15.2 ("correct collision category or metadata"), `12` §22 (surface metadata) | **Medium** — **FIXED (Group 3.2)** | `WallRunDetectorOptions.isWallRunnable` gate at the hit point; `PlayerSystemOptions.isWallRunnable`; Application resolves via new `SurfaceRegistry.getSurfaceContaining`. Detector + physics tests; runtime: corridor wall still runnable, boundary parapet no longer triggers wall runs |
 | GF-ISSUE-07 | Vault traversal bypasses collision: the body is moved by direct `setNextKinematicTranslation` along the scripted arc for 0.45 s without controller/collision checks and without cancellation if the destination becomes invalid | `12` §14.6 (fail safely / cancel), `03` §10.5 ("must remain integrated with physics and collision validation") | **Medium** — **FIXED (Group 3.3)** | The scripted arc now moves through `computeColliderMovement` (snap-to-ground suspended for the traversal, restored after); the arc lift is clearance-aware so the capsule sweeps over the obstacle instead of through it. `intersectionPair`-based penetration regression test |
 | GF-ISSUE-08 | Camera spec defines a sprint-FOV intensity setting and dynamic-FOV toggle; the Settings registry (`25` §B.1.3) has no such keys — sprint FOV is hard-coded to base+7 | `13` §9.6 vs `25` settings registry | **Low** — **FIXED (Group 4.2)** | New `camera.sprint_fov_intensity` (default 1, range 0–2) in `SettingsDefinitions`; `CameraSettingsAdapter` derives `sprintFov = base + 7 · intensity` (0 = dynamic FOV off); UI label + EN/RU localization; settings + adapter tests; runtime: 75/82/89° at 0/1/2 |
-| — | Jump tuning at audit end (height 1.6 m, min ratio 0.6) differs from `12` §6.2 suggested values (1.25 m) — permitted ("starting points", §17.2 forbids blind application; values must be justified by playtest) | `12` §6.2 note | Info | `MovementTuning.ts` |
+| — | Jump height was temporarily 1.6 m during the audit (min ratio 0.6), differing from the `12` §6.2 suggested value (1.25 m); it was afterwards returned to 1.25 m (owner value) | `12` §6.2 note | Info | `MovementTuning.ts` |
 
 ---
 
@@ -321,7 +321,7 @@ in dependency order.
 
 | # | Change | Benefit | Risk |
 |---|---|---|---|
-| 6.1 | One-at-a-time tuning groups per `GAMEPLAY_FEEL_AUDIT.md` §12: ground accel/decel → sprint → jump grace/coyote → slide friction → wall-run duration | Justified-by-measurement values | Each change needs the GF scenario set + regression matrix |
+| 6.1 | One-at-a-time tuning groups per `GAMEPLAY_FEEL_AUDIT.md` §5: ground accel/decel → sprint → jump grace/coyote → slide friction → wall-run duration | Justified-by-measurement values | Each change needs the GF scenario set + regression matrix |
 | 6.2 | Evaluate ground-stick for side/back walk-offs | Stair/ledge consistency | Changes descent feel; test on stairs tests |
 | 6.3 | Slide entry/exit audio polish | Flow readability | Low |
 
@@ -329,9 +329,9 @@ in dependency order.
 
 ## 8.5. Group 6 — Fine tuning evaluation records (this environment)
 
-Per the controlled tuning process (`GAMEPLAY_FEEL_AUDIT.md` §12), each tuning
+Per the controlled tuning process (`GAMEPLAY_FEEL_AUDIT.md` §5), each tuning
 group was measured against its spec targets on this environment before any
-change. Records use the §12.3 format.
+change. Records follow the §10 evaluation-record format.
 
 ### Tuning group evaluation table (measured, no change unless justified)
 
@@ -340,7 +340,7 @@ change. Records use the §12.3 format.
 | Ground accel/decel (18/14) | 0→6 m/s in ~0.33 s sim; stop ~0.43 s; smooth, no jolt | 18/14 (suggested) | No change — measured behavior matches the targets |
 | Sprint (8.5 m/s, X) | SPRINTING immediate, peak 8.50, exit settles to 6.0–6.1 | 8.5 | No change |
 | Jump grace/coyote (0.12/0.14 s) | Buffer executes on touchdown; coyote jump after edge ✓ | 0.12/0.14 | No change |
-| Jump height 1.6 / min ratio 0.6 (owner-tuned) | Held rise ≈1.4–1.6 m; tap rise ≈0.8–0.9 m (≥ the 0.45 m minimum) | 1.25 suggested; 0.45 min | No change — owner values are deliberate; tap stays above the minimum |
+| Jump height 1.25 / min ratio 0.6 (owner value) | Held rise ≈1.4–1.6 m; tap rise ≈0.8–0.9 m (≥ the 0.45 m minimum) — measured while the height was temporarily 1.6 m | 1.25 suggested; 0.45 min | Reverted to 1.25 — owner value kept |
 | Wall-run duration (1.5 s max, decay 1) | 0.5–0.65 s wall runs; ends by contact/duration cleanly | 1.5 max | No change |
 | **Slide friction** | **2.0: every entry ≥5 m/s hit the 1.2 s max-duration cap (5.93 m/s entry exited the cap at 3.57 m/s, never at the 2.5 m/s threshold) — duration never emerged from friction, violating `12` §6.3** | 2.0 suggested; duration "primarily emerges from velocity and friction"; exit threshold 2.5 | **Changed 2 → 4 (see record below)** |
 
@@ -452,14 +452,18 @@ Still open before the audit can converge on "no critical or high issues":
 
 - No open GF-ISSUE items from the baseline remain: all confirmed issues and
   spec deviations (GF-ISSUE-01…08, 10, 11) are fixed and verified.
-- Remaining plan groups 5–6 (performance, controlled tuning) plus the pending
-  runtime scenario gaps (low-speed slide entry, slide exit on slope,
-  repeated-route resource check) and the human camera/audio passes.
+- Remaining plan groups 5–6 are executed (Group 5 real-GPU run: §8.6; Group 6
+  controlled tuning records: §8.5), and the pending runtime scenario gaps
+  (low-speed slide entry, slide exit on slope, repeated-route resource check)
+  are closed (§8.5). Still open: the human listening pass (slide audio), the
+  full human Prologue run, and slope verification on the level's authored
+  geometry.
 
 **Decision: Groups 1–6 executed. All baseline issues fixed and verified;
 Group 6 closed the remaining measurable gaps (GF-10 low entry, GF-11 slope
 via deterministic test, GF-18 resource check with the geometry-leak fix
 GF-ISSUE-12) and made one measurement-justified tuning change (slideFriction
-2→4 with before/after records). Remaining blockers are environment/human:
-Group 5 (real-GPU performance), the human camera/audio passes, and
-level-slope verification. 401/401 tests.**
+2→4 with before/after records). Group 5 completed the real-GPU performance
+run (§8.6). Remaining blockers are environment/human: the human listening
+pass (slide audio), the full human Prologue run, and slope verification on
+the level's authored geometry. 402/402 tests.**

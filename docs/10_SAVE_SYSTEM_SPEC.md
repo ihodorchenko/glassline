@@ -687,7 +687,7 @@ The Save System must support forward migration between supported historical vers
 Initial application save schema:
 
 ```typescript
-const SAVE_SCHEMA_VERSION = 1;
+const SAVE_DATA_VERSION = 1;
 ```
 
 Every serialized domain must either include a schema version or be governed by an explicitly versioned parent record.

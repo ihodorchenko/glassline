@@ -341,15 +341,17 @@ It should provide direct access to the main game modes and local records.
 
 ### 5.2 Menu Options
 
-Required options:
+Required options (implemented main menu):
 
-1. Continue, when a resumable session exists.
-2. Training.
-3. Prologue.
+1. Training.
+2. Prologue.
+3. Ranked Prologue (authoritative speedrun).
 4. Local Records.
 5. Settings.
 6. Credits.
-7. Exit, where supported.
+
+Optional items that the initial browser release does not show: `Continue`
+(when a resumable session exists) and `Exit`.
 
 The exact menu content and action semantics are owned by `24_MENU_SYSTEM_SPEC.md` §7. This document defines the presentation of that content.
 
@@ -429,6 +431,7 @@ Available modes:
 
 - Training.
 - Prologue Run.
+- Ranked Prologue (authoritative speedrun entry).
 
 Show a short description for each.
 
@@ -440,7 +443,8 @@ Prologue:
 
 > Complete the route as fast as possible and improve your personal record.
 
-Do not create additional game modes in the initial scope.
+Do not create additional game modes in the initial scope beyond the shipped
+entries above.
 
 ---
 
@@ -801,6 +805,7 @@ It should provide clear feedback and encourage replay.
 Display:
 
 - Final time.
+- Medal result where applicable (Speedrun).
 - Personal best.
 - Average speed.
 - Maximum speed.
@@ -901,20 +906,19 @@ Illustrative display fields, mapped from the authoritative Speedrun record contr
 ```ts
 interface RunRecord {
   id: string;
-  levelId: string;
+  routeId: string;
+  routeVersion: number;
   completedAt: number;
-  durationMs: number;
-  averageSpeed: number;
-  maxSpeed: number;
-  distance: number;
-  jumps: number;
-  wallruns: number;
-  slides: number;
-  falls: number;
+  completionTime: number;
+  medal: Medal;
+  validation: ValidationStatus;
   checkpointSplits: number[];
-  valid: boolean;
+  statisticsSummaryId: string;
 }
 ```
+
+The aggregate counters (jumps, wallruns, slides, falls, distance, speed) live
+in the referenced statistics summary, not in the run record itself.
 
 The UI must not compute, validate, or persist these values itself.
 
@@ -1004,8 +1008,12 @@ Setting values persist between sessions through the Save System (`10_SAVE_SYSTEM
 
 **Gameplay**
 
-- Runner Vision mode.
-- Runner Vision intensity.
+- Tutorial hints (`gameplay.show_tutorial_hints`).
+- Contextual assistance (`gameplay.contextual_assistance`).
+- Training assistance level (`gameplay.training_assistance`).
+- Checkpoint feedback (`gameplay.show_checkpoint_feedback`).
+
+`Runner Vision` is not part of the initial release and has no shipped setting.
 - Show speed.
 - Show direction indicator.
 
@@ -1019,9 +1027,10 @@ Setting values persist between sessions through the Save System (`10_SAVE_SYSTEM
 **Audio**
 
 - Master volume.
-- Effects volume.
-- Ambient volume.
+- SFX volume.
+- Music volume.
 - UI volume.
+- Mute.
 
 **Language**
 

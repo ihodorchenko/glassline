@@ -38,7 +38,9 @@
 > numbers plus a blind art-director verdict landed on `feat/art-audio-level`.
 > See [`reports/BASELINE.md`](reports/BASELINE.md),
 > [`reports/BLIND_REVIEW_W0.md`](reports/BLIND_REVIEW_W0.md) and
-> [`reports/DECISIONS.md`](reports/DECISIONS.md). Nothing is merged to `main`.
+> [`reports/DECISIONS.md`](reports/DECISIONS.md). All work lives on the
+> `feat/art-audio-level` branch; `main` is unchanged (the release candidate
+> awaits the owner's explicit merge decision).
 
 > **W2 execution note (2026-11-20):** content-language iteration 1 landed and
 > the W2 canyon/rooftop gate (G2) is closed; the W2.2 residual polish iteration
@@ -54,7 +56,7 @@
 > [`reports/BLIND_REVIEW_W2.md`](reports/BLIND_REVIEW_W2.md) and
 > [`reports/DECISIONS.md`](reports/DECISIONS.md) D-16/D-17.
 
-**Status:** Draft for owner approval (W0–W2 partially executed, W4 foundation landed)
+**Status:** Complete — W0–W5 executed, G0–G5 closed (see IMPLEMENTATION_STATUS.md §0)
 **Date:** 2026-11-19
 **Scope:** Prologue route and Training arenas, renderer/post-processing, materials and city content, audio mix.
 **Non-goals:** new gameplay mechanics, new engine/renderer framework, online features, deferred traversal moves.
@@ -70,7 +72,7 @@ closing the gap between the current build and the reference prologue footage in
 
 | Area | Fact |
 |---|---|
-| Git | `main`, Round 1 committed (HDR post chain, sky dome, material library, viewmodel, procedural city, content loader rework, capture/metrics tooling) |
+| Git | `feat/art-audio-level` branch (Round 1 committed there; `main` unchanged — the release candidate awaits the owner's explicit merge decision). Round 1 content: HDR post chain, sky dome, material library, viewmodel, procedural city, content loader rework, capture/metrics tooling |
 | Verification | `npm run typecheck` PASS; `npm test` 250/250 PASS across 34 files |
 | Renderer | WebGL2 HDR + `EffectComposer`: GTAO, UnrealBloom, custom ACES grade (vignette, grain, CA), PMREM sky IBL, PCF soft sun shadows. No volumetrics, no calibrated exposure, no quality tiers |
 | Materials | `MaterialLibrary` (procedural PBR, triplanar) landed and measured on the start frame |
@@ -322,5 +324,7 @@ lead verdict → next card. A gate closes only with evidence attached.
 2. Fidelity target: reference *language* (palette, composition, beats) versus close copy of
    specific frames.
 3. Scope: Prologue only, or Prologue plus Training arenas.
-4. ~~Permission to commit the current WIP~~ — Round 1 was committed on `main`; capture
-   uses CDP directly with no new dependency.
+4. ~~Permission to commit the current WIP~~ — Round 1 was committed on the
+   `feat/art-audio-level` branch; `main` is unchanged (the release candidate
+   awaits the owner's explicit merge decision). Capture uses CDP directly
+   with no new dependency.

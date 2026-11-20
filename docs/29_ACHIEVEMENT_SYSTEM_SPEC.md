@@ -629,7 +629,7 @@ Example:
     id: "first_run",
     type: "event",
     source: "speedrun",
-    eventType: "run.completed"
+    eventType: "speedrun.completed"
 }
 ```
 
@@ -646,7 +646,7 @@ Example:
     id: "vault_count",
     type: "counter",
     source: "movement",
-    eventType: "vault.completed",
+    eventType: "movement.vault",
     targetValue: 25
 }
 ```
@@ -703,21 +703,21 @@ Example:
             id: "vaults",
             type: "counter",
             source: "movement",
-            eventType: "vault.completed",
+            eventType: "movement.vault",
             targetValue: 25
         },
         {
             id: "wall_runs",
             type: "counter",
             source: "movement",
-            eventType: "wallrun.completed",
+            eventType: "movement.wall_run",
             targetValue: 25
         },
         {
             id: "training",
             type: "event",
             source: "training",
-            eventType: "exercise.mastered"
+            eventType: "training.exercise_completed"
         }
     ]
 }
@@ -735,19 +735,25 @@ Achievement System consumes semantic events from owning systems.
 
 | Source | Example events |
 |---|---|
-| Movement | Jump completed, vault completed, wall run completed |
-| Training | Exercise completed, exercise mastered |
-| Speedrun | Run completed, medal awarded, personal best achieved |
-| Checkpoint | Checkpoint activated |
-| Interaction | Interaction completed |
-| Level Runtime | Section completed, level completed |
-| Gameplay Session | Session completed |
-| Progression | Milestone reached, content unlocked |
-| Tutorial | Tutorial acknowledged |
+| Movement | `movement.jump`, `movement.vault`, `movement.slide`, `movement.wall_run`, `movement.wall_jump` |
+| Training | `training.exercise_completed` |
+| Speedrun | `speedrun.completed`, `speedrun.clean`, `speedrun.medal` |
+| Checkpoint | `checkpoint.activated`, `checkpoint.prologue_all` |
+| Interaction | `interaction.completed` |
+| Level Runtime | `level.completed` |
+| Gameplay Session | `session.completed` |
+| Progression | `achievement.unlocked` (consumed, never emitted) |
+| Tutorial | `tutorial.completed` |
 
 Event names must follow the actual public contracts of their owning systems.
 
 Do not introduce duplicate event names solely for Achievement System.
+
+**Counter ownership:** for values already aggregated by the Statistics System
+(jumps, vaults, distance, sessions — see `30_STATISTICS_SYSTEM_SPEC.md` §18.1),
+achievement threshold conditions must consume the canonical statistics values
+instead of maintaining independent counters. Achievement-local counters are
+only valid for conditions the Statistics System does not cover.
 
 ### 8.2 Event Envelope
 
@@ -892,19 +898,18 @@ Suggested definitions:
 | ID | Display Name | Condition |
 |---|---|---|
 | `first_steps` | First Steps | Complete the first Training exercise |
-| `learning_the_basics` | Learning the Basics | Complete the introductory Training exercises |
-| `parkour_foundations` | Parkour Foundations | Master the required core movement exercises |
-| `perfect_execution` | Perfect Execution | Complete a designated Training exercise with its highest result |
+| `learning_the_basics` | Learning the Basics | Complete three Training exercises |
+| `parkour_foundations` | Parkour Foundations | Complete all ten Training exercises |
 | `first_run` | First Run | Complete a valid Speedrun |
-| `no_hesitation` | No Hesitation | Complete a designated route without invalid recovery |
+| `no_hesitation` | No Hesitation | Complete a run without invalid recovery |
 | `speed_is_everything` | Speed Is Everything | Achieve a defined Speedrun medal |
 | `gold_standard` | Gold Standard | Earn Gold on the required Prologue route |
 | `checkpoint_pro` | Checkpoint Pro | Activate all five Prologue checkpoints |
-| `master_of_movement` | Master of Movement | Demonstrate all required core movement mechanics |
+| `master_of_movement` | Master of Movement | Demonstrate the required core movement mechanics |
 | `interaction_complete` | Making Contact | Complete the first required interaction |
 | `tutorial_graduate` | Tutorial Graduate | Acknowledge all mandatory introductory tutorials |
 
-These definitions are examples of the initial content set.
+These are the eleven shipped definitions (`src/achievements/InitialAchievements.ts`).
 
 Exact targets and event contracts must be validated against the implemented gameplay systems.
 

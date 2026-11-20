@@ -4,7 +4,7 @@
 
 [Release notes](docs/RELEASE_NOTES.md) — как открыть, управление, ограничения, решение.
 [Пакет для решения по референсу](docs/REFERENCE_REVIEW.md) — контактный лист, нормализованное видео и варианты приёмки.
-[Итоговая верификация](docs/VERIFICATION.md) — 282 теста, 13/13 старта, 5/5 звука, 352 draw calls.
+[Итоговая верификация](docs/VERIFICATION.md) — замороженный срез (282 теста, 13/13 старта, 5/5 звука, 352 draw calls; текущий набор — 402 теста).
 [Кросс-браузерный аудит](docs/CROSS_BROWSER.md) — Chromium и Safari PASS (полный забег); Firefox environment-limited.
 [Финальный отчёт](docs/FINAL_REPORT.md) — что достигнуто и что осталось.
 [Нормализованный полный забег](docs/evidence/review/full-run-review.mp4) — спавн → FINISH, 0 респавнов.
@@ -139,18 +139,18 @@ A structured environment for learning and practicing movement mechanics.
 
 Training introduces mechanics progressively through exercises, objectives, instructions, hints, and feedback.
 
-The planned exercise sequence is:
+The implemented exercise sequence (initial release) is:
 
-1. Movement Basics.
-2. Running and Sprinting.
-3. Jumping.
-4. Crouching and Sliding.
-5. Vaulting.
-6. Wall Running.
-7. Wall Jumping.
-8. Landing and Momentum.
-9. Interaction.
-10. Combined Traversal.
+1. Basic Movement.
+2. Running.
+3. Basic Jump.
+4. Basic Vault.
+5. Slide.
+6. Wall Run.
+7. Wall Jump.
+8. Controlled Landing.
+9. Interaction Basics.
+10. Parkour Sequence.
 
 Training is separate from the Prologue speedrun leaderboard.
 

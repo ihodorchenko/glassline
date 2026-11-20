@@ -276,8 +276,9 @@ Initial tuning targets:
 | Ground deceleration | 14.0 m/s² |
 | Air acceleration | 5.0 m/s² |
 | Maximum air speed | 9.5 m/s |
-| Ground friction | 8.0 |
-| Air friction | 0.15 |
+
+Braking is implemented through `groundDeceleration` (move-towards model); the
+implementation has no separate ground/air friction constants.
 
 These values should be tested and adjusted during gameplay tuning.
 
@@ -307,10 +308,10 @@ The actual implementation may use a configurable jump curve or variable jump hei
 | Parameter | Suggested Value |
 |---|---:|
 | Minimum slide entry speed | 5.0 m/s |
-| Initial slide friction | 2.0 |
-| Slide duration target | 0.8–1.2 s |
-| Minimum slide duration | 0.25 s |
+| Slide friction | 4.0 m/s² (tuned from 2.0 in the Gameplay Feel audit, Group 6) |
+| Slide duration | 0.25–1.2 s (min/max caps; duration emerges from friction — measured ≈0.86 s at a 5.93 m/s entry) |
 | Slide exit speed threshold | 2.5 m/s |
+| Slide steering acceleration | 6.0 m/s² (limited steering, §13.3) |
 
 Slide duration should primarily emerge from velocity and friction.
 
@@ -323,9 +324,10 @@ A fixed duration may be used as a maximum limit or animation constraint, but sho
 | Minimum entry speed | 5.0 m/s |
 | Maximum wall-run duration | 1.5 s |
 | Wall-run gravity multiplier | 0.35 |
-| Maximum wall-run angle | 50 degrees |
-| Wall jump horizontal impulse | Configurable |
-| Wall jump vertical impulse | Configurable |
+| Wall-run speed decay | 1.0 m/s² |
+| Maximum wall tilt from vertical | ≈20.5° (implemented as wall normal \|y\| ≤ 0.35) |
+| Wall jump horizontal impulse | 5.5 m/s (`wallJumpOutwardSpeed`) |
+| Wall jump vertical impulse | 6.0 m/s (`wallJumpUpSpeed`) |
 
 Wall-run parameters should be adjustable independently from general movement physics.
 
@@ -1456,17 +1458,18 @@ Movement configuration changes that materially affect route completion should be
 
 Training Mode should expose movement mechanics progressively.
 
-Suggested training sequence:
+Implemented training sequence (`21_TRAINING_SYSTEM_SPEC.md` §4.2):
 
-1. Basic movement.
-2. Sprinting.
-3. Jumping.
-4. Crouching.
-5. Sliding.
-6. Vaulting.
-7. Wall running.
-8. Wall jumping.
-9. Combining movement abilities.
+1. Basic Movement.
+2. Running.
+3. Basic Jump.
+4. Basic Vault.
+5. Slide.
+6. Wall Run.
+7. Wall Jump.
+8. Controlled Landing.
+9. Interaction Basics.
+10. Parkour Sequence.
 
 Each training activity should validate the relevant movement state or event.
 

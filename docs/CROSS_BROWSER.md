@@ -7,7 +7,7 @@
 
 В **Safari 27.2 / macOS 27.2.1** Training запускался вручную, затем через
 `safaridriver --mcp` проверены Production Training, Prologue и **полный
-Problue-забег**: **0 респавнов, Results 00:33.542**, финальный повтор после
+Prologue-забег**: **0 респавнов, Results 00:33.542**, финальный повтор после
 визуальных правок — **00:27.037**, консоль без ошибок.
 Ошибка `rawcolliderset_createCollider` в Playwright WebKit не воспроизвелась —
 это артефакт headless-Playwright, а не Safari.
@@ -17,7 +17,7 @@ Problue-забег**: **0 респавнов, Results 00:33.542**, финаль�
 | Движок | Загрузчик/меню | Gameplay | Статус |
 |---|---|---|---|
 | Chromium (Edge, production) | PASS | PASS | рабочий браузер |
-| **Safari 27.2 (реальный, MCP + вручную)** | PASS | **PASS (Training + полный Prologue)** | 0 респавнов, Results 33.542 s |
+| **Safari 27.2 (реальный, MCP + вручную)** | PASS | **PASS (Training + полный Prologue)** | 0 респавнов, Results 27.037 s (первый прогон 33.542 s) |
 | WebKit 18.4 (Playwright) | PASS | FAIL | **не представитель Safari**; см. ниже |
 | Firefox 135 (Playwright/geckodriver) | не проверено | не проверено | Firefox падает с SIG11/`marionette decode` под sandbox; evidence: `firefox/geckodriver.log` |
 

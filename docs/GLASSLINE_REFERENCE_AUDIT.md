@@ -146,9 +146,11 @@ outside `src/engine`.
 - quality profiles (`low/medium/high/ultra`) with dynamic resolution and a
   fallback path if a pass/shader fails.
 
-This is the dominant visual difference from the current project. The current
-Glassline renders directly with a plain `WebGLRenderer`, so it has no HDR,
-post-processing, AO, bloom, volumetrics, grade, or advanced AA.
+This is the dominant visual difference from the current project. As of the
+audit date (2026-11-17) the current Glassline rendered directly with a plain
+`WebGLRenderer`, so it had no HDR, post-processing, AO, bloom, volumetrics,
+grade, or advanced AA. (This changed after the audit: the release candidate
+ships an HDR post chain with GTAO/bloom/ACES — see `RELEASE_NOTES.md`.)
 
 ### 3.2 Materials and content
 
@@ -191,7 +193,7 @@ render tooling. No samples or third-party tracks.
 | Area | Current Glassline (this repo) | `project/glassline` |
 |---|---|---|
 | Language/architecture | TypeScript, Rapier, Level Runtime, fixed 60 Hz, modular domain systems | JS/JSDoc, custom AABB physics, custom renderer/scene, one showcase game |
-| Rendering | Forward Three.js renderer; color/fog/lights | HDR post stack, AO, volumetrics, bloom, motion blur, grade, sky/PMREM, soft shadows |
+| Rendering | Forward Three.js renderer; color/fog/lights (snapshot before the visual reference rounds; the release candidate uses an HDR post chain) | HDR post stack, AO, volumetrics, bloom, motion blur, grade, sky/PMREM, soft shadows |
 | Materials | Mostly flat color/emissive; simple decorations | Runtime PBR atlases, normal/roughness, glass/metal, decals/signage |
 | Content | Two small authored test arenas; Training/Prologue | 219 m multi-level tutorial, city canyon, many props, inspector |
 | Movement | Rapier kinematic; slide/vault/wall-run/wall-jump; gamepad | Custom capsule/AABB; slide/vault/mantle/wall-run/wall-climb/roll/balance; head bob; no gamepad |
@@ -199,7 +201,7 @@ render tooling. No samples or third-party tracks.
 | Long-term systems | Progression, achievements, statistics, tutorial, speedrun records/PB, IndexedDB, Save repositories | localStorage checkpoint/best only |
 | UI | Full screens, settings categories, records, results, accessibility | Minimal custom title/pause/complete/settings/controls, keyboard |
 | Audio | Procedural cues, simple ambience/footsteps | Full procedural dynamic mix, score, reverb, surface footsteps |
-| Tests | 247 unit/integration tests / 34 files + browser acceptance | 168 unit / 33 files + 30 Playwright E2E; golden/perf/audits |
+| Tests | 247 unit/integration tests / 34 files (as of 2026-11-17; the frozen release verification is 282 tests / 38 files — `VERIFICATION.md`) + browser acceptance | 168 unit / 33 files + 30 Playwright E2E; golden/perf/audits |
 | Build | TS Vite (~5.1 MB JS chunk) | JS Vite single-file (~950 kB) |
 | Licensing | Project code | Engine derived from Saltline artifact; fork MIT covers fork changes only |
 
@@ -350,7 +352,7 @@ Option B with an explicit decision on the engine license and feature tradeoff.
    reimplemented independently?
 3. Is the target "reference-family look" (measured bands) or a specific scene
    composition from the branch?
-4. Do we keep the current 203 m-style tutorial/prologue content, or adopt the
+4. Do we keep the current ~220 m tutorial/prologue content, or adopt the
    branch's 219 m multi-level route?
 5. Is the branch's JS/JSDoc stack acceptable for the game code if Option B is
    chosen, or must the project remain TypeScript?

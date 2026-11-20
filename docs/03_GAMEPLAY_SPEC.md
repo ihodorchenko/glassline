@@ -192,11 +192,14 @@ During sliding, the physical representation must become lower without allowing t
 | Sprint | X |
 | Slide | Left Shift (while running) |
 | Interact / Context action | E |
+| Restart | R |
 | Pause | Escape |
 
 The initial prototype targets keyboard and mouse.
 
-Controller support is optional future work.
+Gamepad support is part of the initial implementation: left stick moves, right
+stick looks, A/Cross jumps and confirms, B/Circle crouches and cancels, X/Square
+interacts, left-stick press sprints, Start pauses.
 
 ## 5.2 Input processing
 
@@ -710,13 +713,13 @@ If these mechanics are introduced in a later milestone, each requires its own sy
 
 # 14. Player State Machine
 
-## 17.1 Purpose
+## 14.1 Purpose
 
 The state machine defines which movement behavior is active.
 
 It prevents incompatible mechanics from running simultaneously.
 
-## 17.2 Initial states
+## 14.2 Initial states
 
 ```ts
 type MovementState =
@@ -738,7 +741,7 @@ Walking is a speed band within `RUNNING`. Crouching is a posture modifier, not a
 
 `18_PLAYER_STATE_SYSTEM_SPEC.md` defines the aggregate player lifecycle state; do not duplicate that lifecycle state machine here.
 
-## 17.3 Transition examples
+## 14.3 Transition examples
 
 ```text
 IDLE / RUNNING
@@ -778,7 +781,7 @@ These transitions are conceptual.
 
 The implementation must define exact entry and exit conditions.
 
-## 17.4 State ownership
+## 14.4 State ownership
 
 Each state must have clear ownership of its active movement behavior.
 
@@ -790,7 +793,7 @@ For example:
 
 Do not allow multiple systems to write conflicting velocity values during the same simulation step.
 
-## 17.5 State transition rules
+## 14.5 State transition rules
 
 A state transition should:
 
@@ -837,7 +840,7 @@ Deferred mechanics are excluded from this priority list. A valid action should n
 
 The camera is first-person and directly connected to player movement state.
 
-## 19.1 Base behavior
+## 16.1 Base behavior
 
 - Smooth mouse look.
 - Stable horizon.
@@ -845,7 +848,7 @@ The camera is first-person and directly connected to player movement state.
 - Consistent eye height.
 - No unnecessary camera lag.
 
-## 19.2 Head bob
+## 16.2 Head bob
 
 Head bob should be subtle.
 
@@ -860,7 +863,7 @@ It should be reduced or disabled while:
 - Standing still.
 - Performing controlled vaults.
 
-## 19.3 FOV
+## 16.3 FOV
 
 Initial FOV:
 
@@ -873,7 +876,7 @@ The exact values should be calibrated.
 
 FOV changes should be smooth and limited.
 
-## 19.4 Landing response
+## 16.4 Landing response
 
 Landing should produce a short downward camera response.
 
@@ -881,7 +884,7 @@ The intensity may depend on vertical impact speed.
 
 Avoid excessive camera shake.
 
-## 19.5 Wallrun
+## 16.5 Wallrun
 
 Wallrun may produce:
 
@@ -889,13 +892,13 @@ Wallrun may produce:
 - Slight horizon tilt.
 - Subtle lateral motion.
 
-## 19.6 Sliding
+## 16.6 Sliding
 
 Sliding lowers camera height smoothly.
 
 Restore the camera height only when the player can safely stand.
 
-## 19.7 Accessibility
+## 16.7 Accessibility
 
 Camera effects should be configurable.
 
@@ -973,16 +976,16 @@ Examples:
 
 | Training exercise | Required validation |
 |---|---|
-| Movement Basics | Reach and maintain the required movement speeds |
-| Running and Sprinting | Accelerate into running and sprinting under the defined conditions |
-| Jumping | Perform a valid jump and land safely |
-| Crouching and Sliding | Enter crouch and complete a valid momentum-based slide |
-| Vaulting | Successfully vault a suitable obstacle |
-| Wall Running | Maintain valid wall contact while traversing |
-| Wall Jumping | Execute a valid wall jump and leave the wall safely |
-| Landing and Momentum | Land safely while preserving appropriate horizontal momentum |
-| Interaction | Activate a valid contextual interaction |
-| Combined Traversal | Complete a sequence combining the mechanics taught earlier |
+| Basic Movement | Reach and maintain the required movement speeds |
+| Running | Accelerate into running under the defined conditions |
+| Basic Jump | Perform valid jumps and land safely |
+| Basic Vault | Successfully vault a suitable obstacle |
+| Slide | Enter crouch and complete a valid momentum-based slide |
+| Wall Run | Maintain valid wall contact while traversing |
+| Wall Jump | Execute a valid wall jump and leave the wall safely |
+| Controlled Landing | Land safely while preserving appropriate horizontal momentum |
+| Interaction Basics | Activate a valid contextual interaction |
+| Parkour Sequence | Complete a sequence combining the mechanics taught earlier |
 
 The Training system listens to gameplay events and evaluates exercise-specific conditions.
 
@@ -1042,7 +1045,7 @@ Each mechanic must be integrated with the state machine and tested before moving
 
 # 22. Gameplay Acceptance Criteria
 
-## 25.1 Core movement
+## 22.1 Core movement
 
 - The player can walk, run, and sprint.
 - Acceleration and deceleration are smooth.
@@ -1050,7 +1053,7 @@ Each mechanic must be integrated with the state machine and tested before moving
 - Movement remains stable at different FPS values.
 - The player cannot pass through solid geometry.
 
-## 25.2 Jumping and landing
+## 22.2 Jumping and landing
 
 - Jumping requires a valid condition.
 - Horizontal momentum is preserved appropriately.
@@ -1059,7 +1062,7 @@ Each mechanic must be integrated with the state machine and tested before moving
 - Landing restores a valid grounded state.
 - Buffered jump input behaves predictably.
 
-## 25.3 Sliding
+## 22.3 Sliding
 
 - Sliding requires valid speed and ground contact.
 - The capsule and camera lower correctly.
@@ -1068,7 +1071,7 @@ Each mechanic must be integrated with the state machine and tested before moving
 - The player cannot stand inside a low ceiling.
 - Slide exit restores the correct movement state.
 
-## 25.4 Vaulting
+## 22.4 Vaulting
 
 - Only valid obstacles can be vaulted.
 - Obstacle clearance is checked.
@@ -1076,7 +1079,7 @@ Each mechanic must be integrated with the state machine and tested before moving
 - Traversal does not allow arbitrary movement through geometry.
 - Speed Vault and Standard Vault have distinguishable behavior.
 
-## 25.5 Wallrun and walljump
+## 22.5 Wallrun and walljump
 
 - Wallrun activates only on valid walls.
 - Wall contact is maintained correctly.
@@ -1085,7 +1088,7 @@ Each mechanic must be integrated with the state machine and tested before moving
 - Walljump moves the player away from the wall.
 - The camera returns smoothly to normal.
 
-## 25.6 Overall gameplay
+## 22.6 Overall gameplay
 
 - Mechanics can be combined into continuous movement sequences.
 - Incompatible states cannot overlap.
