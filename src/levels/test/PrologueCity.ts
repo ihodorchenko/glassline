@@ -2015,9 +2015,8 @@ function addFinaleScaffold(builder: CityBuilder): void {
     emissiveIntensity: 0.25,
   });
 
-  // A low city roof under the tower, so the climb has depth.
-  builder.box(0, -30.5, -108, 64, 0.8, 82, { material: "roof", castShadow: false });
-  builder.box(0, -30.1, -108, 64.4, 0.3, 82.4, { material: "concrete" });
+  // The low city pad that used to sit here is replaced by the W-city street
+  // grid below (see addCityStreetGrid), so it no longer reads as a flat plate.
 }
 
 function addCatwalk(builder: CityBuilder): void {
@@ -2538,6 +2537,308 @@ function addRooftopSilhouettes(builder: CityBuilder): void {
   }
 }
 
+/** W-city palette (AD brief docs/reports/UX_CITY_TARGETS.md §2). */
+const CITY_COLORS = {
+  asphalt: 0x62686b,
+  centreDash: 0xe8e8e0,
+  edgeLine: 0xd8d8d0,
+  sidewalk: 0xc7c9c7,
+  curb: 0xa8adae,
+  tree: 0x4a5a40,
+  carA: 0x8a9096,
+  carB: 0xb8bcc0,
+  carC: 0x5a6066,
+} as const;
+
+/**
+ * City-below street grid (AD-6 W-city brief): 8x8 blocks on a 30 m pitch
+ * (20 m block + 10 m right-of-way = 6 m carriageway + 2 m sidewalks) over
+ * x -120...120, z -200...40, with markings, lamps, cars, trees and low block
+ * buildings (tops <= y -4). Purely decorative; no colliders/triggers.
+ * Budget target: <= +1200 boxes, <= +12 draw calls.
+ */
+function addCityStreetGrid(builder: CityBuilder): void {
+  const random = createRandom(0x5ee7a1);
+  const x0 = -120;
+  const x1 = 120;
+  const z0 = -200;
+  const z1 = 40;
+  const pitch = 30;
+  const markingY = GROUND_Y + 0.02;
+
+  // Ground beyond the grid radius (keeps the far skyline seated; the old
+  // 760x760 plate is replaced by the grid inside the radius).
+  builder.box(0, GROUND_Y - 0.3, -290, 760, 0.4, 180, {
+    color: CITY_COLORS.asphalt,
+    castShadow: false,
+    receiveShadow: true,
+  });
+  builder.box(0, GROUND_Y - 0.3, 210, 760, 0.4, 340, {
+    color: CITY_COLORS.asphalt,
+    castShadow: false,
+    receiveShadow: true,
+  });
+  builder.box(-250, GROUND_Y - 0.3, -80, 260, 0.4, 240, {
+    color: CITY_COLORS.asphalt,
+    castShadow: false,
+    receiveShadow: true,
+  });
+  builder.box(250, GROUND_Y - 0.3, -80, 260, 0.4, 240, {
+    color: CITY_COLORS.asphalt,
+    castShadow: false,
+    receiveShadow: true,
+  });
+
+  // Carriageways (9 + 9 strips; no continuous plate > 40x40 m).
+  for (let k = 0; k <= 8; k += 1) {
+    const roadX = x0 + k * pitch;
+    builder.box(roadX, GROUND_Y - 0.2, (z0 + z1) / 2, 10, 0.4, z1 - z0, {
+      color: CITY_COLORS.asphalt,
+      castShadow: false,
+      receiveShadow: true,
+    });
+  }
+
+  for (let k = 0; k <= 8; k += 1) {
+    const roadZ = z0 + k * pitch;
+    builder.box((x0 + x1) / 2, GROUND_Y - 0.21, roadZ, x1 - x0, 0.4, 10, {
+      color: CITY_COLORS.asphalt,
+      castShadow: false,
+      receiveShadow: true,
+    });
+  }
+
+  const isSkippedBuildingBlock = (bx: number, bz: number): boolean =>
+    (Math.abs(bx) < 20 && bz > -46 && bz < -20) ||
+    (Math.abs(bx) > 7 && Math.abs(bx) < 17 && bz > -62 && bz < -38) ||
+    (Math.abs(bx) < 26 && bz > -82 && bz < -56) ||
+    (Math.abs(bx) < 52 && bz > -146 && bz < -94);
+
+  // Blocks: curb plinth + sidewalk slab, then buildings / props.
+  for (let i = 0; i < 8; i += 1) {
+    for (let j = 0; j < 8; j += 1) {
+      const bx = -110 + i * pitch;
+      const bz = -190 + j * pitch;
+
+      builder.box(bx, GROUND_Y + 0.02, bz, 20.4, 0.24, 20.4, {
+        color: CITY_COLORS.curb,
+        castShadow: false,
+        receiveShadow: false,
+      });
+      builder.box(bx, GROUND_Y, bz, 20, 0.3, 20, {
+        color: CITY_COLORS.sidewalk,
+        castShadow: false,
+        receiveShadow: true,
+      });
+
+      if (isSkippedBuildingBlock(bx, bz)) {
+        continue;
+      }
+
+      // One low block building: body (8-18 m), roof cap and one AC box.
+      const height = 8 + Math.floor(random() * 11);
+      const width = 9 + Math.floor(random() * 6);
+      const depth = 9 + Math.floor(random() * 6);
+      const offsetX = (random() - 0.5) * (20 - width - 2);
+      const offsetZ = (random() - 0.5) * (20 - depth - 2);
+      const top = GROUND_Y + height;
+
+      builder.box(bx + offsetX, GROUND_Y + height / 2, bz + offsetZ, width, height, depth, {
+        color: CITY_COLORS.sidewalk,
+        castShadow: false,
+        receiveShadow: true,
+      });
+      builder.box(bx + offsetX, top + 0.2, bz + offsetZ, width + 0.4, 0.4, depth + 0.4, {
+        color: CITY_COLORS.curb,
+        castShadow: false,
+        receiveShadow: false,
+      });
+      builder.box(bx + offsetX + width * 0.2, top + 0.75, bz + offsetZ, 2.4, 1.1, 2.0, {
+        material: "metal",
+        castShadow: false,
+        receiveShadow: false,
+      });
+
+      // Punched windows 1.5 x 3 m on the +z face (one row per 3 m floor).
+      const floors = Math.min(2, Math.max(2, Math.floor(height / 3)));
+      const cols = Math.min(2, Math.max(2, Math.floor((width - 2) / 3)));
+      const faceZ = bz + offsetZ + depth / 2 + 0.06;
+
+      for (let f = 0; f < floors; f += 1) {
+        const wy = GROUND_Y + 2 + f * 3;
+
+        for (let c = 0; c < cols; c += 1) {
+          builder.box(bx + offsetX - width / 2 + 1.6 + c * 3, wy, faceZ, 1.5, 2.0, 0.12, {
+            material: (i + j + c) % 5 === 0 ? "glass-far" : "dark-metal",
+            castShadow: false,
+            receiveShadow: false,
+          });
+        }
+      }
+
+      // Trees on half the blocks (sidewalk row along +z edge).
+      if (random() > 0.5) {
+        for (let t = 0; t < 2; t += 1) {
+          const tx = bx - 5 + t * 10;
+
+          builder.cylinder(tx, GROUND_Y + 1.0, bz + 8.6, 0.15, 2.0, {
+            color: CITY_COLORS.tree,
+            castShadow: false,
+          });
+          builder.box(tx, GROUND_Y + 2.85, bz + 8.6, 1.6, 1.8, 1.6, {
+            color: CITY_COLORS.tree,
+            castShadow: false,
+          });
+        }
+      }
+    }
+  }
+
+  // Markings: centre dashes on four visible vertical + four horizontal roads.
+  for (const roadX of [-60, -30, 0]) {
+    for (let z = -172; z <= -14; z += 6) {
+      builder.box(roadX, markingY, z, 0.15, 0.02, 3, {
+        color: CITY_COLORS.centreDash,
+        castShadow: false,
+        receiveShadow: false,
+      });
+    }
+  }
+
+  for (const roadZ of [-140, -110, -80]) {
+    for (let x = -74; x <= 74; x += 6) {
+      builder.box(x, markingY, roadZ, 3, 0.02, 0.15, {
+        color: CITY_COLORS.centreDash,
+        castShadow: false,
+        receiveShadow: false,
+      });
+    }
+  }
+
+  // Edge lines (solid 0.1 m) on the same visible roads.
+  for (const roadX of [-60, -30, 0, 30]) {
+    for (const side of [-2.95, 2.95]) {
+      builder.box(roadX + side, markingY, -93, 0.1, 0.02, 160, {
+        color: CITY_COLORS.edgeLine,
+        castShadow: false,
+        receiveShadow: false,
+      });
+    }
+  }
+
+  for (const roadZ of [-170, -140, -110, -80]) {
+    for (const side of [-2.95, 2.95]) {
+      builder.box(0, markingY, roadZ + side, 120, 0.02, 0.1, {
+        color: CITY_COLORS.edgeLine,
+        castShadow: false,
+        receiveShadow: false,
+      });
+    }
+  }
+
+  // Crosswalks (6 bars 0.5 x 3 m, 0.5 m pitch) + stop lines on six
+  // intersections close to the skybridge / finish sightlines.
+  for (const ix of [-30, 0]) {
+    for (const iz of [-80, -50]) {
+      for (const arm of [-1, 1]) {
+        const cz = iz + arm * 6.5;
+
+        for (let b = 0; b < 6; b += 1) {
+          builder.box(ix - 2.5 + b * 1.0, markingY, cz, 0.5, 0.02, 3, {
+            color: CITY_COLORS.centreDash,
+            castShadow: false,
+            receiveShadow: false,
+          });
+        }
+
+        builder.box(ix - 2.5, markingY, cz + arm * 1.9, 5.4, 0.02, 0.3, {
+          color: CITY_COLORS.edgeLine,
+          castShadow: false,
+          receiveShadow: false,
+        });
+      }
+    }
+  }
+
+  // Lamps every 15 m along the two nearest roads (alternating sides).
+  const addLamp = (lx: number, lz: number, armX: number, armZ: number): void => {
+    builder.cylinder(lx, GROUND_Y + 2.5, lz, 0.08, 5.0, {
+      material: "metal",
+      castShadow: false,
+    });
+    builder.box(
+      lx + armX * 0.6,
+      GROUND_Y + 4.95,
+      lz + armZ * 0.6,
+      armZ === 0 ? 1.2 : 0.08,
+      0.08,
+      armX === 0 ? 1.2 : 0.08,
+      {
+        material: "metal",
+        castShadow: false,
+      },
+    );
+    builder.box(lx + armX * 1.2, GROUND_Y + 4.86, lz + armZ * 1.2, 0.3, 0.15, 0.1, {
+      material: "metal",
+      castShadow: false,
+    });
+  };
+
+  let lampToggle = false;
+
+  for (let z = -168; z <= -18; z += 15) {
+    lampToggle = !lampToggle;
+    addLamp(lampToggle ? 3.4 : -3.4, z, lampToggle ? -1 : 1, 0);
+  }
+
+  for (let x = -72; x <= 72; x += 15) {
+    lampToggle = !lampToggle;
+    addLamp(x, lampToggle ? -110 + 3.4 : -110 - 3.4, 0, lampToggle ? -1 : 1);
+  }
+
+  // Parked cars along the visible kerbs (0.5 m from the curb).
+  const carColors: readonly number[] = [
+    CITY_COLORS.carA,
+    CITY_COLORS.carB,
+    CITY_COLORS.carC,
+    CITY_COLORS.carA,
+    CITY_COLORS.carB,
+    0x2b3542,
+  ];
+
+  for (let index = 0; index < 60; index += 1) {
+    const vertical = index % 2 === 0;
+    const spot = -170 + ((index * 37) % 150);
+    const side = index % 4 < 2 ? -1 : 1;
+    const cx = vertical ? side * 4.6 : -66 + ((index * 41) % 132);
+    const cz = vertical ? spot : side * 4.6 - 110;
+    const paint =
+      index % 12 === 0
+        ? { material: "red" as const }
+        : index % 12 === 6
+          ? { material: "dark-metal" as const }
+          : {
+              color:
+                carColors[
+                  Math.floor(absoluteSin(index * 7.3) * carColors.length) % carColors.length
+                ] ?? CITY_COLORS.carA,
+            };
+
+    builder.box(vertical ? cx + side * 0 : cx, GROUND_Y + 0.7, cz, 1.8, 1.4, vertical ? 4.2 : 1.8, {
+      ...paint,
+      castShadow: false,
+    });
+    builder.box(cx, GROUND_Y + 1.65, cz, 1.6, 0.5, vertical ? 2.2 : 1.6, {
+      ...paint,
+      castShadow: false,
+    });
+  }
+}
+
+function absoluteSin(value: number): number {
+  return Math.abs(Math.sin(value));
+}
+
 function addFarSkyline(builder: CityBuilder): void {
   const random = createRandom(0x5eed1234);
 
@@ -2616,22 +2917,8 @@ function addFarSkyline(builder: CityBuilder): void {
     }
   }
 
-  // City floor far below the roof and a couple of arterial roads.
-  builder.box(0, GROUND_Y - 0.3, 0, 760, 0.4, 760, {
-    material: "asphalt",
-    castShadow: false,
-    receiveShadow: true,
-  });
-  builder.box(0, GROUND_Y + 0.02, -70, 680, 0.06, 20, {
-    material: "dark-metal",
-    castShadow: false,
-    receiveShadow: false,
-  });
-  builder.box(-110, GROUND_Y + 0.02, 0, 18, 0.06, 680, {
-    material: "dark-metal",
-    castShadow: false,
-    receiveShadow: false,
-  });
+  // W-city street grid replaces the old flat 760x760 plate and its arterials.
+  addCityStreetGrid(builder);
 }
 
 /**
