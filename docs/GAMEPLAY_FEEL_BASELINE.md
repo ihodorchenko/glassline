@@ -30,7 +30,8 @@ during this phase.
 | Commit at audit start | `d21e0b6` "docs(reports): owner final acceptance — release candidate ACCEPTED" |
 | Commits during audit | `aeb7625` "fix fizics", `70174f2` "fix ladder" (step-glide riser climb), `ba9e477` "fix ramps" (slope handling) — owner work in parallel with the audit |
 | Uncommitted work at audit end | None in `src/` (owner work committed); only documentation changes |
-| Group 1 fixes (this audit) | Uncommitted at the time of writing: slide downward-bias removal (GF-ISSUE-01), wall-jump landing event (GF-ISSUE-06), 3 regression tests — see the report |
+| Group 1 fixes (this audit) | Committed by the owner: `33de0ac` (GF-ISSUE-01), `6796786` (GF-ISSUE-06) + regression tests |
+| Group 2 fixes (this audit) | Input edge queue (GF-ISSUE-10), slide steering (GF-ISSUE-04) — implemented and verified; see the report |
 | File content pins | `src/player/MovementModel.ts` sha256 `693537d…`-era variants were re-pinned several times during the audit (see §2.1) |
 | Browser | Microsoft Edge 157.0.4341.46, headless, WebGL2 on SwiftShader (software rasterizer) |
 | Resolution | 1600×900, DPR 1 |
@@ -80,7 +81,7 @@ Legend: spec = `docs/12_MOVEMENT_SYSTEM_SPEC.md` (movement), `13` camera,
 | Wall running | Airborne ≥5 m/s, side raycasts ≤0.75 m, wall normal |y|≤0.35, tangent alignment ≥0.4; gravity ×0.35, speed −1 m/s/s (min 5), max 1.5 s; camera roll 3.4° | `detection/WallRunDetector.ts` + MovementModel + CameraSystem | **Deviation** (`12` §15.2) | 4 model + 3 detector tests | **Surface metadata (`wallRunSurface`) is not consulted** — any near-vertical surface qualifies, including arena boundary walls |
 | Wall jumping | Jump during wall run: tangent·speed·0.9 + normal·5.5, vy 6; WALLJUMP 0.25 s; `player:walljumped` | MovementModel | Movement | Yes (`12` §16) | Yes | No landing event afterwards (see Landing row) |
 | Ground-stick (new) | Walk-off ledges while pushing forward: stick to surfaces ≤1 m below at ≤9 m/s instead of micro free-fall; disarms on jump/wall-kick/snap miss | MovementModel + PlayerSystem | Movement | New behavior; `12` §18 (slopes/uneven geometry) motivation | 2 model tests + stairs tests | New uncommitted-until-`aeb7625` behavior; only forward walk-offs stick (side/back walk-offs still fall) |
-| Input | DOM → abstract actions; held-keys set + per-frame pressed/held/released edges; mouse deltas accumulated; gamepad polling; pointer lock lifecycle; contexts; focus-loss clearing | `src/input/InputManager.ts`, `InputState.ts` | Input | Yes (`11`) | `input.test.ts` (16) | Press+release inside one render frame can be lost (no event queue); edge seen by all catch-up steps (idempotent consumers OK) |
+| Input | DOM → abstract actions; held-keys set + per-frame pressed/held/released edges **+ pending-press queue (Group 2)**; mouse deltas accumulated; gamepad polling; pointer lock lifecycle; contexts; focus-loss clearing | `src/input/InputManager.ts`, `InputState.ts` | Input | Yes (`11`) | `input.test.ts` (19) | Within-frame taps preserved via `pendingPresses`; edges stay one-shot for catch-up steps |
 | Camera | Yaw/pitch ±85°, 0.0022 rad/px mouse (no smoothing), gamepad rate path, FOV 75→82 sprint damped, eye-height damping, bob 0.018 m, landing dip 0.06 m + tiny roll, wall-run roll ±0.06 rad, Reduced Motion zeroes effects | `src/camera/CameraSystem.ts` | Camera | Mostly (`13`) | `camera.test.ts` (19) | **Landing dip amplitude is constant — not proportional to impact speed** (`13` §11.6); no sprint-FOV intensity setting exists (`13` §9.6 vs `25` settings registry) |
 | View model | Two-arm rig with bob/air/slide/wall-run/landing poses | `src/rendering/ViewModel.ts` | Rendering | Yes | — | Fine |
 | Audio feedback | Footsteps (speed interval, surface-aware), jump/landing/slide loop/vault/wallrun loop/walljump one-shots, wind by speed/altitude; all event-driven | `src/audio/AudioManager.ts` + Application wiring | Audio | Yes (`08`) | `audio.test.ts` (18) | Never human-listened (documented project-wide limitation) |
@@ -124,17 +125,18 @@ Executed during the audit:
 | Command | Result |
 |---|---|
 | `npm run typecheck` | PASS (final state) |
-| `npm test` | **381/381 PASS** (378 at audit end + 3 Group-1 regression tests); earlier in the window: 2–3 transient failures while the owner was mid-edit |
+| `npm test` | **387/387 PASS** (381 after Group 1 + 3 input-edge tests + 2 slide-steering tests + 1 owner test); earlier in the window: 2–3 transient failures while the owner was mid-edit |
 | `npx biome check .` | PASS for project sources at final state; transiently red due to the audit's own scratch files (removed from the tree afterwards) and, mid-window, to uncommitted source formatting |
 | `node tools/capture/capture.mjs --iteration audit --shot start-roof` | PASS — 196 draw calls, 4,182,467 triangles, 0 console errors, 0 page errors |
 | Runtime scenario harness (custom, Playwright) | See §6 |
 
 Coverage relevant to gameplay feel:
 
-- Movement model: 30 unit tests (locomotion, sprint, crouch, air caps, jump,
+- Movement model: 32 unit tests (locomotion, sprint, crouch, air caps, jump,
   buffer, coyote, variable jump, fall clamp, collision reconciliation, landing
   event, ground-stick, slide, vault, wall run, wall jump).
-- Player/physics integration: 9 tests (settle, move/strafe, jump+land, wall
+- Player/physics integration: 9 tests
+- Input: 19 tests (incl. 3 pending-press edge tests) (settle, move/strafe, jump+land, wall
   block, body sync, reset, stair descent with ground-stick, camera filter).
 - Camera: 19 tests (look, pitch clamp, FOV, reduced motion, etc.).
 - Input: 16 tests. Game loop: 8 tests. Traversal detection: 6 tests.
@@ -294,6 +296,9 @@ After the fix (slide grounded bias removed, `MovementModel.applyVerticalMotion`)
 - Open item (new audit doc GF-10): entry at **low** approach speed
   (5–6 m/s, just above the 5 m/s minimum) not yet exercised at runtime —
   pending.
+- Group 2 steering: a slide now bends toward lateral input at
+  `slideSteeringAcceleration` (6 m/s²) without gaining speed — runtime probe:
+  +2.76 m lateral drift across a full slide with D held, speed only decayed.
 
 ### GF-11 — Slide exit ✅ EXECUTED
 

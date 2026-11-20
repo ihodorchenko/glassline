@@ -52,11 +52,22 @@ Owner-approved **Group 1** (critical correctness) is implemented and verified:
 | GF-ISSUE-06 | Wall-jump landings emitted no `player:landed` event. Fix: `wasAirborne` now includes `WALLJUMP`. | **Fixed** — unit regression + runtime GF-16 (LANDING with 0.18 s recovery) |
 | Tests | 3 regression tests added (`movement-model`: grounded-slide vy = 0, wall-jump landing event; `player-physics`: slide velocity-kill guard). | 381/381 tests pass |
 
-Open audit issues and the remaining plan groups (2: input edge queue + slide
-steering; 3: vault profiles, wall-run metadata, vault collision validation;
-4: camera feedback; 5: performance; 6: tuning) are tracked in
+Owner-approved **Group 2** (core movement responsiveness) is implemented and
+verified:
+
+| Item | Change | Status |
+|---|---|---|
+| GF-ISSUE-10 | Within-frame keyboard taps could be lost: press+release between two rendered frames left no edge. Fix: `pendingPresses` queue in `InputManager` → `pressedActions` in `InputActionResolver` → OR-ed into the frame's `pressed` edge (one-shot, no auto-repeat, context-gated, cleared on focus loss). | **Fixed** — 3 unit tests; spec `11_INPUT_SYSTEM_SPEC.md` §14.4 |
+| GF-ISSUE-04 | Slides had no steering (velocity moved toward zero). Fix: `MovementModel.updateSlideMovement` — friction decays speed magnitude while velocity bends toward input at `slideSteeringAcceleration` (new tuning value, default 6 m/s² = ⅓ ground acceleration); steering cannot add speed; straight-slide decay unchanged. | **Fixed** — 2 unit tests + runtime probe (D-strafe slide bends +2.76 m laterally, speed only decays) |
+
+Current validation: `npm run validate` green (typecheck, biome, **387** tests,
+production build).
+
+Open audit issues and the remaining plan groups (3: vault profiles, wall-run
+metadata, vault collision validation; 4: camera feedback; 5: performance;
+6: tuning) are tracked in
 [`GAMEPLAY_FEEL_AUDIT_REPORT.md`](GAMEPLAY_FEEL_AUDIT_REPORT.md) §8.
-The slide-fix code is uncommitted at the time of writing (pending owner
+The Group 2 code is uncommitted at the time of writing (pending owner
 commit/merge decision).
 
 ---

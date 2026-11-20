@@ -82,19 +82,27 @@ approval of the improvement plan (Section 8) before Phase 1 work.**
 
 ## 3. Gameplay Feel Weaknesses
 
-### GF-ISSUE-04 — Slides have no steering
+### GF-ISSUE-04 — Slides have no steering — ✅ FIXED (Group 2.2)
 
 - Severity: Medium. Affected: Sliding. System: Movement.
-- Description: while sliding, the model moves velocity toward **zero**
-  (`sliding ? 0 : target`), so directional input has no effect at all.
-  `12_MOVEMENT_SYSTEM_SPEC.md` §13.3 requires "limited directional control"
-  with a configurable steering amount.
-- Evidence: `MovementModel.step()` moveTowards target selection (code),
-  GF-10 trace (z-only travel).
-- Recommended: steer velocity toward the input direction at a low,
-  configurable rate (e.g. ≤ 6 m/s²) while keeping the friction decay; add a
-  unit test that lateral input bends a slide without raising speed.
-- Risk: steering interacts with GF-ISSUE-01 — fix the kill bug first.
+- Description (before): while sliding, the model moved velocity toward
+  **zero** (`sliding ? 0 : target`), so directional input had no effect at
+  all. `12_MOVEMENT_SYSTEM_SPEC.md` §13.3 requires "limited directional
+  control" with a configurable steering amount.
+- Change made: new `MovementModel.updateSlideMovement` — `slideFriction`
+  decays the speed magnitude while the velocity bends toward the current
+  input direction at the new tuning value `slideSteeringAcceleration`
+  (default 6 m/s², a third of ground acceleration; centralized in
+  `MovementTuning` per `12` §23). The target magnitude never exceeds the
+  decayed speed, so steering cannot add speed; without input the direction is
+  preserved and the straight-slide decay is bit-identical to before.
+- Verification after: unit tests (exact straight decay = friction·dt;
+  lateral input bends the velocity without gaining speed); runtime probe with
+  the real input path (slide + D strafe: x drift +2.76 m across the slide,
+  speed only decayed); GF-10/GF-11 re-runs unchanged (1.2 s cap, exit-by-
+  release, slide jump). Full suite 387/387.
+- Regression risk: low — the straight-line path is mathematically unchanged;
+  guarded by the exact-decay test.
 
 ### GF-ISSUE-05 — Landing camera response ignores impact intensity
 
@@ -122,17 +130,24 @@ approval of the improvement plan (Section 8) before Phase 1 work.**
   grace boundary (already exists), and do a human tap-vs-hold check once the
   tree is stable.
 
-### GF-ISSUE-10 — Press+release inside one render frame can be lost
+### GF-ISSUE-10 — Press+release inside one render frame can be lost — ✅ FIXED (Group 2.1)
 
 - Severity: Low. Affected: Input responsiveness. System: Input.
-- Description: pressed/released edges are derived per rendered frame from the
-  held-keys set; a tap that begins and ends between two frames never appears
-  in any frame. With 60 fps this window is ~16.7 ms; in a stuttering frame
-  (e.g. 47 ms max frame measured) it is large enough to eat a real tap. The
-  spec requires one-shot events not be lost (`11` §14.4).
-- Recommended: queue raw keydown/keyup timestamps in `InputManager` and fold
-  them into the next frame's edge computation; add an input unit test with a
-  synthetic within-frame tap.
+- Description (before): pressed/released edges were derived per rendered
+  frame from the held-keys set; a tap that begins and ends between two
+  frames never appeared in any frame (window ≈16.7 ms at 60 fps, larger on
+  stuttering frames). The spec requires one-shot events not be lost
+  (`11` §14.4).
+- Change made: `InputManager` now keeps a `pendingPresses` set (non-repeat
+  keydowns since the last frame build, cleared on focus loss/disable);
+  `InputActionResolver` maps pending key codes to `pressedActions` per
+  context, and `InputFrameBuilder` ORs them into the `pressed` edge. Edges
+  stay one-shot; auto-repeat keydowns are excluded; menu contexts benefit
+  identically (Space = Confirm).
+- Verification after: 3 unit tests (within-frame tap preserved, no duplicate
+  edges, context gating); full suite 387/387; runtime scenarios unaffected.
+- Regression risk: low — adds edges only where none existed; focus-loss
+  clearing prevents stale presses.
 
 ---
 
@@ -214,13 +229,13 @@ in dependency order.
 | 1.2 | Regression tests for the kill; debug leftovers | **Done** — 3 regression tests added; `tmp-debug.test.ts` was removed by the owner (`aeb7625` era) |
 | 1.3 | Emit `player:landed` for WALLJUMP landings (GF-ISSUE-06) + unit test | **Done** — verified by unit regression and runtime GF-16 |
 
-### Group 2 — Core movement responsiveness
+### Group 2 — Core movement responsiveness — ✅ DONE (2026-11-20)
 
-| # | Change | Benefit | Risk |
-|---|---|---|---|
-| 2.1 | Queue keyboard event edges so within-frame taps cannot be lost (GF-ISSUE-10) + test | Jump/interact presses reliable during frame spikes | Low; keep edges idempotent for catch-up steps |
-| 2.2 | Add slide steering at a low configurable rate (GF-ISSUE-04) + test | Slides controllable, matches `12` §13.3 | Must follow 1.1 (same code path) |
-| 2.3 | Freeze and regression-test the variable-jump grace semantics (already committed; verify by human tap-vs-hold after the tree stabilizes) | Predictable jump feel | None beyond tuning judgement |
+| # | Change | Status |
+|---|---|---|
+| 2.1 | Input edge queue for within-frame taps (GF-ISSUE-10) + tests | **Done** — `pendingPresses` → `pressedActions` → `pressed` edge; 3 unit tests |
+| 2.2 | Slide steering at a configurable rate (GF-ISSUE-04) + tests | **Done** — `slideSteeringAcceleration: 6` in `MovementTuning`; 2 unit tests + runtime steering probe |
+| 2.3 | Variable-jump grace semantics | Already frozen by the owner (`aeb7625` era, committed with tests); human tap-vs-hold check remains for Group 6 |
 
 ### Group 3 — Momentum and traversal consistency
 
@@ -270,7 +285,8 @@ Still open before the audit can converge on "no critical or high issues":
 - GF-ISSUE-03 (wall-run surface metadata — Medium deviation).
 - GF-ISSUE-04/05/07/10 and the remaining plan groups (2–6).
 
-**Decision: baseline complete, Group 1 approved and implemented (slide-kill and
-wall-jump landing fixed, 381/381 tests). Next increment per the plan: Group 2
-(input edge queue 2.1, slide steering 2.2) followed by Group 3.1 (vault
-profiles). Awaiting owner approval before starting Group 2.**
+**Decision: baseline complete; Group 1 and Group 2 approved and implemented
+(slide-kill, wall-jump landing, input edge queue, slide steering — 387/387
+tests). Next increment per the plan: Group 3 (3.1 vault profiles, 3.2
+wall-run surface metadata, 3.3 vault collision validation). Awaiting owner
+approval before starting Group 3.**
