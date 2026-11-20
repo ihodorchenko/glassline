@@ -168,9 +168,9 @@ Coverage relevant to gameplay feel:
 
 ## 5. Performance Observations
 
-Environment caveat: headless Edge on SwiftShader (software WebGL) — same
-environment class as the project's own `docs/PERFORMANCE_BASELINE.md`. Numbers
-are environment-limited, not representative of a hardware GPU.
+Environment caveat: the earlier SwiftShader (software WebGL) numbers are
+environment-limited. Group 5 re-ran the measurement on this Mac's **real GPU
+(ANGLE Metal, Apple M1 Pro)** — see the update below.
 
 | Metric | Measured |
 |---|---|
@@ -384,6 +384,21 @@ After the fix (slide grounded bias removed, `MovementModel.applyVerticalMotion`)
 - Actual: enabling `accessibility.reduced_motion` immediately disables dynamic
   FOV (sprint FOV stays 75), bob, landing dip/roll and wall-run roll; look
   remains responsive. Disabling restores effects.
+
+### Real-GPU performance (Group 5) ✅ EXECUTED
+
+Headed run, M1 Pro / ANGLE Metal, 1600×900 DPR 1, sprint pose, 4 s windows:
+
+| Tier | Draw calls | Triangles | Avg frame | p95 | Max | FPS |
+|---|---:|---:|---:|---:|---:|---:|
+| low | 204 | 4.18 M | 10.9 ms | 11.9 ms | 53.2 ms | 91.8 |
+| medium (default) | 486 | 8.85 M | ≈26 ms | ≈42 ms | 227.8 ms | ≈38 |
+| high | 462 | 8.84 M | 19.7 ms | 22.0 ms | 24.3 ms | 50.7 |
+
+Physics step: 0.065 ms avg (1.3 ms max); JS heap 59–65 MB stable; 200+ ms
+spikes are boot/shader-warm-up only. The default medium tier does not hold
+60 fps on the M1 Pro; the low tier clears it easily (91.8 fps). Details and
+recommendations: `GAMEPLAY_FEEL_AUDIT_REPORT.md` §8.6.
 
 ### Visual verification ✅ EXECUTED
 

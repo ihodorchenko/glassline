@@ -103,10 +103,25 @@ executed; full records are in
 Current validation after Group 6: `npm run validate` green (typecheck, biome,
 **401** tests, production build).
 
-Remaining blockers are environment/human: Group 5 (real-GPU performance run),
-the human camera/audio passes, and level-slope verification when slope
-geometry is authored. The Group 6 code is uncommitted at the time of writing
-(pending owner commit/merge decision).
+**Group 5** (real-GPU performance) is measured on this Mac (M1 Pro / ANGLE
+Metal, headed run, 1600×900 DPR 1, sprint pose; full record in
+[`GAMEPLAY_FEEL_AUDIT_REPORT.md`](GAMEPLAY_FEEL_AUDIT_REPORT.md) §8.6):
+
+| Tier | Draw calls | Triangles | Avg frame | FPS |
+|---|---:|---:|---:|---:|
+| low | 204 | 4.18 M | 10.9 ms | 91.8 |
+| medium (default) | 486 | 8.85 M | ≈26 ms | ≈38 |
+| high | 462 | 8.84 M | 19.7 ms | 50.7 |
+
+Physics step cost 0.065 ms avg (1.3 ms max); JS heap 59–65 MB stable; the
+200+ ms spikes are boot/shader warm-up only. Finding: the default medium
+tier does not hold 60 fps on the M1 Pro (~486 draw calls, ~8.8 M triangles);
+the low tier clears it easily. Tier rebalancing or the geometry-merge
+optimization from `PERFORMANCE_BASELINE.md` next-targets is a separate scope
+decision for the owner.
+
+Remaining blockers are human: the human camera/audio passes and
+level-slope verification when slope geometry is authored.
 
 ---
 

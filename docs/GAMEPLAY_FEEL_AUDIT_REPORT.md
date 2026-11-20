@@ -372,6 +372,48 @@ is the intended outcome.
 Requires a human listening pass; the slide loop is already event-driven
 (start/stop on authoritative state). Deferred to the human audio pass.
 
+## 8.6. Group 5 — Real-GPU performance (this Mac, M1 Pro / ANGLE Metal)
+
+The environment has a real GPU: headless Chromium defaults to SwiftShader,
+but with ANGLE/Metal flags (and in a headed window) the game renders on
+**"ANGLE (Apple, ANGLE Metal Renderer: Apple M1 Pro)"**. A headed run at
+1600×900, DPR 1, sprint pose (worst-case scene exposure), 4 s windows per
+quality tier:
+
+| Tier | Draw calls | Triangles | Avg frame | p95 frame | Max frame | FPS |
+|---|---:|---:|---:|---:|---:|---:|
+| low | 204 | 4 178 340 | 10.9 ms | 11.9 ms | 53.2 ms | **91.8** |
+| medium (default) | 486 | 8 853 758 | ~26 ms | ~42 ms | 227.8 ms | **≈38** |
+| high | 462 | 8 844 142 | 19.7 ms | 22.0 ms | 24.3 ms | **50.7** |
+
+Physics: 0.065 ms average fixed step (1.3 ms max) — negligible against the
+frame budget; the simulation kept 1.00× realtime throughout. JS heap
+59–65 MB, stable across the session. The 200+ ms max frames are
+boot/shader-warm-up spikes (first frames after level load), not recurring.
+
+Findings:
+
+1. **The default medium tier does not hold 60 fps on the M1 Pro** in the
+   sprint pose (~38 fps, p95 ≈42 ms): ~486 draw calls and ~8.8 M triangles
+   (beveled/triplanar geometry + GTAO) are the budget consumers. This
+   matches the direction of `PERFORMANCE_BASELINE.md` next-targets (merge
+   static geometry by material, reduce shadow casters, 2048 shadows on
+   low-power tiers).
+2. The **low tier easily clears 60 fps** (91.8 fps) with half the workload —
+   a viable fallback for weaker machines; medium needs the planned
+   geometry/pass optimization or a rebalanced medium tier.
+3. The medium/high ordering anomaly (high faster than medium in the sweep)
+   is likely a warm-up/cache ordering artifact of the sweep; both tiers sit
+   in the 38–51 fps band. A re-run with counterbalanced ordering and the
+   capture tool's deterministic poses is recommended before tier rebalancing.
+4. Physics, input and the game loop show no performance regressions from the
+   feel work: step cost 0.065 ms, catch-up clamp healthy, heap stable.
+
+Recommendation: keep Group 5 open as a recorded baseline; tier rebalancing
+or the geometry-merge optimization is a separate scope decision for the
+owner (per audit rules, performance optimization beyond measurement was not
+performed).
+
 ## 9. Acceptance Assessment (per the rewritten audit methodology)
 
 The rewritten `GAMEPLAY_FEEL_AUDIT.md` evaluates each feel change through its
