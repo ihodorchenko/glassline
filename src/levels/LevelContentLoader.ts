@@ -397,6 +397,10 @@ export class BoxLevelContentLoader {
 
         for (const mesh of meshes) {
           dependencies.scene.removeObject(mesh);
+          // Static-batch meshes own their merged BufferGeometry; without
+          // this the GPU geometry leaks on every level reload (measured
+          // +8 geometries per route restart, GF-18).
+          mesh.geometry.dispose();
         }
 
         for (const mesh of decorationMeshes) {
