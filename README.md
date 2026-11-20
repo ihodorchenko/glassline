@@ -347,6 +347,7 @@ The `docs/` directory is the primary source of implementation specifications.
 | [`25_SETTINGS_SYSTEM_SPEC.md`](docs/25_SETTINGS_SYSTEM_SPEC.md) | Application settings and configuration |
 | [`26_ACCESSIBILITY_SYSTEM_SPEC.md`](docs/26_ACCESSIBILITY_SYSTEM_SPEC.md) | Accessibility policies and adaptations |
 | [`27_LOCALIZATION_SYSTEM_SPEC.md`](docs/27_LOCALIZATION_SYSTEM_SPEC.md) | Translation and localization |
+| [`GAMEPLAY_FEEL_AUDIT.md`](docs/GAMEPLAY_FEEL_AUDIT.md) | Gameplay feel evaluation, tuning methodology, repeatable scenarios, and acceptance criteria |
 
 ### Project Tracking
 
