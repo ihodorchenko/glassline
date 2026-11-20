@@ -63,11 +63,22 @@ verified:
 Current validation: `npm run validate` green (typecheck, biome, **387** tests,
 production build).
 
-Open audit issues and the remaining plan groups (3: vault profiles, wall-run
-metadata, vault collision validation; 4: camera feedback; 5: performance;
-6: tuning) are tracked in
-[`GAMEPLAY_FEEL_AUDIT_REPORT.md`](GAMEPLAY_FEEL_AUDIT_REPORT.md) §8.
-The Group 2 code is uncommitted at the time of writing (pending owner
+Owner-approved **Group 3** (momentum and traversal consistency) is implemented
+and verified:
+
+| Item | Change | Status |
+|---|---|---|
+| GF-ISSUE-02 / GF-ISSUE-11 | Vaulting now implements the spec's two profiles: Standard (< 6 m/s, 0.45 s, retention 0.85) and Speed (≥ 6 m/s, 0.3 s, retention 0.95), a 2.5 m/s minimum entry speed, and `vaultType` in `player:vault-started`; E presses are buffered (`vaultInteractBufferSeconds: 0.15`) per `03_GAMEPLAY_SPEC.md` §5.3. New tuning values centralized in `MovementTuning`. | **Fixed** — 6 model tests + physics event test; runtime GF-12 (buffered press → speed vault) |
+| GF-ISSUE-03 | Wall-run eligibility is now gated by level `wallRunSurface` metadata: `WallRunDetectorOptions.isWallRunnable` → `PlayerSystemOptions.isWallRunnable` → Application resolver via new `SurfaceRegistry.getSurfaceContaining`. Geometry without metadata is not wall-runnable. | **Fixed** — detector + physics tests; runtime: corridor wall runnable, boundary parapet rejected |
+| GF-ISSUE-07 | Vault traversal moves through the character controller instead of a kinematic teleport, with a clearance-aware arc lift (capsule sweeps over the obstacle) and snap-to-ground suspended for the traversal. The body can no longer pass through geometry mid-vault. | **Fixed** — `intersectionPair` penetration regression test; runtime GF-12 clean |
+
+Current validation after Group 3: `npm run validate` green (typecheck, biome,
+**397** tests, production build).
+
+Open audit issues and the remaining plan groups (4: impact-scaled landing
+camera response + sprint-FOV setting; 5: performance; 6: tuning) are tracked
+in [`GAMEPLAY_FEEL_AUDIT_REPORT.md`](GAMEPLAY_FEEL_AUDIT_REPORT.md) §8.
+The Group 3 code is uncommitted at the time of writing (pending owner
 commit/merge decision).
 
 ---

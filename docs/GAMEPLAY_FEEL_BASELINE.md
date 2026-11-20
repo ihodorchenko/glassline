@@ -31,7 +31,8 @@ during this phase.
 | Commits during audit | `aeb7625` "fix fizics", `70174f2` "fix ladder" (step-glide riser climb), `ba9e477` "fix ramps" (slope handling) — owner work in parallel with the audit |
 | Uncommitted work at audit end | None in `src/` (owner work committed); only documentation changes |
 | Group 1 fixes (this audit) | Committed by the owner: `33de0ac` (GF-ISSUE-01), `6796786` (GF-ISSUE-06) + regression tests |
-| Group 2 fixes (this audit) | Input edge queue (GF-ISSUE-10), slide steering (GF-ISSUE-04) — implemented and verified; see the report |
+| Group 2 fixes (this audit) | Input edge queue (GF-ISSUE-10), slide steering (GF-ISSUE-04) — committed (`a902866`, `067356f`) |
+| Group 3 fixes (this audit) | Vault profiles + interact buffer (GF-ISSUE-02/11), wall-run surface gating (GF-ISSUE-03), collision-validated vaults (GF-ISSUE-07) — implemented and verified; see the report |
 | File content pins | `src/player/MovementModel.ts` sha256 `693537d…`-era variants were re-pinned several times during the audit (see §2.1) |
 | Browser | Microsoft Edge 157.0.4341.46, headless, WebGL2 on SwiftShader (software rasterizer) |
 | Resolution | 1600×900, DPR 1 |
@@ -77,8 +78,8 @@ Legend: spec = `docs/12_MOVEMENT_SYSTEM_SPEC.md` (movement), `13` camera,
 | Landing | LANDING state 0.18 s, `player:landed {impactSpeed}`, horizontal velocity preserved | MovementModel + PlayerSystem | Movement | Yes (`12` §17) | Partial — no test asserts horizontal-speed preservation at landing | Wall-jump landings do **not** emit `player:landed` (see report GF-ISSUE-06) |
 | Crouch | Posture height 1.15, speed ×0.5, stand-up clearance ray | MovementModel/PlayerSystem | Movement | Yes (`12` §12) | `player-traversal` slide-tunnel test | Verified working incl. ceiling block |
 | Sliding | Entry ≥5 m/s + crouch, friction 2 m/s² toward zero, min 0.25 s / max 1.2 s, exit <2.5 m/s, slide jump after min duration | MovementModel | Movement | Partial (`12` §13) | 4 model tests | **No steering during slide** (velocity target is zero; `12` §13.3 requires configurable steering); **velocity-kill bug**; exit observed at full stop instead of 2.5 m/s threshold due to the bug |
-| Vaulting | E-press contextual vault: forward ray + top probe + landing probe + head clearance; scripted 0.45 s sine-arc trajectory; `player:vault-started {speed}` | `detection/VaultDetector.ts` + MovementModel + PlayerSystem | Movement | **Deviation** (`12` §14.4) | 2 model + 3 detector tests | **Single profile only — no Standard/Speed vaults, no vault type in event, no minimum approach speed**; scripted traversal bypasses collision mid-vault; no cancellation if destination is invalidated |
-| Wall running | Airborne ≥5 m/s, side raycasts ≤0.75 m, wall normal |y|≤0.35, tangent alignment ≥0.4; gravity ×0.35, speed −1 m/s/s (min 5), max 1.5 s; camera roll 3.4° | `detection/WallRunDetector.ts` + MovementModel + CameraSystem | **Deviation** (`12` §15.2) | 4 model + 3 detector tests | **Surface metadata (`wallRunSurface`) is not consulted** — any near-vertical surface qualifies, including arena boundary walls |
+| Vaulting | E-press contextual vault (interact-buffered 0.15 s): forward ray + top probe + landing probe + head clearance; Standard/Speed profiles (2.5/6 m/s thresholds, 0.45/0.3 s, retention 0.85/0.95); clearance-aware arc moved through the character controller; `player:vault-started {speed, vaultType}` | `detection/VaultDetector.ts` + MovementModel + PlayerSystem | Movement | Yes (`12` §14) | 8 model + 3 detector tests | Group 3 resolved the single-profile deviation, unbuffered presses and the collision bypass |
+| Wall running | Airborne ≥5 m/s, side raycasts ≤0.75 m, wall normal |y|≤0.35, tangent alignment ≥0.4, **`wallRunSurface` metadata gate at the hit point**; gravity ×0.35, speed −1 m/s/s (min 5), max 1.5 s; camera roll 3.4° | `detection/WallRunDetector.ts` + MovementModel + CameraSystem | Yes (`12` §15.2) | 4 model + 4 detector tests + physics test | Boundary walls no longer trigger wall runs (runtime-verified) |
 | Wall jumping | Jump during wall run: tangent·speed·0.9 + normal·5.5, vy 6; WALLJUMP 0.25 s; `player:walljumped` | MovementModel | Movement | Yes (`12` §16) | Yes | No landing event afterwards (see Landing row) |
 | Ground-stick (new) | Walk-off ledges while pushing forward: stick to surfaces ≤1 m below at ≤9 m/s instead of micro free-fall; disarms on jump/wall-kick/snap miss | MovementModel + PlayerSystem | Movement | New behavior; `12` §18 (slopes/uneven geometry) motivation | 2 model tests + stairs tests | New uncommitted-until-`aeb7625` behavior; only forward walk-offs stick (side/back walk-offs still fall) |
 | Input | DOM → abstract actions; held-keys set + per-frame pressed/held/released edges **+ pending-press queue (Group 2)**; mouse deltas accumulated; gamepad polling; pointer lock lifecycle; contexts; focus-loss clearing | `src/input/InputManager.ts`, `InputState.ts` | Input | Yes (`11`) | `input.test.ts` (19) | Within-frame taps preserved via `pendingPresses`; edges stay one-shot for catch-up steps |
@@ -125,18 +126,19 @@ Executed during the audit:
 | Command | Result |
 |---|---|
 | `npm run typecheck` | PASS (final state) |
-| `npm test` | **387/387 PASS** (381 after Group 1 + 3 input-edge tests + 2 slide-steering tests + 1 owner test); earlier in the window: 2–3 transient failures while the owner was mid-edit |
+| `npm test` | **397/397 PASS** (387 after Group 2 + 6 vault-profile/buffer tests + 1 detector test + 3 physics tests) |
 | `npx biome check .` | PASS for project sources at final state; transiently red due to the audit's own scratch files (removed from the tree afterwards) and, mid-window, to uncommitted source formatting |
 | `node tools/capture/capture.mjs --iteration audit --shot start-roof` | PASS — 196 draw calls, 4,182,467 triangles, 0 console errors, 0 page errors |
 | Runtime scenario harness (custom, Playwright) | See §6 |
 
 Coverage relevant to gameplay feel:
 
-- Movement model: 32 unit tests (locomotion, sprint, crouch, air caps, jump,
+- Movement model: 39 unit tests (locomotion, sprint, crouch, air caps, jump,
   buffer, coyote, variable jump, fall clamp, collision reconciliation, landing
   event, ground-stick, slide, vault, wall run, wall jump).
-- Player/physics integration: 9 tests
-- Input: 19 tests (incl. 3 pending-press edge tests) (settle, move/strafe, jump+land, wall
+- Player/physics integration: 12 tests
+- Input: 19 tests (incl. 3 pending-press edge tests)
+- Traversal detection: 7 tests (incl. wall-run surface gating) (settle, move/strafe, jump+land, wall
   block, body sync, reset, stair descent with ground-stick, camera filter).
 - Camera: 19 tests (look, pitch clamp, FOV, reduced motion, etc.).
 - Input: 16 tests. Game loop: 8 tests. Traversal detection: 6 tests.
@@ -309,12 +311,13 @@ After the fix (slide grounded bias removed, `MovementModel.applyVerticalMotion`)
 
 ### GF-12 — Valid vaulting ✅ EXECUTED
 
-- Actual: E at ≈1.2 m from the 0.75 m obstacle → VAULTING the same step,
-  scripted 0.45 s arc, lands ≈0.6 m past the obstacle far face, state FALLING
-  → landing. Deterministic detection; invalid heights/point-blank rejected
-  (GF-13).
-- Problems: single profile only (GF-ISSUE-02); no mid-vault collision
-  (GF-ISSUE-07).
+- Actual (after Group 3): E held through the approach → vault fires 0.073 s
+  after the buffered press at 6 m/s → **speed profile** (0.28 s), clearance-
+  aware arc through the character controller, lands ≈0.5 m past the obstacle
+  far face, state FALLING → landing. Deterministic detection; invalid
+  heights/point-blank/no-speed cases rejected (GF-13).
+- Profiles: standard < 6 m/s (0.45 s, retention 0.85), speed ≥ 6 m/s (0.3 s,
+  retention 0.95); `player:vault-started` carries `vaultType`.
 
 ### GF-13 — Invalid vaulting ✅ EXECUTED
 
@@ -329,8 +332,10 @@ After the fix (slide grounded bias removed, `MovementModel.applyVerticalMotion`)
   (0.48 s), 3.85 m of travel, camera roll peaked at 3.4° (within the 8° spec
   budget) and returned to neutral. Entry requires a speed ≥5 m/s airborne
   approach (detector gates verified in unit tests).
-- Problems: eligibility ignores surface metadata (GF-ISSUE-03); entry is
-  timing-sensitive by design (first attempt in GF-15 failed to attach).
+- Group 3: eligibility now gated by `wallRunSurface` metadata — the corridor
+  wall remains runnable; a separate probe along the boundary parapet
+  (surface_boundary) produced no wall run. Entry is timing-sensitive by
+  design (first attempt in GF-15 failed to attach).
 
 ### GF-15 — Wall contact loss ✅ EXECUTED
 

@@ -82,6 +82,21 @@ approval of the improvement plan (Section 8) before Phase 1 work.**
 
 ## 3. Gameplay Feel Weaknesses
 
+### GF-ISSUE-11 — Vault interact press had no buffering — ✅ FIXED (Group 3.1)
+
+- Severity: Medium. Affected: Vault activation responsiveness. System: Movement/Input.
+- Description: `interactPressed` lived for a single frame; an E press even
+  slightly before the obstacle entered detection range (1.1 m ≈ 0.13 s at
+  sprint speed) was lost and the vault never fired. `03_GAMEPLAY_SPEC.md` §5.3
+  explicitly requires buffering for "context interaction pressed just before
+  entering a valid interaction range".
+- Change made: `MovementModel` arms `interactBufferSeconds`
+  (`vaultInteractBufferSeconds: 0.15`) on `interactPressed`; `beginVault`
+  consumes the buffered press once a candidate and the speed gate are valid,
+  and the buffer expires naturally.
+- Verification after: 2 unit tests (buffer fires / expires); runtime GF-12:
+  E press 0.073 s before the candidate window now starts the vault reliably.
+
 ### GF-ISSUE-04 — Slides have no steering — ✅ FIXED (Group 2.2)
 
 - Severity: Medium. Affected: Sliding. System: Movement.
@@ -155,9 +170,9 @@ approval of the improvement plan (Section 8) before Phase 1 work.**
 
 | ID | Deviation | Spec | Severity | Evidence |
 |---|---|---|---|---|
-| GF-ISSUE-02 | Vaulting implements a single profile (fixed 0.45 s, arc lift 0.25); no Standard/Speed distinction, no speed-based selection, no minimum approach speed, and `player:vault-started` carries `{speed}` instead of the vault type | `12` §14.4 (two profiles + deterministic selection + type in event), `03` §10.4 | **High** (explicit "must" in spec) | `VaultDetector.ts` (single candidate), `MovementModel.beginVault` (no speed check), `PlayerSystem` event payload |
-| GF-ISSUE-03 | Wall-run eligibility ignores `wallRunSurface`/`wallJumpSurface` surface metadata authored in the level; any near-vertical collider within 0.75 m qualifies (including `surface_boundary` walls marked not wall-runnable) | `12` §15.2 ("correct collision category or metadata"), `12` §22 (surface metadata) | **Medium** | `WallRunDetector.ts` uses raw raycasts only; `SurfaceRegistry` is consumed only by audio/level validation |
-| GF-ISSUE-07 | Vault traversal bypasses collision: the body is moved by direct `setNextKinematicTranslation` along the scripted arc for 0.45 s without controller/collision checks and without cancellation if the destination becomes invalid | `12` §14.6 (fail safely / cancel), `03` §10.5 ("must remain integrated with physics and collision validation") | **Medium** | `PlayerSystem.updateScriptedVault` |
+| GF-ISSUE-02 | Vaulting implements a single profile (fixed 0.45 s, arc lift 0.25); no Standard/Speed distinction, no speed-based selection, no minimum approach speed, and `player:vault-started` carries `{speed}` instead of the vault type | `12` §14.4 (two profiles + deterministic selection + type in event), `03` §10.4 | **High** (explicit "must" in spec) — **FIXED (Group 3.1)** | Two profiles with tuning values (`vaultMinEntrySpeed 2.5`, `vaultSpeedMinEntrySpeed 6`, `vaultSpeedDurationSeconds 0.3`, per-profile retention 0.85/0.95); event carries `vaultType`; plus the spec-mandated interact buffer (`vaultInteractBufferSeconds 0.15`, GF-ISSUE-11). 6 model tests + physics event test |
+| GF-ISSUE-03 | Wall-run eligibility ignores `wallRunSurface`/`wallJumpSurface` surface metadata authored in the level; any near-vertical collider within 0.75 m qualifies (including `surface_boundary` walls marked not wall-runnable) | `12` §15.2 ("correct collision category or metadata"), `12` §22 (surface metadata) | **Medium** — **FIXED (Group 3.2)** | `WallRunDetectorOptions.isWallRunnable` gate at the hit point; `PlayerSystemOptions.isWallRunnable`; Application resolves via new `SurfaceRegistry.getSurfaceContaining`. Detector + physics tests; runtime: corridor wall still runnable, boundary parapet no longer triggers wall runs |
+| GF-ISSUE-07 | Vault traversal bypasses collision: the body is moved by direct `setNextKinematicTranslation` along the scripted arc for 0.45 s without controller/collision checks and without cancellation if the destination becomes invalid | `12` §14.6 (fail safely / cancel), `03` §10.5 ("must remain integrated with physics and collision validation") | **Medium** — **FIXED (Group 3.3)** | The scripted arc now moves through `computeColliderMovement` (snap-to-ground suspended for the traversal, restored after); the arc lift is clearance-aware so the capsule sweeps over the obstacle instead of through it. `intersectionPair`-based penetration regression test |
 | GF-ISSUE-08 | Camera spec defines a sprint-FOV intensity setting and dynamic-FOV toggle; the Settings registry (`25` §B.1.3) has no such keys — sprint FOV is hard-coded to base+7 | `13` §9.6 vs `25` settings registry | **Low** (spec-vs-spec inconsistency; implement per settings registry) | `CameraSystem` constructor `sprintFov: baseFov + 7` |
 | — | Jump tuning at audit end (height 1.6 m, min ratio 0.6) differs from `12` §6.2 suggested values (1.25 m) — permitted ("starting points", §17.2 forbids blind application; values must be justified by playtest) | `12` §6.2 note | Info | `MovementTuning.ts` |
 
@@ -237,13 +252,13 @@ in dependency order.
 | 2.2 | Slide steering at a configurable rate (GF-ISSUE-04) + tests | **Done** — `slideSteeringAcceleration: 6` in `MovementTuning`; 2 unit tests + runtime steering probe |
 | 2.3 | Variable-jump grace semantics | Already frozen by the owner (`aeb7625` era, committed with tests); human tap-vs-hold check remains for Group 6 |
 
-### Group 3 — Momentum and traversal consistency
+### Group 3 — Momentum and traversal consistency — ✅ DONE (2026-11-20)
 
-| # | Change | Benefit | Risk |
-|---|---|---|---|
-| 3.1 | Decide and implement the two vault profiles (Standard/Speed) with deterministic selection, min approach speed, and vault type in `player:vault-started` (GF-ISSUE-02); add tests | Spec compliance; speed-based skill expression | Touches detector + model + event consumers (audio/stats/training labels) |
-| 3.2 | Gate wall-run eligibility on surface metadata with a sensible default (GF-ISSUE-03); add tests | No unintended wall-runs on boundary/decoration walls | Level surfaces must be audited so intended walls stay runnable |
-| 3.3 | Add vault mid-traversal collision validation or cancellation (GF-ISSUE-07) | No more uncontrolled 0.45 s collision bypass | Trajectory may need controller-based integration; test against tunnel/low-ceiling cases |
+| # | Change | Status |
+|---|---|---|
+| 3.1 | Standard/Speed vault profiles, min entry speed, vault type in `player:vault-started`, per-profile momentum retention, interact buffering (GF-ISSUE-02, GF-ISSUE-11) | **Done** — 6 model tests + physics event test; runtime GF-12: buffered E press → speed vault 0.28 s, lands past the obstacle |
+| 3.2 | Wall-run eligibility gated by `wallRunSurface` metadata (GF-ISSUE-03) | **Done** — detector + physics tests; runtime: corridor wall runnable, boundary parapet rejected |
+| 3.3 | Vault traversal through the character controller + clearance-aware arc (GF-ISSUE-07) | **Done** — `intersectionPair` penetration regression test; runtime GF-12 clean |
 
 ### Group 4 — Camera and feedback
 
@@ -281,12 +296,16 @@ change, scenario verification, regression tests, honest reporting.
 
 Still open before the audit can converge on "no critical or high issues":
 
-- GF-ISSUE-02 (vault single profile — spec deviation, High by spec "must").
-- GF-ISSUE-03 (wall-run surface metadata — Medium deviation).
-- GF-ISSUE-04/05/07/10 and the remaining plan groups (2–6).
+- GF-ISSUE-05 (landing camera not impact-proportional — now an explicit GF-08
+  requirement in the rewritten audit doc) and GF-ISSUE-08 (sprint-FOV
+  setting) — the Group 4 scope.
+- Remaining plan groups 5–6 (performance, tuning) plus the pending runtime
+  scenario gaps (low-speed slide entry, slide exit on slope, repeated-route
+  resource check).
 
-**Decision: baseline complete; Group 1 and Group 2 approved and implemented
-(slide-kill, wall-jump landing, input edge queue, slide steering — 387/387
-tests). Next increment per the plan: Group 3 (3.1 vault profiles, 3.2
-wall-run surface metadata, 3.3 vault collision validation). Awaiting owner
-approval before starting Group 3.**
+**Decision: baseline complete; Groups 1–3 approved and implemented
+(slide-kill, wall-jump landing, input edge queue, slide steering, vault
+profiles + buffering, wall-run surface gating, collision-validated vaults —
+397/397 tests). Next increment per the plan: Group 4 (impact-scaled landing
+camera response, sprint-FOV intensity setting). Awaiting owner approval
+before starting Group 4.**
