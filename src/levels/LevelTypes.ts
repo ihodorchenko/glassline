@@ -58,6 +58,7 @@ export type LevelMaterialType =
   | "facade"
   | "glass"
   | "glass-far"
+  | "glass-rail"
   | "metal"
   | "dark-metal"
   | "red"

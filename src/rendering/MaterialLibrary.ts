@@ -9,6 +9,7 @@ export type MaterialKey =
   | "facade"
   | "glass"
   | "glass-far"
+  | "glass-rail"
   | "metal"
   | "dark-metal"
   | "red"
@@ -35,6 +36,9 @@ interface MaterialSpec {
   readonly transparent?: boolean;
   readonly depthWrite?: boolean;
   readonly opacity?: number;
+  readonly side?: THREE.Side;
+  /** Straight-tile maps store tile height in the canvas alpha channel. */
+  readonly heightFromAlpha?: boolean;
 }
 
 type TextureKind =
@@ -83,6 +87,7 @@ const MATERIAL_SPECS: Record<MaterialKey, MaterialSpec> = {
     metalness: 0.02,
     uvScale: 0.24,
     texture: "plaster",
+    heightFromAlpha: true,
   },
   concrete: {
     color: 0xc7c9c7,
@@ -90,6 +95,7 @@ const MATERIAL_SPECS: Record<MaterialKey, MaterialSpec> = {
     metalness: 0,
     uvScale: 0.2,
     texture: "concrete",
+    heightFromAlpha: true,
   },
   roof: {
     color: 0xf1f1ed,
@@ -97,6 +103,7 @@ const MATERIAL_SPECS: Record<MaterialKey, MaterialSpec> = {
     metalness: 0,
     uvScale: 0.13,
     texture: "roof",
+    heightFromAlpha: true,
   },
   facade: {
     color: 0xd8d6d0,
@@ -118,6 +125,17 @@ const MATERIAL_SPECS: Record<MaterialKey, MaterialSpec> = {
     metalness: 0.5,
     uvScale: 0.4,
     envMapIntensity: 1.25,
+  },
+  "glass-rail": {
+    color: 0x9fb4c2,
+    roughness: 0.08,
+    metalness: 0.2,
+    uvScale: 0.4,
+    envMapIntensity: 1.2,
+    transparent: true,
+    depthWrite: false,
+    opacity: 0.4,
+    side: THREE.DoubleSide,
   },
   metal: {
     color: 0x747a7d,
@@ -228,6 +246,21 @@ const TEXTURE_BUMP_SCALE: Record<TextureKind, number> = {
   asphalt: 0.36,
   red: 0.08,
   stain: 0,
+};
+
+/**
+ * Baseline value of the authored alpha height channel for straight-tile maps
+ * (used to centre the parallax offset). Only plaster/concrete/roof author it.
+ */
+const TEXTURE_HEIGHT_BASE: Record<TextureKind, number> = {
+  plaster: 0.86,
+  concrete: 0.8,
+  roof: 0.82,
+  facade: 0.5,
+  metal: 0.5,
+  asphalt: 0.5,
+  red: 0.5,
+  stain: 0.5,
 };
 
 export interface SignMaterialOptions {
@@ -403,6 +436,68 @@ function drawSeams(
   context.globalAlpha = 1;
 }
 
+/**
+ * Starts a straight-tile map: albedo in RGB, tile height in the alpha channel.
+ * Drawing uses `source-in` for the base colour and `source-atop` afterwards, so
+ * every subsequent albedo detail (stains, grain, cracks) leaves the authored
+ * tile height untouched.
+ */
+function beginTileMap(context: CanvasRenderingContext2D, albedo: string, baseHeight: number): void {
+  context.clearRect(0, 0, TEXTURE_SIZE, TEXTURE_SIZE);
+  context.fillStyle = `rgba(255, 255, 255, ${baseHeight})`;
+  context.fillRect(0, 0, TEXTURE_SIZE, TEXTURE_SIZE);
+  context.globalCompositeOperation = "source-in";
+  context.fillStyle = albedo;
+  context.fillRect(0, 0, TEXTURE_SIZE, TEXTURE_SIZE);
+  context.globalCompositeOperation = "source-atop";
+}
+
+/**
+ * Cuts a straight groove (vertical + horizontal grid, never diagonal) into the
+ * alpha height channel. The albedo RGB is left as painted.
+ */
+function cutTileGrooves(
+  context: CanvasRenderingContext2D,
+  spacing: number,
+  width: number,
+  strength: number,
+  startOffset = 0,
+): void {
+  context.globalCompositeOperation = "destination-out";
+  drawSeams(context, spacing, "rgba(0, 0, 0, 1)", width, strength, startOffset);
+  context.globalCompositeOperation = "source-atop";
+}
+
+/** Cuts only horizontal bands (trowel lines on plaster) into the height channel. */
+function cutHorizontalBands(
+  context: CanvasRenderingContext2D,
+  spacing: number,
+  width: number,
+  strength: number,
+  startOffset = 0,
+): void {
+  context.globalCompositeOperation = "destination-out";
+  context.globalAlpha = strength;
+  context.strokeStyle = "rgba(0, 0, 0, 1)";
+  context.lineWidth = width;
+
+  for (let offset = spacing + startOffset; offset < TEXTURE_SIZE; offset += spacing) {
+    context.beginPath();
+    context.moveTo(0, offset);
+    context.lineTo(TEXTURE_SIZE, offset);
+    context.stroke();
+  }
+
+  context.globalAlpha = 1;
+  context.globalCompositeOperation = "source-atop";
+}
+
+/** Restores normal canvas composition after the height-channel cuts. */
+function finishTileMap(context: CanvasRenderingContext2D): void {
+  context.globalCompositeOperation = "source-over";
+  context.globalAlpha = 1;
+}
+
 function addCracks(
   context: CanvasRenderingContext2D,
   random: () => number,
@@ -467,21 +562,25 @@ function paintTexture(kind: TextureKind): HTMLCanvasElement {
 
   switch (kind) {
     case "plaster": {
-      // Neutral plaster: the white albedo lives in MATERIAL_SPECS, the map only
-      // carries grain, cracks and a faint panel tint, so walls stay #F8F8F8
-      // instead of the warm paper tone of W0.
-      fillBase(context, "#f9f9f7");
+      // Straight-tile plaster: albedo + grain live in RGB, the alpha channel
+      // carries only straight trowel bands. Radial mottle stays out of the
+      // height channel, so long white walls cannot pick up swirl-bump.
+      beginTileMap(context, "#f9f9f7", 0.86);
       addMottle(context, random, 90, 0.05, "#ffffff", "#e0e0dd", 64);
       addCracks(context, random, 9, "#b4b4b0", 0.1);
       addSpeckle(context, random, 2000, ["#ffffff", "#e8e8e5", "#d6d6d2"], 1.2);
+      cutHorizontalBands(context, 128, 3, 0.1, -64);
+      finishTileMap(context);
       break;
     }
     case "concrete": {
-      fillBase(context, "#f4f5f4");
+      // Straight-tile concrete: formwork joints are authored straight in the
+      // albedo and again as grooves in the alpha height channel; stains and
+      // cracks stay albedo-only so they cannot bend the bump map.
+      beginTileMap(context, "#f4f5f4", 0.8);
       addMottle(context, random, 110, 0.06, "#ffffff", "#c2c7c8", 80);
-      // Faint formwork joints read as cast concrete without darkening the mass.
-      drawSeams(context, 128, "#cfd3d4", 1.4, 0.24, 2);
-      drawSeams(context, 128, "#ffffff", 1, 0.16, -2);
+      drawSeams(context, 128, "#cfd3d4", 1.4, 0.24, -64);
+      drawSeams(context, 128, "#ffffff", 1, 0.16, -62);
       addCracks(context, random, 16, "#9a9fa0", 0.18);
       addSpeckle(context, random, 4200, ["#ffffff", "#dcdfe0", "#b9bec0"], 1.4);
 
@@ -498,10 +597,18 @@ function paintTexture(kind: TextureKind): HTMLCanvasElement {
         context.arc(x, y, radius, 0, Math.PI * 2);
         context.fill();
       }
+
+      cutTileGrooves(context, 128, 6.5, 0.18, -64);
+      cutTileGrooves(context, 128, 1.8, 0.46, -64);
+      finishTileMap(context);
       break;
     }
     case "roof": {
-      fillBase(context, "#f8f8f5");
+      // Straight-tile roof paint: albedo in RGB (panel tints, stains, grain),
+      // the 0.96 m seam grid repeated in the alpha height channel as straight
+      // grooves. No radial gradient reaches the bump map, so the deck keeps
+      // seam detail without swirl-bump at grazing angles.
+      beginTileMap(context, "#f8f8f5", 0.82);
       addMottle(context, random, 90, 0.06, "#ffffff", "#eaeae6", 110);
       addSpeckle(context, random, 1600, ["#fbfbf9", "#f0f0ed", "#e6e6e2"], 1.4);
 
@@ -516,8 +623,8 @@ function paintTexture(kind: TextureKind): HTMLCanvasElement {
       }
 
       context.globalAlpha = 1;
-      // Raised seam contrast (dark groove + mid lip) plus a stronger bump so
-      // the near-white deck keeps edge detail instead of reading as chalk.
+      // Raised seam albedo (dark groove + mid lip) so the near-white deck keeps
+      // edge detail instead of reading as chalk.
       drawSeams(context, 64, "#b0b0ab", 1.9, 0.66, -32);
       drawSeams(context, 64, "#dcdcd7", 1.1, 0.55, -29.9);
       addCracks(context, random, 10, "#948f89", 0.1);
@@ -535,6 +642,11 @@ function paintTexture(kind: TextureKind): HTMLCanvasElement {
         context.arc(x, y, radius, 0, Math.PI * 2);
         context.fill();
       }
+
+      // Straight groove grid in the height channel: soft bevel + sharp centre.
+      cutTileGrooves(context, 64, 6, 0.2, -32);
+      cutTileGrooves(context, 64, 1.8, 0.5, -32);
+      finishTileMap(context);
       break;
     }
     case "facade": {
@@ -639,6 +751,9 @@ const TRIPLANAR_SAMPLE = /* glsl */ `
   uniform float uDetailScale;
   uniform float uDetailMix;
   uniform float uParallaxDepth;
+  uniform float uHeightFromAlpha;
+  uniform float uHeightBase;
+  uniform float uHeightScale;
 
   vec4 sampleTriplanarAt(sampler2D source, vec3 scaled, vec3 weights) {
     return texture2D(source, scaled.zy) * weights.x
@@ -649,7 +764,16 @@ const TRIPLANAR_SAMPLE = /* glsl */ `
   vec4 sampleTriplanar(sampler2D source, vec3 position, vec3 weights) {
     vec3 scaled = position * uTriplanarScale;
     vec4 base = sampleTriplanarAt(source, scaled, weights);
-    float height = dot(base.rgb, vec3(0.299, 0.587, 0.114)) - 0.5;
+    // Straight-tile maps keep the physical tile height in the alpha channel;
+    // older maps fall back to albedo luma. Same number of texture fetches.
+    // Authored alpha height is scaled down to the same relief range the
+    // legacy luma bump used, so straight seams stay a seam and do not turn
+    // the deck into a glossy tile grid.
+    float height = mix(
+      dot(base.rgb, vec3(0.299, 0.587, 0.114)) - 0.5,
+      (base.a - uHeightBase) * uHeightScale,
+      uHeightFromAlpha
+    );
     vec3 viewDir = normalize(cameraPosition - position);
     vec3 shifted = (position + viewDir * height * uParallaxDepth) * uTriplanarScale;
     vec4 parallaxed = sampleTriplanarAt(source, shifted, weights);
@@ -663,6 +787,8 @@ function applyTriplanar(
   material: THREE.MeshStandardMaterial,
   scale: number,
   bumpScale: number,
+  heightFromAlpha: boolean,
+  heightBase: number,
 ): void {
   material.onBeforeCompile = (shader) => {
     shader.uniforms.uTriplanarScale = { value: scale };
@@ -670,6 +796,9 @@ function applyTriplanar(
     shader.uniforms.uDetailScale = { value: 3.3 };
     shader.uniforms.uDetailMix = { value: 0.12 };
     shader.uniforms.uParallaxDepth = { value: 0.03 };
+    shader.uniforms.uHeightFromAlpha = { value: heightFromAlpha ? 1 : 0 };
+    shader.uniforms.uHeightBase = { value: heightBase };
+    shader.uniforms.uHeightScale = { value: heightFromAlpha ? 0.34 : 1 };
 
     shader.vertexShader = shader.vertexShader
       .replace("#include <common>", `#include <common>\n${TRIPLANAR_PATCH}`)
@@ -698,35 +827,40 @@ function applyTriplanar(
           vec3 triplanarWeights = pow(abs(normalize(vTriplanarNormal)), vec3(4.0));
           triplanarWeights /= (triplanarWeights.x + triplanarWeights.y + triplanarWeights.z);
           vec4 triplanarTexel = sampleTriplanar(map, vTriplanarPosition, triplanarWeights);
-          diffuseColor *= triplanarTexel;
-          #ifdef USE_ROUGHNESSMAP
-          #else
+          // Albedo from RGB. For straight-tile maps alpha is tile height and
+          // must not leak into opacity; for legacy maps alpha is still the
+          // transparency mask (e.g. the stain decals).
+          diffuseColor.rgb *= triplanarTexel.rgb;
+          diffuseColor.a *= mix(triplanarTexel.a, 1.0, uHeightFromAlpha);
           float triplanarLuma = dot(triplanarTexel.rgb, vec3(0.299, 0.587, 0.114));
-          #endif
+          float triplanarHeight = mix(
+            triplanarLuma,
+            (triplanarTexel.a - uHeightBase) * uHeightScale,
+            uHeightFromAlpha
+          );
         #endif`,
       )
       .replace(
         "#include <roughnessmap_fragment>",
         `#include <roughnessmap_fragment>
         #if defined( USE_MAP ) && ! defined( USE_ROUGHNESSMAP )
-          // Keep the authored roughness (paint is 0.6, concrete 0.9): the map
-          // only adds +-6 % of local variation, not a +-14 % bias.
-          roughnessFactor *= mix(0.94, 1.06, triplanarLuma);
+          // Legacy maps modulate roughness by albedo luma (+-6 %). Straight-tile
+          // maps instead make the recessed grooves slightly rougher, so albedo
+          // stains no longer drag the highlight roughness around.
+          float triplanarTileMask = clamp(triplanarTexel.a / max(uHeightBase, 1e-3), 0.0, 1.0);
+          float tileRoughness = mix(1.0, 1.06, 1.0 - triplanarTileMask);
+          roughnessFactor *= mix(mix(0.94, 1.06, triplanarLuma), tileRoughness, uHeightFromAlpha);
         #endif`,
       )
       .replace(
         "#include <normal_fragment_maps>",
         `#include <normal_fragment_maps>
         #if defined( USE_MAP ) && defined( USE_BUMPMAP )
-          // Triplanar bump: derive a world-space gradient from the same
-          // procedural map, then convert the perturbed normal back to view
-          // space for Three's lighting stage.
-          vec3 bumpWeights = pow(abs(normalize(vTriplanarNormal)), vec3(4.0));
-          bumpWeights /= (bumpWeights.x + bumpWeights.y + bumpWeights.z);
-          float bumpHeight = dot(
-            sampleTriplanar(map, vTriplanarPosition, bumpWeights).rgb,
-            vec3(0.299, 0.587, 0.114)
-          );
+          // Triplanar bump: reuse the height already sampled for the albedo
+          // (straight-tile alpha channel, or albedo luma for legacy maps), so
+          // the bump costs no extra texture fetches, then convert the
+          // world-space gradient back to view space for Three's lighting stage.
+          float bumpHeight = triplanarHeight;
           vec3 bumpDpdx = dFdx(vTriplanarPosition);
           vec3 bumpDpdy = dFdy(vTriplanarPosition);
           float bumpDhdx = dFdx(bumpHeight);
@@ -823,6 +957,7 @@ export class MaterialLibrary implements Disposable {
       transparent: spec.transparent ?? false,
       depthWrite: spec.depthWrite ?? true,
       opacity: spec.opacity ?? 1,
+      side: spec.side ?? THREE.FrontSide,
     });
 
     if (key === "glass" || key === "glass-far") {
@@ -859,7 +994,13 @@ export class MaterialLibrary implements Disposable {
       material.bumpScale = 1;
       material.bumpMap = texture;
       this.textures.push(texture);
-      applyTriplanar(material, spec.uvScale, TEXTURE_BUMP_SCALE[spec.texture]);
+      applyTriplanar(
+        material,
+        spec.uvScale,
+        TEXTURE_BUMP_SCALE[spec.texture],
+        spec.heightFromAlpha === true,
+        TEXTURE_HEIGHT_BASE[spec.texture],
+      );
     }
 
     this.materials.set(key, material);
