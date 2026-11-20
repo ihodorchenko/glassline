@@ -100,6 +100,28 @@ describe("WallRunDetector", () => {
 
     expect(detector.detect({ x: 0, y: 0.93, z: 0 }, { x: 0, y: -1, z: -6 })).toBeNull();
   });
+
+  it("gates wall-run eligibility through the surface resolver", async () => {
+    const harness = await createHarness();
+
+    addBox(harness.world, { x: 0.9, y: 1.6, z: 0 }, { x: 0.2, y: 1.6, z: 3 });
+
+    const velocity = { x: 0, y: -1, z: -6 };
+    const rejected = new WallRunDetector(harness.world, {
+      isWallRunnable: () => false,
+    });
+
+    expect(rejected.detect({ x: 0, y: 0.93, z: 0 }, velocity)).toBeNull();
+
+    const accepted = new WallRunDetector(harness.world, {
+      isWallRunnable: () => true,
+    });
+
+    const candidate = accepted.detect({ x: 0, y: 0.93, z: 0 }, velocity);
+
+    expect(candidate).not.toBeNull();
+    expect(candidate?.side).toBe("right");
+  });
 });
 
 describe("VaultDetector", () => {

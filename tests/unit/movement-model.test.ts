@@ -48,6 +48,7 @@ const VAULT_ENVIRONMENT: MovementEnvironment = {
     startPosition: { x: 0, y: 0.93, z: 0 },
     landingPosition: { x: 0, y: 0.93, z: -2.2 },
     direction: { x: 0, y: 0, z: -1 },
+    obstacleTopY: 0.75,
   },
 };
 
@@ -593,6 +594,138 @@ describe("MovementModel vaulting", () => {
     expect(model.consumeEvents().vaultStarted).toBe(true);
     expect(model.getState()).toBe("VAULTING");
     expect(model.getActiveVault()).not.toBeNull();
+  });
+
+  it("rejects a vault below the minimum entry speed", () => {
+    const model = new MovementModel(DEFAULT_MOVEMENT_TUNING);
+
+    model.step(input(), FORWARD, environment(true), FIXED_DT);
+    model.step(input({ interactPressed: true }), FORWARD, VAULT_ENVIRONMENT, FIXED_DT);
+
+    expect(model.consumeEvents().vaultStarted).toBe(false);
+    expect(model.getState()).not.toBe("VAULTING");
+  });
+
+  it("buffers an interact press until a vault candidate appears", () => {
+    const model = new MovementModel(DEFAULT_MOVEMENT_TUNING);
+
+    simulate(model, runForward(), 40, true); // 6 m/s
+
+    // Press E before the obstacle is in range (no candidate yet).
+    model.step(
+      input({ interactPressed: true, move: { x: 0, y: 1 } }),
+      FORWARD,
+      environment(true),
+      FIXED_DT,
+    );
+
+    expect(model.getState()).not.toBe("VAULTING");
+
+    // The candidate appears within the buffer window: the vault fires.
+    model.step(input({ move: { x: 0, y: 1 } }), FORWARD, VAULT_ENVIRONMENT, FIXED_DT);
+
+    expect(model.consumeEvents().vaultStarted).toBe(true);
+    expect(model.getState()).toBe("VAULTING");
+  });
+
+  it("drops a buffered interact press once the buffer expires", () => {
+    const model = new MovementModel(DEFAULT_MOVEMENT_TUNING);
+
+    simulate(model, runForward(), 40, true);
+    model.step(
+      input({ interactPressed: true, move: { x: 0, y: 1 } }),
+      FORWARD,
+      environment(true),
+      FIXED_DT,
+    );
+
+    const bufferSteps = Math.ceil(DEFAULT_MOVEMENT_TUNING.vaultInteractBufferSeconds / FIXED_DT);
+
+    for (let step = 0; step < bufferSteps + 2; step += 1) {
+      model.step(input({ move: { x: 0, y: 1 } }), FORWARD, environment(true), FIXED_DT);
+    }
+
+    model.step(input({ move: { x: 0, y: 1 } }), FORWARD, VAULT_ENVIRONMENT, FIXED_DT);
+
+    expect(model.consumeEvents().vaultStarted).toBe(false);
+    expect(model.getState()).not.toBe("VAULTING");
+  });
+
+  it("selects the standard vault profile at moderate speed", () => {
+    const model = new MovementModel(DEFAULT_MOVEMENT_TUNING);
+
+    simulate(model, runForward(), 9, true); // ~2.7 m/s: above minimum, below speed threshold
+
+    model.step(
+      input({ interactPressed: true, move: { x: 0, y: 1 } }),
+      FORWARD,
+      VAULT_ENVIRONMENT,
+      FIXED_DT,
+    );
+
+    const events = model.consumeEvents();
+    const vault = model.getActiveVault();
+
+    expect(events.vaultStarted).toBe(true);
+    expect(events.vaultType).toBe("standard");
+    expect(vault?.profile).toBe("standard");
+    expect(vault?.durationSeconds).toBeCloseTo(DEFAULT_MOVEMENT_TUNING.vaultDurationSeconds, 6);
+  });
+
+  it("selects the speed vault profile at high entry speed", () => {
+    const model = new MovementModel(DEFAULT_MOVEMENT_TUNING);
+
+    simulate(model, runForward(), 40, true); // 6.0 m/s: speed threshold
+
+    model.step(
+      input({ interactPressed: true, move: { x: 0, y: 1 } }),
+      FORWARD,
+      VAULT_ENVIRONMENT,
+      FIXED_DT,
+    );
+
+    const events = model.consumeEvents();
+    const vault = model.getActiveVault();
+
+    expect(events.vaultStarted).toBe(true);
+    expect(events.vaultType).toBe("speed");
+    expect(vault?.profile).toBe("speed");
+    expect(vault?.durationSeconds).toBeCloseTo(
+      DEFAULT_MOVEMENT_TUNING.vaultSpeedDurationSeconds,
+      6,
+    );
+  });
+
+  it("applies per-profile momentum retention at vault completion", () => {
+    const model = new MovementModel(DEFAULT_MOVEMENT_TUNING);
+
+    simulate(model, runForward(), 40, true); // speed vault at 6.0 m/s
+    model.step(
+      input({ interactPressed: true, move: { x: 0, y: 1 } }),
+      FORWARD,
+      VAULT_ENVIRONMENT,
+      FIXED_DT,
+    );
+
+    const entrySpeed = model.getActiveVault()?.entrySpeed ?? 0;
+    const vaultSteps = Math.ceil(DEFAULT_MOVEMENT_TUNING.vaultSpeedDurationSeconds / FIXED_DT);
+
+    // The completion step returns before air control, so the velocity read
+    // right after it is exactly the retained exit velocity.
+    for (let step = 0; step < vaultSteps; step += 1) {
+      model.step(input({ move: { x: 0, y: 1 } }), FORWARD, environment(false), FIXED_DT);
+    }
+
+    const velocity = model.getVelocity();
+
+    expect(model.getActiveVault()).toBeNull();
+    expect(model.getState()).toBe("FALLING");
+    // Direction is -z, so the retained exit velocity points along -z.
+    expect(velocity.z).toBeCloseTo(
+      -entrySpeed * DEFAULT_MOVEMENT_TUNING.vaultSpeedMomentumRetention,
+      6,
+    );
+    expect(velocity.x).toBeCloseTo(0, 6);
   });
 
   it("completes the vault after its configured duration", () => {

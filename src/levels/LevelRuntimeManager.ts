@@ -318,6 +318,10 @@ export class LevelRuntimeManager implements Disposable {
     return this.managers?.surfaces.getSurfaceAt(feetPosition) ?? null;
   }
 
+  getSurfaceContaining(position: LevelVector3): RuntimeSurface | null {
+    return this.managers?.surfaces.getSurfaceContaining(position) ?? null;
+  }
+
   getSurfaces(): readonly RuntimeSurface[] {
     return this.managers?.surfaces.getAll() ?? [];
   }

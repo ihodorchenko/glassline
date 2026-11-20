@@ -110,10 +110,16 @@ export class VaultDetector {
         z: landingZ,
       },
       direction,
+      obstacleTopY: topY,
     };
   }
 
-  /** Interpolates the scripted vault trajectory. */
+  /**
+   * Interpolates the scripted vault trajectory. The arc lift is
+   * clearance-aware: it grows so the capsule bottom stays above the obstacle
+   * top over the traversal, which lets the vault move through the character
+   * controller without passing through the obstacle.
+   */
   static samplePosition(
     candidate: VaultCandidate,
     tuning: MovementTuning,
@@ -123,9 +129,19 @@ export class VaultDetector {
     const start = candidate.startPosition;
     const landing = candidate.landingPosition;
 
+    // At the quarter point the sine is sqrt(1/2); require the capsule bottom
+    // (center minus half height) to clear the obstacle top with a margin.
+    const requiredLift =
+      (candidate.obstacleTopY +
+        0.05 +
+        tuning.capsuleHeight / 2 -
+        (0.75 * start.y + 0.25 * landing.y)) /
+      Math.SQRT1_2;
+    const lift = Math.max(0, tuning.vaultArcLift, requiredLift);
+
     return {
       x: start.x + (landing.x - start.x) * t,
-      y: start.y + (landing.y - start.y) * t + Math.sin(Math.PI * t) * tuning.vaultArcLift,
+      y: start.y + (landing.y - start.y) * t + Math.sin(Math.PI * t) * lift,
       z: start.z + (landing.z - start.z) * t,
     };
   }

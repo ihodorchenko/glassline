@@ -950,6 +950,8 @@ export class Application implements Disposable {
     this.player = new PlayerSystem(physics, {
       tuning: this.config.movement,
       spawnPoint: initialSpawn.position,
+      isWallRunnable: (position) =>
+        this.levelRuntime?.getSurfaceContaining(position)?.definition.wallRunSurface ?? false,
     });
     this.sessionDisposables.push(this.player);
 

@@ -542,4 +542,158 @@ describe("PlayerSystem physics integration", () => {
     // a single-step drop of even 1 m/s is the velocity-kill signature.
     expect(maxSpeedDropPerStep).toBeLessThan(1);
   });
+
+  it("reports the vault profile in the vault-started event", async () => {
+    const harness = await createHarness();
+    const events: Array<{ speed: number; vaultType: string }> = [];
+
+    harness.player.onMovementEvent("player:vault-started", (payload) => {
+      events.push({ speed: payload.speed, vaultType: payload.vaultType });
+    });
+
+    // Vault obstacle at (0, 0.375, -1.25) in front of the run line.
+    const world = harness.physics.rapierWorld;
+    const obstacleBody = world.createRigidBody(
+      RAPIER.RigidBodyDesc.fixed().setTranslation(0, 0.375, -1.25),
+    );
+
+    world.createCollider(RAPIER.ColliderDesc.cuboid(1.2, 0.375, 0.35), obstacleBody);
+
+    step(harness, input(), 120);
+
+    for (let index = 0; index < 90 && events.length === 0; index += 1) {
+      harness.player.fixedUpdate(
+        input({ move: { x: 0, y: 1 }, sprintHeld: true, interactPressed: true }),
+        0,
+        FIXED_DT,
+      );
+      harness.physics.step();
+    }
+
+    expect(events.length).toBe(1);
+    const event = events[0];
+
+    if (!event) {
+      throw new Error("expected a vault-started event");
+    }
+
+    // The vault may start as soon as the candidate appears, so the profile
+    // must match the event's own speed (the model tests cover the exact
+    // selection thresholds deterministically).
+    expect(event.vaultType).toBe(event.speed >= 6 ? "speed" : "standard");
+    expect(event.speed).toBeGreaterThanOrEqual(DEFAULT_MOVEMENT_TUNING.vaultMinEntrySpeed);
+  });
+
+  it("keeps the vault capsule out of the obstacle (collision-validated traversal)", async () => {
+    const harness = await createHarness();
+    const world = harness.physics.rapierWorld;
+
+    // Vault obstacle spanning z [-0.65, -1.35], top y = 0.75, width x ±1.2.
+    const obstacleBody = world.createRigidBody(
+      RAPIER.RigidBodyDesc.fixed().setTranslation(0, 0.375, -1),
+    );
+
+    const obstacleCollider = world.createCollider(
+      RAPIER.ColliderDesc.cuboid(1.2, 0.375, 0.35),
+      obstacleBody,
+    );
+
+    step(harness, input(), 120);
+
+    let vaulted = false;
+    let penetrated = false;
+
+    for (let index = 0; index < 240; index += 1) {
+      harness.player.fixedUpdate(
+        input({ move: { x: 0, y: 1 }, sprintHeld: true, interactPressed: true }),
+        0,
+        FIXED_DT,
+      );
+      harness.physics.step();
+
+      const snapshot = harness.player.getMovementSnapshot();
+
+      if (snapshot.state === "VAULTING") {
+        vaulted = true;
+
+        // Engine-authoritative overlap check: the vault moves through the
+        // character controller, so the capsule must never intersect the
+        // obstacle (the pre-fix kinematic teleport swept through it).
+        if (world.intersectionPair(harness.player.collider, obstacleCollider)) {
+          penetrated = true;
+        }
+      } else if (vaulted) {
+        break;
+      }
+    }
+
+    expect(vaulted).toBe(true);
+    expect(penetrated).toBe(false);
+  });
+
+  it("starts a wall run only when the surface resolver accepts the wall", async () => {
+    const runWallRunScenario = async (isWallRunnable: boolean) => {
+      const physics = new PhysicsWorld({
+        gravity: { x: 0, y: -9.81, z: 0 },
+        timestepSeconds: FIXED_DT,
+      });
+
+      await physics.initialize();
+
+      const world = physics.rapierWorld;
+      const groundBody = world.createRigidBody(
+        RAPIER.RigidBodyDesc.fixed().setTranslation(0, -0.1, 0),
+      );
+
+      world.createCollider(RAPIER.ColliderDesc.cuboid(20, 0.1, 20), groundBody);
+
+      // Wall on the right of the run line (x 0.8..1.0, z -1.5..1.5).
+      const wallBody = world.createRigidBody(
+        RAPIER.RigidBodyDesc.fixed().setTranslation(0.9, 1.6, 0),
+      );
+
+      world.createCollider(RAPIER.ColliderDesc.cuboid(0.1, 1.6, 1.5), wallBody);
+
+      const player = new PlayerSystem(physics, {
+        tuning: DEFAULT_MOVEMENT_TUNING,
+        spawnPoint: { x: 0.3, y: 0.93, z: 2 },
+        isWallRunnable: () => isWallRunnable,
+      });
+
+      player.activate();
+      activeHarnesses.push({ physics, player });
+
+      for (let index = 0; index < 60; index += 1) {
+        player.fixedUpdate(input(), 0, FIXED_DT);
+        physics.step();
+      }
+
+      let wallRan = false;
+
+      for (let index = 0; index < 120; index += 1) {
+        const sample =
+          index < 20
+            ? input({ move: { x: 0, y: 1 }, sprintHeld: true })
+            : input({
+                move: { x: 0, y: 1 },
+                sprintHeld: true,
+                jumpPressed: index === 20,
+                jumpHeld: true,
+              });
+
+        player.fixedUpdate(sample, 0, FIXED_DT);
+        physics.step();
+
+        if (player.getMovementSnapshot().state === "WALLRUN") {
+          wallRan = true;
+          break;
+        }
+      }
+
+      return wallRan;
+    };
+
+    expect(await runWallRunScenario(false)).toBe(false);
+    expect(await runWallRunScenario(true)).toBe(true);
+  });
 });

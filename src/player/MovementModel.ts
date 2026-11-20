@@ -20,6 +20,9 @@ export type PlayerStance = "standing" | "crouching" | "sliding";
 
 export type WallRunSide = "left" | "right";
 
+/** Vault traversal profile (`12_MOVEMENT_SYSTEM_SPEC.md` §14.4). */
+export type VaultType = "standard" | "speed";
+
 export interface WallRunCandidate {
   readonly side: WallRunSide;
   /** Unit normal pointing from the wall toward the player. */
@@ -34,6 +37,8 @@ export interface VaultCandidate {
   readonly startPosition: Vector3Like;
   readonly landingPosition: Vector3Like;
   readonly direction: Vector3Like;
+  /** Absolute Y of the obstacle's top surface, for clearance-aware arcs. */
+  readonly obstacleTopY: number;
 }
 
 export interface MovementEnvironment {
@@ -77,6 +82,7 @@ export interface MovementStepEvents {
   readonly slidingStarted: boolean;
   readonly slidingEnded: boolean;
   readonly vaultStarted: boolean;
+  readonly vaultType: VaultType | null;
   readonly wallRunStarted: boolean;
   readonly wallRunEnded: boolean;
   readonly wallJumped: boolean;
@@ -89,6 +95,7 @@ const NO_EVENTS: MovementStepEvents = {
   slidingStarted: false,
   slidingEnded: false,
   vaultStarted: false,
+  vaultType: null,
   wallRunStarted: false,
   wallRunEnded: false,
   wallJumped: false,
@@ -110,6 +117,8 @@ interface MutableVector2 {
 
 interface ActiveVault {
   readonly candidate: VaultCandidate;
+  readonly profile: VaultType;
+  readonly entrySpeed: number;
   elapsedSeconds: number;
   readonly durationSeconds: number;
 }
@@ -155,6 +164,8 @@ export class MovementModel {
   private coyoteRemainingSeconds = 0;
   private sprintIntent = false;
   private jumpCutApplied = false;
+  /** Contextual-interaction buffer for vaults (spec `03_GAMEPLAY_SPEC.md` §5.3). */
+  private interactBufferSeconds = 0;
   /** Airborne collision passes since the current jump was executed. */
   private airborneStepsSinceJump = 0;
   /** True only during the fixed step that executed the jump. */
@@ -266,9 +277,14 @@ export class MovementModel {
 
     this.landingRemainingSeconds = Math.max(0, this.landingRemainingSeconds - deltaSeconds);
     this.jumpBufferSeconds = Math.max(0, this.jumpBufferSeconds - deltaSeconds);
+    this.interactBufferSeconds = Math.max(0, this.interactBufferSeconds - deltaSeconds);
 
     if (input.jumpPressed) {
       this.jumpBufferSeconds = tuning.jumpBufferSeconds;
+    }
+
+    if (input.interactPressed) {
+      this.interactBufferSeconds = tuning.vaultInteractBufferSeconds;
     }
 
     if (this.vault) {
@@ -469,18 +485,35 @@ export class MovementModel {
   }
 
   private beginVault(input: MovementInputSample, environment: MovementEnvironment): boolean {
-    if (!input.interactPressed || !this.grounded || !environment.vault) {
+    const interactRequested = input.interactPressed || this.interactBufferSeconds > 0;
+
+    if (!interactRequested || !this.grounded || !environment.vault) {
       return false;
     }
 
+    const tuning = this.tuning;
+    const entrySpeed = horizontalSpeed(this.velocity);
+
+    // Any vault needs a minimum approach speed; the speed vault additionally
+    // requires a higher speed threshold (deterministic selection rule).
+    if (entrySpeed < tuning.vaultMinEntrySpeed) {
+      return false;
+    }
+
+    const profile: VaultType = entrySpeed >= tuning.vaultSpeedMinEntrySpeed ? "speed" : "standard";
+
+    this.interactBufferSeconds = 0;
     this.vault = {
       candidate: environment.vault,
+      profile,
+      entrySpeed,
       elapsedSeconds: 0,
-      durationSeconds: this.tuning.vaultDurationSeconds,
+      durationSeconds:
+        profile === "speed" ? tuning.vaultSpeedDurationSeconds : tuning.vaultDurationSeconds,
     };
     this.state = "VAULTING";
     this.slideElapsedSeconds = 0;
-    this.stepEvents = { ...NO_EVENTS, vaultStarted: true };
+    this.stepEvents = { ...NO_EVENTS, vaultStarted: true, vaultType: profile };
 
     return true;
   }
@@ -495,9 +528,19 @@ export class MovementModel {
     vault.elapsedSeconds += deltaSeconds;
 
     if (vault.elapsedSeconds >= vault.durationSeconds) {
+      const retention =
+        vault.profile === "speed"
+          ? this.tuning.vaultSpeedMomentumRetention
+          : this.tuning.vaultStandardMomentumRetention;
+      const exitSpeed = vault.entrySpeed * retention;
+
+      // Vault completion preserves a configurable fraction of the incoming
+      // horizontal momentum along the vault direction (spec §14.5).
+      this.velocity.x = vault.candidate.direction.x * exitSpeed;
+      this.velocity.z = vault.candidate.direction.z * exitSpeed;
+      this.velocity.y = 0;
       this.vault = null;
       this.state = "FALLING";
-      this.velocity.y = 0;
     }
   }
 

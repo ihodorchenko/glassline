@@ -12,6 +12,12 @@ export interface WallRunDetectorOptions {
   readonly maxDistance?: number;
   readonly minAlignment?: number;
   readonly minSpeed?: number;
+  /**
+   * Optional surface-eligibility gate (`12_MOVEMENT_SYSTEM_SPEC.md` §15.2):
+   * when provided, a wall hit only counts if the resolver accepts the hit
+   * point. Without it the detector uses pure geometry (used by unit tests).
+   */
+  readonly isWallRunnable?: (position: Vector3Like) => boolean;
 }
 
 function normalize(vector: Vector3Like): Vector3Like | null {
@@ -33,12 +39,14 @@ export class WallRunDetector {
   private readonly maxDistance: number;
   private readonly minAlignment: number;
   private readonly minSpeed: number;
+  private readonly isWallRunnable: ((position: Vector3Like) => boolean) | undefined;
 
   constructor(world: RAPIER.World, options: WallRunDetectorOptions = {}) {
     this.world = world;
     this.maxDistance = options.maxDistance ?? DEFAULT_MAX_DISTANCE;
     this.minAlignment = options.minAlignment ?? DEFAULT_MIN_ALIGNMENT;
     this.minSpeed = options.minSpeed ?? DEFAULT_MIN_SPEED;
+    this.isWallRunnable = options.isWallRunnable;
   }
 
   detect(position: Vector3Like, velocity: Vector3Like): WallRunCandidate | null {
@@ -93,6 +101,18 @@ export class WallRunDetector {
         continue;
       }
 
+      const point = {
+        x: origin.x + dir.x * hit.timeOfImpact,
+        y: origin.y,
+        z: origin.z + dir.z * hit.timeOfImpact,
+      };
+
+      // Surface eligibility: the level authors which surfaces are wall-
+      // runnable; geometry alone is not enough (spec §15.2).
+      if (this.isWallRunnable && !this.isWallRunnable(point)) {
+        continue;
+      }
+
       const signCorrection = alignment >= 0 ? 1 : -1;
 
       return {
@@ -103,11 +123,7 @@ export class WallRunDetector {
           y: 0,
           z: tangent.z * signCorrection,
         },
-        point: {
-          x: origin.x + dir.x * hit.timeOfImpact,
-          y: origin.y,
-          z: origin.z + dir.z * hit.timeOfImpact,
-        },
+        point,
       };
     }
 

@@ -72,8 +72,24 @@ export interface MovementTuning {
 
   readonly vaultMinHeight: number;
   readonly vaultMaxHeight: number;
+  /** Standard-vault trajectory duration. */
   readonly vaultDurationSeconds: number;
   readonly vaultArcLift: number;
+  /** Minimum horizontal speed for any vault (standard profile). */
+  readonly vaultMinEntrySpeed: number;
+  /** Approach speed at/above which the speed vault is selected. */
+  readonly vaultSpeedMinEntrySpeed: number;
+  /** Speed-vault trajectory duration (shorter, faster traversal). */
+  readonly vaultSpeedDurationSeconds: number;
+  /** Exit horizontal speed = entry speed × retention, per profile. */
+  readonly vaultStandardMomentumRetention: number;
+  readonly vaultSpeedMomentumRetention: number;
+  /**
+   * Interaction buffer for contextual vaults (`03_GAMEPLAY_SPEC.md` §5.3):
+   * an E press shortly before the obstacle enters detection range still
+   * triggers the vault once the candidate becomes valid.
+   */
+  readonly vaultInteractBufferSeconds: number;
 
   readonly wallRunMinSpeed: number;
   readonly wallRunMaxDurationSeconds: number;
@@ -137,6 +153,12 @@ export const DEFAULT_MOVEMENT_TUNING: MovementTuning = {
   vaultMaxHeight: 1.15,
   vaultDurationSeconds: 0.45,
   vaultArcLift: 0.25,
+  vaultMinEntrySpeed: 2.5,
+  vaultSpeedMinEntrySpeed: 6,
+  vaultSpeedDurationSeconds: 0.3,
+  vaultStandardMomentumRetention: 0.85,
+  vaultSpeedMomentumRetention: 0.95,
+  vaultInteractBufferSeconds: 0.15,
 
   wallRunMinSpeed: 5,
   wallRunMaxDurationSeconds: 1.5,

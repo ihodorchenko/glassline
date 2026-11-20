@@ -23,7 +23,7 @@ export interface MovementEventMap {
   "player:landed": { readonly impactSpeed: number };
   "player:sliding-started": { readonly speed: number };
   "player:sliding-ended": Record<string, never>;
-  "player:vault-started": { readonly speed: number };
+  "player:vault-started": { readonly speed: number; readonly vaultType: "standard" | "speed" };
   "player:wallrun-started": { readonly side: "left" | "right" };
   "player:wallrun-ended": Record<string, never>;
   "player:walljumped": Record<string, never>;
@@ -33,6 +33,13 @@ export interface PlayerSystemOptions {
   readonly tuning?: MovementTuning;
   /** Capsule center world position. */
   readonly spawnPoint: Vector3Like;
+  /**
+   * Optional surface-eligibility resolver for wall running
+   * (`12_MOVEMENT_SYSTEM_SPEC.md` §15.2): receives the wall hit point and
+   * reports whether that surface is wall-runnable. Without it the detector
+   * uses pure geometry (unit tests).
+   */
+  readonly isWallRunnable?: (position: Vector3Like) => boolean;
 }
 
 const DOWN_RAY = { x: 0, y: -1, z: 0 };
@@ -95,6 +102,8 @@ export class PlayerSystem implements Disposable {
   /** Support-surface normal under the feet after the latest fixed step. */
   private lastSlopeNormal: Vector3Like | null = null;
 
+  private vaultSnapSuspended = false;
+
   constructor(physics: PhysicsWorld, options: PlayerSystemOptions) {
     this.physics = physics;
     this.tuning = options.tuning ?? DEFAULT_MOVEMENT_TUNING;
@@ -129,6 +138,7 @@ export class PlayerSystem implements Disposable {
 
     this.wallRunDetector = new WallRunDetector(world, {
       minSpeed: this.tuning.wallRunMinSpeed,
+      ...(options.isWallRunnable ? { isWallRunnable: options.isWallRunnable } : {}),
     });
     this.vaultDetector = new VaultDetector(world, this.tuning);
 
@@ -175,6 +185,17 @@ export class PlayerSystem implements Disposable {
     const activeVault = this.model.getActiveVault();
 
     this.lastFilterDeltaSeconds = deltaSeconds;
+
+    // Snap-to-ground fights the clearance arc: it would glue the rising
+    // capsule to the obstacle top mid-vault. Suspend it for the traversal and
+    // restore it as soon as the vault ends.
+    if (activeVault && !this.vaultSnapSuspended) {
+      this.controller.enableSnapToGround(0);
+      this.vaultSnapSuspended = true;
+    } else if (!activeVault && this.vaultSnapSuspended) {
+      this.controller.enableSnapToGround(this.tuning.snapToGroundDistance);
+      this.vaultSnapSuspended = false;
+    }
 
     if (activeVault) {
       this.updateScriptedVault(input, worldDirection, activeVault, deltaSeconds);
@@ -437,6 +458,12 @@ export class PlayerSystem implements Disposable {
     this.model = new MovementModel(this.tuning);
     this.effectiveStance = "standing";
     this.postureHeight = this.tuning.capsuleHeight;
+
+    if (this.vaultSnapSuspended) {
+      this.controller.enableSnapToGround(this.tuning.snapToGroundDistance);
+      this.vaultSnapSuspended = false;
+    }
+
     this.collider.setHalfHeight(this.tuning.capsuleHeight / 2 - this.tuning.capsuleRadius);
     this.collider.setTranslationWrtParent({ x: 0, y: 0, z: 0 });
     this.body.setTranslation(position, true);
@@ -485,10 +512,22 @@ export class PlayerSystem implements Disposable {
     const progress = elapsed / activeVault.durationSeconds;
     const target = VaultDetector.samplePosition(activeVault.candidate, this.tuning, progress);
     const translationBefore = this.body.translation();
-    const movement = {
-      x: target.x - translationBefore.x,
-      y: target.y - translationBefore.y,
-      z: target.z - translationBefore.z,
+
+    // Collision-validated traversal: the scripted arc moves through the
+    // character controller instead of a raw kinematic teleport, so the body
+    // cannot pass through geometry — anything in the way clamps the motion
+    // safely (spec §14.6).
+    this.desiredTranslation.x = target.x - translationBefore.x;
+    this.desiredTranslation.y = target.y - translationBefore.y;
+    this.desiredTranslation.z = target.z - translationBefore.z;
+
+    this.controller.computeColliderMovement(this.collider, this.desiredTranslation);
+    const computed = this.controller.computedMovement(this.actualMovement);
+    const movement = { x: computed.x, y: computed.y, z: computed.z };
+    const next = {
+      x: translationBefore.x + movement.x,
+      y: translationBefore.y + movement.y,
+      z: translationBefore.z + movement.z,
     };
 
     this.previousPosition = {
@@ -496,8 +535,8 @@ export class PlayerSystem implements Disposable {
       y: translationBefore.y,
       z: translationBefore.z,
     };
-    this.currentPosition = { ...target };
-    this.body.setNextKinematicTranslation(target);
+    this.currentPosition = next;
+    this.body.setNextKinematicTranslation(next);
     this.model.applyVaultMotion(movement, deltaSeconds);
     this.emitMovementEvents();
   }
@@ -751,7 +790,10 @@ export class PlayerSystem implements Disposable {
     }
 
     if (events.vaultStarted) {
-      this.events.emit("player:vault-started", { speed: snapshot.speed });
+      this.events.emit("player:vault-started", {
+        speed: snapshot.speed,
+        vaultType: events.vaultType ?? "standard",
+      });
     }
 
     if (events.wallRunStarted) {

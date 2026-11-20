@@ -112,6 +112,36 @@ export class SurfaceRegistry {
     return best;
   }
 
+  /**
+   * Finds the active surface whose bounds contain a world point (any height,
+   * unlike {@link getSurfaceAt} which targets feet-level walkable surfaces).
+   * Used by traversal eligibility checks such as wall-run surface gating.
+   */
+  getSurfaceContaining(position: LevelVector3): RuntimeSurface | null {
+    for (const surface of this.surfaces.values()) {
+      if (!surface.active || !surface.bounds) {
+        continue;
+      }
+
+      const bounds = surface.bounds;
+
+      if (!inBounds(bounds, position)) {
+        continue;
+      }
+
+      if (
+        position.y < bounds.center.y - bounds.halfExtents.y ||
+        position.y > bounds.center.y + bounds.halfExtents.y
+      ) {
+        continue;
+      }
+
+      return surface;
+    }
+
+    return null;
+  }
+
   getActiveCount(): number {
     let count = 0;
 
