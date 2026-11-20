@@ -107,6 +107,50 @@ export class TrainingSystem {
     };
   }
 
+  /**
+   * Read-only access to the currently evaluated objective definition.
+   *
+   * Used by presentation systems that follow the active objective (the
+   * in-world objective marker) without building a full snapshot per frame.
+   */
+  getCurrentObjectiveDefinition(): TrainingObjectiveDefinition | null {
+    const exercise = this.exercises[this.exerciseIndex];
+
+    if (this.status !== "running" || exercise?.status !== "active") {
+      return null;
+    }
+
+    return exercise.definition.objectives[exercise.currentObjectiveIndex] ?? null;
+  }
+
+  /**
+   * Read-only look-ahead: the next positional objective inside the *current*
+   * exercise (after the current step), without entering the next exercise.
+   *
+   * The in-world objective marker uses it to stay visible while the current
+   * objective is non-positional (e.g. "move for 0.5 s" before
+   * "reach the rooftop checkpoint"), so a new player still sees the goal.
+   */
+  getNextPositionalObjectiveDefinition(): TrainingObjectiveDefinition | null {
+    const exercise = this.exercises[this.exerciseIndex];
+
+    if (this.status !== "running" || exercise?.status !== "active") {
+      return null;
+    }
+
+    const objectives = exercise.definition.objectives;
+
+    for (let index = exercise.currentObjectiveIndex + 1; index < objectives.length; index += 1) {
+      const objective = objectives[index];
+
+      if (objective?.type === "reach_location" && objective.position !== undefined) {
+        return objective;
+      }
+    }
+
+    return null;
+  }
+
   startSession(sessionId: string): void {
     if (this.status === "running") {
       throw new Error("Training session is already running.");

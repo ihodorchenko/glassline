@@ -6,6 +6,7 @@ import { CameraSystem } from "../camera/CameraSystem";
 import { type CheckpointDefinition, CheckpointSystem } from "../checkpoint/CheckpointSystem";
 import { type Disposable, disposeAll } from "../core/Disposable";
 import { GameLoop } from "../core/GameLoop";
+import { parseCaptureRequest } from "../diagnostics/captureShots";
 import { StatusOverlay } from "../diagnostics/StatusOverlay";
 import {
   createDomainEvent,
@@ -33,6 +34,12 @@ import {
 import { DEFAULT_LANGUAGE_ID, DEFAULT_LANGUAGE_REGISTRY } from "../localization/Language";
 import { LocalizationManager } from "../localization/LocalizationManager";
 import { createDefaultLocalizationResourceLoader } from "../localization/LocalizationResourceLoader";
+import {
+  type ObjectiveMarkerTarget,
+  type ObjectiveMarkerTargetRules,
+  resolveObjectiveMarkerTarget,
+} from "../markers/ObjectiveMarkerRules";
+import { ObjectiveMarkerSystem } from "../markers/ObjectiveMarkerSystem";
 import { PhysicsWorld } from "../physics/PhysicsWorld";
 import type { MovementInputSample } from "../player/MovementModel";
 import { PlayerStateSystem } from "../player/PlayerStateSystem";
@@ -102,6 +109,19 @@ function describeError(error: unknown): string {
 }
 
 /**
+ * True only when the dev-only deterministic capture boot will start
+ * (`?capture=1&level=prologue...`). Reuses the capture URL contract instead of
+ * introducing a second global flag; production builds never load capture mode.
+ */
+function isCaptureModeRequested(): boolean {
+  if (!import.meta.env.DEV || typeof window === "undefined") {
+    return false;
+  }
+
+  return parseCaptureRequest(window.location.search) !== null;
+}
+
+/**
  * Composition root.
  *
  * Creates persistent services, owns the game loop, and drives gameplay sessions
@@ -135,6 +155,7 @@ export class Application implements Disposable {
   private resourceLoader: ResourceLoader | null = null;
   private audioManager: AudioManager | null = null;
   private cameraSystem: CameraSystem | null = null;
+  private objectiveMarker: ObjectiveMarkerSystem | null = null;
   private levelRuntime: LevelRuntimeManager | null = null;
   private sessionManager: GameplaySessionManager | null = null;
   private flowManager: GameplayFlowManager | null = null;
@@ -155,6 +176,25 @@ export class Application implements Disposable {
   private tutorialSystem: TutorialSystem | null = null;
   private speedrunRecordStore: SpeedrunRecordStore | null = null;
   private currentMode: GameplayMode | null = null;
+  private captureMode = false;
+  private gameplayElapsedSeconds = 0;
+  private finishTriggered = false;
+
+  /**
+   * Reused target-resolution inputs and output: the marker provider runs every
+   * rendered frame, so it must not allocate.
+   */
+  private readonly objectiveMarkerTargetRules: ObjectiveMarkerTargetRules = {
+    mode: null,
+    gameplayActive: false,
+    captureMode: false,
+    finishTriggered: false,
+    trainingObjective: null,
+    trainingNextPositionalObjective: null,
+    level: null,
+    activeSectionId: null,
+    activatedCheckpointIds: new Set<string>(),
+  };
 
   private analyticsActive = false;
   private analyticsStartedAtMs = 0;
@@ -439,7 +479,75 @@ export class Application implements Disposable {
       this.renderScene.setMenuBackdropVisible(true);
       this.viewModel = new ViewModel(this.cameraSystem.camera);
       this.resources.push(this.viewModel);
+      this.initializeObjectiveMarker();
     }
+  }
+
+  /**
+   * Creates the in-world objective marker. It is presentation-only: targets are
+   * resolved from the existing Training/Checkpoint/Level Runtime state each
+   * frame and the module owns no gameplay authority.
+   */
+  private initializeObjectiveMarker(): void {
+    if (!this.renderScene) {
+      return;
+    }
+
+    this.captureMode = isCaptureModeRequested();
+    this.objectiveMarker = new ObjectiveMarkerSystem({
+      addObject: (object) => this.renderScene?.addObject(object),
+      removeObject: (object) => this.renderScene?.removeObject(object),
+      resolveTarget: (out) => this.resolveObjectiveMarkerTarget(out),
+      resolveSurfaceY: (x, y, z) => this.resolveObjectiveMarkerSurfaceY(x, y, z),
+      getReducedMotion: () => this.cameraSystem?.reducedMotionEnabled ?? false,
+      captureMode: this.captureMode,
+    });
+    this.resources.push(this.objectiveMarker);
+  }
+
+  /** Fills the reusable rules container, then resolves the active target. */
+  private resolveObjectiveMarkerTarget(out: ObjectiveMarkerTarget): boolean {
+    const rules = this.objectiveMarkerTargetRules;
+
+    rules.mode = this.currentMode;
+    rules.gameplayActive =
+      this.flowManager?.getState() === "gameplay" && (this.sessionManager?.isRunning() ?? false);
+    rules.captureMode = this.captureMode;
+    rules.finishTriggered = this.finishTriggered;
+    rules.trainingObjective = this.trainingSystem?.getCurrentObjectiveDefinition() ?? null;
+    rules.trainingNextPositionalObjective =
+      this.trainingSystem?.getNextPositionalObjectiveDefinition() ?? null;
+    rules.level = this.levelRuntime?.getCurrentLevel() ?? null;
+    rules.activeSectionId = this.levelRuntime?.getActiveSectionId() ?? null;
+    rules.activatedCheckpointIds = this.sessionCheckpointIds;
+
+    return resolveObjectiveMarkerTarget(out, rules);
+  }
+
+  /**
+   * Resolves the surface under the authored target point with a downward physics
+   * ray so the apex and the ring decal sit on the real deck. Called once per
+   * target change, never per frame.
+   */
+  private resolveObjectiveMarkerSurfaceY(x: number, y: number, z: number): number | null {
+    const physics = this.physics;
+
+    if (!physics) {
+      return null;
+    }
+
+    const fromY = y + 0.1;
+    const hit = physics.castRay(
+      { x, y: fromY, z },
+      { x, y: fromY - 8, z },
+      { ignoreKinematic: true },
+    );
+
+    if (!hit) {
+      return null;
+    }
+
+    return fromY - hit.distance;
   }
 
   private initializeInput(): void {
@@ -833,6 +941,8 @@ export class Application implements Disposable {
 
     this.currentMode = context.mode;
     this.completionRequested = false;
+    this.finishTriggered = false;
+    this.gameplayElapsedSeconds = 0;
 
     this.playerState = new PlayerStateSystem("local-player", context.sessionId);
     this.sessionDisposables.push(this.playerState);
@@ -1410,6 +1520,7 @@ export class Application implements Disposable {
     }
 
     if (event.metadata?.kind === "finish") {
+      this.finishTriggered = true;
       void this.completeGameplay("finish-trigger", event.triggerId);
     }
   }
@@ -1790,6 +1901,9 @@ export class Application implements Disposable {
       return;
     }
 
+    // Frame-rate independent marker animation clock (fixed simulation steps).
+    this.gameplayElapsedSeconds += fixedDeltaSeconds;
+
     if (this.respawnManager?.isRespawning) {
       this.respawnManager.update(fixedDeltaSeconds);
       this.physics?.step();
@@ -2010,6 +2124,10 @@ export class Application implements Disposable {
         playerPosition: this.player.getInterpolatedPosition(alpha),
         deltaSeconds: frameDeltaSeconds,
       });
+    }
+
+    if (this.cameraSystem) {
+      this.objectiveMarker?.update(this.cameraSystem.camera.position, this.gameplayElapsedSeconds);
     }
 
     if (movement) {
@@ -2392,6 +2510,7 @@ export class Application implements Disposable {
     this.renderer = null;
     this.renderScene = null;
     this.viewModel = null;
+    this.objectiveMarker = null;
     this.physics = null;
     this.input = null;
     this.database = null;
