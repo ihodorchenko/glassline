@@ -131,7 +131,10 @@ function addRoofExpansionJoints(builder: CityBuilder): void {
   // The darker steel reads as a structural seam without becoming a black hole.
   for (const z of [-16, -8, 0, 8, 16]) {
     builder.box(-3.2, 0.018, z, 15.6, 0.024, 0.05, {
-      material: "dark-metal",
+      // The tunnel-floor joint (z -8) is seen at close range in the
+      // service-block frame; a mid-grey steel seam reads as a joint instead of
+      // a black hole. Other roof joints keep the cool dark steel.
+      ...(z === -8 ? { color: 0x9aa0a4 } : { material: "dark-metal" as const }),
       castShadow: false,
     });
   }
@@ -485,8 +488,50 @@ function addMiscRoofProps(builder: CityBuilder): void {
     }
   }
 
-  // Painted route markers: dashed red centre line and checkpoint chevrons.
-  for (let z = 4.6; z > -21; z -= 2.6) {
+  // Start-roof bulkhead (the plain vault box in the FG-right of the start
+  // frame): 0.6 m panel-seam grid in #d8d8d4, two dark-steel vent grilles on
+  // the camera-facing side and a steel cap on the top edge. Decorative only;
+  // the collider is untouched.
+  for (const x of [-0.6, 0, 0.6]) {
+    builder.box(x, 0.375, -0.645, 0.02, 0.75, 0.012, {
+      color: 0xd8d8d4,
+      castShadow: false,
+      receiveShadow: false,
+    });
+  }
+
+  builder.box(0, 0.6, -0.645, 2.4, 0.02, 0.012, {
+    color: 0xd8d8d4,
+    castShadow: false,
+    receiveShadow: false,
+  });
+
+  for (const side of [-1, 1]) {
+    builder.box(side * 0.9, 0.36, -0.645, 0.6, 0.4, 0.02, {
+      material: "dark-metal",
+      castShadow: false,
+    });
+
+    for (const y of [0.24, 0.36, 0.48]) {
+      builder.box(side * 0.9, y, -0.632, 0.52, 0.05, 0.015, {
+        material: "metal",
+        castShadow: false,
+      });
+    }
+  }
+
+  builder.box(0, 0.775, -0.66, 2.4, 0.05, 0.12, { material: "metal", castShadow: false });
+
+  // Painted route markers: one continuous stripe from the spawn to the first
+  // vault (z 2.0 to -8.0, replaces the dashes on this deck), then the dashed
+  // centre line and checkpoint chevrons.
+  builder.box(0, 0.005, -3.0, 0.35, 0.01, 10.0, {
+    material: "red",
+    castShadow: false,
+    receiveShadow: false,
+  });
+
+  for (let z = -8.4; z > -21; z -= 2.6) {
     builder.box(0, 0.012, z, 0.16, 0.02, 1.15, {
       material: "red",
       castShadow: false,
@@ -545,6 +590,20 @@ function addFinishArea(builder: CityBuilder, z: number, deckY: number): void {
     emissive: 0xbfe6ff,
     emissiveIntensity: 0.05,
   });
+
+  // Continuous red route line from z -124 to the finish line at -132.5 (the
+  // finish line stays as the transverse stripe) and one AC unit so the high
+  // deck does not read empty.
+  builder.box(0, deckY + 0.005, z + 4.75, 0.35, 0.01, 8.5, {
+    material: "red",
+    castShadow: false,
+    receiveShadow: false,
+  });
+  builder.box(7.2, deckY + 0.72, z + 1.5, 2.2, 1.3, 1.6, {
+    material: "metal",
+    castShadow: true,
+  });
+  builder.box(7.2, deckY + 1.43, z + 1.5, 2.0, 0.1, 1.4, { material: "dark-metal" });
 }
 
 function addCheckpointBeacons(builder: CityBuilder): void {
@@ -663,7 +722,7 @@ function addBuilding(
   const floorHeight = 3.6;
   const bays = Math.max(2, Math.round(frame.length / bayWidth));
   const resolvedBay = frame.length / bays;
-  const floors = Math.max(2, Math.round((options.top + 22) / floorHeight));
+  const floors = Math.max(2, Math.round((options.top - GROUND_Y - 5) / floorHeight));
   const baseY = GROUND_Y + 5;
 
   if (style === "curtain") {
@@ -919,7 +978,7 @@ function addNearCity(builder: CityBuilder): void {
   });
   addBuilding(builder, 28, 15, 16, 22, {
     material: "facade",
-    top: 14,
+    top: 10,
     facing: "west",
     roofProps: true,
     seed: 29,
@@ -938,14 +997,14 @@ function addNearCity(builder: CityBuilder): void {
 
   addBuilding(builder, -30, -48, 18, 22, {
     material: "facade",
-    top: 26,
+    top: 10,
     facing: "east",
     roofProps: true,
     seed: 67,
   });
   addBuilding(builder, 32, -50, 20, 24, {
     material: "glass",
-    top: 30,
+    top: 14,
     facing: "west",
     roofProps: true,
     seed: 71,
@@ -954,35 +1013,35 @@ function addNearCity(builder: CityBuilder): void {
   // Towers ahead, forming the main skyline wall behind the finish.
   addBuilding(builder, -32, -84, 24, 24, {
     material: "glass-far",
-    top: 42,
+    top: 20,
     facing: "south",
     roofProps: true,
     seed: 31,
   });
   addBuilding(builder, 22, -96, 20, 26, {
     material: "facade",
-    top: 54,
+    top: 16,
     facing: "south",
     roofProps: true,
     seed: 37,
   });
-  addBuilding(builder, 4, -190, 48, 32, {
+  addBuilding(builder, 4, -215, 48, 32, {
     material: "glass-far",
-    top: 74,
+    top: 10,
     facing: "south",
     roofProps: false,
     seed: 41,
   });
   addBuilding(builder, -60, -66, 24, 30, {
     material: "concrete",
-    top: 32,
+    top: 16,
     facing: "east",
     roofProps: true,
     seed: 43,
   });
   addBuilding(builder, 64, -64, 28, 28, {
     material: "glass-far",
-    top: 46,
+    top: 20,
     facing: "west",
     roofProps: true,
     seed: 47,
@@ -1087,6 +1146,252 @@ function addSkybridge(builder: CityBuilder): void {
   builder.box(0, 23.5, -118, 58.4, 0.18, 0.6, { material: "dark-metal" });
 }
 
+/**
+ * Skybridge suspended construction load + the city layer below the span.
+ * The gantry lands in the upper middle-ground of the skybridge shot; the low
+ * roofs sit under and beside the span so the transparent rails reveal a city
+ * layer instead of fog. Purely decorative boxes (no colliders/triggers).
+ */
+function addSkybridgeOverhead(builder: CityBuilder): void {
+  // Steel cap handrail and outer posts on the two existing glass-rail boxes
+  // (0.2 x 1.3 x 8 m at x +/-1.8): decoration only, rail geometry frozen.
+  for (const side of [-1, 1]) {
+    builder.box(side * 1.8, 0.43, -46, 0.08, 0.06, 8, { material: "metal" });
+
+    for (let index = 0; index < 5; index += 1) {
+      builder.box(side * 1.93, -0.25, -50 + index * 2, 0.06, 1.3, 0.06, {
+        material: "metal",
+      });
+    }
+  }
+
+  // Suspended service skip on four steel cables, over the far end of the span
+  // (z -62, x +1.2 off the route centreline so the route stays clear): white
+  // body #f1f1ed, 0.1 m red band, dark-steel bottom; bottom 3.4 m above deck.
+  builder.box(1.2, 3.2, -62, 1.2, 1.4, 1.8, { material: "white", castShadow: true });
+  builder.box(1.2, 3.75, -62, 1.22, 0.1, 1.82, { material: "red", castShadow: false });
+  builder.box(1.2, 2.5, -62, 1.26, 0.06, 1.86, { material: "dark-metal" });
+
+  // Gantry the cables hang from, so the load reads in the upper middle-ground.
+  builder.box(0, 5.6, -62, 12, 0.35, 0.5, { material: "metal", castShadow: true });
+
+  for (const side of [-1, 1]) {
+    builder.box(side * 6, 2.44, -61.5, 0.45, 6.68, 0.45, {
+      material: "metal",
+      castShadow: true,
+    });
+    builder.box(side * 6, -0.86, -61.5, 0.9, 0.1, 0.9, { material: "dark-metal" });
+  }
+
+  for (const dx of [-1, 1]) {
+    for (const dz of [-1, 1]) {
+      builder.cylinder(1.2 + dx * 0.42, 4.66, -62 + dz * 0.72, 0.02, 1.53, {
+        material: "metal",
+        castShadow: false,
+      });
+    }
+  }
+
+  // Vista below the span: the lower service roof 16 m down with parapets and
+  // vents, a near east tower facade grid set back ~7 m from the bridge edge,
+  // and a lower roof + crane to the west. City floor (-31 m) already exists.
+  builder.box(0, -16.25, -52, 17, 0.5, 22, { material: "roof", castShadow: true });
+  builder.box(0, -15.85, -52, 17.4, 0.3, 22.4, { material: "concrete" });
+
+  for (const z of [-63.2, -40.8]) {
+    builder.box(0, -15.35, z, 17.4, 0.7, 0.4, { material: "concrete" });
+    builder.box(0, -14.98, z, 17.8, 0.06, 0.5, { material: "dark-metal" });
+  }
+
+  for (const side of [-1, 1]) {
+    builder.box(side * 8.5, -15.35, -52, 0.4, 0.7, 22, { material: "concrete" });
+    builder.box(side * 8.5, -14.98, -52, 0.5, 0.06, 22.4, { material: "dark-metal" });
+  }
+
+  for (const [x, z] of [
+    [-5, -50],
+    [3, -56],
+    [4.5, -46],
+  ] as const) {
+    builder.box(x, -15.25, z, 1.2, 0.9, 0.8, { material: "metal", castShadow: true });
+    builder.box(x, -14.77, z, 1.0, 0.06, 0.6, { material: "dark-metal" });
+  }
+
+  // East near tower, kept set back from the bridge edge and shifted south so
+  // the dressed east side roof fits between it and the span.
+  addBuilding(builder, 15, -70, 12, 16, {
+    material: "facade",
+    top: 2,
+    facing: "west",
+    roofProps: true,
+    seed: 91,
+  });
+
+  // West low-rise block: roof deck at -11.5 with the construction crane on it.
+  builder.box(-19, -22, -50, 10, 20, 18, { material: "facade", castShadow: true });
+  builder.box(-19, -11.75, -50, 10.4, 0.5, 18.4, { material: "roof", castShadow: true });
+  builder.box(-19, -11.4, -50, 10.8, 0.3, 18.8, { material: "concrete" });
+  builder.box(-19, -11.15, -41.2, 10.8, 0.08, 0.4, { material: "dark-metal" });
+  builder.box(-18, -4.25, -47, 0.7, 14.5, 0.7, { material: "metal", castShadow: true });
+  builder.box(-13, 2.9, -47, 10, 0.35, 0.35, { material: "metal" });
+  builder.box(-20, 2.9, -47, 4, 0.3, 0.3, { material: "metal" });
+  builder.box(-21.8, 2.6, -47, 1.6, 1.0, 1.0, { material: "dark-metal" });
+  builder.cylinder(-12.9, 1.65, -47, 0.02, 2.5, {
+    material: "dark-metal",
+    castShadow: false,
+  });
+}
+function addServiceBlockLandmarks(builder: CityBuilder): void {
+  // Tunnel ceiling dressed as a duct: dark-steel underside plate, rib seams
+  // every 0.3 m and a 0.08 m red frame around the lower perimeter. Elements
+  // are thin, so the soffit stays at the 1.35 m duct line (0.95 m above the
+  // 0.4 m slide eye; physical clearance is W3).
+  builder.box(0, 1.346, -7.6, 3.9, 0.005, 4.0, { material: "dark-metal", castShadow: false });
+
+  builder.box(0, 1.342, -9.55, 3.9, 0.01, 0.08, { material: "red", castShadow: false });
+
+  for (let index = 0; index < 13; index += 1) {
+    builder.box(0, 1.343, -5.75 - index * 0.3, 3.9, 0.006, 0.05, {
+      material: "metal",
+      castShadow: false,
+    });
+  }
+
+  // Two side duct boxes on the shoulders (soffit 1.05 m): steel body, dark
+  // steel underside, red lower frame, rib seams every 0.3 m on the inner face.
+  for (const side of [-1, 1]) {
+    builder.box(side * 1.45, 1.33, -7.6, 0.5, 0.44, 4, {
+      material: "metal",
+      castShadow: true,
+    });
+    builder.box(side * 1.45, 1.08, -7.6, 0.5, 0.06, 4, { material: "dark-metal" });
+
+    for (let index = 0; index < 13; index += 1) {
+      builder.box(side * 1.19, 1.33, -5.75 - index * 0.3, 0.03, 0.44, 0.06, {
+        material: "metal",
+      });
+    }
+  }
+
+  // Red service door on the wall-run corridor west wall (inner face x -2.2,
+  // z -14.0): matte red, dark-steel frame 0.06 m, steel handle, no emissive.
+  builder.box(-2.175, 1.05, -14.0, 0.05, 2.1, 0.9, { material: "red", castShadow: false });
+  builder.box(-2.17, 2.13, -14.0, 0.06, 0.06, 1.02, { material: "dark-metal" });
+  builder.box(-2.14, 1.05, -13.6, 0.03, 0.12, 0.03, { material: "metal" });
+
+  for (const side of [-1, 1]) {
+    builder.box(-2.17, 1.05, -14.0 + side * 0.48, 0.06, 2.16, 0.06, {
+      material: "dark-metal",
+    });
+  }
+
+  // Steel pipe run along the west wall of the wall-run corridor.
+  builder.cylinder(-2.13, 1.95, -12.8, 0.22, 5.6, {
+    material: "metal",
+    rotationX: Math.PI / 2,
+  });
+
+  for (const z of [-10.8, -12.8, -14.8]) {
+    builder.box(-2.21, 1.8, z, 0.2, 0.18, 0.1, { material: "dark-metal" });
+  }
+}
+function addFirstGapDressing(builder: CityBuilder): void {
+  // Red nosing strip on the front edge of each of the 15 sprint steps:
+  // 3.2 x 0.02 x 0.05 m at z = -34.4 - i * 0.5 (decorative, no colliders).
+  for (let index = 0; index < 15; index += 1) {
+    const top = -3 + (index + 1) * 0.15;
+
+    builder.box(0, top + 0.01, -34.4 - index * 0.5, 3.2, 0.02, 0.05, {
+      material: "red",
+      castShadow: false,
+      receiveShadow: false,
+    });
+  }
+
+  // Steel cap strips on the existing lower-roof parapets (top at y -2.0) and
+  // the landing-lip cap from the W1 fix round.
+  for (const side of [-1, 1]) {
+    builder.box(side * 14.2, -1.975, -32.5, 0.3, 0.05, 19, { material: "metal" });
+  }
+
+  builder.box(0, -2.97, -34.22, 28, 0.06, 0.3, { material: "dark-metal" });
+
+  // Landing roof plant: three vent boxes on deck b and two AC units on deck a.
+  for (const [x, z] of [
+    [6, -36.5],
+    [-6, -38],
+    [6, -39.5],
+  ] as const) {
+    builder.box(x, -2.55, z, 1.2, 0.9, 0.8, { material: "metal", castShadow: true });
+    builder.box(x, -2.07, z, 1.0, 0.06, 0.6, { material: "dark-metal" });
+  }
+
+  for (const x of [-8, 8]) {
+    builder.box(x, -2.5, -26, 1.6, 1.0, 1.2, { material: "metal", castShadow: true });
+    builder.box(x, -1.96, -26, 1.4, 0.08, 1.0, { material: "dark-metal" });
+  }
+}
+/**
+ * Dressed lower roofs flanking the skybridge span: two low-rise service
+ * buildings with roof decks (y -12...-14), parapets/coping, vents/AC and a
+ * pipe run, so the city below reads as structure through both glass panels.
+ */
+function addSkybridgeSideRoofs(builder: CityBuilder): void {
+  for (const side of [-1, 1]) {
+    const x = side * 11;
+    const z = -50;
+
+    builder.box(x, -22, z, 6, 18, 12, { material: "facade", castShadow: true });
+    builder.box(x, -12.75, z, 6.4, 0.5, 12.4, { material: "roof", castShadow: true });
+    builder.box(x, -12.4, z, 6.8, 0.3, 12.8, { material: "concrete" });
+
+    for (const [px, pz, sx, sz] of [
+      [0, 6.1, 6.8, 0.35],
+      [0, -6.1, 6.8, 0.35],
+      [3.1, 0, 0.35, 12.8],
+      [-3.1, 0, 0.35, 12.8],
+    ] as const) {
+      builder.box(x + px, -11.95, z + pz, sx, 0.7, sz, { material: "concrete" });
+      builder.box(x + px, -11.55, z + pz, sx + 0.12, 0.08, sz + 0.12, {
+        material: "dark-metal",
+      });
+    }
+
+    builder.box(x - 1.4, -11.5, z + 3, 1.6, 1.0, 1.2, { material: "metal" });
+    builder.box(x - 1.4, -10.96, z + 3, 1.4, 0.08, 1.0, { material: "dark-metal" });
+    builder.box(x + 1.6, -11.7, z - 2.6, 1.2, 0.7, 0.9, { material: "metal" });
+    builder.box(x + 1.6, -11.32, z - 2.6, 1.0, 0.06, 0.7, { material: "dark-metal" });
+
+    builder.cylinder(x + 2.4, -11.2, z - 1, 0.22, 8, {
+      material: "metal",
+      rotationX: Math.PI / 2,
+    });
+
+    for (const pz of [-3.5, -1, 1.5]) {
+      builder.box(x + 2.4, -11.35, z + pz, 0.2, 0.18, 0.1, { material: "dark-metal" });
+    }
+
+    // Service risers under the span and a dressed band along the finish-deck
+    // near edge: both sit inside the glass sightline of the approved skybridge
+    // pose, so the side glass panels read structure instead of pale haze.
+    builder.box(side * 2.6, -6.5, -49.6, 0.7, 11.5, 0.7, { material: "metal" });
+    builder.box(side * 2.6, -0.7, -49.6, 1.0, 0.3, 1.0, { material: "dark-metal" });
+
+    builder.box(side * 4.9, -0.45, -50.4, 5.0, 0.9, 0.4, { material: "concrete" });
+    builder.box(side * 4.9, 0.03, -50.4, 5.2, 0.08, 0.5, { material: "dark-metal" });
+
+    builder.box(side * 5.2, -0.3, -52.6, 1.4, 1.2, 1.1, { material: "metal" });
+    builder.box(side * 5.2, 0.33, -52.6, 1.2, 0.08, 0.9, { material: "dark-metal" });
+    builder.box(side * 3.4, -0.55, -52.4, 1.0, 0.7, 0.8, { material: "metal" });
+    builder.box(side * 3.4, -0.2, -52.4, 0.8, 0.06, 0.6, { material: "dark-metal" });
+
+    builder.cylinder(side * 6.6, -0.72, -51.6, 0.18, 7.2, {
+      material: "metal",
+      rotationX: Math.PI / 2,
+    });
+  }
+}
+
 function addCrane(builder: CityBuilder): void {
   builder.box(-40, 12, -34, 1.2, 86, 1.2, { material: "metal", castShadow: true });
   builder.box(-40, 55.4, -34, 44, 0.9, 0.9, { material: "red", castShadow: true });
@@ -1101,13 +1406,10 @@ function addCrane(builder: CityBuilder): void {
     builder.box(-40, 8 + index * 9.2, -34, 1.3, 0.12, 1.3, { material: "dark-metal" });
   }
 
-  // A second tower crane on the far side of the catwalk turn gives the open
-  // view a silhouette instead of a blank skyline wall.
-  builder.box(74, 20, -205, 1.4, 102, 1.4, { material: "metal", castShadow: false });
-  builder.box(74, 71.2, -205, 38, 0.8, 0.8, { material: "red", castShadow: false });
-  builder.box(74, 69.8, -219, 3.8, 2.6, 2.6, { material: "dark-metal", castShadow: false });
-  builder.box(55.5, 71.0, -205, 0.06, 18, 0.06, { material: "dark-metal", castShadow: false });
-  builder.box(55.5, 61.8, -205, 1.1, 0.5, 0.5, { material: "metal", castShadow: false });
+  // The far east tower crane was removed in W2.1: after the AD-approved sky
+  // cut its red jib/counterweight hung in open sky with no readable mast in
+  // the finish-roof and first-gap frames. The west crane below stays as the
+  // distant construction silhouette.
 }
 
 function addLowerZone(builder: CityBuilder): void {
@@ -1308,7 +1610,7 @@ function addLowerZone(builder: CityBuilder): void {
   // centreline from the skybridge landing (z=-42) to the final-beam gap
   // (z=-61.9). Decorative only: no collider, section or trigger; the route red
   // comes from albedo, so there is no emissive.
-  builder.box(0, -0.885, -51.95, 0.15, 0.02, 19.9, {
+  builder.box(0, -0.885, -51.95, 0.35, 0.02, 19.9, {
     material: "red",
     castShadow: false,
     receiveShadow: false,
@@ -1614,7 +1916,7 @@ function addCatwalk(builder: CityBuilder): void {
   // A distant hero skyline closes the open turn view without forming a wall.
   addBuilding(builder, 50, -300, 26, 18, {
     material: "glass-far",
-    top: 96,
+    top: 12,
     facing: "north",
     roofProps: true,
     seed: 77,
@@ -1634,13 +1936,15 @@ function addCatwalk(builder: CityBuilder): void {
     seed: 79,
   });
 
-  builder.plane(50, 74, -290.7, 13, 6.4, 0, {
+  // The far hero billboard now sits on the correspondingly cut skyline tower
+  // (top 12) instead of floating in the opened sky.
+  builder.plane(50, 14, -290.7, 13, 6.4, 0, {
     text: "GLASSLINE",
     background: 0x14191d,
     textColor: 0xf4f1e9,
     accentColor: 0xd52e36,
   });
-  builder.box(50, 97.3, -300, 0.5, 2.0, 0.5, {
+  builder.box(50, 17.8, -300, 0.5, 2.0, 0.5, {
     material: "red",
     emissive: 0xc0262d,
     emissiveIntensity: 0.1,
@@ -1775,6 +2079,61 @@ function addBillboards(builder: CityBuilder): void {
   });
 }
 
+/**
+ * Cheap batched facade rhythm + roof props for the far-ring background towers.
+ * The ring is plain boxes; after the W2 sky opening they read as blank slabs in
+ * the canyon/rooftop frames, so the south-half ring gets spandrels, window
+ * strips and piers on the camera-facing side plus a roof prop on near towers.
+ */
+function addFarTowerFacade(
+  builder: CityBuilder,
+  x: number,
+  z: number,
+  width: number,
+  depth: number,
+  top: number,
+  radius: number,
+): void {
+  const baseY = GROUND_Y;
+  const nearFace = z + depth / 2 + 0.06;
+  const floors = Math.max(3, Math.min(9, Math.round((top - baseY) / 12)));
+  const step = (top - baseY) / floors;
+
+  for (let floor = 1; floor < floors; floor += 1) {
+    const y = baseY + floor * step;
+
+    builder.box(x, y, nearFace, width * 0.9, 0.3, 0.18, {
+      material: "concrete",
+      castShadow: false,
+      receiveShadow: false,
+    });
+    builder.box(x, y + step * 0.42, nearFace, width * 0.82, Math.min(2.4, step * 0.4), 0.12, {
+      material: floor % 2 === 0 ? "glass" : "glass-far",
+      castShadow: false,
+      receiveShadow: false,
+    });
+  }
+
+  for (const px of [-0.32, 0, 0.32]) {
+    builder.box(x + width * px, (baseY + top) / 2, nearFace + 0.02, 0.42, top - baseY, 0.16, {
+      material: "white",
+      castShadow: false,
+      receiveShadow: false,
+    });
+  }
+
+  if (radius < 230) {
+    builder.box(x + width * 0.2, top + 0.95, z, 2.2, 1.2, 1.7, {
+      material: "metal",
+      castShadow: false,
+    });
+    builder.box(x + width * 0.2, top + 1.6, z, 2.0, 0.12, 1.5, {
+      material: "dark-metal",
+      castShadow: false,
+    });
+  }
+}
+
 function addFarSkyline(builder: CityBuilder): void {
   const random = createRandom(0x5eed1234);
 
@@ -1786,6 +2145,14 @@ function addFarSkyline(builder: CityBuilder): void {
     const width = 14 + random() * 26;
     const depth = 14 + random() * 26;
     const top = 24 + random() * 120;
+    // Two far-ring towers behind the finish gate block the W2 sky opening;
+    // the AD-approved cut keeps the gate a silhouette against sky.
+    const cutTop =
+      Math.abs(x + 18.4) < 1 && Math.abs(z + 165.9) < 1
+        ? 8
+        : Math.abs(x + 65.4) < 1.5 && Math.abs(z + 215.8) < 1.5
+          ? 10
+          : top;
     const material: LevelMaterialType =
       random() > 0.62 ? "glass-far" : random() > 0.5 ? "concrete" : "facade";
     const crowdsCatwalkTurn = x > 20 && x < 95 && z < -112 && z > -260;
@@ -1794,22 +2161,26 @@ function addFarSkyline(builder: CityBuilder): void {
       continue;
     }
 
-    builder.box(x, (top + GROUND_Y) / 2, z, width, top - GROUND_Y, depth, {
+    builder.box(x, (cutTop + GROUND_Y) / 2, z, width, cutTop - GROUND_Y, depth, {
       material,
       castShadow: false,
       receiveShadow: false,
     });
-    builder.box(x, top + 0.4, z, width + 0.5, 0.8, depth + 0.5, {
+    builder.box(x, cutTop + 0.4, z, width + 0.5, 0.8, depth + 0.5, {
       material: "concrete",
       castShadow: false,
       receiveShadow: false,
     });
 
+    if (z < -100 && Math.abs(x) < 200) {
+      addFarTowerFacade(builder, x, z, width, depth, cutTop, radius);
+    }
+
     if (radius < 220 && random() > 0.35) {
       const bandCount = 2 + Math.floor(random() * 5);
 
       for (let band = 0; band < bandCount; band += 1) {
-        const y = 8 + band * (top / (bandCount + 1));
+        const y = 8 + band * (cutTop / (bandCount + 1));
         const face = Math.floor(random() * 4);
 
         if (face === 0) {
@@ -1888,7 +2259,9 @@ export function createPrologueCityDecorations(
 
   addStairBulkhead(builder);
   addMiscRoofProps(builder);
+  addServiceBlockLandmarks(builder);
   addLowerZone(builder);
+  addFirstGapDressing(builder);
   addFinaleScaffold(builder);
   addCatwalk(builder);
   addHighRoofDressing(builder);
@@ -1898,6 +2271,8 @@ export function createPrologueCityDecorations(
   addNearCity(builder);
   addOverheadBridge(builder);
   addSkybridge(builder);
+  addSkybridgeOverhead(builder);
+  addSkybridgeSideRoofs(builder);
   addCrane(builder);
   addBillboards(builder);
   addFarSkyline(builder);

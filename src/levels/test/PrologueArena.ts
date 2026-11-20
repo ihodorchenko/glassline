@@ -12,6 +12,7 @@ export interface PrologueArenaBox {
     | "roof"
     | "facade"
     | "glass"
+    | "glass-rail"
     | "metal"
     | "dark-metal"
     | "red"
@@ -233,7 +234,7 @@ export const PROLOGUE_ARENA_BOXES: readonly PrologueArenaBox[] = [
       },
       size: { x: 3.2, y: top + 3.1, z: 0.5 },
       surfaceId: "surface_step",
-      material: "metal" as const,
+      material: "concrete" as const,
     };
   }),
   // Skybridge deck and rails.
@@ -249,14 +250,14 @@ export const PROLOGUE_ARENA_BOXES: readonly PrologueArenaBox[] = [
     position: { x: -1.8, y: -0.25, z: -46 },
     size: { x: 0.2, y: 1.3, z: 8 },
     surfaceId: "surface_boundary",
-    material: "glass",
+    material: "glass-rail",
   },
   {
     id: "geo_skybridge_rail_east",
     position: { x: 1.8, y: -0.25, z: -46 },
     size: { x: 0.2, y: 1.3, z: 8 },
     surfaceId: "surface_boundary",
-    material: "glass",
+    material: "glass-rail",
   },
   // Finish roof.
   {
