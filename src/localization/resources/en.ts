@@ -125,6 +125,7 @@ export const ENGLISH_RESOURCES: TranslationResources = {
   "settings.accessibility.high_contrast": "High contrast",
   "settings.accessibility.color_independent_status": "Color-independent status",
   "settings.accessibility.large_text": "Large text",
+  "settings.accessibility.reduce_grain": "Reduce film grain",
   "settings.gameplay.show_tutorial_hints": "Show tutorial hints",
   "settings.gameplay.contextual_assistance": "Contextual assistance",
   "settings.gameplay.training_assistance": "Training assistance",

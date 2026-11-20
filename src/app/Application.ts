@@ -44,6 +44,7 @@ import {
   type LoadedLevelInfo,
   type SessionResults,
 } from "../sessions/GameplaySessionManager";
+import { AccessibilitySettingsAdapter } from "../settings/adapters/AccessibilitySettingsAdapter";
 import { AudioSettingsAdapter } from "../settings/adapters/AudioSettingsAdapter";
 import { CameraSettingsAdapter } from "../settings/adapters/CameraSettingsAdapter";
 import { ControlsSettingsAdapter } from "../settings/adapters/ControlsSettingsAdapter";
@@ -1611,6 +1612,10 @@ export class Application implements Disposable {
     }
 
     if (this.renderer) {
+      // W5 accessibility: `accessibility.reduce_grain` scales the post grain
+      // (1 = authored look, 0 = off). Registered before display so the grain
+      // preference is in place before any quality change re-renders.
+      pipeline.register(new AccessibilitySettingsAdapter(this.renderer));
       pipeline.register(new DisplaySettingsAdapter(this.renderer));
     }
 

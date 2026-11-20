@@ -136,6 +136,7 @@ export const SETTING_LABEL_KEYS: Readonly<Record<string, string>> = {
   "accessibility.high_contrast": "settings.accessibility.high_contrast",
   "accessibility.color_independent_status": "settings.accessibility.color_independent_status",
   "accessibility.large_text": "settings.accessibility.large_text",
+  "accessibility.reduce_grain": "settings.accessibility.reduce_grain",
   "gameplay.show_tutorial_hints": "settings.gameplay.show_tutorial_hints",
   "gameplay.contextual_assistance": "settings.gameplay.contextual_assistance",
   "gameplay.training_assistance": "settings.gameplay.training_assistance",
@@ -161,6 +162,32 @@ const UNSUPPORTED_SETTING_IDS = new Set([
 ]);
 
 const HUD_TIMER_THROTTLE_MS = 50;
+
+/**
+ * Non-colour status markers used when `accessibility.color_independent_status`
+ * is enabled (`docs/26_ACCESSIBILITY_SYSTEM_SPEC.md` §10): state is carried by
+ * a glyph/shape in addition to the accent colour, so it survives colour
+ * blindness, monochrome displays and low-contrast environments.
+ */
+export type ColorIndependentStatus = "complete" | "incomplete" | "active-tab";
+
+const COLOR_INDEPENDENT_MARKERS: Readonly<Record<ColorIndependentStatus, string>> = {
+  complete: "✓",
+  incomplete: "✗",
+  "active-tab": "▸",
+};
+
+/**
+ * Returns the non-colour prefix for a status, or an empty string when the
+ * preference is disabled. Exported for unit testing; the DOM contract is the
+ * rendered text of the results list and settings tabs.
+ */
+export function colorIndependentStatusMarker(
+  status: ColorIndependentStatus,
+  enabled: boolean,
+): string {
+  return enabled ? `${COLOR_INDEPENDENT_MARKERS[status]} ` : "";
+}
 
 function element<K extends keyof HTMLElementTagNameMap>(
   tag: K,
@@ -225,6 +252,7 @@ export class UIManager {
 
   private reducedMotion = false;
   private highContrast = false;
+  private colorIndependentStatus = true;
   private largeText = false;
   private uiScale = 1;
   private hudEnabled = true;
@@ -443,7 +471,10 @@ export class UIManager {
             element(
               "li",
               exercise.completed ? "gl-results__item is-complete" : "gl-results__item",
-              `${exercise.title}${exercise.completed ? "" : " — incomplete"} · ${exercise.attempts} attempt(s)`,
+              `${colorIndependentStatusMarker(
+                exercise.completed ? "complete" : "incomplete",
+                this.colorIndependentStatus,
+              )}${exercise.title}${exercise.completed ? "" : " — incomplete"} · ${exercise.attempts} attempt(s)`,
             ),
           );
         }
@@ -927,10 +958,19 @@ export class UIManager {
     }
 
     for (const category of categories) {
+      const isActive = category === this.settingsCategory;
+      const tabLabel = this.localize(
+        `settings.categories.${category === "general" ? "language" : category}`,
+      );
+      // Color-independent status: the selected tab also carries a shape/position
+      // marker, not only the accent colour + aria-selected state.
+      const tabMarker = isActive
+        ? colorIndependentStatusMarker("active-tab", this.colorIndependentStatus)
+        : "";
       const tab = this.createActionElement(
         "div",
-        `gl-tab${category === this.settingsCategory ? " is-active" : ""}`,
-        this.localize(`settings.categories.${category === "general" ? "language" : category}`),
+        `gl-tab${isActive ? " is-active" : ""}`,
+        `${tabMarker}${tabLabel}`,
         () => {
           this.settingsCategory = category;
           this.renderSettings();
@@ -1340,6 +1380,11 @@ export class UIManager {
 
     this.reducedMotion = readBoolean(values, "accessibility.reduced_motion", false);
     this.highContrast = readBoolean(values, "accessibility.high_contrast", false);
+    this.colorIndependentStatus = readBoolean(
+      values,
+      "accessibility.color_independent_status",
+      true,
+    );
     this.largeText = readBoolean(values, "accessibility.large_text", false);
     this.uiScale = clampNumber(readNumber(values, "hud.ui_scale", 1), 0.8, 1.4);
     this.hudEnabled = readBoolean(values, "hud.enabled", true);

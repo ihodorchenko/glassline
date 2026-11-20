@@ -8,6 +8,13 @@ import { UnrealBloomPass } from "three/addons/postprocessing/UnrealBloomPass.js"
 import type { Disposable } from "../core/Disposable";
 
 /**
+ * Base film-grain strength in display-sRGB units (the shader's `uGrain`
+ * default). `setGrainScale` multiplies it, so scale 1 reproduces the exact
+ * pre-W5 pixels and scale 0 removes grain entirely (W5 accessibility toggle).
+ */
+const BASE_GRAIN_STRENGTH = 0.002;
+
+/**
  * Scene-linear exposure + white-balance pass, applied *before* bloom so the
  * bloom threshold is expressed in displayed white-point units (1.0 = reference
  * white). Only highlights above that point (emissive, sun/specular) bloom.
@@ -77,10 +84,17 @@ const GRADE_SHADER = {
     uHighlightKnee: { value: 0.92 },
     uHighlightRange: { value: 0.06 },
     uVignette: { value: 0.03 },
-    uGrain: { value: 0.002 },
+    uGrain: { value: BASE_GRAIN_STRENGTH },
     /** Idle CA is off (reference is clean); sprint adds a little via uSpeed. */
     uChromaticAberration: { value: 0.0 },
     uSpeed: { value: 0 },
+    /** Interior ambient term (W5 perf): global weight from the camera sky probe.
+     *  No extra render pass: the whole interior term is this cheap modulation,
+     *  so capture and perf always see the same one code path. */
+    uInteriorWeight: { value: 0 },
+    uInteriorAmbient: { value: 0.82 },
+    uBounceColor: { value: new THREE.Color(0xd8dadc) },
+    uBounceStrength: { value: 0.85 },
   },
   vertexShader: /* glsl */ `
     varying vec2 vUv;
@@ -109,6 +123,10 @@ const GRADE_SHADER = {
     uniform float uGrain;
     uniform float uChromaticAberration;
     uniform float uSpeed;
+    uniform float uInteriorWeight;
+    uniform float uInteriorAmbient;
+    uniform vec3 uBounceColor;
+    uniform float uBounceStrength;
 
     float hash(vec2 p) {
       vec3 p3 = fract(vec3(p.xyx) * 0.1031);
@@ -193,6 +211,29 @@ const GRADE_SHADER = {
         color = mix(color, blurred / 5.0, clamp(uSpeed * 0.35, 0.0, 0.3));
       }
 
+      // Interior ambient term (W5 perf). The camera sky-visibility probe in
+      // RenderScene publishes a 0..1 interior weight; open roofs publish 0 and
+      // this branch is skipped, so their frames stay byte-identical. In covered
+      // views the ambient contribution is attenuated globally and pushed toward
+      // the neutral-cool bounce — no extra render pass, no AO buffer, so the
+      // capture and perf paths see exactly the same state.
+      // 0.01 matches the renderer's hysteresis: a tiny residual probe weight
+      // (finish-roof has ~0.004 from the gate structure) must not perturb the frame.
+      if (uInteriorWeight > 0.01) {
+        // Dim mainly the sky-lit part of the interior: the low end (which sets
+        // p25) keeps its bounce, the bright walls/exit lose the unoccluded sky
+        // contribution. Weight = interior x smoothstep over surface luma.
+        float surfaceLuma = gradeLuma(color);
+        float dimWeight = uInteriorWeight * smoothstep(0.25, 0.65, surfaceLuma)
+          * (1.0 - smoothstep(0.85, 0.98, surfaceLuma));
+        color *= mix(1.0, uInteriorAmbient, dimWeight);
+
+        float interiorLuma = gradeLuma(color);
+        float bounceLuma = max(gradeLuma(uBounceColor), 1.0e-4);
+        vec3 neutralBounce = uBounceColor * (interiorLuma / bounceLuma);
+        color = mix(color, neutralBounce, uInteriorWeight * uBounceStrength);
+      }
+
       // Display-linear filmic tone curve. Exposure/white balance are applied in
       // the pass before bloom, so this is the only tone mapping in the chain.
       color = acesToneMap(color);
@@ -227,106 +268,6 @@ const GRADE_SHADER = {
 };
 
 /**
- * Per-pixel ambient occlusion term (W1.1 fix round, items 1+2).
- *
- * A small AO-only GTAO pass (large radius/thickness, `OUTPUT.Off`, quarter
- * resolution, only enabled while the camera probe reports a covered view) gives
- * the ambient term per-pixel structure: dark interior pockets get much darker
- * while the bright exit slit (AO ~1) keeps its highlight. On open roofs the
- * renderer publishes `ambientInteriorWeight = 0`, this pass is disabled and the
- * frame is bit-for-bit untouched.
- *
- * Lighting intent: ambient/IBL *= mix(1.0, AO, 0.75) in covered regions, and
- * the ambient colour is pulled toward neutral-cool #c8d4dc where AO is low.
- */
-const AMBIENT_AO_SHADER = {
-  uniforms: {
-    tDiffuse: { value: null as THREE.Texture | null },
-    tAO: { value: null as THREE.Texture | null },
-    /** 0 = open / no effect, 1 = fully covered (set from scene.userData). */
-    uInteriorWeight: { value: 0 },
-    uAOStrength: { value: 0.85 },
-    /** AO exponent: measured large-radius AO is ~0.78 indoors, ~0.95+ outside. */
-    uAOPower: { value: 3.2 },
-    uAOOpen: { value: 0.9 },
-    uAOCovered: { value: 0.72 },
-    uBounceColor: { value: new THREE.Color(0xd4d8dc) },
-    uBounceStrength: { value: 0.55 },
-    /** Tap spacing (UV) for the 3x3 low-pass; set from the AO target size. */
-    uAOKernel: { value: new THREE.Vector2(1 / 400, 1 / 225) },
-  },
-  vertexShader: /* glsl */ `
-    varying vec2 vUv;
-
-    void main() {
-      vUv = uv;
-      gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
-    }
-  `,
-  fragmentShader: /* glsl */ `
-    varying vec2 vUv;
-
-    uniform sampler2D tDiffuse;
-    uniform sampler2D tAO;
-    uniform float uInteriorWeight;
-    uniform float uAOStrength;
-    uniform float uAOPower;
-    uniform float uAOOpen;
-    uniform float uAOCovered;
-    uniform vec3 uBounceColor;
-    uniform float uBounceStrength;
-    uniform vec2 uAOKernel;
-
-    float ambientLuma(vec3 color) {
-      return dot(color, vec3(0.2126, 0.7152, 0.0722));
-    }
-
-    float smoothedAO(vec2 uv) {
-      float ao = 0.0;
-
-      for (int iy = -1; iy <= 1; iy += 1) {
-        for (int ix = -1; ix <= 1; ix += 1) {
-          ao += texture2D(tAO, uv + vec2(float(ix), float(iy)) * uAOKernel).r;
-        }
-      }
-
-      return ao / 9.0;
-    }
-
-    void main() {
-      vec3 color = texture2D(tDiffuse, vUv).rgb;
-
-      if (uInteriorWeight > 0.001) {
-        float ao = clamp(smoothedAO(vUv), 0.0, 1.0);
-        // 1 in deep occlusion, 0 on open/highlight surfaces.
-        float pixelInterior = 1.0 - smoothstep(uAOCovered, uAOOpen, ao);
-        pixelInterior = pixelInterior * pixelInterior;
-
-        float ambientFactor = pow(max(ao, 0.0), uAOPower);
-        float ambientScale = mix(
-          1.0,
-          ambientFactor,
-          uInteriorWeight * uAOStrength * pixelInterior
-        );
-        color *= ambientScale;
-
-        // Neutral-cool bounce where the sky bounce tints white walls blue.
-        float colourLuma = ambientLuma(color);
-        float bounceLuma = max(ambientLuma(uBounceColor), 1.0e-4);
-        vec3 neutralBounce = uBounceColor * (colourLuma / bounceLuma);
-        color = mix(
-          color,
-          neutralBounce,
-          uInteriorWeight * uBounceStrength * pixelInterior
-        );
-      }
-
-      gl_FragColor = vec4(max(color, 0.0), 1.0);
-    }
-  `,
-};
-
-/**
  * HDR post-processing chain: render → contact AO → calibrated exposure/white
  * balance → emissive-only bloom → filmic grade (ACES shoulder, split tone,
  * saturation, minimal lens character).
@@ -338,13 +279,10 @@ export class PostPipeline implements Disposable {
   private readonly composer: EffectComposer;
   private readonly renderPass: RenderPass;
   private readonly gtaoPass: GTAOPass;
-  private readonly ambientAoPass: GTAOPass;
-  private readonly ambientAoCompositePass: ShaderPass;
   private readonly exposurePass: ShaderPass;
   private readonly bloomPass: UnrealBloomPass;
   private readonly gradePass: ShaderPass;
   private elapsedSeconds = 0;
-  private currentQuality: "low" | "medium" | "high" = "high";
   private disposed = false;
 
   constructor(renderer: THREE.WebGLRenderer) {
@@ -377,25 +315,6 @@ export class PostPipeline implements Disposable {
     this.gtaoPass.updateGtaoMaterial({ radius: 0.4 });
     this.gtaoPass.updatePdMaterial({ radius: 0.4 });
 
-    // Large-radius ambient AO term at quarter resolution: low frequency, and it
-    // is toggled off entirely whenever the camera probe reports an open view.
-    this.ambientAoPass = new GTAOPass(
-      new THREE.Scene(),
-      new THREE.PerspectiveCamera(),
-      Math.max(1, Math.floor(size.x * renderer.getPixelRatio() * 0.25)),
-      Math.max(1, Math.floor(size.y * renderer.getPixelRatio() * 0.25)),
-    );
-    this.ambientAoPass.output = GTAOPass.OUTPUT.Off;
-    this.ambientAoPass.needsSwap = false;
-    this.ambientAoPass.enabled = false;
-    this.ambientAoPass.updateGtaoMaterial({ radius: 6.0, thickness: 6.0, distanceExponent: 1.0 });
-    this.ambientAoPass.updatePdMaterial({ radius: 8 });
-    this.ambientAoCompositePass = new ShaderPass(AMBIENT_AO_SHADER);
-    this.ambientAoCompositePass.enabled = false;
-    const ambientAoUniform = this.ambientAoCompositePass.uniforms.tAO;
-    if (ambientAoUniform) {
-      ambientAoUniform.value = this.ambientAoPass.pdRenderTarget.texture;
-    }
     // Emissive-only bloom (AD-3: strength 0.18, radius 0.45). The threshold is
     // deliberately NOT 1.0: it is expressed in *exposed* scene-linear units, so
     // a sunlit diffuse white sits at ~2.4-3.4 there; a 1.0 threshold would bloom
@@ -404,14 +323,11 @@ export class PostPipeline implements Disposable {
     this.bloomPass = new UnrealBloomPass(new THREE.Vector2(size.x, size.y), 0.18, 0.45, 4.0);
     this.exposurePass = new ShaderPass(EXPOSURE_SHADER);
     this.gradePass = new ShaderPass(GRADE_SHADER);
-
     this.gradePass.renderToScreen = true;
     this.bloomPass.enabled = true;
 
     this.composer.addPass(this.renderPass);
     this.composer.addPass(this.gtaoPass);
-    this.composer.addPass(this.ambientAoPass);
-    this.composer.addPass(this.ambientAoCompositePass);
     this.composer.addPass(this.exposurePass);
     this.composer.addPass(this.bloomPass);
     this.composer.addPass(this.gradePass);
@@ -420,9 +336,33 @@ export class PostPipeline implements Disposable {
   }
 
   setQuality(quality: "low" | "medium" | "high"): void {
-    this.currentQuality = quality;
     this.gtaoPass.enabled = quality !== "low";
     this.bloomPass.enabled = quality !== "low";
+  }
+
+  /**
+   * Scales the post-processing film grain only (W5 accessibility `reduce_grain`).
+   *
+   * The scale multiplies {@link BASE_GRAIN_STRENGTH}: `1` keeps the exact
+   * pre-W5 shader value (default, byte-identical frames), `0` disables grain.
+   * Values are clamped to [0, 1]; non-finite input falls back to `1`.
+   * No other grade uniform is touched, so the default render path is unchanged.
+   */
+  setGrainScale(scale: number): void {
+    const normalized = Number.isFinite(scale) ? Math.min(1, Math.max(0, scale)) : 1;
+    const grainUniform = this.gradePass.uniforms.uGrain;
+
+    if (grainUniform) {
+      grainUniform.value = BASE_GRAIN_STRENGTH * normalized;
+    }
+  }
+
+  /** Current film-grain scale (1 = authored strength, 0 = grain disabled). */
+  get grainScale(): number {
+    const grainUniform = this.gradePass.uniforms.uGrain;
+    const strength = typeof grainUniform?.value === "number" ? grainUniform.value : 0;
+
+    return strength / BASE_GRAIN_STRENGTH;
   }
 
   setSize(width: number, height: number): void {
@@ -430,14 +370,6 @@ export class PostPipeline implements Disposable {
     const safeHeight = Math.max(1, Math.floor(height));
 
     this.composer.setSize(safeWidth, safeHeight);
-    const pixelRatio = this.renderer.getPixelRatio();
-    const ambientAoWidth = Math.max(1, Math.floor(safeWidth * pixelRatio * 0.25));
-    const ambientAoHeight = Math.max(1, Math.floor(safeHeight * pixelRatio * 0.25));
-    this.ambientAoPass.setSize(ambientAoWidth, ambientAoHeight);
-    const aoKernelUniform = this.ambientAoCompositePass.uniforms.uAOKernel;
-    if (aoKernelUniform) {
-      aoKernelUniform.value.set(2 / ambientAoWidth, 2 / ambientAoHeight);
-    }
     this.gradePass.uniforms.uResolution?.value.set(
       safeWidth * this.renderer.getPixelRatio(),
       safeHeight * this.renderer.getPixelRatio(),
@@ -454,19 +386,14 @@ export class PostPipeline implements Disposable {
     this.renderPass.camera = camera;
     this.gtaoPass.scene = scene;
     this.gtaoPass.camera = camera;
-    this.ambientAoPass.scene = scene;
-    this.ambientAoPass.camera = camera;
     const interiorWeight = Math.min(
       1,
       Math.max(0, Number(scene.userData.ambientInteriorWeight ?? 0)),
     );
-    const weightUniform = this.ambientAoCompositePass.uniforms.uInteriorWeight;
+    const weightUniform = this.gradePass.uniforms.uInteriorWeight;
     if (weightUniform) {
       weightUniform.value = interiorWeight;
     }
-    const ambientEnabled = interiorWeight > 0.01 && this.currentQuality !== "low";
-    this.ambientAoPass.enabled = ambientEnabled;
-    this.ambientAoCompositePass.enabled = ambientEnabled;
     const timeUniform = this.gradePass.uniforms.uTime;
     const speedUniform = this.gradePass.uniforms.uSpeed;
 

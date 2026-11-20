@@ -93,6 +93,20 @@ export class Renderer implements Disposable {
     return this.quality;
   }
 
+  /**
+   * Applies the accessibility grain preference to the HDR post chain.
+   * Scale 1 is the authored look (default, pixel-identical); 0 removes grain.
+   * A renderer without post-processing has no grain, so this is a no-op there.
+   */
+  setGrainScale(scale: number): void {
+    this.post?.setGrainScale(scale);
+  }
+
+  /** Current film-grain scale (1 = authored strength, 0 = grain disabled). */
+  get grainScale(): number {
+    return this.post?.grainScale ?? 1;
+  }
+
   /** Re-renders the static shadow map after a level/quality change. */
   refreshShadows(): void {
     if (this.renderer.shadowMap.enabled) {

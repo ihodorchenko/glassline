@@ -66,6 +66,9 @@ const HEMISPHERE_FILL_RATIO = 0.37 / 0.35;
  * Sun intensity, exposure and the grade are untouched.
  */
 const AMBIENT_OCCLUSION_STRENGTH = 0.72;
+/** Dead-band for the interior weight: ignore sub-2 % target moves so the
+ *  ambient modulation cannot flip-flop with probe noise (W5 determinism). */
+const AMBIENT_WEIGHT_HYSTERESIS = 0.02;
 const AMBIENT_BASE_INTENSITY = 0.08;
 const PROBE_DISTANCE = 8;
 const PROBE_MOVE_EPSILON = 0.08;
@@ -298,7 +301,10 @@ export class RenderScene implements Disposable {
       this.lastProbePosition.copy(this.probeOrigin);
       this.probeInitialised = true;
       const skyVisibility = this.probeSkyVisibility();
-      this.ambientTarget = 1 - AMBIENT_OCCLUSION_STRENGTH * (1 - skyVisibility);
+      const nextTarget = 1 - AMBIENT_OCCLUSION_STRENGTH * (1 - skyVisibility);
+      if (Math.abs(nextTarget - this.ambientTarget) > AMBIENT_WEIGHT_HYSTERESIS) {
+        this.ambientTarget = nextTarget;
+      }
     }
 
     if (deltaSeconds <= 0) {

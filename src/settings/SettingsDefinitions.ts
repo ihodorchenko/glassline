@@ -123,10 +123,25 @@ export const SETTING_DEFINITIONS: readonly SettingDefinition[] = [
   numberSetting("hud.ui_scale", "hud", 1, 0.8, 1.4),
 
   // 7.6 Accessibility
+  // Reduced motion is consumed by Camera System + RenderScene (camera motion,
+  // world drift). High contrast / large text / color-independent status are
+  // applied by the UI layer; reduce_grain is applied by the renderer through
+  // `AccessibilitySettingsAdapter` (`docs/26_ACCESSIBILITY_SYSTEM_SPEC.md` §20).
+  //
+  // W5 plan §6 lists "audio-reactivity toggles" under accessibility. The build
+  // has no audio-reactive visual effect to toggle (audio only drives the mix),
+  // so no synthetic toggle is added: the plan intent is covered by
+  // `accessibility.reduced_motion` (own motion) plus `audio.muted` /
+  // `audio.*_volume` (own audio). Revisit only if a real audio-driven visual
+  // lands.
   booleanSetting("accessibility.reduced_motion", "accessibility", false),
   booleanSetting("accessibility.high_contrast", "accessibility", false),
   booleanSetting("accessibility.color_independent_status", "accessibility", true),
   booleanSetting("accessibility.large_text", "accessibility", false),
+  // Disables the post-processing film grain (`PostPipeline` `uGrain`) while
+  // keeping every other grade uniform untouched. Default false so the rendered
+  // pixels are unchanged for the reference captures (grain scale 1).
+  booleanSetting("accessibility.reduce_grain", "accessibility", false),
 
   // 7.7 Gameplay
   booleanSetting("gameplay.show_tutorial_hints", "gameplay", true),
