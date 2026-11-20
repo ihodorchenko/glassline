@@ -657,9 +657,13 @@ export class MovementModel {
     const tuning = this.tuning;
 
     if (this.state === "SLIDING") {
-      // Keep a small downward bias so the character controller retains ground
-      // contact while the capsule is shortened for the slide.
-      this.velocity.y = this.grounded ? -0.5 : this.velocity.y;
+      // No downward bias: when grounded the shortened capsule is already in
+      // contact through the controller offset, and a bias fights the
+      // snap-to-ground feature — that interaction stalls the controller and
+      // kills slide velocity in a single step (GF-ISSUE-01). When airborne
+      // the slide exits to FALLING on this same step (updateSlideExit), so
+      // nothing needs biasing here either.
+      this.velocity.y = 0;
 
       return;
     }

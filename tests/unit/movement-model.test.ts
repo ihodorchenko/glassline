@@ -437,6 +437,20 @@ describe("MovementModel sliding", () => {
     expect(model.getState()).not.toBe("SLIDING");
   });
 
+  it("keeps zero vertical velocity during a grounded slide", () => {
+    const model = new MovementModel(DEFAULT_MOVEMENT_TUNING);
+
+    simulate(model, input({ move: { x: 0, y: 1 }, sprintHeld: true }), 60, true);
+    model.step(input({ crouchHeld: true, sprintHeld: true }), FORWARD, environment(true), FIXED_DT);
+
+    expect(model.getState()).toBe("SLIDING");
+
+    for (let step = 0; step < 30 && model.getState() === "SLIDING"; step += 1) {
+      model.step(input({ crouchHeld: true }), FORWARD, environment(true), FIXED_DT);
+      expect(model.getSnapshot().verticalSpeed).toBe(0);
+    }
+  });
+
   it("ends the slide at its maximum duration", () => {
     const model = new MovementModel(DEFAULT_MOVEMENT_TUNING);
 

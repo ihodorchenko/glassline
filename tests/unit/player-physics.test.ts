@@ -390,4 +390,70 @@ describe("PlayerSystem physics integration", () => {
     // range (0.15 m/frame); the vertical filter must keep the view below that.
     expect(maxCameraJumpPerFrame).toBeLessThan(0.18);
   });
+
+  it("keeps slide velocity smooth on flat ground (no single-step velocity kill)", async () => {
+    // Regression for GF-ISSUE-01: a grounded slide's downward bias used to
+    // fight the controller's snap-to-ground feature, which occasionally
+    // stalled the controller and dropped the slide speed from ~7 m/s to ~0
+    // in a single fixed step. The same world/start as the minimal Rapier
+    // repro so the failure mode is deterministic.
+    const physics = new PhysicsWorld({
+      gravity: { x: 0, y: -9.81, z: 0 },
+      timestepSeconds: FIXED_DT,
+    });
+
+    await physics.initialize();
+
+    const world = physics.rapierWorld;
+    const groundBody = world.createRigidBody(
+      RAPIER.RigidBodyDesc.fixed().setTranslation(0, -0.1, 0),
+    );
+
+    world.createCollider(RAPIER.ColliderDesc.cuboid(30, 0.1, 30), groundBody);
+
+    const player = new PlayerSystem(physics, {
+      tuning: DEFAULT_MOVEMENT_TUNING,
+      spawnPoint: { x: 0, y: 0.9, z: 13 },
+    });
+
+    player.activate();
+    activeHarnesses.push({ physics, player });
+
+    // Settle, then sprint to full speed.
+    step({ physics, player }, input(), 90);
+    step({ physics, player }, input({ move: { x: 0, y: 1 }, sprintHeld: true }), 90);
+
+    let maxSpeedDropPerStep = 0;
+    let previousSpeed: number | null = null;
+    let slideSteps = 0;
+
+    for (let index = 0; index < 300; index += 1) {
+      player.fixedUpdate(
+        input({ move: { x: 0, y: 1 }, sprintHeld: true, crouchHeld: true }),
+        0,
+        FIXED_DT,
+      );
+      physics.step();
+
+      const snapshot = player.getMovementSnapshot();
+
+      if (snapshot.state === "SLIDING") {
+        slideSteps += 1;
+
+        if (previousSpeed !== null) {
+          maxSpeedDropPerStep = Math.max(maxSpeedDropPerStep, previousSpeed - snapshot.speed);
+        }
+
+        previousSpeed = snapshot.speed;
+      } else if (slideSteps > 0) {
+        break;
+      }
+    }
+
+    // The slide must actually run (well past the minimum duration)…
+    expect(slideSteps).toBeGreaterThan(20);
+    // …and its friction (2 m/s/s => 0.033 m/s per step) is the only decay:
+    // a single-step drop of even 1 m/s is the velocity-kill signature.
+    expect(maxSpeedDropPerStep).toBeLessThan(1);
+  });
 });
