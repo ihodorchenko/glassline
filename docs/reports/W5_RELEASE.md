@@ -221,3 +221,56 @@ service white-point WATCH-verified, wallrun 1 % low re-measure, headless caveat,
 Firefox unverified, **W4 human listening open**). Optional non-blocking nit left
 to the owner: the boot footer «PROLOGUE / ROOFTOP RUN» stays EN during a RU boot
 (reads as a technical codename next to BUILD 0.1.0).
+
+### 7.5 UX + city-below feature iteration (accepted via guided A/B, no blind)
+
+Owner hands-on feedback: the goal was not obvious (especially in Training) and
+the city below read empty. The AD issued a design brief
+([`UX_CITY_TARGETS.md`](UX_CITY_TARGETS.md)) and both features were accepted in a
+guided A/B (post-G5.1 ↔ this iteration); blind was not requested because the
+changes are additive, sit below the review sightlines or are gameplay-only.
+
+**Objective marker (new `src/markers/ObjectiveMarkerSystem`).** Apex-down red
+pyramid (base 0.35×0.35, height 0.5, red `0xD52E36`, roughness 0.45, metalness 0,
+emissive 0.12) with a ring decal Ø0.6 under the apex; apex 1.5 m above the target
+surface, bob ±0.08 m / 2.4 s, yaw 0.6 rad/s, static under reduced motion,
+distance fade 50–60 m, depth-tested, no x-ray. Target rules: Training — the
+current positional objective, otherwise lookahead to the next positional
+objective of the same exercise (so the goal is visible at spawn); Prologue — the
+next checkpoint of the active section, the finish gate in the final section, and
+hidden after `trigger_finish`; no permanent finish marker. **No markers in
+capture mode** — evidence: 6/6 byte-identical to post-G5.1, identical
+draw calls/triangles; reduced-motion and target rules covered by 27 unit tests.
+
+**City-below street grid (content).** An 8×8 grid (30 m pitch: 20×20 block + 10 m
+right-of-way, 6 m carriageway + 2 m sidewalks) replaces the old 760×760 flat
+plate inside x ±120 / z −200…+40: 18 carriageways, 64 sidewalk slabs + curbs,
+centre dashes / edge lines / 4 crosswalks / stop lines, 20 street lamps, 60 cars
+(brief palette, red 1/12), ~64 trees, one 8–18 m block building per block with
+punched windows + glass-far bands, roof caps and AC; **building tops ≤ y −4** so
+the canyon/rooftop sightlines do not change; beyond 120 m buildings+asphalt only;
+no haze/fog changes. Enough criteria measured: 0 flat plates >40×40 m, 4
+crosswalks / 59 cars / 42 trees visible from skybridge and 4/60/40 from finish.
+
+**Measured result.** 5 of 6 review frames stayed **byte-identical** to post-G5.1
+(the city is below the parapets; first-gap changed only below the parapet), the
+remaining differences are the expected GPU-LSB class (determinism 6/6 accepted,
+5 px Δ1/255). Shifted **50/78** unchanged, guardrails unchanged, validators green
+(368 tests). Perf: headless `--strict` **6/6 PASS**; headed avg **69.91–88.67**
+on 6/6 and 1 % low **56.82 (service)** / **57.14 (first-gap)** on a calm
+re-measure (a loaded-host run showed 45.86/54.63 — host load, confirmed by the
+repeat) — the perf gate is the binding one.
+
+**Budget overrun — accepted documented.** The AD estimated ≤+250 k triangles
+from ~200 tris/box, but the engine's beveled box is ~563 tris: measured +1047
+boxes (≤1200 ✓), +20…26 draw calls (new colours duplicated per spatial chunk of
+the existing loader; brief did not account for it) and +0.59 M triangles. With
+the perf gate green the AD accepted the overrun as a brief-estimate error;
+future trimming priorities (only if perf regresses): merge per-colour instanced
+batches across chunks, low-poly tree crowns, single-box car cabins; do not trim
+buildings/crosswalks.
+
+**Marker emissive exemption (D-26).** The in-world objective marker is semantic
+runner UI, exempt from the W2 "no emissive additions" anti-hack rule (which
+targets architecture/signage and metric faking): emissive 0.12 ≤ 0.15 signage
+cap, no bloom (threshold 1.0), depth-tested, absent in capture mode.

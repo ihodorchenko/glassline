@@ -1,0 +1,94 @@
+{
+  "prologueStart": {
+    "flow": "gameplay",
+    "activeSectionId": "sec_rooftop",
+    "levelId": "prologue_test",
+    "player": {
+      "x": 0,
+      "y": 0.8949981927871704,
+      "z": 6
+    },
+    "camera": [0, 1.6199981927871705, 6],
+    "marker": {
+      "visible": true,
+      "attached": true,
+      "hasTarget": true,
+      "position": {
+        "x": 0,
+        "y": 1.578103656727737,
+        "z": 3
+      },
+      "yaw": 0.41000000000000025,
+      "alpha": 1,
+      "surfaceY": -2.3841857821338408e-8
+    }
+  },
+  "prologueAfterCheckpoint": {
+    "flow": "gameplay",
+    "activeSectionId": "sec_rooftop",
+    "levelId": "prologue_test",
+    "player": {
+      "x": 0,
+      "y": 0.894883394241333,
+      "z": 3
+    },
+    "camera": [0, 1.619883394241333, 3],
+    "marker": {
+      "visible": true,
+      "attached": true,
+      "hasTarget": true,
+      "position": {
+        "x": 0,
+        "y": 1.4203044003108025,
+        "z": -2.5
+      },
+      "yaw": 1.0599999999999992,
+      "alpha": 1,
+      "surfaceY": -2.3841857821338408e-8
+    }
+  },
+  "prologueFinalSection": {
+    "flow": "gameplay",
+    "activeSectionId": "sec_finish",
+    "levelId": "prologue_test",
+    "player": {
+      "x": 0,
+      "y": 6.094292163848877,
+      "z": -128
+    },
+    "camera": [0, 6.819292163848877, -128],
+    "marker": {
+      "visible": true,
+      "attached": true,
+      "hasTarget": true,
+      "position": {
+        "x": 0,
+        "y": 6.751422937249351,
+        "z": -133
+      },
+      "yaw": 1.9999999999999958,
+      "alpha": 1,
+      "surfaceY": 5.199999928474426
+    }
+  },
+  "prologueAfterFinish": {
+    "flow": "results",
+    "activeSectionId": "sec_finish",
+    "levelId": "prologue_test",
+    "player": null,
+    "camera": [0.14611591600922413, 2.1324748273234286, 11],
+    "marker": {
+      "visible": false,
+      "attached": true,
+      "hasTarget": false,
+      "position": {
+        "x": 0,
+        "y": 6.672638317008374,
+        "z": -133
+      },
+      "yaw": 2.239999999999995,
+      "alpha": 0,
+      "surfaceY": 5.199999928474426
+    }
+  }
+}

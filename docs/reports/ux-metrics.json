@@ -1,0 +1,4840 @@
+{
+  "schemaVersion": 2,
+  "script": "tools/capture/metrics.py",
+  "reference": "ref/reference/prolog-kit/study/05-prologue-roofs",
+  "referenceSet": "prolog",
+  "referenceFrames": 20,
+  "referenceStats": {
+    "luma": {
+      "mean": 0.6152243822813034,
+      "sd": 0.13335175622030057,
+      "min": 0.32762977480888367,
+      "p10": 0.4715142399072647,
+      "p50": 0.6217188537120819,
+      "p90": 0.7639147698879243,
+      "max": 0.831446647644043
+    },
+    "std": {
+      "mean": 0.2945838652551174,
+      "sd": 0.049185558207583385,
+      "min": 0.19042521715164185,
+      "p10": 0.22041192799806594,
+      "p50": 0.2935660183429718,
+      "p90": 0.35040610134601596,
+      "max": 0.3740900158882141
+    },
+    "p25": {
+      "mean": 0.3709875293076038,
+      "sd": 0.13892598227069597,
+      "min": 0.16186276078224182,
+      "p10": 0.21907937824726104,
+      "p50": 0.3694094270467758,
+      "p90": 0.5757496118545532,
+      "max": 0.6331766843795776
+    },
+    "p95": {
+      "mean": 0.9805995345115661,
+      "sd": 0.04530196538769849,
+      "min": 0.8521897792816162,
+      "p10": 0.9158146619796753,
+      "p50": 1.0,
+      "p90": 1.0,
+      "max": 1.0
+    },
+    "near_white": {
+      "mean": 34.491338734567904,
+      "sd": 18.242134843485484,
+      "min": 3.2222222222222223,
+      "p10": 6.179687500000001,
+      "p50": 32.58024691358025,
+      "p90": 51.62127700617286,
+      "max": 71.19926697530865
+    },
+    "deep_shadow": {
+      "mean": 0.6780960648148148,
+      "sd": 1.6126900552600532,
+      "min": 0.0005787037037037037,
+      "p10": 0.002218364197530864,
+      "p50": 0.1253858024691358,
+      "p90": 1.4190393518518525,
+      "max": 7.1938657407407405
+    },
+    "saturation": {
+      "mean": 0.3000267282128334,
+      "sd": 0.14101876066433905,
+      "min": 0.15779908001422882,
+      "p10": 0.1801747277379036,
+      "p50": 0.26818549633026123,
+      "p90": 0.4815905421972277,
+      "max": 0.6725213527679443
+    },
+    "local_contrast": {
+      "mean": 0.28500273674726484,
+      "sd": 0.04837829548036219,
+      "min": 0.18743346631526947,
+      "p10": 0.2178311452269554,
+      "p50": 0.2832604944705963,
+      "p90": 0.34072046577930454,
+      "max": 0.3645932972431183
+    },
+    "edge": {
+      "mean": 0.01939456465188414,
+      "sd": 0.009306276669969363,
+      "min": 0.006778428331017494,
+      "p10": 0.00966938310302794,
+      "p50": 0.01805755402892828,
+      "p90": 0.029320623725652698,
+      "max": 0.04556030407547951
+    },
+    "sky": {
+      "mean": 43.258339185393254,
+      "sd": 16.86317972525212,
+      "min": 13.149286048689138,
+      "p10": 20.22211493445693,
+      "p50": 42.936563670411985,
+      "p90": 63.47899110486893,
+      "max": 75.19165496254682
+    },
+    "top_contrast": {
+      "mean": 0.24329591020941735,
+      "sd": 0.05545991077196976,
+      "min": 0.14384962618350983,
+      "p10": 0.17864398807287216,
+      "p50": 0.24977309256792068,
+      "p90": 0.30886746346950533,
+      "max": 0.36332079768180847
+    },
+    "split": {
+      "mean": -21.806927514076232,
+      "sd": 25.573748535865327,
+      "min": -54.96187973022461,
+      "p10": -42.51122131347656,
+      "p50": -28.12237548828125,
+      "p90": -3.953147172927843,
+      "max": 67.11668395996094
+    },
+    "red": {
+      "mean": 2.3937885802469134,
+      "sd": 2.85075450424615,
+      "min": 0.0,
+      "p10": 0.05065586419753087,
+      "p50": 2.0200617283950617,
+      "p90": 4.6508487654321025,
+      "max": 11.880979938271604
+    }
+  },
+  "referencePerFrame": [
+    {
+      "file": "ref/reference/prolog-kit/study/05-prologue-roofs/0824-prologue-roofs.jpg",
+      "metrics": {
+        "luma": 0.665619432926178,
+        "std": 0.2822543978691101,
+        "p25": 0.42563217878341675,
+        "p95": 1.0,
+        "near_white": 31.690779320987655,
+        "deep_shadow": 0.15239197530864196,
+        "saturation": 0.23907488584518433,
+        "local_contrast": 0.2691406309604645,
+        "edge": 0.028975076973438263,
+        "sky": 47.264161985018724,
+        "top_contrast": 0.18103927373886108,
+        "split": 4.381023406982422,
+        "red": 3.6332947530864197
+      },
+      "guardrails": {
+        "sky_mask_share": 11.655092592592593,
+        "near_white_seam_energy": 0.003851705463603139,
+        "red_route_share": 3.6417824074074074,
+        "red_route_saturation": 0.7554667592048645,
+        "sky_horizon_row": 300,
+        "sky_horizon_source_px": null,
+        "sky_horizon_source": "edge",
+        "sky_horizon_edge_ratio": 2.6999042865854896,
+        "sky_lit_wall_pct": 6.5273919753086425,
+        "component_guard": "none"
+      }
+    },
+    {
+      "file": "ref/reference/prolog-kit/study/05-prologue-roofs/0834-prologue-roofs.jpg",
+      "metrics": {
+        "luma": 0.578271210193634,
+        "std": 0.2920058071613312,
+        "p25": 0.3318321704864502,
+        "p95": 0.997195303440094,
+        "near_white": 24.490354938271604,
+        "deep_shadow": 0.019483024691358024,
+        "saturation": 0.308422714471817,
+        "local_contrast": 0.26457369327545166,
+        "edge": 0.04556030407547951,
+        "sky": 54.0780079588015,
+        "top_contrast": 0.2566157281398773,
+        "split": -24.136489868164062,
+        "red": 6.635223765432098
+      },
+      "guardrails": {
+        "sky_mask_share": 4.461226851851851,
+        "near_white_seam_energy": 0.008278504945337772,
+        "red_route_share": 6.783179012345679,
+        "red_route_saturation": 0.9513169527053833,
+        "sky_horizon_row": 165,
+        "sky_horizon_source_px": null,
+        "sky_horizon_source": "edge",
+        "sky_horizon_edge_ratio": 1.5835112052699385,
+        "sky_lit_wall_pct": 3.277199074074074,
+        "component_guard": "none"
+      }
+    },
+    {
+      "file": "ref/reference/prolog-kit/study/05-prologue-roofs/0844-prologue-roofs.jpg",
+      "metrics": {
+        "luma": 0.6641095280647278,
+        "std": 0.3146645128726959,
+        "p25": 0.36133256554603577,
+        "p95": 1.0,
+        "near_white": 40.58506944444444,
+        "deep_shadow": 0.4583333333333333,
+        "saturation": 0.24127668142318726,
+        "local_contrast": 0.29909294843673706,
+        "edge": 0.03243054449558258,
+        "sky": 42.311563670411985,
+        "top_contrast": 0.25276342034339905,
+        "split": -4.879166126251221,
+        "red": 2.025270061728395
+      },
+      "guardrails": {
+        "sky_mask_share": 5.513695987654321,
+        "near_white_seam_energy": 0.00402743648737669,
+        "red_route_share": 1.6902006172839505,
+        "red_route_saturation": 0.799950122833252,
+        "sky_horizon_row": 178,
+        "sky_horizon_source_px": null,
+        "sky_horizon_source": "edge",
+        "sky_horizon_edge_ratio": 1.8737777283813322,
+        "sky_lit_wall_pct": 1.7295524691358026,
+        "component_guard": "none"
+      }
+    },
+    {
+      "file": "ref/reference/prolog-kit/study/05-prologue-roofs/0854-prologue-roofs.jpg",
+      "metrics": {
+        "luma": 0.831446647644043,
+        "std": 0.24196863174438477,
+        "p25": 0.6331766843795776,
+        "p95": 1.0,
+        "near_white": 65.67804783950618,
+        "deep_shadow": 0.0005787037037037037,
+        "saturation": 0.18908639252185822,
+        "local_contrast": 0.23506757616996765,
+        "edge": 0.014031914994120598,
+        "sky": 51.36821161048689,
+        "top_contrast": 0.25923970341682434,
+        "split": -54.96187973022461,
+        "red": 0.0
+      },
+      "guardrails": {
+        "sky_mask_share": 0.9031635802469136,
+        "near_white_seam_energy": 0.0021073096431791782,
+        "red_route_share": 0.0,
+        "red_route_saturation": 0.0,
+        "sky_horizon_row": 77,
+        "sky_horizon_source_px": null,
+        "sky_horizon_source": "edge",
+        "sky_horizon_edge_ratio": 4.958977325451258,
+        "sky_lit_wall_pct": 1.114776234567901,
+        "component_guard": "none"
+      }
+    },
+    {
+      "file": "ref/reference/prolog-kit/study/05-prologue-roofs/0904-prologue-roofs.jpg",
+      "metrics": {
+        "luma": 0.7444703578948975,
+        "std": 0.27887988090515137,
+        "p25": 0.5342351198196411,
+        "p95": 1.0,
+        "near_white": 48.08101851851852,
+        "deep_shadow": 0.0013503086419753088,
+        "saturation": 0.20960542559623718,
+        "local_contrast": 0.2654634416103363,
+        "edge": 0.02323737181723118,
+        "sky": 51.533824906367045,
+        "top_contrast": 0.21375392377376556,
+        "split": -10.500188827514648,
+        "red": 1.6458333333333333
+      },
+      "guardrails": {
+        "sky_mask_share": 10.066743827160494,
+        "near_white_seam_energy": 0.002052458468824625,
+        "red_route_share": 1.5904706790123457,
+        "red_route_saturation": 0.7301475405693054,
+        "sky_horizon_row": 228,
+        "sky_horizon_source_px": null,
+        "sky_horizon_source": "edge",
+        "sky_horizon_edge_ratio": 3.3846510368631315,
+        "sky_lit_wall_pct": 4.114390432098766,
+        "component_guard": "none"
+      }
+    },
+    {
+      "file": "ref/reference/prolog-kit/study/05-prologue-roofs/0916-prologue-roofs.jpg",
+      "metrics": {
+        "luma": 0.6469037532806396,
+        "std": 0.2951262295246124,
+        "p25": 0.40246742963790894,
+        "p95": 1.0,
+        "near_white": 33.469714506172835,
+        "deep_shadow": 0.0023148148148148147,
+        "saturation": 0.20892713963985443,
+        "local_contrast": 0.28838980197906494,
+        "edge": 0.017124999314546585,
+        "sky": 43.561563670411985,
+        "top_contrast": 0.22489838302135468,
+        "split": -20.47972869873047,
+        "red": 2.127700617283951
+      },
+      "guardrails": {
+        "sky_mask_share": 7.479166666666667,
+        "near_white_seam_energy": 0.0023424953687936068,
+        "red_route_share": 1.1865354938271604,
+        "red_route_saturation": 0.8005734086036682,
+        "sky_horizon_row": 235,
+        "sky_horizon_source_px": null,
+        "sky_horizon_source": "edge",
+        "sky_horizon_edge_ratio": 1.9976774630623724,
+        "sky_lit_wall_pct": 2.8231095679012346,
+        "component_guard": "none"
+      }
+    },
+    {
+      "file": "ref/reference/prolog-kit/study/05-prologue-roofs/0926-prologue-roofs.jpg",
+      "metrics": {
+        "luma": 0.32762977480888367,
+        "std": 0.19042521715164185,
+        "p25": 0.2336713820695877,
+        "p95": 0.8521897792816162,
+        "near_white": 4.154513888888889,
+        "deep_shadow": 0.6415895061728395,
+        "saturation": 0.6220428347587585,
+        "local_contrast": 0.18743346631526947,
+        "edge": 0.0071168760769069195,
+        "sky": 51.595564138576776,
+        "top_contrast": 0.2518641948699951,
+        "split": -41.43581771850586,
+        "red": 0.3142361111111111
+      },
+      "guardrails": {
+        "sky_mask_share": 0.5779320987654322,
+        "near_white_seam_energy": 0.004625776316970587,
+        "red_route_share": 0.4380787037037037,
+        "red_route_saturation": 0.8055267930030823,
+        "sky_horizon_row": 46,
+        "sky_horizon_source_px": null,
+        "sky_horizon_source": "edge",
+        "sky_horizon_edge_ratio": 7.391192035481369,
+        "sky_lit_wall_pct": 0.2199074074074074,
+        "component_guard": "none"
+      }
+    },
+    {
+      "file": "ref/reference/prolog-kit/study/05-prologue-roofs/0950-prologue-roofs.jpg",
+      "metrics": {
+        "luma": 0.7374264001846313,
+        "std": 0.2814929783344269,
+        "p25": 0.47248393297195435,
+        "p95": 1.0,
+        "near_white": 46.79050925925926,
+        "deep_shadow": 0.025270061728395063,
+        "saturation": 0.256421834230423,
+        "local_contrast": 0.2781311869621277,
+        "edge": 0.009952994994819164,
+        "sky": 15.437441479400748,
+        "top_contrast": 0.20572489500045776,
+        "split": -13.507076263427734,
+        "red": 4.430362654320988
+      },
+      "guardrails": {
+        "sky_mask_share": 1.2125771604938271,
+        "near_white_seam_energy": 0.0015893408562988043,
+        "red_route_share": 6.742862654320987,
+        "red_route_saturation": 0.6577739715576172,
+        "sky_horizon_row": 219,
+        "sky_horizon_source_px": null,
+        "sky_horizon_source": "edge",
+        "sky_horizon_edge_ratio": 2.9949485298831857,
+        "sky_lit_wall_pct": 0.0466820987654321,
+        "component_guard": "none"
+      }
+    },
+    {
+      "file": "ref/reference/prolog-kit/study/05-prologue-roofs/1004-prologue-roofs.jpg",
+      "metrics": {
+        "luma": 0.3849356174468994,
+        "std": 0.2205425500869751,
+        "p25": 0.22782588005065918,
+        "p95": 0.8649537563323975,
+        "near_white": 3.2222222222222223,
+        "deep_shadow": 0.0466820987654321,
+        "saturation": 0.6725213527679443,
+        "local_contrast": 0.21863329410552979,
+        "edge": 0.006778428331017494,
+        "sky": 72.52691947565543,
+        "top_contrast": 0.26372861862182617,
+        "split": 67.11668395996094,
+        "red": 11.880979938271604
+      },
+      "guardrails": {
+        "sky_mask_share": 11.109567901234568,
+        "near_white_seam_energy": 0.001125694252550602,
+        "red_route_share": 21.99344135802469,
+        "red_route_saturation": 0.9418602585792542,
+        "sky_horizon_row": 111,
+        "sky_horizon_source_px": null,
+        "sky_horizon_source": "edge",
+        "sky_horizon_edge_ratio": 4.669296518705594,
+        "sky_lit_wall_pct": 0.03047839506172839,
+        "component_guard": "none"
+      }
+    },
+    {
+      "file": "ref/reference/prolog-kit/study/05-prologue-roofs/1054-prologue-roofs.jpg",
+      "metrics": {
+        "luma": 0.7017584443092346,
+        "std": 0.3205621838569641,
+        "p25": 0.4156462848186493,
+        "p95": 1.0,
+        "near_white": 47.60918209876544,
+        "deep_shadow": 1.3842592592592593,
+        "saturation": 0.1819770634174347,
+        "local_contrast": 0.3106238842010498,
+        "edge": 0.017709026113152504,
+        "sky": 32.0997191011236,
+        "top_contrast": 0.30867117643356323,
+        "split": -24.719860076904297,
+        "red": 0.28761574074074076
+      },
+      "guardrails": {
+        "sky_mask_share": 1.584490740740741,
+        "near_white_seam_energy": 0.0023509955499321222,
+        "red_route_share": 0.5902777777777778,
+        "red_route_saturation": 0.397567480802536,
+        "sky_horizon_row": 190,
+        "sky_horizon_source_px": null,
+        "sky_horizon_source": "edge",
+        "sky_horizon_edge_ratio": 9.994370526404218,
+        "sky_lit_wall_pct": 1.2822145061728396,
+        "component_guard": "none"
+      }
+    },
+    {
+      "file": "ref/reference/prolog-kit/study/05-prologue-roofs/1104-prologue-roofs.jpg",
+      "metrics": {
+        "luma": 0.5965339541435242,
+        "std": 0.2820901572704315,
+        "p25": 0.37748628854751587,
+        "p95": 0.9932674765586853,
+        "near_white": 21.125578703703702,
+        "deep_shadow": 0.08429783950617284,
+        "saturation": 0.35735729336738586,
+        "local_contrast": 0.2718370258808136,
+        "edge": 0.020767444744706154,
+        "sky": 62.47366573033708,
+        "top_contrast": 0.15708641707897186,
+        "split": -27.373945236206055,
+        "red": 2.129050925925926
+      },
+      "guardrails": {
+        "sky_mask_share": 7.962384259259259,
+        "near_white_seam_energy": 0.004054293967783451,
+        "red_route_share": 1.3994984567901234,
+        "red_route_saturation": 0.5236601233482361,
+        "sky_horizon_row": 325,
+        "sky_horizon_source_px": null,
+        "sky_horizon_source": "edge",
+        "sky_horizon_edge_ratio": 4.063429861652957,
+        "sky_lit_wall_pct": 8.836612654320989,
+        "component_guard": "none"
+      }
+    },
+    {
+      "file": "ref/reference/prolog-kit/study/05-prologue-roofs/1114-prologue-roofs.jpg",
+      "metrics": {
+        "luma": 0.4811340868473053,
+        "std": 0.37033912539482117,
+        "p25": 0.16186276078224182,
+        "p95": 1.0,
+        "near_white": 30.138117283950617,
+        "deep_shadow": 1.0652006172839508,
+        "saturation": 0.32864558696746826,
+        "local_contrast": 0.3645932972431183,
+        "edge": 0.015337636694312096,
+        "sky": 13.149286048689138,
+        "top_contrast": 0.14384962618350983,
+        "split": -30.355587005615234,
+        "red": 0.010030864197530864
+      },
+      "guardrails": {
+        "sky_mask_share": 0.6172839506172839,
+        "near_white_seam_energy": 0.0015154869761317968,
+        "red_route_share": 0.05652006172839506,
+        "red_route_saturation": 0.31933149695396423,
+        "sky_horizon_row": 273,
+        "sky_horizon_source_px": null,
+        "sky_horizon_source": "edge",
+        "sky_horizon_edge_ratio": 5.6519284358465915,
+        "sky_lit_wall_pct": 0.1404320987654321,
+        "component_guard": "none"
+      }
+    },
+    {
+      "file": "ref/reference/prolog-kit/study/05-prologue-roofs/1124-prologue-roofs.jpg",
+      "metrics": {
+        "luma": 0.5382776260375977,
+        "std": 0.34198832511901855,
+        "p25": 0.2548792362213135,
+        "p95": 0.9988674521446228,
+        "near_white": 30.78433641975309,
+        "deep_shadow": 1.7320601851851851,
+        "saturation": 0.2799491584300995,
+        "local_contrast": 0.33444496989250183,
+        "edge": 0.018406081944704056,
+        "sky": 35.474309456928836,
+        "top_contrast": 0.24768199026584625,
+        "split": -34.41009521484375,
+        "red": 0.4963348765432099
+      },
+      "guardrails": {
+        "sky_mask_share": 4.5923996913580245,
+        "near_white_seam_energy": 0.0031527671962976456,
+        "red_route_share": 0.2511574074074074,
+        "red_route_saturation": 0.5199353098869324,
+        "sky_horizon_row": 282,
+        "sky_horizon_source_px": null,
+        "sky_horizon_source": "edge",
+        "sky_horizon_edge_ratio": 4.13582444850194,
+        "sky_lit_wall_pct": 0.8221450617283952,
+        "component_guard": "none"
+      }
+    },
+    {
+      "file": "ref/reference/prolog-kit/study/05-prologue-roofs/1134-prologue-roofs.jpg",
+      "metrics": {
+        "luma": 0.8044038414955139,
+        "std": 0.3227170705795288,
+        "p25": 0.5854606032371521,
+        "p95": 1.0,
+        "near_white": 71.19926697530865,
+        "deep_shadow": 0.25578703703703703,
+        "saturation": 0.16395370662212372,
+        "local_contrast": 0.3149338662624359,
+        "edge": 0.014877544716000557,
+        "sky": 20.75374531835206,
+        "top_contrast": 0.36332079768180847,
+        "split": -52.18985366821289,
+        "red": 2.5331790123456788
+      },
+      "guardrails": {
+        "sky_mask_share": 0.5941358024691358,
+        "near_white_seam_energy": 0.0005917210946790874,
+        "red_route_share": 2.57445987654321,
+        "red_route_saturation": 0.8850928544998169,
+        "sky_horizon_row": 116,
+        "sky_horizon_source_px": null,
+        "sky_horizon_source": "edge",
+        "sky_horizon_edge_ratio": 1.877738701759295,
+        "sky_lit_wall_pct": 0.7075617283950617,
+        "component_guard": "none"
+      }
+    },
+    {
+      "file": "ref/reference/prolog-kit/study/05-prologue-roofs/1144-prologue-roofs.jpg",
+      "metrics": {
+        "luma": 0.7594159841537476,
+        "std": 0.27974021434783936,
+        "p25": 0.5746706128120422,
+        "p95": 1.0,
+        "near_white": 50.05941358024691,
+        "deep_shadow": 0.11689814814814815,
+        "saturation": 0.1888541281223297,
+        "local_contrast": 0.2704813778400421,
+        "edge": 0.01950666680932045,
+        "sky": 55.60481039325843,
+        "top_contrast": 0.23350682854652405,
+        "split": -28.870805740356445,
+        "red": 0.1560570987654321
+      },
+      "guardrails": {
+        "sky_mask_share": 15.07619598765432,
+        "near_white_seam_energy": 0.0023654066026210785,
+        "red_route_share": 0.15027006172839505,
+        "red_route_saturation": 0.516840934753418,
+        "sky_horizon_row": 285,
+        "sky_horizon_source_px": null,
+        "sky_horizon_source": "edge",
+        "sky_horizon_edge_ratio": 3.862897492485353,
+        "sky_lit_wall_pct": 3.0545910493827164,
+        "component_guard": "none"
+      }
+    },
+    {
+      "file": "ref/reference/prolog-kit/study/05-prologue-roofs/1154-prologue-roofs.jpg",
+      "metrics": {
+        "luma": 0.6748337149620056,
+        "std": 0.31001776456832886,
+        "p25": 0.4043925404548645,
+        "p95": 1.0,
+        "near_white": 39.61246141975309,
+        "deep_shadow": 0.13387345679012347,
+        "saturation": 0.15779908001422882,
+        "local_contrast": 0.29262563586235046,
+        "edge": 0.028833594173192978,
+        "sky": 35.05266853932584,
+        "top_contrast": 0.2973885238170624,
+        "split": -31.137495040893555,
+        "red": 0.05516975308641975
+      },
+      "guardrails": {
+        "sky_mask_share": 7.445023148148149,
+        "near_white_seam_energy": 0.004884504247456789,
+        "red_route_share": 0.08661265432098765,
+        "red_route_saturation": 0.9100342988967896,
+        "sky_horizon_row": 334,
+        "sky_horizon_source_px": null,
+        "sky_horizon_source": "edge",
+        "sky_horizon_edge_ratio": 1.6231789063355917,
+        "sky_lit_wall_pct": 3.814429012345679,
+        "component_guard": "none"
+      }
+    },
+    {
+      "file": "ref/reference/prolog-kit/study/05-prologue-roofs/1204-prologue-roofs.jpg",
+      "metrics": {
+        "luma": 0.5114012956619263,
+        "std": 0.3481913208961487,
+        "p25": 0.22009961307048798,
+        "p95": 0.9985843300819397,
+        "near_white": 27.546489197530867,
+        "deep_shadow": 7.1938657407407405,
+        "saturation": 0.3013612627983093,
+        "local_contrast": 0.33811455965042114,
+        "edge": 0.022570054978132248,
+        "sky": 31.729576310861425,
+        "top_contrast": 0.2971441149711609,
+        "split": -29.01258087158203,
+        "red": 0.7339891975308642
+      },
+      "guardrails": {
+        "sky_mask_share": 3.9930555555555554,
+        "near_white_seam_energy": 0.004292211029678583,
+        "red_route_share": 0.30169753086419754,
+        "red_route_saturation": 0.5658783316612244,
+        "sky_horizon_row": 365,
+        "sky_horizon_source_px": null,
+        "sky_horizon_source": "edge",
+        "sky_horizon_edge_ratio": 3.5161208655740874,
+        "sky_lit_wall_pct": 2.5684799382716053,
+        "component_guard": "none"
+      }
+    },
+    {
+      "file": "ref/reference/prolog-kit/study/05-prologue-roofs/1224-prologue-roofs.jpg",
+      "metrics": {
+        "luma": 0.5847215056419373,
+        "std": 0.3740900158882141,
+        "p25": 0.2317427396774292,
+        "p95": 1.0,
+        "near_white": 41.71257716049382,
+        "deep_shadow": 0.23668981481481483,
+        "saturation": 0.31570374965667725,
+        "local_contrast": 0.36417362093925476,
+        "edge": 0.020538097247481346,
+        "sky": 34.16432584269663,
+        "top_contrast": 0.18367139995098114,
+        "split": -35.57312774658203,
+        "red": 2.0148533950617282
+      },
+      "guardrails": {
+        "sky_mask_share": 1.734182098765432,
+        "near_white_seam_energy": 0.0009227787377312779,
+        "red_route_share": 2.0536265432098766,
+        "red_route_saturation": 0.9599475264549255,
+        "sky_horizon_row": 316,
+        "sky_horizon_source_px": null,
+        "sky_horizon_source": "edge",
+        "sky_horizon_edge_ratio": 2.0393080118465976,
+        "sky_lit_wall_pct": 0.6674382716049383,
+        "component_guard": "none"
+      }
+    },
+    {
+      "file": "ref/reference/prolog-kit/study/05-prologue-roofs/1244-prologue-roofs.jpg",
+      "metrics": {
+        "luma": 0.5449946522712708,
+        "std": 0.32534459233283997,
+        "p25": 0.2098972648382187,
+        "p95": 0.985466718673706,
+        "near_white": 25.472415123456788,
+        "deep_shadow": 0.005594135802469136,
+        "saturation": 0.31156954169273376,
+        "local_contrast": 0.3216886520385742,
+        "edge": 0.011354167945683002,
+        "sky": 39.79576310861424,
+        "top_contrast": 0.310634046792984,
+        "split": -33.98500061035156,
+        "red": 4.002314814814815
+      },
+      "guardrails": {
+        "sky_mask_share": 0.18267746913580246,
+        "near_white_seam_energy": 0.0011297112796455622,
+        "red_route_share": 4.326195987654321,
+        "red_route_saturation": 0.7310969233512878,
+        "sky_horizon_row": 61,
+        "sky_horizon_source_px": null,
+        "sky_horizon_source": "edge",
+        "sky_horizon_edge_ratio": 2.6497356477316742,
+        "sky_lit_wall_pct": 2.202932098765432,
+        "component_guard": "none"
+      }
+    },
+    {
+      "file": "ref/reference/prolog-kit/study/05-prologue-roofs/1304-prologue-roofs.jpg",
+      "metrics": {
+        "luma": 0.5261998176574707,
+        "std": 0.2192363291978836,
+        "p25": 0.36095529794692993,
+        "p95": 0.9214658737182617,
+        "near_white": 6.404706790123457,
+        "deep_shadow": 0.005401234567901235,
+        "saturation": 0.4659847319126129,
+        "local_contrast": 0.21061180531978607,
+        "edge": 0.012782466597855091,
+        "sky": 75.19165496254682,
+        "top_contrast": 0.21333514153957367,
+        "split": -10.107559204101562,
+        "red": 2.7642746913580245
+      },
+      "guardrails": {
+        "sky_mask_share": 4.510609567901234,
+        "near_white_seam_energy": 0.003444134956225753,
+        "red_route_share": 1.6336805555555556,
+        "red_route_saturation": 0.5911688804626465,
+        "sky_horizon_row": 234,
+        "sky_horizon_source_px": null,
+        "sky_horizon_source": "edge",
+        "sky_horizon_edge_ratio": 4.531708578258215,
+        "sky_lit_wall_pct": 6.232638888888889,
+        "component_guard": "none"
+      }
+    }
+  ],
+  "legacyReference": {
+    "luma": 0.589,
+    "std": 0.272,
+    "p25": 0.37,
+    "p95": 0.979,
+    "near_white": 27.3,
+    "deep_shadow": 3.0,
+    "saturation": 0.359,
+    "local_contrast": 0.0713,
+    "edge": 0.0341,
+    "sky": 53.1,
+    "top_contrast": 0.0585,
+    "split": -48.6,
+    "red": 4.2
+  },
+  "bands": {
+    "luma": {
+      "legacy": 0.589,
+      "min": 0.48,
+      "max": 0.62,
+      "label": "0.48..0.62",
+      "unit": "0..1"
+    },
+    "std": {
+      "legacy": 0.272,
+      "min": 0.22,
+      "max": null,
+      "label": ">=0.22",
+      "unit": "0..1"
+    },
+    "p25": {
+      "legacy": 0.37,
+      "min": 0.33,
+      "max": 0.42,
+      "label": "0.33..0.42",
+      "unit": "0..1"
+    },
+    "p95": {
+      "legacy": 0.979,
+      "min": 0.93,
+      "max": null,
+      "label": ">=0.93",
+      "unit": "0..1"
+    },
+    "near_white": {
+      "legacy": 27.3,
+      "min": 15.0,
+      "max": 28.0,
+      "label": "15..28",
+      "unit": "%"
+    },
+    "deep_shadow": {
+      "legacy": 3.0,
+      "min": null,
+      "max": 6.0,
+      "label": "<=6",
+      "unit": "%"
+    },
+    "saturation": {
+      "legacy": 0.359,
+      "min": 0.3,
+      "max": 0.38,
+      "label": "0.3..0.38",
+      "unit": "0..1"
+    },
+    "local_contrast": {
+      "legacy": 0.0713,
+      "min": 0.06,
+      "max": null,
+      "label": ">=0.06",
+      "unit": "0..1"
+    },
+    "edge": {
+      "legacy": 0.0341,
+      "min": 0.028,
+      "max": null,
+      "label": ">=0.028",
+      "unit": "0..1"
+    },
+    "sky": {
+      "legacy": 53.1,
+      "min": 35.0,
+      "max": 55.0,
+      "label": "35..55",
+      "unit": "%"
+    },
+    "top_contrast": {
+      "legacy": 0.0585,
+      "min": 0.05,
+      "max": null,
+      "label": ">=0.05",
+      "unit": "0..1"
+    },
+    "split": {
+      "legacy": -48.6,
+      "min": -55.0,
+      "max": -40.0,
+      "label": "-55..-40",
+      "unit": "R-B*255"
+    },
+    "red": {
+      "legacy": 4.2,
+      "min": 2.0,
+      "max": 5.0,
+      "label": "2..5",
+      "unit": "%"
+    }
+  },
+  "tolerances": {
+    "luma": 0.08,
+    "std": 0.05,
+    "p25": 0.1,
+    "p95": 0.05,
+    "near_white": 18.0,
+    "deep_shadow": 3.0,
+    "saturation": 0.08,
+    "local_contrast": 0.04,
+    "edge": 0.012,
+    "sky": 12.0,
+    "top_contrast": 0.05,
+    "split": 15.0,
+    "red": 2.5
+  },
+  "bandsMode": "all",
+  "bandPolicy": {
+    "decision": "W0 band policy, 2026-11-19",
+    "legacySource": "docs/VISUAL_AUDIO_LEVEL_PLAN.md §2.1 (predecessor harness; identical to docs/GLASSLINE_REFERENCE_AUDIT.md §2.3 table)",
+    "formula": "shifted_min = legacy_min + delta; shifted_max = legacy_max + delta; delta = measured_ref_mean - legacy_ref",
+    "shiftedBands": {
+      "luma": {
+        "legacy": 0.589,
+        "delta": 0.026224382281303416,
+        "min": 0.5062243822813034,
+        "max": 0.6462243822813034,
+        "label": "0.506224..0.646224"
+      },
+      "std": {
+        "legacy": 0.272,
+        "delta": 0.022583865255117408,
+        "min": 0.2425838652551174,
+        "max": null,
+        "label": ">=0.242584"
+      },
+      "p25": {
+        "legacy": 0.37,
+        "delta": 0.0009875293076038183,
+        "min": 0.33098752930760383,
+        "max": 0.4209875293076038,
+        "label": "0.330988..0.420988"
+      },
+      "p95": {
+        "legacy": 0.979,
+        "delta": 0.0015995345115661364,
+        "min": 0.9315995345115662,
+        "max": null,
+        "label": ">=0.9316"
+      },
+      "near_white": {
+        "legacy": 27.3,
+        "delta": 7.191338734567903,
+        "min": 22.191338734567903,
+        "max": 35.19133873456791,
+        "label": "22.1913..35.1913"
+      },
+      "deep_shadow": {
+        "legacy": 3.0,
+        "delta": -2.321903935185185,
+        "min": null,
+        "max": 3.678096064814815,
+        "label": "<=3.6781"
+      },
+      "saturation": {
+        "legacy": 0.359,
+        "delta": -0.0589732717871666,
+        "min": 0.24102672821283339,
+        "max": 0.3210267282128334,
+        "label": "0.241027..0.321027"
+      },
+      "local_contrast": {
+        "legacy": 0.0713,
+        "delta": 0.21370273674726484,
+        "min": 0.27370273674726486,
+        "max": null,
+        "label": ">=0.273703"
+      },
+      "edge": {
+        "legacy": 0.0341,
+        "delta": -0.014705435348115858,
+        "min": 0.013294564651884142,
+        "max": null,
+        "label": ">=0.0132946"
+      },
+      "sky": {
+        "legacy": 53.1,
+        "delta": -9.841660814606747,
+        "min": 25.158339185393253,
+        "max": 45.15833918539325,
+        "label": "25.1583..45.1583"
+      },
+      "top_contrast": {
+        "legacy": 0.0585,
+        "delta": 0.18479591020941735,
+        "min": 0.23479591020941737,
+        "max": null,
+        "label": ">=0.234796"
+      },
+      "split": {
+        "legacy": -48.6,
+        "delta": 26.79307248592377,
+        "min": -28.20692751407623,
+        "max": -13.20692751407623,
+        "label": "-28.2069..-13.2069"
+      },
+      "red": {
+        "legacy": 4.2,
+        "delta": -1.8062114197530867,
+        "min": 0.19378858024691326,
+        "max": 3.1937885802469133,
+        "label": "0.193789..3.19379"
+      }
+    },
+    "referenceMeanInsideShiftedBands": "13/13",
+    "referenceMeanInsideLegacyBands": "10/13",
+    "appliesTo": "the six fixed capture shots, not arbitrary gameplay frames"
+  },
+  "candidates": [
+    {
+      "path": "captures/ux-final2/finish-roof.png",
+      "metrics": {
+        "luma": 0.5609086751937866,
+        "std": 0.2500426769256592,
+        "p25": 0.38094979524612427,
+        "p95": 0.9554941058158875,
+        "near_white": 16.054591049382715,
+        "deep_shadow": 0.0,
+        "saturation": 0.4011465609073639,
+        "local_contrast": 0.23506677150726318,
+        "edge": 0.023999817669391632,
+        "sky": 73.35323033707866,
+        "top_contrast": 0.1898917853832245,
+        "split": -34.3845100402832,
+        "red": 1.2743055555555556
+      },
+      "rows": [
+        {
+          "metric": "luma",
+          "label": "Luma mean",
+          "unit": "0..1",
+          "candidate": 0.5609086751937866,
+          "reference": 0.6152243822813034,
+          "referenceSd": 0.13335175622030057,
+          "referenceP10": 0.4715142399072647,
+          "referenceP50": 0.6217188537120819,
+          "referenceP90": 0.7639147698879243,
+          "referenceLegacy": 0.589,
+          "shift": 0.026224382281303416,
+          "tolerance": 0.08,
+          "bands": {
+            "legacy": {
+              "min": 0.48,
+              "max": 0.62,
+              "label": "0.48..0.62"
+            },
+            "shifted": {
+              "min": 0.5062243822813034,
+              "max": 0.6462243822813034,
+              "label": "0.506224..0.646224"
+            }
+          },
+          "gaps": {
+            "shifted": 0.05468429291248322,
+            "legacy": 0.059091324806213374
+          },
+          "verdicts": {
+            "shifted": "PASS",
+            "tolerance": "PASS",
+            "legacy": "PASS"
+          },
+          "pass": true,
+          "accepted": true
+        },
+        {
+          "metric": "std",
+          "label": "Luma std",
+          "unit": "0..1",
+          "candidate": 0.2500426769256592,
+          "reference": 0.2945838652551174,
+          "referenceSd": 0.049185558207583385,
+          "referenceP10": 0.22041192799806594,
+          "referenceP50": 0.2935660183429718,
+          "referenceP90": 0.35040610134601596,
+          "referenceLegacy": 0.272,
+          "shift": 0.022583865255117408,
+          "tolerance": 0.05,
+          "bands": {
+            "legacy": {
+              "min": 0.22,
+              "max": null,
+              "label": ">=0.22"
+            },
+            "shifted": {
+              "min": 0.2425838652551174,
+              "max": null,
+              "label": ">=0.242584"
+            }
+          },
+          "gaps": {
+            "shifted": 0.007458811670541771,
+            "legacy": 0.03004267692565918
+          },
+          "verdicts": {
+            "shifted": "PASS",
+            "tolerance": "PASS",
+            "legacy": "PASS"
+          },
+          "pass": true,
+          "accepted": true
+        },
+        {
+          "metric": "p25",
+          "label": "Luma p25",
+          "unit": "0..1",
+          "candidate": 0.38094979524612427,
+          "reference": 0.3709875293076038,
+          "referenceSd": 0.13892598227069597,
+          "referenceP10": 0.21907937824726104,
+          "referenceP50": 0.3694094270467758,
+          "referenceP90": 0.5757496118545532,
+          "referenceLegacy": 0.37,
+          "shift": 0.0009875293076038183,
+          "tolerance": 0.1,
+          "bands": {
+            "legacy": {
+              "min": 0.33,
+              "max": 0.42,
+              "label": "0.33..0.42"
+            },
+            "shifted": {
+              "min": 0.33098752930760383,
+              "max": 0.4209875293076038,
+              "label": "0.330988..0.420988"
+            }
+          },
+          "gaps": {
+            "shifted": 0.040037734061479535,
+            "legacy": 0.03905020475387572
+          },
+          "verdicts": {
+            "shifted": "PASS",
+            "tolerance": "PASS",
+            "legacy": "PASS"
+          },
+          "pass": true,
+          "accepted": true
+        },
+        {
+          "metric": "p95",
+          "label": "Luma p95",
+          "unit": "0..1",
+          "candidate": 0.9554941058158875,
+          "reference": 0.9805995345115661,
+          "referenceSd": 0.04530196538769849,
+          "referenceP10": 0.9158146619796753,
+          "referenceP50": 1.0,
+          "referenceP90": 1.0,
+          "referenceLegacy": 0.979,
+          "shift": 0.0015995345115661364,
+          "tolerance": 0.05,
+          "bands": {
+            "legacy": {
+              "min": 0.93,
+              "max": null,
+              "label": ">=0.93"
+            },
+            "shifted": {
+              "min": 0.9315995345115662,
+              "max": null,
+              "label": ">=0.9316"
+            }
+          },
+          "gaps": {
+            "shifted": 0.023894571304321266,
+            "legacy": 0.025494105815887402
+          },
+          "verdicts": {
+            "shifted": "PASS",
+            "tolerance": "PASS",
+            "legacy": "PASS"
+          },
+          "pass": true,
+          "accepted": true
+        },
+        {
+          "metric": "near_white",
+          "label": "Near-white share",
+          "unit": "%",
+          "candidate": 16.054591049382715,
+          "reference": 34.491338734567904,
+          "referenceSd": 18.242134843485484,
+          "referenceP10": 6.179687500000001,
+          "referenceP50": 32.58024691358025,
+          "referenceP90": 51.62127700617286,
+          "referenceLegacy": 27.3,
+          "shift": 7.191338734567903,
+          "tolerance": 18.0,
+          "bands": {
+            "legacy": {
+              "min": 15.0,
+              "max": 28.0,
+              "label": "15..28"
+            },
+            "shifted": {
+              "min": 22.191338734567903,
+              "max": 35.19133873456791,
+              "label": "22.1913..35.1913"
+            }
+          },
+          "gaps": {
+            "shifted": -6.136747685185188,
+            "legacy": 1.054591049382715
+          },
+          "verdicts": {
+            "shifted": "FAIL",
+            "tolerance": "WATCH",
+            "legacy": "PASS"
+          },
+          "pass": false,
+          "accepted": false
+        },
+        {
+          "metric": "deep_shadow",
+          "label": "Deep-shadow share",
+          "unit": "%",
+          "candidate": 0.0,
+          "reference": 0.6780960648148148,
+          "referenceSd": 1.6126900552600532,
+          "referenceP10": 0.002218364197530864,
+          "referenceP50": 0.1253858024691358,
+          "referenceP90": 1.4190393518518525,
+          "referenceLegacy": 3.0,
+          "shift": -2.321903935185185,
+          "tolerance": 3.0,
+          "bands": {
+            "legacy": {
+              "min": null,
+              "max": 6.0,
+              "label": "<=6"
+            },
+            "shifted": {
+              "min": null,
+              "max": 3.678096064814815,
+              "label": "<=3.6781"
+            }
+          },
+          "gaps": {
+            "shifted": 3.678096064814815,
+            "legacy": 6.0
+          },
+          "verdicts": {
+            "shifted": "PASS",
+            "tolerance": "PASS",
+            "legacy": "PASS"
+          },
+          "pass": true,
+          "accepted": true
+        },
+        {
+          "metric": "saturation",
+          "label": "Saturation",
+          "unit": "0..1",
+          "candidate": 0.4011465609073639,
+          "reference": 0.3000267282128334,
+          "referenceSd": 0.14101876066433905,
+          "referenceP10": 0.1801747277379036,
+          "referenceP50": 0.26818549633026123,
+          "referenceP90": 0.4815905421972277,
+          "referenceLegacy": 0.359,
+          "shift": -0.0589732717871666,
+          "tolerance": 0.08,
+          "bands": {
+            "legacy": {
+              "min": 0.3,
+              "max": 0.38,
+              "label": "0.3..0.38"
+            },
+            "shifted": {
+              "min": 0.24102672821283339,
+              "max": 0.3210267282128334,
+              "label": "0.241027..0.321027"
+            }
+          },
+          "gaps": {
+            "shifted": -0.08011983269453049,
+            "legacy": -0.021146560907363887
+          },
+          "verdicts": {
+            "shifted": "FAIL",
+            "tolerance": "WATCH",
+            "legacy": "FAIL"
+          },
+          "pass": false,
+          "accepted": false
+        },
+        {
+          "metric": "local_contrast",
+          "label": "Local contrast",
+          "unit": "0..1",
+          "candidate": 0.23506677150726318,
+          "reference": 0.28500273674726484,
+          "referenceSd": 0.04837829548036219,
+          "referenceP10": 0.2178311452269554,
+          "referenceP50": 0.2832604944705963,
+          "referenceP90": 0.34072046577930454,
+          "referenceLegacy": 0.0713,
+          "shift": 0.21370273674726484,
+          "tolerance": 0.04,
+          "bands": {
+            "legacy": {
+              "min": 0.06,
+              "max": null,
+              "label": ">=0.06"
+            },
+            "shifted": {
+              "min": 0.27370273674726486,
+              "max": null,
+              "label": ">=0.273703"
+            }
+          },
+          "gaps": {
+            "shifted": -0.03863596524000168,
+            "legacy": 0.17506677150726319
+          },
+          "verdicts": {
+            "shifted": "FAIL",
+            "tolerance": "WATCH",
+            "legacy": "PASS"
+          },
+          "pass": false,
+          "accepted": false
+        },
+        {
+          "metric": "edge",
+          "label": "Edge energy",
+          "unit": "0..1",
+          "candidate": 0.023999817669391632,
+          "reference": 0.01939456465188414,
+          "referenceSd": 0.009306276669969363,
+          "referenceP10": 0.00966938310302794,
+          "referenceP50": 0.01805755402892828,
+          "referenceP90": 0.029320623725652698,
+          "referenceLegacy": 0.0341,
+          "shift": -0.014705435348115858,
+          "tolerance": 0.012,
+          "bands": {
+            "legacy": {
+              "min": 0.028,
+              "max": null,
+              "label": ">=0.028"
+            },
+            "shifted": {
+              "min": 0.013294564651884142,
+              "max": null,
+              "label": ">=0.0132946"
+            }
+          },
+          "gaps": {
+            "shifted": 0.01070525301750749,
+            "legacy": -0.0040001823306083685
+          },
+          "verdicts": {
+            "shifted": "PASS",
+            "tolerance": "PASS",
+            "legacy": "FAIL"
+          },
+          "pass": true,
+          "accepted": true
+        },
+        {
+          "metric": "sky",
+          "label": "Sky-blue area",
+          "unit": "%",
+          "candidate": 73.35323033707866,
+          "reference": 43.258339185393254,
+          "referenceSd": 16.86317972525212,
+          "referenceP10": 20.22211493445693,
+          "referenceP50": 42.936563670411985,
+          "referenceP90": 63.47899110486893,
+          "referenceLegacy": 53.1,
+          "shift": -9.841660814606747,
+          "tolerance": 12.0,
+          "bands": {
+            "legacy": {
+              "min": 35.0,
+              "max": 55.0,
+              "label": "35..55"
+            },
+            "shifted": {
+              "min": 25.158339185393253,
+              "max": 45.15833918539325,
+              "label": "25.1583..45.1583"
+            }
+          },
+          "gaps": {
+            "shifted": -28.194891151685404,
+            "legacy": -18.353230337078656
+          },
+          "verdicts": {
+            "shifted": "FAIL",
+            "tolerance": "WATCH",
+            "legacy": "FAIL"
+          },
+          "pass": false,
+          "accepted": false
+        },
+        {
+          "metric": "top_contrast",
+          "label": "Top-third contrast",
+          "unit": "0..1",
+          "candidate": 0.1898917853832245,
+          "reference": 0.24329591020941735,
+          "referenceSd": 0.05545991077196976,
+          "referenceP10": 0.17864398807287216,
+          "referenceP50": 0.24977309256792068,
+          "referenceP90": 0.30886746346950533,
+          "referenceLegacy": 0.0585,
+          "shift": 0.18479591020941735,
+          "tolerance": 0.05,
+          "bands": {
+            "legacy": {
+              "min": 0.05,
+              "max": null,
+              "label": ">=0.05"
+            },
+            "shifted": {
+              "min": 0.23479591020941737,
+              "max": null,
+              "label": ">=0.234796"
+            }
+          },
+          "gaps": {
+            "shifted": -0.04490412482619288,
+            "legacy": 0.1398917853832245
+          },
+          "verdicts": {
+            "shifted": "FAIL",
+            "tolerance": "WATCH",
+            "legacy": "PASS"
+          },
+          "pass": false,
+          "accepted": false
+        },
+        {
+          "metric": "split",
+          "label": "Split-tone dark R-B",
+          "unit": "R-B*255",
+          "candidate": -34.3845100402832,
+          "reference": -21.806927514076232,
+          "referenceSd": 25.573748535865327,
+          "referenceP10": -42.51122131347656,
+          "referenceP50": -28.12237548828125,
+          "referenceP90": -3.953147172927843,
+          "referenceLegacy": -48.6,
+          "shift": 26.79307248592377,
+          "tolerance": 15.0,
+          "bands": {
+            "legacy": {
+              "min": -55.0,
+              "max": -40.0,
+              "label": "-55..-40"
+            },
+            "shifted": {
+              "min": -28.20692751407623,
+              "max": -13.20692751407623,
+              "label": "-28.2069..-13.2069"
+            }
+          },
+          "gaps": {
+            "shifted": -6.177582526206972,
+            "legacy": -5.615489959716797
+          },
+          "verdicts": {
+            "shifted": "FAIL",
+            "tolerance": "PASS",
+            "legacy": "FAIL"
+          },
+          "pass": true,
+          "accepted": false
+        },
+        {
+          "metric": "red",
+          "label": "Red accent share",
+          "unit": "%",
+          "candidate": 1.2743055555555556,
+          "reference": 2.3937885802469134,
+          "referenceSd": 2.85075450424615,
+          "referenceP10": 0.05065586419753087,
+          "referenceP50": 2.0200617283950617,
+          "referenceP90": 4.6508487654321025,
+          "referenceLegacy": 4.2,
+          "shift": -1.8062114197530867,
+          "tolerance": 2.5,
+          "bands": {
+            "legacy": {
+              "min": 2.0,
+              "max": 5.0,
+              "label": "2..5"
+            },
+            "shifted": {
+              "min": 0.19378858024691326,
+              "max": 3.1937885802469133,
+              "label": "0.193789..3.19379"
+            }
+          },
+          "gaps": {
+            "shifted": 1.0805169753086423,
+            "legacy": -0.7256944444444444
+          },
+          "verdicts": {
+            "shifted": "PASS",
+            "tolerance": "PASS",
+            "legacy": "FAIL"
+          },
+          "pass": true,
+          "accepted": true
+        }
+      ],
+      "passed": 8,
+      "watch": 5,
+      "failed": 0,
+      "total": 13,
+      "shiftedPassed": 7,
+      "legacyPassed": 8,
+      "accepted": false,
+      "summary": {
+        "shifted": {
+          "pass": 7,
+          "fail": 6,
+          "total": 13
+        },
+        "legacy": {
+          "pass": 8,
+          "fail": 5,
+          "total": 13
+        },
+        "tolerance": {
+          "pass": 8,
+          "watch": 5,
+          "fail": 0,
+          "total": 13
+        }
+      },
+      "guardrails": {
+        "sky_mask_share": 8.086805555555555,
+        "near_white_seam_energy": 0.0037626572884619236,
+        "red_route_share": 0.5044367283950617,
+        "red_route_saturation": 0.9246779680252075,
+        "sky_horizon_row": 358,
+        "sky_horizon_source_px": null,
+        "sky_horizon_source": "edge",
+        "sky_horizon_edge_ratio": 4.616309630006893,
+        "sky_lit_wall_pct": 8.052469135802468,
+        "component_guard": "none"
+      },
+      "guardrailRows": [
+        {
+          "guardrail": "sky_mask_share",
+          "label": "Sky mask share",
+          "unit": "%",
+          "value": 8.086805555555555,
+          "referenceMean": 5.063580246913579,
+          "referenceSd": 4.391695164299397,
+          "referenceP10": 0.5925154320987654,
+          "referenceP90": 11.164120370370371,
+          "position": "inside p10-p90"
+        },
+        {
+          "guardrail": "near_white_seam_energy",
+          "label": "Near-white seam energy",
+          "unit": "gradient",
+          "value": 0.0037626572884619236,
+          "referenceMean": 0.0029352366720559074,
+          "referenceSd": 0.001821314660396086,
+          "referenceP10": 0.0011054027010686696,
+          "referenceP90": 0.004651649110019207,
+          "position": "inside p10-p90"
+        },
+        {
+          "guardrail": "red_route_share",
+          "label": "Red route share",
+          "unit": "%",
+          "value": 0.5044367283950617,
+          "referenceMean": 2.8745273919753087,
+          "referenceSd": 4.946579191500707,
+          "referenceP10": 0.0836033950617284,
+          "referenceP90": 6.746894290123456,
+          "position": "inside p10-p90"
+        },
+        {
+          "guardrail": "red_route_saturation",
+          "label": "Red route saturation",
+          "unit": "0..1",
+          "value": 0.9246779680252075,
+          "referenceMean": 0.6681584984064102,
+          "referenceSd": 0.2447958281945591,
+          "referenceP10": 0.3897438824176788,
+          "referenceP90": 0.9428059279918671,
+          "position": "inside p10-p90"
+        }
+      ],
+      "guardrailContext": {
+        "primarySkyBlue": 73.35323033707866,
+        "skyMaskShare": 8.086805555555555,
+        "skyMaskOfPrimaryPct": 11.024470931129299,
+        "skyLitWallPct": 8.052469135802468
+      }
+    },
+    {
+      "path": "captures/ux-final2/first-gap.png",
+      "metrics": {
+        "luma": 0.6078776121139526,
+        "std": 0.2837824821472168,
+        "p25": 0.3374886214733124,
+        "p95": 0.9568784236907959,
+        "near_white": 26.72608024691358,
+        "deep_shadow": 0.0,
+        "saturation": 0.27901673316955566,
+        "local_contrast": 0.25402286648750305,
+        "edge": 0.04167114198207855,
+        "sky": 47.42011938202248,
+        "top_contrast": 0.2660365700721741,
+        "split": -34.602638244628906,
+        "red": 1.8061342592592595
+      },
+      "rows": [
+        {
+          "metric": "luma",
+          "label": "Luma mean",
+          "unit": "0..1",
+          "candidate": 0.6078776121139526,
+          "reference": 0.6152243822813034,
+          "referenceSd": 0.13335175622030057,
+          "referenceP10": 0.4715142399072647,
+          "referenceP50": 0.6217188537120819,
+          "referenceP90": 0.7639147698879243,
+          "referenceLegacy": 0.589,
+          "shift": 0.026224382281303416,
+          "tolerance": 0.08,
+          "bands": {
+            "legacy": {
+              "min": 0.48,
+              "max": 0.62,
+              "label": "0.48..0.62"
+            },
+            "shifted": {
+              "min": 0.5062243822813034,
+              "max": 0.6462243822813034,
+              "label": "0.506224..0.646224"
+            }
+          },
+          "gaps": {
+            "shifted": 0.038346770167350774,
+            "legacy": 0.012122387886047359
+          },
+          "verdicts": {
+            "shifted": "PASS",
+            "tolerance": "PASS",
+            "legacy": "PASS"
+          },
+          "pass": true,
+          "accepted": true
+        },
+        {
+          "metric": "std",
+          "label": "Luma std",
+          "unit": "0..1",
+          "candidate": 0.2837824821472168,
+          "reference": 0.2945838652551174,
+          "referenceSd": 0.049185558207583385,
+          "referenceP10": 0.22041192799806594,
+          "referenceP50": 0.2935660183429718,
+          "referenceP90": 0.35040610134601596,
+          "referenceLegacy": 0.272,
+          "shift": 0.022583865255117408,
+          "tolerance": 0.05,
+          "bands": {
+            "legacy": {
+              "min": 0.22,
+              "max": null,
+              "label": ">=0.22"
+            },
+            "shifted": {
+              "min": 0.2425838652551174,
+              "max": null,
+              "label": ">=0.242584"
+            }
+          },
+          "gaps": {
+            "shifted": 0.04119861689209939,
+            "legacy": 0.0637824821472168
+          },
+          "verdicts": {
+            "shifted": "PASS",
+            "tolerance": "PASS",
+            "legacy": "PASS"
+          },
+          "pass": true,
+          "accepted": true
+        },
+        {
+          "metric": "p25",
+          "label": "Luma p25",
+          "unit": "0..1",
+          "candidate": 0.3374886214733124,
+          "reference": 0.3709875293076038,
+          "referenceSd": 0.13892598227069597,
+          "referenceP10": 0.21907937824726104,
+          "referenceP50": 0.3694094270467758,
+          "referenceP90": 0.5757496118545532,
+          "referenceLegacy": 0.37,
+          "shift": 0.0009875293076038183,
+          "tolerance": 0.1,
+          "bands": {
+            "legacy": {
+              "min": 0.33,
+              "max": 0.42,
+              "label": "0.33..0.42"
+            },
+            "shifted": {
+              "min": 0.33098752930760383,
+              "max": 0.4209875293076038,
+              "label": "0.330988..0.420988"
+            }
+          },
+          "gaps": {
+            "shifted": 0.006501092165708544,
+            "legacy": 0.007488621473312362
+          },
+          "verdicts": {
+            "shifted": "PASS",
+            "tolerance": "PASS",
+            "legacy": "PASS"
+          },
+          "pass": true,
+          "accepted": true
+        },
+        {
+          "metric": "p95",
+          "label": "Luma p95",
+          "unit": "0..1",
+          "candidate": 0.9568784236907959,
+          "reference": 0.9805995345115661,
+          "referenceSd": 0.04530196538769849,
+          "referenceP10": 0.9158146619796753,
+          "referenceP50": 1.0,
+          "referenceP90": 1.0,
+          "referenceLegacy": 0.979,
+          "shift": 0.0015995345115661364,
+          "tolerance": 0.05,
+          "bands": {
+            "legacy": {
+              "min": 0.93,
+              "max": null,
+              "label": ">=0.93"
+            },
+            "shifted": {
+              "min": 0.9315995345115662,
+              "max": null,
+              "label": ">=0.9316"
+            }
+          },
+          "gaps": {
+            "shifted": 0.025278889179229713,
+            "legacy": 0.02687842369079585
+          },
+          "verdicts": {
+            "shifted": "PASS",
+            "tolerance": "PASS",
+            "legacy": "PASS"
+          },
+          "pass": true,
+          "accepted": true
+        },
+        {
+          "metric": "near_white",
+          "label": "Near-white share",
+          "unit": "%",
+          "candidate": 26.72608024691358,
+          "reference": 34.491338734567904,
+          "referenceSd": 18.242134843485484,
+          "referenceP10": 6.179687500000001,
+          "referenceP50": 32.58024691358025,
+          "referenceP90": 51.62127700617286,
+          "referenceLegacy": 27.3,
+          "shift": 7.191338734567903,
+          "tolerance": 18.0,
+          "bands": {
+            "legacy": {
+              "min": 15.0,
+              "max": 28.0,
+              "label": "15..28"
+            },
+            "shifted": {
+              "min": 22.191338734567903,
+              "max": 35.19133873456791,
+              "label": "22.1913..35.1913"
+            }
+          },
+          "gaps": {
+            "shifted": 4.534741512345676,
+            "legacy": 1.273919753086421
+          },
+          "verdicts": {
+            "shifted": "PASS",
+            "tolerance": "PASS",
+            "legacy": "PASS"
+          },
+          "pass": true,
+          "accepted": true
+        },
+        {
+          "metric": "deep_shadow",
+          "label": "Deep-shadow share",
+          "unit": "%",
+          "candidate": 0.0,
+          "reference": 0.6780960648148148,
+          "referenceSd": 1.6126900552600532,
+          "referenceP10": 0.002218364197530864,
+          "referenceP50": 0.1253858024691358,
+          "referenceP90": 1.4190393518518525,
+          "referenceLegacy": 3.0,
+          "shift": -2.321903935185185,
+          "tolerance": 3.0,
+          "bands": {
+            "legacy": {
+              "min": null,
+              "max": 6.0,
+              "label": "<=6"
+            },
+            "shifted": {
+              "min": null,
+              "max": 3.678096064814815,
+              "label": "<=3.6781"
+            }
+          },
+          "gaps": {
+            "shifted": 3.678096064814815,
+            "legacy": 6.0
+          },
+          "verdicts": {
+            "shifted": "PASS",
+            "tolerance": "PASS",
+            "legacy": "PASS"
+          },
+          "pass": true,
+          "accepted": true
+        },
+        {
+          "metric": "saturation",
+          "label": "Saturation",
+          "unit": "0..1",
+          "candidate": 0.27901673316955566,
+          "reference": 0.3000267282128334,
+          "referenceSd": 0.14101876066433905,
+          "referenceP10": 0.1801747277379036,
+          "referenceP50": 0.26818549633026123,
+          "referenceP90": 0.4815905421972277,
+          "referenceLegacy": 0.359,
+          "shift": -0.0589732717871666,
+          "tolerance": 0.08,
+          "bands": {
+            "legacy": {
+              "min": 0.3,
+              "max": 0.38,
+              "label": "0.3..0.38"
+            },
+            "shifted": {
+              "min": 0.24102672821283339,
+              "max": 0.3210267282128334,
+              "label": "0.241027..0.321027"
+            }
+          },
+          "gaps": {
+            "shifted": 0.03799000495672228,
+            "legacy": -0.020983266830444325
+          },
+          "verdicts": {
+            "shifted": "PASS",
+            "tolerance": "PASS",
+            "legacy": "FAIL"
+          },
+          "pass": true,
+          "accepted": true
+        },
+        {
+          "metric": "local_contrast",
+          "label": "Local contrast",
+          "unit": "0..1",
+          "candidate": 0.25402286648750305,
+          "reference": 0.28500273674726484,
+          "referenceSd": 0.04837829548036219,
+          "referenceP10": 0.2178311452269554,
+          "referenceP50": 0.2832604944705963,
+          "referenceP90": 0.34072046577930454,
+          "referenceLegacy": 0.0713,
+          "shift": 0.21370273674726484,
+          "tolerance": 0.04,
+          "bands": {
+            "legacy": {
+              "min": 0.06,
+              "max": null,
+              "label": ">=0.06"
+            },
+            "shifted": {
+              "min": 0.27370273674726486,
+              "max": null,
+              "label": ">=0.273703"
+            }
+          },
+          "gaps": {
+            "shifted": -0.01967987025976181,
+            "legacy": 0.19402286648750305
+          },
+          "verdicts": {
+            "shifted": "FAIL",
+            "tolerance": "PASS",
+            "legacy": "PASS"
+          },
+          "pass": true,
+          "accepted": false
+        },
+        {
+          "metric": "edge",
+          "label": "Edge energy",
+          "unit": "0..1",
+          "candidate": 0.04167114198207855,
+          "reference": 0.01939456465188414,
+          "referenceSd": 0.009306276669969363,
+          "referenceP10": 0.00966938310302794,
+          "referenceP50": 0.01805755402892828,
+          "referenceP90": 0.029320623725652698,
+          "referenceLegacy": 0.0341,
+          "shift": -0.014705435348115858,
+          "tolerance": 0.012,
+          "bands": {
+            "legacy": {
+              "min": 0.028,
+              "max": null,
+              "label": ">=0.028"
+            },
+            "shifted": {
+              "min": 0.013294564651884142,
+              "max": null,
+              "label": ">=0.0132946"
+            }
+          },
+          "gaps": {
+            "shifted": 0.02837657733019441,
+            "legacy": 0.013671141982078552
+          },
+          "verdicts": {
+            "shifted": "PASS",
+            "tolerance": "WATCH",
+            "legacy": "PASS"
+          },
+          "pass": false,
+          "accepted": true
+        },
+        {
+          "metric": "sky",
+          "label": "Sky-blue area",
+          "unit": "%",
+          "candidate": 47.42011938202248,
+          "reference": 43.258339185393254,
+          "referenceSd": 16.86317972525212,
+          "referenceP10": 20.22211493445693,
+          "referenceP50": 42.936563670411985,
+          "referenceP90": 63.47899110486893,
+          "referenceLegacy": 53.1,
+          "shift": -9.841660814606747,
+          "tolerance": 12.0,
+          "bands": {
+            "legacy": {
+              "min": 35.0,
+              "max": 55.0,
+              "label": "35..55"
+            },
+            "shifted": {
+              "min": 25.158339185393253,
+              "max": 45.15833918539325,
+              "label": "25.1583..45.1583"
+            }
+          },
+          "gaps": {
+            "shifted": -2.261780196629225,
+            "legacy": 7.579880617977523
+          },
+          "verdicts": {
+            "shifted": "FAIL",
+            "tolerance": "PASS",
+            "legacy": "PASS"
+          },
+          "pass": true,
+          "accepted": false
+        },
+        {
+          "metric": "top_contrast",
+          "label": "Top-third contrast",
+          "unit": "0..1",
+          "candidate": 0.2660365700721741,
+          "reference": 0.24329591020941735,
+          "referenceSd": 0.05545991077196976,
+          "referenceP10": 0.17864398807287216,
+          "referenceP50": 0.24977309256792068,
+          "referenceP90": 0.30886746346950533,
+          "referenceLegacy": 0.0585,
+          "shift": 0.18479591020941735,
+          "tolerance": 0.05,
+          "bands": {
+            "legacy": {
+              "min": 0.05,
+              "max": null,
+              "label": ">=0.05"
+            },
+            "shifted": {
+              "min": 0.23479591020941737,
+              "max": null,
+              "label": ">=0.234796"
+            }
+          },
+          "gaps": {
+            "shifted": 0.031240659862756703,
+            "legacy": 0.21603657007217408
+          },
+          "verdicts": {
+            "shifted": "PASS",
+            "tolerance": "PASS",
+            "legacy": "PASS"
+          },
+          "pass": true,
+          "accepted": true
+        },
+        {
+          "metric": "split",
+          "label": "Split-tone dark R-B",
+          "unit": "R-B*255",
+          "candidate": -34.602638244628906,
+          "reference": -21.806927514076232,
+          "referenceSd": 25.573748535865327,
+          "referenceP10": -42.51122131347656,
+          "referenceP50": -28.12237548828125,
+          "referenceP90": -3.953147172927843,
+          "referenceLegacy": -48.6,
+          "shift": 26.79307248592377,
+          "tolerance": 15.0,
+          "bands": {
+            "legacy": {
+              "min": -55.0,
+              "max": -40.0,
+              "label": "-55..-40"
+            },
+            "shifted": {
+              "min": -28.20692751407623,
+              "max": -13.20692751407623,
+              "label": "-28.2069..-13.2069"
+            }
+          },
+          "gaps": {
+            "shifted": -6.3957107305526755,
+            "legacy": -5.397361755371094
+          },
+          "verdicts": {
+            "shifted": "FAIL",
+            "tolerance": "PASS",
+            "legacy": "FAIL"
+          },
+          "pass": true,
+          "accepted": false
+        },
+        {
+          "metric": "red",
+          "label": "Red accent share",
+          "unit": "%",
+          "candidate": 1.8061342592592595,
+          "reference": 2.3937885802469134,
+          "referenceSd": 2.85075450424615,
+          "referenceP10": 0.05065586419753087,
+          "referenceP50": 2.0200617283950617,
+          "referenceP90": 4.6508487654321025,
+          "referenceLegacy": 4.2,
+          "shift": -1.8062114197530867,
+          "tolerance": 2.5,
+          "bands": {
+            "legacy": {
+              "min": 2.0,
+              "max": 5.0,
+              "label": "2..5"
+            },
+            "shifted": {
+              "min": 0.19378858024691326,
+              "max": 3.1937885802469133,
+              "label": "0.193789..3.19379"
+            }
+          },
+          "gaps": {
+            "shifted": 1.3876543209876537,
+            "legacy": -0.19386574074074048
+          },
+          "verdicts": {
+            "shifted": "PASS",
+            "tolerance": "PASS",
+            "legacy": "FAIL"
+          },
+          "pass": true,
+          "accepted": true
+        }
+      ],
+      "passed": 12,
+      "watch": 1,
+      "failed": 0,
+      "total": 13,
+      "shiftedPassed": 10,
+      "legacyPassed": 10,
+      "accepted": false,
+      "summary": {
+        "shifted": {
+          "pass": 10,
+          "fail": 3,
+          "total": 13
+        },
+        "legacy": {
+          "pass": 10,
+          "fail": 3,
+          "total": 13
+        },
+        "tolerance": {
+          "pass": 12,
+          "watch": 1,
+          "fail": 0,
+          "total": 13
+        }
+      },
+      "guardrails": {
+        "sky_mask_share": 5.4596836419753085,
+        "near_white_seam_energy": 0.004343316424638033,
+        "red_route_share": 0.3074845679012346,
+        "red_route_saturation": 0.9719586968421936,
+        "sky_horizon_row": 377,
+        "sky_horizon_source_px": null,
+        "sky_horizon_source": "edge",
+        "sky_horizon_edge_ratio": 2.281048544126534,
+        "sky_lit_wall_pct": 5.505979938271605,
+        "component_guard": "none"
+      },
+      "guardrailRows": [
+        {
+          "guardrail": "sky_mask_share",
+          "label": "Sky mask share",
+          "unit": "%",
+          "value": 5.4596836419753085,
+          "referenceMean": 5.063580246913579,
+          "referenceSd": 4.391695164299397,
+          "referenceP10": 0.5925154320987654,
+          "referenceP90": 11.164120370370371,
+          "position": "inside p10-p90"
+        },
+        {
+          "guardrail": "near_white_seam_energy",
+          "label": "Near-white seam energy",
+          "unit": "gradient",
+          "value": 0.004343316424638033,
+          "referenceMean": 0.0029352366720559074,
+          "referenceSd": 0.001821314660396086,
+          "referenceP10": 0.0011054027010686696,
+          "referenceP90": 0.004651649110019207,
+          "position": "inside p10-p90"
+        },
+        {
+          "guardrail": "red_route_share",
+          "label": "Red route share",
+          "unit": "%",
+          "value": 0.3074845679012346,
+          "referenceMean": 2.8745273919753087,
+          "referenceSd": 4.946579191500707,
+          "referenceP10": 0.0836033950617284,
+          "referenceP90": 6.746894290123456,
+          "position": "inside p10-p90"
+        },
+        {
+          "guardrail": "red_route_saturation",
+          "label": "Red route saturation",
+          "unit": "0..1",
+          "value": 0.9719586968421936,
+          "referenceMean": 0.6681584984064102,
+          "referenceSd": 0.2447958281945591,
+          "referenceP10": 0.3897438824176788,
+          "referenceP90": 0.9428059279918671,
+          "position": "above p10-p90"
+        }
+      ],
+      "guardrailContext": {
+        "primarySkyBlue": 47.42011938202248,
+        "skyMaskShare": 5.4596836419753085,
+        "skyMaskOfPrimaryPct": 11.51343293337456,
+        "skyLitWallPct": 5.505979938271605
+      }
+    },
+    {
+      "path": "captures/ux-final2/service-block.png",
+      "metrics": {
+        "luma": 0.5964964032173157,
+        "std": 0.23837994039058685,
+        "p25": 0.35474255681037903,
+        "p95": 0.9171121716499329,
+        "near_white": 5.698109567901235,
+        "deep_shadow": 0.0003858024691358025,
+        "saturation": 0.17412714660167694,
+        "local_contrast": 0.22772271931171417,
+        "edge": 0.02346206083893776,
+        "sky": 53.31987359550562,
+        "top_contrast": 0.2578633427619934,
+        "split": -16.693878173828125,
+        "red": 5.2773919753086425
+      },
+      "rows": [
+        {
+          "metric": "luma",
+          "label": "Luma mean",
+          "unit": "0..1",
+          "candidate": 0.5964964032173157,
+          "reference": 0.6152243822813034,
+          "referenceSd": 0.13335175622030057,
+          "referenceP10": 0.4715142399072647,
+          "referenceP50": 0.6217188537120819,
+          "referenceP90": 0.7639147698879243,
+          "referenceLegacy": 0.589,
+          "shift": 0.026224382281303416,
+          "tolerance": 0.08,
+          "bands": {
+            "legacy": {
+              "min": 0.48,
+              "max": 0.62,
+              "label": "0.48..0.62"
+            },
+            "shifted": {
+              "min": 0.5062243822813034,
+              "max": 0.6462243822813034,
+              "label": "0.506224..0.646224"
+            }
+          },
+          "gaps": {
+            "shifted": 0.04972797906398774,
+            "legacy": 0.02350359678268432
+          },
+          "verdicts": {
+            "shifted": "PASS",
+            "tolerance": "PASS",
+            "legacy": "PASS"
+          },
+          "pass": true,
+          "accepted": true
+        },
+        {
+          "metric": "std",
+          "label": "Luma std",
+          "unit": "0..1",
+          "candidate": 0.23837994039058685,
+          "reference": 0.2945838652551174,
+          "referenceSd": 0.049185558207583385,
+          "referenceP10": 0.22041192799806594,
+          "referenceP50": 0.2935660183429718,
+          "referenceP90": 0.35040610134601596,
+          "referenceLegacy": 0.272,
+          "shift": 0.022583865255117408,
+          "tolerance": 0.05,
+          "bands": {
+            "legacy": {
+              "min": 0.22,
+              "max": null,
+              "label": ">=0.22"
+            },
+            "shifted": {
+              "min": 0.2425838652551174,
+              "max": null,
+              "label": ">=0.242584"
+            }
+          },
+          "gaps": {
+            "shifted": -0.004203924864530556,
+            "legacy": 0.018379940390586852
+          },
+          "verdicts": {
+            "shifted": "FAIL",
+            "tolerance": "WATCH",
+            "legacy": "PASS"
+          },
+          "pass": false,
+          "accepted": false
+        },
+        {
+          "metric": "p25",
+          "label": "Luma p25",
+          "unit": "0..1",
+          "candidate": 0.35474255681037903,
+          "reference": 0.3709875293076038,
+          "referenceSd": 0.13892598227069597,
+          "referenceP10": 0.21907937824726104,
+          "referenceP50": 0.3694094270467758,
+          "referenceP90": 0.5757496118545532,
+          "referenceLegacy": 0.37,
+          "shift": 0.0009875293076038183,
+          "tolerance": 0.1,
+          "bands": {
+            "legacy": {
+              "min": 0.33,
+              "max": 0.42,
+              "label": "0.33..0.42"
+            },
+            "shifted": {
+              "min": 0.33098752930760383,
+              "max": 0.4209875293076038,
+              "label": "0.330988..0.420988"
+            }
+          },
+          "gaps": {
+            "shifted": 0.023755027502775194,
+            "legacy": 0.024742556810379013
+          },
+          "verdicts": {
+            "shifted": "PASS",
+            "tolerance": "PASS",
+            "legacy": "PASS"
+          },
+          "pass": true,
+          "accepted": true
+        },
+        {
+          "metric": "p95",
+          "label": "Luma p95",
+          "unit": "0..1",
+          "candidate": 0.9171121716499329,
+          "reference": 0.9805995345115661,
+          "referenceSd": 0.04530196538769849,
+          "referenceP10": 0.9158146619796753,
+          "referenceP50": 1.0,
+          "referenceP90": 1.0,
+          "referenceLegacy": 0.979,
+          "shift": 0.0015995345115661364,
+          "tolerance": 0.05,
+          "bands": {
+            "legacy": {
+              "min": 0.93,
+              "max": null,
+              "label": ">=0.93"
+            },
+            "shifted": {
+              "min": 0.9315995345115662,
+              "max": null,
+              "label": ">=0.9316"
+            }
+          },
+          "gaps": {
+            "shifted": -0.014487362861633324,
+            "legacy": -0.012887828350067188
+          },
+          "verdicts": {
+            "shifted": "FAIL",
+            "tolerance": "WATCH",
+            "legacy": "FAIL"
+          },
+          "pass": false,
+          "accepted": false
+        },
+        {
+          "metric": "near_white",
+          "label": "Near-white share",
+          "unit": "%",
+          "candidate": 5.698109567901235,
+          "reference": 34.491338734567904,
+          "referenceSd": 18.242134843485484,
+          "referenceP10": 6.179687500000001,
+          "referenceP50": 32.58024691358025,
+          "referenceP90": 51.62127700617286,
+          "referenceLegacy": 27.3,
+          "shift": 7.191338734567903,
+          "tolerance": 18.0,
+          "bands": {
+            "legacy": {
+              "min": 15.0,
+              "max": 28.0,
+              "label": "15..28"
+            },
+            "shifted": {
+              "min": 22.191338734567903,
+              "max": 35.19133873456791,
+              "label": "22.1913..35.1913"
+            }
+          },
+          "gaps": {
+            "shifted": -16.49322916666667,
+            "legacy": -9.301890432098766
+          },
+          "verdicts": {
+            "shifted": "FAIL",
+            "tolerance": "WATCH",
+            "legacy": "FAIL"
+          },
+          "pass": false,
+          "accepted": false
+        },
+        {
+          "metric": "deep_shadow",
+          "label": "Deep-shadow share",
+          "unit": "%",
+          "candidate": 0.0003858024691358025,
+          "reference": 0.6780960648148148,
+          "referenceSd": 1.6126900552600532,
+          "referenceP10": 0.002218364197530864,
+          "referenceP50": 0.1253858024691358,
+          "referenceP90": 1.4190393518518525,
+          "referenceLegacy": 3.0,
+          "shift": -2.321903935185185,
+          "tolerance": 3.0,
+          "bands": {
+            "legacy": {
+              "min": null,
+              "max": 6.0,
+              "label": "<=6"
+            },
+            "shifted": {
+              "min": null,
+              "max": 3.678096064814815,
+              "label": "<=3.6781"
+            }
+          },
+          "gaps": {
+            "shifted": 3.677710262345679,
+            "legacy": 5.999614197530864
+          },
+          "verdicts": {
+            "shifted": "PASS",
+            "tolerance": "PASS",
+            "legacy": "PASS"
+          },
+          "pass": true,
+          "accepted": true
+        },
+        {
+          "metric": "saturation",
+          "label": "Saturation",
+          "unit": "0..1",
+          "candidate": 0.17412714660167694,
+          "reference": 0.3000267282128334,
+          "referenceSd": 0.14101876066433905,
+          "referenceP10": 0.1801747277379036,
+          "referenceP50": 0.26818549633026123,
+          "referenceP90": 0.4815905421972277,
+          "referenceLegacy": 0.359,
+          "shift": -0.0589732717871666,
+          "tolerance": 0.08,
+          "bands": {
+            "legacy": {
+              "min": 0.3,
+              "max": 0.38,
+              "label": "0.3..0.38"
+            },
+            "shifted": {
+              "min": 0.24102672821283339,
+              "max": 0.3210267282128334,
+              "label": "0.241027..0.321027"
+            }
+          },
+          "gaps": {
+            "shifted": -0.06689958161115644,
+            "legacy": -0.12587285339832305
+          },
+          "verdicts": {
+            "shifted": "FAIL",
+            "tolerance": "WATCH",
+            "legacy": "FAIL"
+          },
+          "pass": false,
+          "accepted": false
+        },
+        {
+          "metric": "local_contrast",
+          "label": "Local contrast",
+          "unit": "0..1",
+          "candidate": 0.22772271931171417,
+          "reference": 0.28500273674726484,
+          "referenceSd": 0.04837829548036219,
+          "referenceP10": 0.2178311452269554,
+          "referenceP50": 0.2832604944705963,
+          "referenceP90": 0.34072046577930454,
+          "referenceLegacy": 0.0713,
+          "shift": 0.21370273674726484,
+          "tolerance": 0.04,
+          "bands": {
+            "legacy": {
+              "min": 0.06,
+              "max": null,
+              "label": ">=0.06"
+            },
+            "shifted": {
+              "min": 0.27370273674726486,
+              "max": null,
+              "label": ">=0.273703"
+            }
+          },
+          "gaps": {
+            "shifted": -0.04598001743555069,
+            "legacy": 0.16772271931171417
+          },
+          "verdicts": {
+            "shifted": "FAIL",
+            "tolerance": "WATCH",
+            "legacy": "PASS"
+          },
+          "pass": false,
+          "accepted": false
+        },
+        {
+          "metric": "edge",
+          "label": "Edge energy",
+          "unit": "0..1",
+          "candidate": 0.02346206083893776,
+          "reference": 0.01939456465188414,
+          "referenceSd": 0.009306276669969363,
+          "referenceP10": 0.00966938310302794,
+          "referenceP50": 0.01805755402892828,
+          "referenceP90": 0.029320623725652698,
+          "referenceLegacy": 0.0341,
+          "shift": -0.014705435348115858,
+          "tolerance": 0.012,
+          "bands": {
+            "legacy": {
+              "min": 0.028,
+              "max": null,
+              "label": ">=0.028"
+            },
+            "shifted": {
+              "min": 0.013294564651884142,
+              "max": null,
+              "label": ">=0.0132946"
+            }
+          },
+          "gaps": {
+            "shifted": 0.010167496187053617,
+            "legacy": -0.004537939161062241
+          },
+          "verdicts": {
+            "shifted": "PASS",
+            "tolerance": "PASS",
+            "legacy": "FAIL"
+          },
+          "pass": true,
+          "accepted": true
+        },
+        {
+          "metric": "sky",
+          "label": "Sky-blue area",
+          "unit": "%",
+          "candidate": 53.31987359550562,
+          "reference": 43.258339185393254,
+          "referenceSd": 16.86317972525212,
+          "referenceP10": 20.22211493445693,
+          "referenceP50": 42.936563670411985,
+          "referenceP90": 63.47899110486893,
+          "referenceLegacy": 53.1,
+          "shift": -9.841660814606747,
+          "tolerance": 12.0,
+          "bands": {
+            "legacy": {
+              "min": 35.0,
+              "max": 55.0,
+              "label": "35..55"
+            },
+            "shifted": {
+              "min": 25.158339185393253,
+              "max": 45.15833918539325,
+              "label": "25.1583..45.1583"
+            }
+          },
+          "gaps": {
+            "shifted": -8.161534410112367,
+            "legacy": 1.6801264044943807
+          },
+          "verdicts": {
+            "shifted": "FAIL",
+            "tolerance": "PASS",
+            "legacy": "PASS"
+          },
+          "pass": true,
+          "accepted": false
+        },
+        {
+          "metric": "top_contrast",
+          "label": "Top-third contrast",
+          "unit": "0..1",
+          "candidate": 0.2578633427619934,
+          "reference": 0.24329591020941735,
+          "referenceSd": 0.05545991077196976,
+          "referenceP10": 0.17864398807287216,
+          "referenceP50": 0.24977309256792068,
+          "referenceP90": 0.30886746346950533,
+          "referenceLegacy": 0.0585,
+          "shift": 0.18479591020941735,
+          "tolerance": 0.05,
+          "bands": {
+            "legacy": {
+              "min": 0.05,
+              "max": null,
+              "label": ">=0.05"
+            },
+            "shifted": {
+              "min": 0.23479591020941737,
+              "max": null,
+              "label": ">=0.234796"
+            }
+          },
+          "gaps": {
+            "shifted": 0.02306743255257604,
+            "legacy": 0.20786334276199342
+          },
+          "verdicts": {
+            "shifted": "PASS",
+            "tolerance": "PASS",
+            "legacy": "PASS"
+          },
+          "pass": true,
+          "accepted": true
+        },
+        {
+          "metric": "split",
+          "label": "Split-tone dark R-B",
+          "unit": "R-B*255",
+          "candidate": -16.693878173828125,
+          "reference": -21.806927514076232,
+          "referenceSd": 25.573748535865327,
+          "referenceP10": -42.51122131347656,
+          "referenceP50": -28.12237548828125,
+          "referenceP90": -3.953147172927843,
+          "referenceLegacy": -48.6,
+          "shift": 26.79307248592377,
+          "tolerance": 15.0,
+          "bands": {
+            "legacy": {
+              "min": -55.0,
+              "max": -40.0,
+              "label": "-55..-40"
+            },
+            "shifted": {
+              "min": -28.20692751407623,
+              "max": -13.20692751407623,
+              "label": "-28.2069..-13.2069"
+            }
+          },
+          "gaps": {
+            "shifted": 3.486950659751894,
+            "legacy": -23.306121826171875
+          },
+          "verdicts": {
+            "shifted": "PASS",
+            "tolerance": "PASS",
+            "legacy": "FAIL"
+          },
+          "pass": true,
+          "accepted": true
+        },
+        {
+          "metric": "red",
+          "label": "Red accent share",
+          "unit": "%",
+          "candidate": 5.2773919753086425,
+          "reference": 2.3937885802469134,
+          "referenceSd": 2.85075450424615,
+          "referenceP10": 0.05065586419753087,
+          "referenceP50": 2.0200617283950617,
+          "referenceP90": 4.6508487654321025,
+          "referenceLegacy": 4.2,
+          "shift": -1.8062114197530867,
+          "tolerance": 2.5,
+          "bands": {
+            "legacy": {
+              "min": 2.0,
+              "max": 5.0,
+              "label": "2..5"
+            },
+            "shifted": {
+              "min": 0.19378858024691326,
+              "max": 3.1937885802469133,
+              "label": "0.193789..3.19379"
+            }
+          },
+          "gaps": {
+            "shifted": -2.083603395061729,
+            "legacy": -0.27739197530864246
+          },
+          "verdicts": {
+            "shifted": "FAIL",
+            "tolerance": "WATCH",
+            "legacy": "FAIL"
+          },
+          "pass": false,
+          "accepted": false
+        }
+      ],
+      "passed": 7,
+      "watch": 6,
+      "failed": 0,
+      "total": 13,
+      "shiftedPassed": 6,
+      "legacyPassed": 7,
+      "accepted": false,
+      "summary": {
+        "shifted": {
+          "pass": 6,
+          "fail": 7,
+          "total": 13
+        },
+        "legacy": {
+          "pass": 7,
+          "fail": 6,
+          "total": 13
+        },
+        "tolerance": {
+          "pass": 7,
+          "watch": 6,
+          "fail": 0,
+          "total": 13
+        }
+      },
+      "guardrails": {
+        "sky_mask_share": 3.5243055555555554,
+        "near_white_seam_energy": 0.0036831856705248356,
+        "red_route_share": 2.232638888888889,
+        "red_route_saturation": 0.6229556798934937,
+        "sky_horizon_row": 175,
+        "sky_horizon_source_px": null,
+        "sky_horizon_source": "edge",
+        "sky_horizon_edge_ratio": 2.946797849258982,
+        "sky_lit_wall_pct": 2.210648148148148,
+        "component_guard": "none"
+      },
+      "guardrailRows": [
+        {
+          "guardrail": "sky_mask_share",
+          "label": "Sky mask share",
+          "unit": "%",
+          "value": 3.5243055555555554,
+          "referenceMean": 5.063580246913579,
+          "referenceSd": 4.391695164299397,
+          "referenceP10": 0.5925154320987654,
+          "referenceP90": 11.164120370370371,
+          "position": "inside p10-p90"
+        },
+        {
+          "guardrail": "near_white_seam_energy",
+          "label": "Near-white seam energy",
+          "unit": "gradient",
+          "value": 0.0036831856705248356,
+          "referenceMean": 0.0029352366720559074,
+          "referenceSd": 0.001821314660396086,
+          "referenceP10": 0.0011054027010686696,
+          "referenceP90": 0.004651649110019207,
+          "position": "inside p10-p90"
+        },
+        {
+          "guardrail": "red_route_share",
+          "label": "Red route share",
+          "unit": "%",
+          "value": 2.232638888888889,
+          "referenceMean": 2.8745273919753087,
+          "referenceSd": 4.946579191500707,
+          "referenceP10": 0.0836033950617284,
+          "referenceP90": 6.746894290123456,
+          "position": "inside p10-p90"
+        },
+        {
+          "guardrail": "red_route_saturation",
+          "label": "Red route saturation",
+          "unit": "0..1",
+          "value": 0.6229556798934937,
+          "referenceMean": 0.6681584984064102,
+          "referenceSd": 0.2447958281945591,
+          "referenceP10": 0.3897438824176788,
+          "referenceP90": 0.9428059279918671,
+          "position": "inside p10-p90"
+        }
+      ],
+      "guardrailContext": {
+        "primarySkyBlue": 53.31987359550562,
+        "skyMaskShare": 3.5243055555555554,
+        "skyMaskOfPrimaryPct": 6.60974101756427,
+        "skyLitWallPct": 2.210648148148148
+      }
+    },
+    {
+      "path": "captures/ux-final2/skybridge.png",
+      "metrics": {
+        "luma": 0.597055971622467,
+        "std": 0.26924586296081543,
+        "p25": 0.3560110032558441,
+        "p95": 0.9568784236907959,
+        "near_white": 24.066743827160494,
+        "deep_shadow": 0.00019290123456790125,
+        "saturation": 0.28915247321128845,
+        "local_contrast": 0.24621349573135376,
+        "edge": 0.029073763638734818,
+        "sky": 47.82361891385768,
+        "top_contrast": 0.2598021328449249,
+        "split": 4.166295528411865,
+        "red": 1.6180555555555556
+      },
+      "rows": [
+        {
+          "metric": "luma",
+          "label": "Luma mean",
+          "unit": "0..1",
+          "candidate": 0.597055971622467,
+          "reference": 0.6152243822813034,
+          "referenceSd": 0.13335175622030057,
+          "referenceP10": 0.4715142399072647,
+          "referenceP50": 0.6217188537120819,
+          "referenceP90": 0.7639147698879243,
+          "referenceLegacy": 0.589,
+          "shift": 0.026224382281303416,
+          "tolerance": 0.08,
+          "bands": {
+            "legacy": {
+              "min": 0.48,
+              "max": 0.62,
+              "label": "0.48..0.62"
+            },
+            "shifted": {
+              "min": 0.5062243822813034,
+              "max": 0.6462243822813034,
+              "label": "0.506224..0.646224"
+            }
+          },
+          "gaps": {
+            "shifted": 0.04916841065883637,
+            "legacy": 0.022944028377532955
+          },
+          "verdicts": {
+            "shifted": "PASS",
+            "tolerance": "PASS",
+            "legacy": "PASS"
+          },
+          "pass": true,
+          "accepted": true
+        },
+        {
+          "metric": "std",
+          "label": "Luma std",
+          "unit": "0..1",
+          "candidate": 0.26924586296081543,
+          "reference": 0.2945838652551174,
+          "referenceSd": 0.049185558207583385,
+          "referenceP10": 0.22041192799806594,
+          "referenceP50": 0.2935660183429718,
+          "referenceP90": 0.35040610134601596,
+          "referenceLegacy": 0.272,
+          "shift": 0.022583865255117408,
+          "tolerance": 0.05,
+          "bands": {
+            "legacy": {
+              "min": 0.22,
+              "max": null,
+              "label": ">=0.22"
+            },
+            "shifted": {
+              "min": 0.2425838652551174,
+              "max": null,
+              "label": ">=0.242584"
+            }
+          },
+          "gaps": {
+            "shifted": 0.02666199770569802,
+            "legacy": 0.04924586296081543
+          },
+          "verdicts": {
+            "shifted": "PASS",
+            "tolerance": "PASS",
+            "legacy": "PASS"
+          },
+          "pass": true,
+          "accepted": true
+        },
+        {
+          "metric": "p25",
+          "label": "Luma p25",
+          "unit": "0..1",
+          "candidate": 0.3560110032558441,
+          "reference": 0.3709875293076038,
+          "referenceSd": 0.13892598227069597,
+          "referenceP10": 0.21907937824726104,
+          "referenceP50": 0.3694094270467758,
+          "referenceP90": 0.5757496118545532,
+          "referenceLegacy": 0.37,
+          "shift": 0.0009875293076038183,
+          "tolerance": 0.1,
+          "bands": {
+            "legacy": {
+              "min": 0.33,
+              "max": 0.42,
+              "label": "0.33..0.42"
+            },
+            "shifted": {
+              "min": 0.33098752930760383,
+              "max": 0.4209875293076038,
+              "label": "0.330988..0.420988"
+            }
+          },
+          "gaps": {
+            "shifted": 0.025023473948240282,
+            "legacy": 0.0260110032558441
+          },
+          "verdicts": {
+            "shifted": "PASS",
+            "tolerance": "PASS",
+            "legacy": "PASS"
+          },
+          "pass": true,
+          "accepted": true
+        },
+        {
+          "metric": "p95",
+          "label": "Luma p95",
+          "unit": "0..1",
+          "candidate": 0.9568784236907959,
+          "reference": 0.9805995345115661,
+          "referenceSd": 0.04530196538769849,
+          "referenceP10": 0.9158146619796753,
+          "referenceP50": 1.0,
+          "referenceP90": 1.0,
+          "referenceLegacy": 0.979,
+          "shift": 0.0015995345115661364,
+          "tolerance": 0.05,
+          "bands": {
+            "legacy": {
+              "min": 0.93,
+              "max": null,
+              "label": ">=0.93"
+            },
+            "shifted": {
+              "min": 0.9315995345115662,
+              "max": null,
+              "label": ">=0.9316"
+            }
+          },
+          "gaps": {
+            "shifted": 0.025278889179229713,
+            "legacy": 0.02687842369079585
+          },
+          "verdicts": {
+            "shifted": "PASS",
+            "tolerance": "PASS",
+            "legacy": "PASS"
+          },
+          "pass": true,
+          "accepted": true
+        },
+        {
+          "metric": "near_white",
+          "label": "Near-white share",
+          "unit": "%",
+          "candidate": 24.066743827160494,
+          "reference": 34.491338734567904,
+          "referenceSd": 18.242134843485484,
+          "referenceP10": 6.179687500000001,
+          "referenceP50": 32.58024691358025,
+          "referenceP90": 51.62127700617286,
+          "referenceLegacy": 27.3,
+          "shift": 7.191338734567903,
+          "tolerance": 18.0,
+          "bands": {
+            "legacy": {
+              "min": 15.0,
+              "max": 28.0,
+              "label": "15..28"
+            },
+            "shifted": {
+              "min": 22.191338734567903,
+              "max": 35.19133873456791,
+              "label": "22.1913..35.1913"
+            }
+          },
+          "gaps": {
+            "shifted": 1.8754050925925903,
+            "legacy": 3.9332561728395063
+          },
+          "verdicts": {
+            "shifted": "PASS",
+            "tolerance": "PASS",
+            "legacy": "PASS"
+          },
+          "pass": true,
+          "accepted": true
+        },
+        {
+          "metric": "deep_shadow",
+          "label": "Deep-shadow share",
+          "unit": "%",
+          "candidate": 0.00019290123456790125,
+          "reference": 0.6780960648148148,
+          "referenceSd": 1.6126900552600532,
+          "referenceP10": 0.002218364197530864,
+          "referenceP50": 0.1253858024691358,
+          "referenceP90": 1.4190393518518525,
+          "referenceLegacy": 3.0,
+          "shift": -2.321903935185185,
+          "tolerance": 3.0,
+          "bands": {
+            "legacy": {
+              "min": null,
+              "max": 6.0,
+              "label": "<=6"
+            },
+            "shifted": {
+              "min": null,
+              "max": 3.678096064814815,
+              "label": "<=3.6781"
+            }
+          },
+          "gaps": {
+            "shifted": 3.677903163580247,
+            "legacy": 5.999807098765432
+          },
+          "verdicts": {
+            "shifted": "PASS",
+            "tolerance": "PASS",
+            "legacy": "PASS"
+          },
+          "pass": true,
+          "accepted": true
+        },
+        {
+          "metric": "saturation",
+          "label": "Saturation",
+          "unit": "0..1",
+          "candidate": 0.28915247321128845,
+          "reference": 0.3000267282128334,
+          "referenceSd": 0.14101876066433905,
+          "referenceP10": 0.1801747277379036,
+          "referenceP50": 0.26818549633026123,
+          "referenceP90": 0.4815905421972277,
+          "referenceLegacy": 0.359,
+          "shift": -0.0589732717871666,
+          "tolerance": 0.08,
+          "bands": {
+            "legacy": {
+              "min": 0.3,
+              "max": 0.38,
+              "label": "0.3..0.38"
+            },
+            "shifted": {
+              "min": 0.24102672821283339,
+              "max": 0.3210267282128334,
+              "label": "0.241027..0.321027"
+            }
+          },
+          "gaps": {
+            "shifted": 0.03187425500154495,
+            "legacy": -0.010847526788711537
+          },
+          "verdicts": {
+            "shifted": "PASS",
+            "tolerance": "PASS",
+            "legacy": "FAIL"
+          },
+          "pass": true,
+          "accepted": true
+        },
+        {
+          "metric": "local_contrast",
+          "label": "Local contrast",
+          "unit": "0..1",
+          "candidate": 0.24621349573135376,
+          "reference": 0.28500273674726484,
+          "referenceSd": 0.04837829548036219,
+          "referenceP10": 0.2178311452269554,
+          "referenceP50": 0.2832604944705963,
+          "referenceP90": 0.34072046577930454,
+          "referenceLegacy": 0.0713,
+          "shift": 0.21370273674726484,
+          "tolerance": 0.04,
+          "bands": {
+            "legacy": {
+              "min": 0.06,
+              "max": null,
+              "label": ">=0.06"
+            },
+            "shifted": {
+              "min": 0.27370273674726486,
+              "max": null,
+              "label": ">=0.273703"
+            }
+          },
+          "gaps": {
+            "shifted": -0.027489241015911103,
+            "legacy": 0.18621349573135376
+          },
+          "verdicts": {
+            "shifted": "FAIL",
+            "tolerance": "PASS",
+            "legacy": "PASS"
+          },
+          "pass": true,
+          "accepted": false
+        },
+        {
+          "metric": "edge",
+          "label": "Edge energy",
+          "unit": "0..1",
+          "candidate": 0.029073763638734818,
+          "reference": 0.01939456465188414,
+          "referenceSd": 0.009306276669969363,
+          "referenceP10": 0.00966938310302794,
+          "referenceP50": 0.01805755402892828,
+          "referenceP90": 0.029320623725652698,
+          "referenceLegacy": 0.0341,
+          "shift": -0.014705435348115858,
+          "tolerance": 0.012,
+          "bands": {
+            "legacy": {
+              "min": 0.028,
+              "max": null,
+              "label": ">=0.028"
+            },
+            "shifted": {
+              "min": 0.013294564651884142,
+              "max": null,
+              "label": ">=0.0132946"
+            }
+          },
+          "gaps": {
+            "shifted": 0.015779198986850675,
+            "legacy": 0.001073763638734817
+          },
+          "verdicts": {
+            "shifted": "PASS",
+            "tolerance": "PASS",
+            "legacy": "PASS"
+          },
+          "pass": true,
+          "accepted": true
+        },
+        {
+          "metric": "sky",
+          "label": "Sky-blue area",
+          "unit": "%",
+          "candidate": 47.82361891385768,
+          "reference": 43.258339185393254,
+          "referenceSd": 16.86317972525212,
+          "referenceP10": 20.22211493445693,
+          "referenceP50": 42.936563670411985,
+          "referenceP90": 63.47899110486893,
+          "referenceLegacy": 53.1,
+          "shift": -9.841660814606747,
+          "tolerance": 12.0,
+          "bands": {
+            "legacy": {
+              "min": 35.0,
+              "max": 55.0,
+              "label": "35..55"
+            },
+            "shifted": {
+              "min": 25.158339185393253,
+              "max": 45.15833918539325,
+              "label": "25.1583..45.1583"
+            }
+          },
+          "gaps": {
+            "shifted": -2.6652797284644265,
+            "legacy": 7.176381086142321
+          },
+          "verdicts": {
+            "shifted": "FAIL",
+            "tolerance": "PASS",
+            "legacy": "PASS"
+          },
+          "pass": true,
+          "accepted": false
+        },
+        {
+          "metric": "top_contrast",
+          "label": "Top-third contrast",
+          "unit": "0..1",
+          "candidate": 0.2598021328449249,
+          "reference": 0.24329591020941735,
+          "referenceSd": 0.05545991077196976,
+          "referenceP10": 0.17864398807287216,
+          "referenceP50": 0.24977309256792068,
+          "referenceP90": 0.30886746346950533,
+          "referenceLegacy": 0.0585,
+          "shift": 0.18479591020941735,
+          "tolerance": 0.05,
+          "bands": {
+            "legacy": {
+              "min": 0.05,
+              "max": null,
+              "label": ">=0.05"
+            },
+            "shifted": {
+              "min": 0.23479591020941737,
+              "max": null,
+              "label": ">=0.234796"
+            }
+          },
+          "gaps": {
+            "shifted": 0.025006222635507558,
+            "legacy": 0.20980213284492494
+          },
+          "verdicts": {
+            "shifted": "PASS",
+            "tolerance": "PASS",
+            "legacy": "PASS"
+          },
+          "pass": true,
+          "accepted": true
+        },
+        {
+          "metric": "split",
+          "label": "Split-tone dark R-B",
+          "unit": "R-B*255",
+          "candidate": 4.166295528411865,
+          "reference": -21.806927514076232,
+          "referenceSd": 25.573748535865327,
+          "referenceP10": -42.51122131347656,
+          "referenceP50": -28.12237548828125,
+          "referenceP90": -3.953147172927843,
+          "referenceLegacy": -48.6,
+          "shift": 26.79307248592377,
+          "tolerance": 15.0,
+          "bands": {
+            "legacy": {
+              "min": -55.0,
+              "max": -40.0,
+              "label": "-55..-40"
+            },
+            "shifted": {
+              "min": -28.20692751407623,
+              "max": -13.20692751407623,
+              "label": "-28.2069..-13.2069"
+            }
+          },
+          "gaps": {
+            "shifted": -17.373223042488096,
+            "legacy": -44.166295528411865
+          },
+          "verdicts": {
+            "shifted": "FAIL",
+            "tolerance": "WATCH",
+            "legacy": "FAIL"
+          },
+          "pass": false,
+          "accepted": false
+        },
+        {
+          "metric": "red",
+          "label": "Red accent share",
+          "unit": "%",
+          "candidate": 1.6180555555555556,
+          "reference": 2.3937885802469134,
+          "referenceSd": 2.85075450424615,
+          "referenceP10": 0.05065586419753087,
+          "referenceP50": 2.0200617283950617,
+          "referenceP90": 4.6508487654321025,
+          "referenceLegacy": 4.2,
+          "shift": -1.8062114197530867,
+          "tolerance": 2.5,
+          "bands": {
+            "legacy": {
+              "min": 2.0,
+              "max": 5.0,
+              "label": "2..5"
+            },
+            "shifted": {
+              "min": 0.19378858024691326,
+              "max": 3.1937885802469133,
+              "label": "0.193789..3.19379"
+            }
+          },
+          "gaps": {
+            "shifted": 1.4242669753086423,
+            "legacy": -0.3819444444444444
+          },
+          "verdicts": {
+            "shifted": "PASS",
+            "tolerance": "PASS",
+            "legacy": "FAIL"
+          },
+          "pass": true,
+          "accepted": true
+        }
+      ],
+      "passed": 12,
+      "watch": 1,
+      "failed": 0,
+      "total": 13,
+      "shiftedPassed": 10,
+      "legacyPassed": 10,
+      "accepted": false,
+      "summary": {
+        "shifted": {
+          "pass": 10,
+          "fail": 3,
+          "total": 13
+        },
+        "legacy": {
+          "pass": 10,
+          "fail": 3,
+          "total": 13
+        },
+        "tolerance": {
+          "pass": 12,
+          "watch": 1,
+          "fail": 0,
+          "total": 13
+        }
+      },
+      "guardrails": {
+        "sky_mask_share": 5.904513888888889,
+        "near_white_seam_energy": 0.003953330218791962,
+        "red_route_share": 1.1047453703703705,
+        "red_route_saturation": 0.9555661678314209,
+        "sky_horizon_row": 313,
+        "sky_horizon_source_px": 522,
+        "sky_horizon_source": "override",
+        "sky_horizon_edge_ratio": 3.4519643415710446,
+        "sky_lit_wall_pct": 4.995949074074074,
+        "component_guard": "none"
+      },
+      "guardrailRows": [
+        {
+          "guardrail": "sky_mask_share",
+          "label": "Sky mask share",
+          "unit": "%",
+          "value": 5.904513888888889,
+          "referenceMean": 5.063580246913579,
+          "referenceSd": 4.391695164299397,
+          "referenceP10": 0.5925154320987654,
+          "referenceP90": 11.164120370370371,
+          "position": "inside p10-p90"
+        },
+        {
+          "guardrail": "near_white_seam_energy",
+          "label": "Near-white seam energy",
+          "unit": "gradient",
+          "value": 0.003953330218791962,
+          "referenceMean": 0.0029352366720559074,
+          "referenceSd": 0.001821314660396086,
+          "referenceP10": 0.0011054027010686696,
+          "referenceP90": 0.004651649110019207,
+          "position": "inside p10-p90"
+        },
+        {
+          "guardrail": "red_route_share",
+          "label": "Red route share",
+          "unit": "%",
+          "value": 1.1047453703703705,
+          "referenceMean": 2.8745273919753087,
+          "referenceSd": 4.946579191500707,
+          "referenceP10": 0.0836033950617284,
+          "referenceP90": 6.746894290123456,
+          "position": "inside p10-p90"
+        },
+        {
+          "guardrail": "red_route_saturation",
+          "label": "Red route saturation",
+          "unit": "0..1",
+          "value": 0.9555661678314209,
+          "referenceMean": 0.6681584984064102,
+          "referenceSd": 0.2447958281945591,
+          "referenceP10": 0.3897438824176788,
+          "referenceP90": 0.9428059279918671,
+          "position": "above p10-p90"
+        }
+      ],
+      "guardrailContext": {
+        "primarySkyBlue": 47.82361891385768,
+        "skyMaskShare": 5.904513888888889,
+        "skyMaskOfPrimaryPct": 12.346438899833988,
+        "skyLitWallPct": 4.995949074074074
+      }
+    },
+    {
+      "path": "captures/ux-final2/start-roof.png",
+      "metrics": {
+        "luma": 0.6115419268608093,
+        "std": 0.25949007272720337,
+        "p25": 0.3991372585296631,
+        "p95": 0.9568784236907959,
+        "near_white": 23.804012345679013,
+        "deep_shadow": 0.0003858024691358025,
+        "saturation": 0.3031708598136902,
+        "local_contrast": 0.23843447864055634,
+        "edge": 0.03023945726454258,
+        "sky": 68.54488529962546,
+        "top_contrast": 0.22790449857711792,
+        "split": -29.55796241760254,
+        "red": 1.6811342592592593
+      },
+      "rows": [
+        {
+          "metric": "luma",
+          "label": "Luma mean",
+          "unit": "0..1",
+          "candidate": 0.6115419268608093,
+          "reference": 0.6152243822813034,
+          "referenceSd": 0.13335175622030057,
+          "referenceP10": 0.4715142399072647,
+          "referenceP50": 0.6217188537120819,
+          "referenceP90": 0.7639147698879243,
+          "referenceLegacy": 0.589,
+          "shift": 0.026224382281303416,
+          "tolerance": 0.08,
+          "bands": {
+            "legacy": {
+              "min": 0.48,
+              "max": 0.62,
+              "label": "0.48..0.62"
+            },
+            "shifted": {
+              "min": 0.5062243822813034,
+              "max": 0.6462243822813034,
+              "label": "0.506224..0.646224"
+            }
+          },
+          "gaps": {
+            "shifted": 0.034682455420494085,
+            "legacy": 0.00845807313919067
+          },
+          "verdicts": {
+            "shifted": "PASS",
+            "tolerance": "PASS",
+            "legacy": "PASS"
+          },
+          "pass": true,
+          "accepted": true
+        },
+        {
+          "metric": "std",
+          "label": "Luma std",
+          "unit": "0..1",
+          "candidate": 0.25949007272720337,
+          "reference": 0.2945838652551174,
+          "referenceSd": 0.049185558207583385,
+          "referenceP10": 0.22041192799806594,
+          "referenceP50": 0.2935660183429718,
+          "referenceP90": 0.35040610134601596,
+          "referenceLegacy": 0.272,
+          "shift": 0.022583865255117408,
+          "tolerance": 0.05,
+          "bands": {
+            "legacy": {
+              "min": 0.22,
+              "max": null,
+              "label": ">=0.22"
+            },
+            "shifted": {
+              "min": 0.2425838652551174,
+              "max": null,
+              "label": ">=0.242584"
+            }
+          },
+          "gaps": {
+            "shifted": 0.01690620747208596,
+            "legacy": 0.03949007272720337
+          },
+          "verdicts": {
+            "shifted": "PASS",
+            "tolerance": "PASS",
+            "legacy": "PASS"
+          },
+          "pass": true,
+          "accepted": true
+        },
+        {
+          "metric": "p25",
+          "label": "Luma p25",
+          "unit": "0..1",
+          "candidate": 0.3991372585296631,
+          "reference": 0.3709875293076038,
+          "referenceSd": 0.13892598227069597,
+          "referenceP10": 0.21907937824726104,
+          "referenceP50": 0.3694094270467758,
+          "referenceP90": 0.5757496118545532,
+          "referenceLegacy": 0.37,
+          "shift": 0.0009875293076038183,
+          "tolerance": 0.1,
+          "bands": {
+            "legacy": {
+              "min": 0.33,
+              "max": 0.42,
+              "label": "0.33..0.42"
+            },
+            "shifted": {
+              "min": 0.33098752930760383,
+              "max": 0.4209875293076038,
+              "label": "0.330988..0.420988"
+            }
+          },
+          "gaps": {
+            "shifted": 0.021850270777940717,
+            "legacy": 0.0208627414703369
+          },
+          "verdicts": {
+            "shifted": "PASS",
+            "tolerance": "PASS",
+            "legacy": "PASS"
+          },
+          "pass": true,
+          "accepted": true
+        },
+        {
+          "metric": "p95",
+          "label": "Luma p95",
+          "unit": "0..1",
+          "candidate": 0.9568784236907959,
+          "reference": 0.9805995345115661,
+          "referenceSd": 0.04530196538769849,
+          "referenceP10": 0.9158146619796753,
+          "referenceP50": 1.0,
+          "referenceP90": 1.0,
+          "referenceLegacy": 0.979,
+          "shift": 0.0015995345115661364,
+          "tolerance": 0.05,
+          "bands": {
+            "legacy": {
+              "min": 0.93,
+              "max": null,
+              "label": ">=0.93"
+            },
+            "shifted": {
+              "min": 0.9315995345115662,
+              "max": null,
+              "label": ">=0.9316"
+            }
+          },
+          "gaps": {
+            "shifted": 0.025278889179229713,
+            "legacy": 0.02687842369079585
+          },
+          "verdicts": {
+            "shifted": "PASS",
+            "tolerance": "PASS",
+            "legacy": "PASS"
+          },
+          "pass": true,
+          "accepted": true
+        },
+        {
+          "metric": "near_white",
+          "label": "Near-white share",
+          "unit": "%",
+          "candidate": 23.804012345679013,
+          "reference": 34.491338734567904,
+          "referenceSd": 18.242134843485484,
+          "referenceP10": 6.179687500000001,
+          "referenceP50": 32.58024691358025,
+          "referenceP90": 51.62127700617286,
+          "referenceLegacy": 27.3,
+          "shift": 7.191338734567903,
+          "tolerance": 18.0,
+          "bands": {
+            "legacy": {
+              "min": 15.0,
+              "max": 28.0,
+              "label": "15..28"
+            },
+            "shifted": {
+              "min": 22.191338734567903,
+              "max": 35.19133873456791,
+              "label": "22.1913..35.1913"
+            }
+          },
+          "gaps": {
+            "shifted": 1.6126736111111093,
+            "legacy": 4.195987654320987
+          },
+          "verdicts": {
+            "shifted": "PASS",
+            "tolerance": "PASS",
+            "legacy": "PASS"
+          },
+          "pass": true,
+          "accepted": true
+        },
+        {
+          "metric": "deep_shadow",
+          "label": "Deep-shadow share",
+          "unit": "%",
+          "candidate": 0.0003858024691358025,
+          "reference": 0.6780960648148148,
+          "referenceSd": 1.6126900552600532,
+          "referenceP10": 0.002218364197530864,
+          "referenceP50": 0.1253858024691358,
+          "referenceP90": 1.4190393518518525,
+          "referenceLegacy": 3.0,
+          "shift": -2.321903935185185,
+          "tolerance": 3.0,
+          "bands": {
+            "legacy": {
+              "min": null,
+              "max": 6.0,
+              "label": "<=6"
+            },
+            "shifted": {
+              "min": null,
+              "max": 3.678096064814815,
+              "label": "<=3.6781"
+            }
+          },
+          "gaps": {
+            "shifted": 3.677710262345679,
+            "legacy": 5.999614197530864
+          },
+          "verdicts": {
+            "shifted": "PASS",
+            "tolerance": "PASS",
+            "legacy": "PASS"
+          },
+          "pass": true,
+          "accepted": true
+        },
+        {
+          "metric": "saturation",
+          "label": "Saturation",
+          "unit": "0..1",
+          "candidate": 0.3031708598136902,
+          "reference": 0.3000267282128334,
+          "referenceSd": 0.14101876066433905,
+          "referenceP10": 0.1801747277379036,
+          "referenceP50": 0.26818549633026123,
+          "referenceP90": 0.4815905421972277,
+          "referenceLegacy": 0.359,
+          "shift": -0.0589732717871666,
+          "tolerance": 0.08,
+          "bands": {
+            "legacy": {
+              "min": 0.3,
+              "max": 0.38,
+              "label": "0.3..0.38"
+            },
+            "shifted": {
+              "min": 0.24102672821283339,
+              "max": 0.3210267282128334,
+              "label": "0.241027..0.321027"
+            }
+          },
+          "gaps": {
+            "shifted": 0.017855868399143215,
+            "legacy": 0.0031708598136901966
+          },
+          "verdicts": {
+            "shifted": "PASS",
+            "tolerance": "PASS",
+            "legacy": "PASS"
+          },
+          "pass": true,
+          "accepted": true
+        },
+        {
+          "metric": "local_contrast",
+          "label": "Local contrast",
+          "unit": "0..1",
+          "candidate": 0.23843447864055634,
+          "reference": 0.28500273674726484,
+          "referenceSd": 0.04837829548036219,
+          "referenceP10": 0.2178311452269554,
+          "referenceP50": 0.2832604944705963,
+          "referenceP90": 0.34072046577930454,
+          "referenceLegacy": 0.0713,
+          "shift": 0.21370273674726484,
+          "tolerance": 0.04,
+          "bands": {
+            "legacy": {
+              "min": 0.06,
+              "max": null,
+              "label": ">=0.06"
+            },
+            "shifted": {
+              "min": 0.27370273674726486,
+              "max": null,
+              "label": ">=0.273703"
+            }
+          },
+          "gaps": {
+            "shifted": -0.03526825810670853,
+            "legacy": 0.17843447864055634
+          },
+          "verdicts": {
+            "shifted": "FAIL",
+            "tolerance": "WATCH",
+            "legacy": "PASS"
+          },
+          "pass": false,
+          "accepted": false
+        },
+        {
+          "metric": "edge",
+          "label": "Edge energy",
+          "unit": "0..1",
+          "candidate": 0.03023945726454258,
+          "reference": 0.01939456465188414,
+          "referenceSd": 0.009306276669969363,
+          "referenceP10": 0.00966938310302794,
+          "referenceP50": 0.01805755402892828,
+          "referenceP90": 0.029320623725652698,
+          "referenceLegacy": 0.0341,
+          "shift": -0.014705435348115858,
+          "tolerance": 0.012,
+          "bands": {
+            "legacy": {
+              "min": 0.028,
+              "max": null,
+              "label": ">=0.028"
+            },
+            "shifted": {
+              "min": 0.013294564651884142,
+              "max": null,
+              "label": ">=0.0132946"
+            }
+          },
+          "gaps": {
+            "shifted": 0.016944892612658437,
+            "legacy": 0.002239457264542579
+          },
+          "verdicts": {
+            "shifted": "PASS",
+            "tolerance": "PASS",
+            "legacy": "PASS"
+          },
+          "pass": true,
+          "accepted": true
+        },
+        {
+          "metric": "sky",
+          "label": "Sky-blue area",
+          "unit": "%",
+          "candidate": 68.54488529962546,
+          "reference": 43.258339185393254,
+          "referenceSd": 16.86317972525212,
+          "referenceP10": 20.22211493445693,
+          "referenceP50": 42.936563670411985,
+          "referenceP90": 63.47899110486893,
+          "referenceLegacy": 53.1,
+          "shift": -9.841660814606747,
+          "tolerance": 12.0,
+          "bands": {
+            "legacy": {
+              "min": 35.0,
+              "max": 55.0,
+              "label": "35..55"
+            },
+            "shifted": {
+              "min": 25.158339185393253,
+              "max": 45.15833918539325,
+              "label": "25.1583..45.1583"
+            }
+          },
+          "gaps": {
+            "shifted": -23.38654611423221,
+            "legacy": -13.544885299625463
+          },
+          "verdicts": {
+            "shifted": "FAIL",
+            "tolerance": "WATCH",
+            "legacy": "FAIL"
+          },
+          "pass": false,
+          "accepted": false
+        },
+        {
+          "metric": "top_contrast",
+          "label": "Top-third contrast",
+          "unit": "0..1",
+          "candidate": 0.22790449857711792,
+          "reference": 0.24329591020941735,
+          "referenceSd": 0.05545991077196976,
+          "referenceP10": 0.17864398807287216,
+          "referenceP50": 0.24977309256792068,
+          "referenceP90": 0.30886746346950533,
+          "referenceLegacy": 0.0585,
+          "shift": 0.18479591020941735,
+          "tolerance": 0.05,
+          "bands": {
+            "legacy": {
+              "min": 0.05,
+              "max": null,
+              "label": ">=0.05"
+            },
+            "shifted": {
+              "min": 0.23479591020941737,
+              "max": null,
+              "label": ">=0.234796"
+            }
+          },
+          "gaps": {
+            "shifted": -0.006891411632299449,
+            "legacy": 0.17790449857711793
+          },
+          "verdicts": {
+            "shifted": "FAIL",
+            "tolerance": "PASS",
+            "legacy": "PASS"
+          },
+          "pass": true,
+          "accepted": false
+        },
+        {
+          "metric": "split",
+          "label": "Split-tone dark R-B",
+          "unit": "R-B*255",
+          "candidate": -29.55796241760254,
+          "reference": -21.806927514076232,
+          "referenceSd": 25.573748535865327,
+          "referenceP10": -42.51122131347656,
+          "referenceP50": -28.12237548828125,
+          "referenceP90": -3.953147172927843,
+          "referenceLegacy": -48.6,
+          "shift": 26.79307248592377,
+          "tolerance": 15.0,
+          "bands": {
+            "legacy": {
+              "min": -55.0,
+              "max": -40.0,
+              "label": "-55..-40"
+            },
+            "shifted": {
+              "min": -28.20692751407623,
+              "max": -13.20692751407623,
+              "label": "-28.2069..-13.2069"
+            }
+          },
+          "gaps": {
+            "shifted": -1.3510349035263083,
+            "legacy": -10.442037582397461
+          },
+          "verdicts": {
+            "shifted": "FAIL",
+            "tolerance": "PASS",
+            "legacy": "FAIL"
+          },
+          "pass": true,
+          "accepted": false
+        },
+        {
+          "metric": "red",
+          "label": "Red accent share",
+          "unit": "%",
+          "candidate": 1.6811342592592593,
+          "reference": 2.3937885802469134,
+          "referenceSd": 2.85075450424615,
+          "referenceP10": 0.05065586419753087,
+          "referenceP50": 2.0200617283950617,
+          "referenceP90": 4.6508487654321025,
+          "referenceLegacy": 4.2,
+          "shift": -1.8062114197530867,
+          "tolerance": 2.5,
+          "bands": {
+            "legacy": {
+              "min": 2.0,
+              "max": 5.0,
+              "label": "2..5"
+            },
+            "shifted": {
+              "min": 0.19378858024691326,
+              "max": 3.1937885802469133,
+              "label": "0.193789..3.19379"
+            }
+          },
+          "gaps": {
+            "shifted": 1.487345679012346,
+            "legacy": -0.3188657407407407
+          },
+          "verdicts": {
+            "shifted": "PASS",
+            "tolerance": "PASS",
+            "legacy": "FAIL"
+          },
+          "pass": true,
+          "accepted": true
+        }
+      ],
+      "passed": 11,
+      "watch": 2,
+      "failed": 0,
+      "total": 13,
+      "shiftedPassed": 9,
+      "legacyPassed": 10,
+      "accepted": false,
+      "summary": {
+        "shifted": {
+          "pass": 9,
+          "fail": 4,
+          "total": 13
+        },
+        "legacy": {
+          "pass": 10,
+          "fail": 3,
+          "total": 13
+        },
+        "tolerance": {
+          "pass": 11,
+          "watch": 2,
+          "fail": 0,
+          "total": 13
+        }
+      },
+      "guardrails": {
+        "sky_mask_share": 12.788773148148147,
+        "near_white_seam_energy": 0.0038584282156080008,
+        "red_route_share": 0.26948302469135804,
+        "red_route_saturation": 0.8776236772537231,
+        "sky_horizon_row": 360,
+        "sky_horizon_source_px": null,
+        "sky_horizon_source": "edge",
+        "sky_horizon_edge_ratio": 4.304950385151458,
+        "sky_lit_wall_pct": 7.109760802469135,
+        "component_guard": "none"
+      },
+      "guardrailRows": [
+        {
+          "guardrail": "sky_mask_share",
+          "label": "Sky mask share",
+          "unit": "%",
+          "value": 12.788773148148147,
+          "referenceMean": 5.063580246913579,
+          "referenceSd": 4.391695164299397,
+          "referenceP10": 0.5925154320987654,
+          "referenceP90": 11.164120370370371,
+          "position": "above p10-p90"
+        },
+        {
+          "guardrail": "near_white_seam_energy",
+          "label": "Near-white seam energy",
+          "unit": "gradient",
+          "value": 0.0038584282156080008,
+          "referenceMean": 0.0029352366720559074,
+          "referenceSd": 0.001821314660396086,
+          "referenceP10": 0.0011054027010686696,
+          "referenceP90": 0.004651649110019207,
+          "position": "inside p10-p90"
+        },
+        {
+          "guardrail": "red_route_share",
+          "label": "Red route share",
+          "unit": "%",
+          "value": 0.26948302469135804,
+          "referenceMean": 2.8745273919753087,
+          "referenceSd": 4.946579191500707,
+          "referenceP10": 0.0836033950617284,
+          "referenceP90": 6.746894290123456,
+          "position": "inside p10-p90"
+        },
+        {
+          "guardrail": "red_route_saturation",
+          "label": "Red route saturation",
+          "unit": "0..1",
+          "value": 0.8776236772537231,
+          "referenceMean": 0.6681584984064102,
+          "referenceSd": 0.2447958281945591,
+          "referenceP10": 0.3897438824176788,
+          "referenceP90": 0.9428059279918671,
+          "position": "inside p10-p90"
+        }
+      ],
+      "guardrailContext": {
+        "primarySkyBlue": 68.54488529962546,
+        "skyMaskShare": 12.788773148148147,
+        "skyMaskOfPrimaryPct": 18.657516300808556,
+        "skyLitWallPct": 7.109760802469135
+      }
+    },
+    {
+      "path": "captures/ux-final2/wallrun-corridor.png",
+      "metrics": {
+        "luma": 0.45944643020629883,
+        "std": 0.2931099236011505,
+        "p25": 0.17999215424060822,
+        "p95": 0.9521387815475464,
+        "near_white": 12.774691358024693,
+        "deep_shadow": 0.00019290123456790125,
+        "saturation": 0.3418024778366089,
+        "local_contrast": 0.27997294068336487,
+        "edge": 0.023394986987113953,
+        "sky": 27.03183520599251,
+        "top_contrast": 0.28161361813545227,
+        "split": -29.455469131469727,
+        "red": 2.0142746913580245
+      },
+      "rows": [
+        {
+          "metric": "luma",
+          "label": "Luma mean",
+          "unit": "0..1",
+          "candidate": 0.45944643020629883,
+          "reference": 0.6152243822813034,
+          "referenceSd": 0.13335175622030057,
+          "referenceP10": 0.4715142399072647,
+          "referenceP50": 0.6217188537120819,
+          "referenceP90": 0.7639147698879243,
+          "referenceLegacy": 0.589,
+          "shift": 0.026224382281303416,
+          "tolerance": 0.08,
+          "bands": {
+            "legacy": {
+              "min": 0.48,
+              "max": 0.62,
+              "label": "0.48..0.62"
+            },
+            "shifted": {
+              "min": 0.5062243822813034,
+              "max": 0.6462243822813034,
+              "label": "0.506224..0.646224"
+            }
+          },
+          "gaps": {
+            "shifted": -0.04677795207500457,
+            "legacy": -0.020553569793701154
+          },
+          "verdicts": {
+            "shifted": "FAIL",
+            "tolerance": "WATCH",
+            "legacy": "FAIL"
+          },
+          "pass": false,
+          "accepted": false
+        },
+        {
+          "metric": "std",
+          "label": "Luma std",
+          "unit": "0..1",
+          "candidate": 0.2931099236011505,
+          "reference": 0.2945838652551174,
+          "referenceSd": 0.049185558207583385,
+          "referenceP10": 0.22041192799806594,
+          "referenceP50": 0.2935660183429718,
+          "referenceP90": 0.35040610134601596,
+          "referenceLegacy": 0.272,
+          "shift": 0.022583865255117408,
+          "tolerance": 0.05,
+          "bands": {
+            "legacy": {
+              "min": 0.22,
+              "max": null,
+              "label": ">=0.22"
+            },
+            "shifted": {
+              "min": 0.2425838652551174,
+              "max": null,
+              "label": ">=0.242584"
+            }
+          },
+          "gaps": {
+            "shifted": 0.050526058346033104,
+            "legacy": 0.07310992360115051
+          },
+          "verdicts": {
+            "shifted": "PASS",
+            "tolerance": "PASS",
+            "legacy": "PASS"
+          },
+          "pass": true,
+          "accepted": true
+        },
+        {
+          "metric": "p25",
+          "label": "Luma p25",
+          "unit": "0..1",
+          "candidate": 0.17999215424060822,
+          "reference": 0.3709875293076038,
+          "referenceSd": 0.13892598227069597,
+          "referenceP10": 0.21907937824726104,
+          "referenceP50": 0.3694094270467758,
+          "referenceP90": 0.5757496118545532,
+          "referenceLegacy": 0.37,
+          "shift": 0.0009875293076038183,
+          "tolerance": 0.1,
+          "bands": {
+            "legacy": {
+              "min": 0.33,
+              "max": 0.42,
+              "label": "0.33..0.42"
+            },
+            "shifted": {
+              "min": 0.33098752930760383,
+              "max": 0.4209875293076038,
+              "label": "0.330988..0.420988"
+            }
+          },
+          "gaps": {
+            "shifted": -0.15099537506699562,
+            "legacy": -0.1500078457593918
+          },
+          "verdicts": {
+            "shifted": "FAIL",
+            "tolerance": "WATCH",
+            "legacy": "FAIL"
+          },
+          "pass": false,
+          "accepted": false
+        },
+        {
+          "metric": "p95",
+          "label": "Luma p95",
+          "unit": "0..1",
+          "candidate": 0.9521387815475464,
+          "reference": 0.9805995345115661,
+          "referenceSd": 0.04530196538769849,
+          "referenceP10": 0.9158146619796753,
+          "referenceP50": 1.0,
+          "referenceP90": 1.0,
+          "referenceLegacy": 0.979,
+          "shift": 0.0015995345115661364,
+          "tolerance": 0.05,
+          "bands": {
+            "legacy": {
+              "min": 0.93,
+              "max": null,
+              "label": ">=0.93"
+            },
+            "shifted": {
+              "min": 0.9315995345115662,
+              "max": null,
+              "label": ">=0.9316"
+            }
+          },
+          "gaps": {
+            "shifted": 0.0205392470359802,
+            "legacy": 0.022138781547546338
+          },
+          "verdicts": {
+            "shifted": "PASS",
+            "tolerance": "PASS",
+            "legacy": "PASS"
+          },
+          "pass": true,
+          "accepted": true
+        },
+        {
+          "metric": "near_white",
+          "label": "Near-white share",
+          "unit": "%",
+          "candidate": 12.774691358024693,
+          "reference": 34.491338734567904,
+          "referenceSd": 18.242134843485484,
+          "referenceP10": 6.179687500000001,
+          "referenceP50": 32.58024691358025,
+          "referenceP90": 51.62127700617286,
+          "referenceLegacy": 27.3,
+          "shift": 7.191338734567903,
+          "tolerance": 18.0,
+          "bands": {
+            "legacy": {
+              "min": 15.0,
+              "max": 28.0,
+              "label": "15..28"
+            },
+            "shifted": {
+              "min": 22.191338734567903,
+              "max": 35.19133873456791,
+              "label": "22.1913..35.1913"
+            }
+          },
+          "gaps": {
+            "shifted": -9.41664737654321,
+            "legacy": -2.2253086419753068
+          },
+          "verdicts": {
+            "shifted": "FAIL",
+            "tolerance": "WATCH",
+            "legacy": "FAIL"
+          },
+          "pass": false,
+          "accepted": false
+        },
+        {
+          "metric": "deep_shadow",
+          "label": "Deep-shadow share",
+          "unit": "%",
+          "candidate": 0.00019290123456790125,
+          "reference": 0.6780960648148148,
+          "referenceSd": 1.6126900552600532,
+          "referenceP10": 0.002218364197530864,
+          "referenceP50": 0.1253858024691358,
+          "referenceP90": 1.4190393518518525,
+          "referenceLegacy": 3.0,
+          "shift": -2.321903935185185,
+          "tolerance": 3.0,
+          "bands": {
+            "legacy": {
+              "min": null,
+              "max": 6.0,
+              "label": "<=6"
+            },
+            "shifted": {
+              "min": null,
+              "max": 3.678096064814815,
+              "label": "<=3.6781"
+            }
+          },
+          "gaps": {
+            "shifted": 3.677903163580247,
+            "legacy": 5.999807098765432
+          },
+          "verdicts": {
+            "shifted": "PASS",
+            "tolerance": "PASS",
+            "legacy": "PASS"
+          },
+          "pass": true,
+          "accepted": true
+        },
+        {
+          "metric": "saturation",
+          "label": "Saturation",
+          "unit": "0..1",
+          "candidate": 0.3418024778366089,
+          "reference": 0.3000267282128334,
+          "referenceSd": 0.14101876066433905,
+          "referenceP10": 0.1801747277379036,
+          "referenceP50": 0.26818549633026123,
+          "referenceP90": 0.4815905421972277,
+          "referenceLegacy": 0.359,
+          "shift": -0.0589732717871666,
+          "tolerance": 0.08,
+          "bands": {
+            "legacy": {
+              "min": 0.3,
+              "max": 0.38,
+              "label": "0.3..0.38"
+            },
+            "shifted": {
+              "min": 0.24102672821283339,
+              "max": 0.3210267282128334,
+              "label": "0.241027..0.321027"
+            }
+          },
+          "gaps": {
+            "shifted": -0.020775749623775486,
+            "legacy": 0.03819752216339112
+          },
+          "verdicts": {
+            "shifted": "FAIL",
+            "tolerance": "PASS",
+            "legacy": "PASS"
+          },
+          "pass": true,
+          "accepted": false
+        },
+        {
+          "metric": "local_contrast",
+          "label": "Local contrast",
+          "unit": "0..1",
+          "candidate": 0.27997294068336487,
+          "reference": 0.28500273674726484,
+          "referenceSd": 0.04837829548036219,
+          "referenceP10": 0.2178311452269554,
+          "referenceP50": 0.2832604944705963,
+          "referenceP90": 0.34072046577930454,
+          "referenceLegacy": 0.0713,
+          "shift": 0.21370273674726484,
+          "tolerance": 0.04,
+          "bands": {
+            "legacy": {
+              "min": 0.06,
+              "max": null,
+              "label": ">=0.06"
+            },
+            "shifted": {
+              "min": 0.27370273674726486,
+              "max": null,
+              "label": ">=0.273703"
+            }
+          },
+          "gaps": {
+            "shifted": 0.006270203936100005,
+            "legacy": 0.21997294068336487
+          },
+          "verdicts": {
+            "shifted": "PASS",
+            "tolerance": "PASS",
+            "legacy": "PASS"
+          },
+          "pass": true,
+          "accepted": true
+        },
+        {
+          "metric": "edge",
+          "label": "Edge energy",
+          "unit": "0..1",
+          "candidate": 0.023394986987113953,
+          "reference": 0.01939456465188414,
+          "referenceSd": 0.009306276669969363,
+          "referenceP10": 0.00966938310302794,
+          "referenceP50": 0.01805755402892828,
+          "referenceP90": 0.029320623725652698,
+          "referenceLegacy": 0.0341,
+          "shift": -0.014705435348115858,
+          "tolerance": 0.012,
+          "bands": {
+            "legacy": {
+              "min": 0.028,
+              "max": null,
+              "label": ">=0.028"
+            },
+            "shifted": {
+              "min": 0.013294564651884142,
+              "max": null,
+              "label": ">=0.0132946"
+            }
+          },
+          "gaps": {
+            "shifted": 0.01010042233522981,
+            "legacy": -0.004605013012886048
+          },
+          "verdicts": {
+            "shifted": "PASS",
+            "tolerance": "PASS",
+            "legacy": "FAIL"
+          },
+          "pass": true,
+          "accepted": true
+        },
+        {
+          "metric": "sky",
+          "label": "Sky-blue area",
+          "unit": "%",
+          "candidate": 27.03183520599251,
+          "reference": 43.258339185393254,
+          "referenceSd": 16.86317972525212,
+          "referenceP10": 20.22211493445693,
+          "referenceP50": 42.936563670411985,
+          "referenceP90": 63.47899110486893,
+          "referenceLegacy": 53.1,
+          "shift": -9.841660814606747,
+          "tolerance": 12.0,
+          "bands": {
+            "legacy": {
+              "min": 35.0,
+              "max": 55.0,
+              "label": "35..55"
+            },
+            "shifted": {
+              "min": 25.158339185393253,
+              "max": 45.15833918539325,
+              "label": "25.1583..45.1583"
+            }
+          },
+          "gaps": {
+            "shifted": 1.8734960205992586,
+            "legacy": -7.968164794007489
+          },
+          "verdicts": {
+            "shifted": "PASS",
+            "tolerance": "WATCH",
+            "legacy": "FAIL"
+          },
+          "pass": false,
+          "accepted": true
+        },
+        {
+          "metric": "top_contrast",
+          "label": "Top-third contrast",
+          "unit": "0..1",
+          "candidate": 0.28161361813545227,
+          "reference": 0.24329591020941735,
+          "referenceSd": 0.05545991077196976,
+          "referenceP10": 0.17864398807287216,
+          "referenceP50": 0.24977309256792068,
+          "referenceP90": 0.30886746346950533,
+          "referenceLegacy": 0.0585,
+          "shift": 0.18479591020941735,
+          "tolerance": 0.05,
+          "bands": {
+            "legacy": {
+              "min": 0.05,
+              "max": null,
+              "label": ">=0.05"
+            },
+            "shifted": {
+              "min": 0.23479591020941737,
+              "max": null,
+              "label": ">=0.234796"
+            }
+          },
+          "gaps": {
+            "shifted": 0.0468177079260349,
+            "legacy": 0.23161361813545228
+          },
+          "verdicts": {
+            "shifted": "PASS",
+            "tolerance": "PASS",
+            "legacy": "PASS"
+          },
+          "pass": true,
+          "accepted": true
+        },
+        {
+          "metric": "split",
+          "label": "Split-tone dark R-B",
+          "unit": "R-B*255",
+          "candidate": -29.455469131469727,
+          "reference": -21.806927514076232,
+          "referenceSd": 25.573748535865327,
+          "referenceP10": -42.51122131347656,
+          "referenceP50": -28.12237548828125,
+          "referenceP90": -3.953147172927843,
+          "referenceLegacy": -48.6,
+          "shift": 26.79307248592377,
+          "tolerance": 15.0,
+          "bands": {
+            "legacy": {
+              "min": -55.0,
+              "max": -40.0,
+              "label": "-55..-40"
+            },
+            "shifted": {
+              "min": -28.20692751407623,
+              "max": -13.20692751407623,
+              "label": "-28.2069..-13.2069"
+            }
+          },
+          "gaps": {
+            "shifted": -1.2485416173934958,
+            "legacy": -10.544530868530273
+          },
+          "verdicts": {
+            "shifted": "FAIL",
+            "tolerance": "PASS",
+            "legacy": "FAIL"
+          },
+          "pass": true,
+          "accepted": false
+        },
+        {
+          "metric": "red",
+          "label": "Red accent share",
+          "unit": "%",
+          "candidate": 2.0142746913580245,
+          "reference": 2.3937885802469134,
+          "referenceSd": 2.85075450424615,
+          "referenceP10": 0.05065586419753087,
+          "referenceP50": 2.0200617283950617,
+          "referenceP90": 4.6508487654321025,
+          "referenceLegacy": 4.2,
+          "shift": -1.8062114197530867,
+          "tolerance": 2.5,
+          "bands": {
+            "legacy": {
+              "min": 2.0,
+              "max": 5.0,
+              "label": "2..5"
+            },
+            "shifted": {
+              "min": 0.19378858024691326,
+              "max": 3.1937885802469133,
+              "label": "0.193789..3.19379"
+            }
+          },
+          "gaps": {
+            "shifted": 1.1795138888888888,
+            "legacy": 0.014274691358024505
+          },
+          "verdicts": {
+            "shifted": "PASS",
+            "tolerance": "PASS",
+            "legacy": "PASS"
+          },
+          "pass": true,
+          "accepted": true
+        }
+      ],
+      "passed": 9,
+      "watch": 4,
+      "failed": 0,
+      "total": 13,
+      "shiftedPassed": 8,
+      "legacyPassed": 7,
+      "accepted": false,
+      "summary": {
+        "shifted": {
+          "pass": 8,
+          "fail": 5,
+          "total": 13
+        },
+        "legacy": {
+          "pass": 7,
+          "fail": 6,
+          "total": 13
+        },
+        "tolerance": {
+          "pass": 9,
+          "watch": 4,
+          "fail": 0,
+          "total": 13
+        }
+      },
+      "guardrails": {
+        "sky_mask_share": 1.498456790123457,
+        "near_white_seam_energy": 0.00312216323800385,
+        "red_route_share": 1.5634645061728396,
+        "red_route_saturation": 0.9742716550827026,
+        "sky_horizon_row": 182,
+        "sky_horizon_source_px": null,
+        "sky_horizon_source": "edge",
+        "sky_horizon_edge_ratio": 2.674356648032973,
+        "sky_lit_wall_pct": 1.3902391975308641,
+        "component_guard": "none"
+      },
+      "guardrailRows": [
+        {
+          "guardrail": "sky_mask_share",
+          "label": "Sky mask share",
+          "unit": "%",
+          "value": 1.498456790123457,
+          "referenceMean": 5.063580246913579,
+          "referenceSd": 4.391695164299397,
+          "referenceP10": 0.5925154320987654,
+          "referenceP90": 11.164120370370371,
+          "position": "inside p10-p90"
+        },
+        {
+          "guardrail": "near_white_seam_energy",
+          "label": "Near-white seam energy",
+          "unit": "gradient",
+          "value": 0.00312216323800385,
+          "referenceMean": 0.0029352366720559074,
+          "referenceSd": 0.001821314660396086,
+          "referenceP10": 0.0011054027010686696,
+          "referenceP90": 0.004651649110019207,
+          "position": "inside p10-p90"
+        },
+        {
+          "guardrail": "red_route_share",
+          "label": "Red route share",
+          "unit": "%",
+          "value": 1.5634645061728396,
+          "referenceMean": 2.8745273919753087,
+          "referenceSd": 4.946579191500707,
+          "referenceP10": 0.0836033950617284,
+          "referenceP90": 6.746894290123456,
+          "position": "inside p10-p90"
+        },
+        {
+          "guardrail": "red_route_saturation",
+          "label": "Red route saturation",
+          "unit": "0..1",
+          "value": 0.9742716550827026,
+          "referenceMean": 0.6681584984064102,
+          "referenceSd": 0.2447958281945591,
+          "referenceP10": 0.3897438824176788,
+          "referenceP90": 0.9428059279918671,
+          "position": "above p10-p90"
+        }
+      ],
+      "guardrailContext": {
+        "primarySkyBlue": 27.03183520599251,
+        "skyMaskShare": 1.498456790123457,
+        "skyMaskOfPrimaryPct": 5.543303955150162,
+        "skyLitWallPct": 1.3902391975308641
+      }
+    }
+  ],
+  "guardrails": {
+    "note": "W1 perceptual guardrail layer; diagnostic only, not part of the 13 §2.1 metrics and not a PASS/FAIL gate",
+    "referencePolicy": "measured reference is truth; bands are the p10-p90 of the 20-frame reference set (same D-02 policy as the main table)",
+    "referenceFrames": 20,
+    "reference": {
+      "sky_mask_share": {
+        "mean": 5.063580246913579,
+        "sd": 4.391695164299397,
+        "min": 0.18267746913580246,
+        "p10": 0.5925154320987654,
+        "p50": 4.485918209876543,
+        "p90": 11.164120370370371,
+        "max": 15.07619598765432
+      },
+      "near_white_seam_energy": {
+        "mean": 0.0029352366720559074,
+        "sd": 0.001821314660396086,
+        "min": 0.0005917210946790874,
+        "p10": 0.0011054027010686696,
+        "p50": 0.0023582010762766004,
+        "p90": 0.004651649110019207,
+        "max": 0.008278504945337772
+      },
+      "red_route_share": {
+        "mean": 2.8745273919753087,
+        "sd": 4.946579191500707,
+        "min": 0.0,
+        "p10": 0.0836033950617284,
+        "p50": 1.4949845679012346,
+        "p90": 6.746894290123456,
+        "max": 21.99344135802469
+      },
+      "red_route_saturation": {
+        "mean": 0.6681584984064102,
+        "sd": 0.2447958281945591,
+        "min": 0.0,
+        "p10": 0.3897438824176788,
+        "p50": 0.7306222319602966,
+        "p90": 0.9428059279918671,
+        "max": 0.9599475264549255
+      }
+    },
+    "referencePerFrame": [
+      {
+        "file": "ref/reference/prolog-kit/study/05-prologue-roofs/0824-prologue-roofs.jpg",
+        "guardrails": {
+          "sky_mask_share": 11.655092592592593,
+          "near_white_seam_energy": 0.003851705463603139,
+          "red_route_share": 3.6417824074074074,
+          "red_route_saturation": 0.7554667592048645,
+          "sky_horizon_row": 300,
+          "sky_horizon_source_px": null,
+          "sky_horizon_source": "edge",
+          "sky_horizon_edge_ratio": 2.6999042865854896,
+          "sky_lit_wall_pct": 6.5273919753086425,
+          "component_guard": "none"
+        }
+      },
+      {
+        "file": "ref/reference/prolog-kit/study/05-prologue-roofs/0834-prologue-roofs.jpg",
+        "guardrails": {
+          "sky_mask_share": 4.461226851851851,
+          "near_white_seam_energy": 0.008278504945337772,
+          "red_route_share": 6.783179012345679,
+          "red_route_saturation": 0.9513169527053833,
+          "sky_horizon_row": 165,
+          "sky_horizon_source_px": null,
+          "sky_horizon_source": "edge",
+          "sky_horizon_edge_ratio": 1.5835112052699385,
+          "sky_lit_wall_pct": 3.277199074074074,
+          "component_guard": "none"
+        }
+      },
+      {
+        "file": "ref/reference/prolog-kit/study/05-prologue-roofs/0844-prologue-roofs.jpg",
+        "guardrails": {
+          "sky_mask_share": 5.513695987654321,
+          "near_white_seam_energy": 0.00402743648737669,
+          "red_route_share": 1.6902006172839505,
+          "red_route_saturation": 0.799950122833252,
+          "sky_horizon_row": 178,
+          "sky_horizon_source_px": null,
+          "sky_horizon_source": "edge",
+          "sky_horizon_edge_ratio": 1.8737777283813322,
+          "sky_lit_wall_pct": 1.7295524691358026,
+          "component_guard": "none"
+        }
+      },
+      {
+        "file": "ref/reference/prolog-kit/study/05-prologue-roofs/0854-prologue-roofs.jpg",
+        "guardrails": {
+          "sky_mask_share": 0.9031635802469136,
+          "near_white_seam_energy": 0.0021073096431791782,
+          "red_route_share": 0.0,
+          "red_route_saturation": 0.0,
+          "sky_horizon_row": 77,
+          "sky_horizon_source_px": null,
+          "sky_horizon_source": "edge",
+          "sky_horizon_edge_ratio": 4.958977325451258,
+          "sky_lit_wall_pct": 1.114776234567901,
+          "component_guard": "none"
+        }
+      },
+      {
+        "file": "ref/reference/prolog-kit/study/05-prologue-roofs/0904-prologue-roofs.jpg",
+        "guardrails": {
+          "sky_mask_share": 10.066743827160494,
+          "near_white_seam_energy": 0.002052458468824625,
+          "red_route_share": 1.5904706790123457,
+          "red_route_saturation": 0.7301475405693054,
+          "sky_horizon_row": 228,
+          "sky_horizon_source_px": null,
+          "sky_horizon_source": "edge",
+          "sky_horizon_edge_ratio": 3.3846510368631315,
+          "sky_lit_wall_pct": 4.114390432098766,
+          "component_guard": "none"
+        }
+      },
+      {
+        "file": "ref/reference/prolog-kit/study/05-prologue-roofs/0916-prologue-roofs.jpg",
+        "guardrails": {
+          "sky_mask_share": 7.479166666666667,
+          "near_white_seam_energy": 0.0023424953687936068,
+          "red_route_share": 1.1865354938271604,
+          "red_route_saturation": 0.8005734086036682,
+          "sky_horizon_row": 235,
+          "sky_horizon_source_px": null,
+          "sky_horizon_source": "edge",
+          "sky_horizon_edge_ratio": 1.9976774630623724,
+          "sky_lit_wall_pct": 2.8231095679012346,
+          "component_guard": "none"
+        }
+      },
+      {
+        "file": "ref/reference/prolog-kit/study/05-prologue-roofs/0926-prologue-roofs.jpg",
+        "guardrails": {
+          "sky_mask_share": 0.5779320987654322,
+          "near_white_seam_energy": 0.004625776316970587,
+          "red_route_share": 0.4380787037037037,
+          "red_route_saturation": 0.8055267930030823,
+          "sky_horizon_row": 46,
+          "sky_horizon_source_px": null,
+          "sky_horizon_source": "edge",
+          "sky_horizon_edge_ratio": 7.391192035481369,
+          "sky_lit_wall_pct": 0.2199074074074074,
+          "component_guard": "none"
+        }
+      },
+      {
+        "file": "ref/reference/prolog-kit/study/05-prologue-roofs/0950-prologue-roofs.jpg",
+        "guardrails": {
+          "sky_mask_share": 1.2125771604938271,
+          "near_white_seam_energy": 0.0015893408562988043,
+          "red_route_share": 6.742862654320987,
+          "red_route_saturation": 0.6577739715576172,
+          "sky_horizon_row": 219,
+          "sky_horizon_source_px": null,
+          "sky_horizon_source": "edge",
+          "sky_horizon_edge_ratio": 2.9949485298831857,
+          "sky_lit_wall_pct": 0.0466820987654321,
+          "component_guard": "none"
+        }
+      },
+      {
+        "file": "ref/reference/prolog-kit/study/05-prologue-roofs/1004-prologue-roofs.jpg",
+        "guardrails": {
+          "sky_mask_share": 11.109567901234568,
+          "near_white_seam_energy": 0.001125694252550602,
+          "red_route_share": 21.99344135802469,
+          "red_route_saturation": 0.9418602585792542,
+          "sky_horizon_row": 111,
+          "sky_horizon_source_px": null,
+          "sky_horizon_source": "edge",
+          "sky_horizon_edge_ratio": 4.669296518705594,
+          "sky_lit_wall_pct": 0.03047839506172839,
+          "component_guard": "none"
+        }
+      },
+      {
+        "file": "ref/reference/prolog-kit/study/05-prologue-roofs/1054-prologue-roofs.jpg",
+        "guardrails": {
+          "sky_mask_share": 1.584490740740741,
+          "near_white_seam_energy": 0.0023509955499321222,
+          "red_route_share": 0.5902777777777778,
+          "red_route_saturation": 0.397567480802536,
+          "sky_horizon_row": 190,
+          "sky_horizon_source_px": null,
+          "sky_horizon_source": "edge",
+          "sky_horizon_edge_ratio": 9.994370526404218,
+          "sky_lit_wall_pct": 1.2822145061728396,
+          "component_guard": "none"
+        }
+      },
+      {
+        "file": "ref/reference/prolog-kit/study/05-prologue-roofs/1104-prologue-roofs.jpg",
+        "guardrails": {
+          "sky_mask_share": 7.962384259259259,
+          "near_white_seam_energy": 0.004054293967783451,
+          "red_route_share": 1.3994984567901234,
+          "red_route_saturation": 0.5236601233482361,
+          "sky_horizon_row": 325,
+          "sky_horizon_source_px": null,
+          "sky_horizon_source": "edge",
+          "sky_horizon_edge_ratio": 4.063429861652957,
+          "sky_lit_wall_pct": 8.836612654320989,
+          "component_guard": "none"
+        }
+      },
+      {
+        "file": "ref/reference/prolog-kit/study/05-prologue-roofs/1114-prologue-roofs.jpg",
+        "guardrails": {
+          "sky_mask_share": 0.6172839506172839,
+          "near_white_seam_energy": 0.0015154869761317968,
+          "red_route_share": 0.05652006172839506,
+          "red_route_saturation": 0.31933149695396423,
+          "sky_horizon_row": 273,
+          "sky_horizon_source_px": null,
+          "sky_horizon_source": "edge",
+          "sky_horizon_edge_ratio": 5.6519284358465915,
+          "sky_lit_wall_pct": 0.1404320987654321,
+          "component_guard": "none"
+        }
+      },
+      {
+        "file": "ref/reference/prolog-kit/study/05-prologue-roofs/1124-prologue-roofs.jpg",
+        "guardrails": {
+          "sky_mask_share": 4.5923996913580245,
+          "near_white_seam_energy": 0.0031527671962976456,
+          "red_route_share": 0.2511574074074074,
+          "red_route_saturation": 0.5199353098869324,
+          "sky_horizon_row": 282,
+          "sky_horizon_source_px": null,
+          "sky_horizon_source": "edge",
+          "sky_horizon_edge_ratio": 4.13582444850194,
+          "sky_lit_wall_pct": 0.8221450617283952,
+          "component_guard": "none"
+        }
+      },
+      {
+        "file": "ref/reference/prolog-kit/study/05-prologue-roofs/1134-prologue-roofs.jpg",
+        "guardrails": {
+          "sky_mask_share": 0.5941358024691358,
+          "near_white_seam_energy": 0.0005917210946790874,
+          "red_route_share": 2.57445987654321,
+          "red_route_saturation": 0.8850928544998169,
+          "sky_horizon_row": 116,
+          "sky_horizon_source_px": null,
+          "sky_horizon_source": "edge",
+          "sky_horizon_edge_ratio": 1.877738701759295,
+          "sky_lit_wall_pct": 0.7075617283950617,
+          "component_guard": "none"
+        }
+      },
+      {
+        "file": "ref/reference/prolog-kit/study/05-prologue-roofs/1144-prologue-roofs.jpg",
+        "guardrails": {
+          "sky_mask_share": 15.07619598765432,
+          "near_white_seam_energy": 0.0023654066026210785,
+          "red_route_share": 0.15027006172839505,
+          "red_route_saturation": 0.516840934753418,
+          "sky_horizon_row": 285,
+          "sky_horizon_source_px": null,
+          "sky_horizon_source": "edge",
+          "sky_horizon_edge_ratio": 3.862897492485353,
+          "sky_lit_wall_pct": 3.0545910493827164,
+          "component_guard": "none"
+        }
+      },
+      {
+        "file": "ref/reference/prolog-kit/study/05-prologue-roofs/1154-prologue-roofs.jpg",
+        "guardrails": {
+          "sky_mask_share": 7.445023148148149,
+          "near_white_seam_energy": 0.004884504247456789,
+          "red_route_share": 0.08661265432098765,
+          "red_route_saturation": 0.9100342988967896,
+          "sky_horizon_row": 334,
+          "sky_horizon_source_px": null,
+          "sky_horizon_source": "edge",
+          "sky_horizon_edge_ratio": 1.6231789063355917,
+          "sky_lit_wall_pct": 3.814429012345679,
+          "component_guard": "none"
+        }
+      },
+      {
+        "file": "ref/reference/prolog-kit/study/05-prologue-roofs/1204-prologue-roofs.jpg",
+        "guardrails": {
+          "sky_mask_share": 3.9930555555555554,
+          "near_white_seam_energy": 0.004292211029678583,
+          "red_route_share": 0.30169753086419754,
+          "red_route_saturation": 0.5658783316612244,
+          "sky_horizon_row": 365,
+          "sky_horizon_source_px": null,
+          "sky_horizon_source": "edge",
+          "sky_horizon_edge_ratio": 3.5161208655740874,
+          "sky_lit_wall_pct": 2.5684799382716053,
+          "component_guard": "none"
+        }
+      },
+      {
+        "file": "ref/reference/prolog-kit/study/05-prologue-roofs/1224-prologue-roofs.jpg",
+        "guardrails": {
+          "sky_mask_share": 1.734182098765432,
+          "near_white_seam_energy": 0.0009227787377312779,
+          "red_route_share": 2.0536265432098766,
+          "red_route_saturation": 0.9599475264549255,
+          "sky_horizon_row": 316,
+          "sky_horizon_source_px": null,
+          "sky_horizon_source": "edge",
+          "sky_horizon_edge_ratio": 2.0393080118465976,
+          "sky_lit_wall_pct": 0.6674382716049383,
+          "component_guard": "none"
+        }
+      },
+      {
+        "file": "ref/reference/prolog-kit/study/05-prologue-roofs/1244-prologue-roofs.jpg",
+        "guardrails": {
+          "sky_mask_share": 0.18267746913580246,
+          "near_white_seam_energy": 0.0011297112796455622,
+          "red_route_share": 4.326195987654321,
+          "red_route_saturation": 0.7310969233512878,
+          "sky_horizon_row": 61,
+          "sky_horizon_source_px": null,
+          "sky_horizon_source": "edge",
+          "sky_horizon_edge_ratio": 2.6497356477316742,
+          "sky_lit_wall_pct": 2.202932098765432,
+          "component_guard": "none"
+        }
+      },
+      {
+        "file": "ref/reference/prolog-kit/study/05-prologue-roofs/1304-prologue-roofs.jpg",
+        "guardrails": {
+          "sky_mask_share": 4.510609567901234,
+          "near_white_seam_energy": 0.003444134956225753,
+          "red_route_share": 1.6336805555555556,
+          "red_route_saturation": 0.5911688804626465,
+          "sky_horizon_row": 234,
+          "sky_horizon_source_px": null,
+          "sky_horizon_source": "edge",
+          "sky_horizon_edge_ratio": 4.531708578258215,
+          "sky_lit_wall_pct": 6.232638888888889,
+          "component_guard": "none"
+        }
+      }
+    ]
+  }
+}

@@ -1,0 +1,256 @@
+{
+  "trainingTrueSpawn": {
+    "flow": "gameplay",
+    "objective": {
+      "id": "move",
+      "description": "Move at walking speed or faster for 0.5 seconds.",
+      "type": "maintain_speed",
+      "required": true,
+      "targetSpeed": 1.5,
+      "targetDurationSeconds": 0.5
+    },
+    "exerciseIndex": 0,
+    "player": {
+      "x": 0,
+      "y": 0.8948814272880554,
+      "z": 6
+    },
+    "camera": [0, 1.6198814272880555, 6],
+    "reducedMotion": false,
+    "marker": {
+      "visible": true,
+      "attached": true,
+      "hasTarget": true,
+      "position": {
+        "x": 0,
+        "y": 1.5589822155550395,
+        "z": 3
+      },
+      "yaw": 0.18999999999999997,
+      "alpha": 1,
+      "surfaceY": 2.8610229518832853e-8
+    }
+  },
+  "trainingSpawn": {
+    "flow": "gameplay",
+    "objective": {
+      "id": "move",
+      "description": "Move at walking speed or faster for 0.5 seconds.",
+      "type": "maintain_speed",
+      "required": true,
+      "targetSpeed": 1.5,
+      "targetDurationSeconds": 0.5
+    },
+    "exerciseIndex": 0,
+    "player": {
+      "x": 0,
+      "y": 0.8948190808296204,
+      "z": 10
+    },
+    "camera": [0, 1.6198190808296205, 10],
+    "reducedMotion": false,
+    "marker": {
+      "visible": true,
+      "attached": true,
+      "hasTarget": true,
+      "position": {
+        "x": 0,
+        "y": 1.4965104776210025,
+        "z": 3
+      },
+      "yaw": 0.7300000000000003,
+      "alpha": 1,
+      "surfaceY": 2.8610229518832853e-8
+    }
+  },
+  "trainingFirstTarget": {
+    "flow": "gameplay",
+    "objective": {
+      "id": "run_speed",
+      "description": "Maintain running speed for 0.8 seconds.",
+      "type": "maintain_speed",
+      "required": true,
+      "targetSpeed": 5,
+      "targetDurationSeconds": 0.8
+    },
+    "exerciseIndex": 1,
+    "player": {
+      "x": -0.00010373333566349174,
+      "y": 0.8948887586593628,
+      "z": 4.748558156192303
+    },
+    "camera": [-0.000103699829871857, 1.6185597492374544, 4.748741289153696],
+    "reducedMotion": false,
+    "marker": {
+      "visible": true,
+      "attached": true,
+      "hasTarget": true,
+      "position": {
+        "x": 0,
+        "y": 1.5655321921533483,
+        "z": 0
+      },
+      "yaw": 1.659999999999997,
+      "alpha": 1,
+      "surfaceY": 2.8610229518832853e-8
+    }
+  },
+  "trainingBobA": {
+    "visible": true,
+    "attached": true,
+    "hasTarget": true,
+    "position": {
+      "x": 0,
+      "y": 1.5369399176690337,
+      "z": 0
+    },
+    "yaw": 2.0499999999999954,
+    "alpha": 1,
+    "surfaceY": 2.8610229518832853e-8
+  },
+  "trainingBobB": {
+    "visible": true,
+    "attached": true,
+    "hasTarget": true,
+    "position": {
+      "x": 0,
+      "y": 1.469385354021024,
+      "z": 0
+    },
+    "yaw": 2.2499999999999947,
+    "alpha": 1,
+    "surfaceY": 2.8610229518832853e-8
+  },
+  "trainingReducedA": {
+    "flow": "gameplay",
+    "objective": {
+      "id": "run_speed",
+      "description": "Maintain running speed for 0.8 seconds.",
+      "type": "maintain_speed",
+      "required": true,
+      "targetSpeed": 5,
+      "targetDurationSeconds": 0.8
+    },
+    "exerciseIndex": 1,
+    "player": {
+      "x": -0.0001100205845432356,
+      "y": 0.8948887586593628,
+      "z": 4.714193820953369
+    },
+    "camera": [-0.0001100205845432356, 1.6198887586593629, 4.714193820953369],
+    "reducedMotion": true,
+    "marker": {
+      "visible": true,
+      "attached": true,
+      "hasTarget": true,
+      "position": {
+        "x": 0,
+        "y": 1.5000000286102295,
+        "z": 0
+      },
+      "yaw": 0,
+      "alpha": 1,
+      "surfaceY": 2.8610229518832853e-8
+    }
+  },
+  "trainingReducedB": {
+    "flow": "gameplay",
+    "objective": {
+      "id": "run_speed",
+      "description": "Maintain running speed for 0.8 seconds.",
+      "type": "maintain_speed",
+      "required": true,
+      "targetSpeed": 5,
+      "targetDurationSeconds": 0.8
+    },
+    "exerciseIndex": 1,
+    "player": {
+      "x": -0.0001100205845432356,
+      "y": 0.8948887586593628,
+      "z": 4.714193820953369
+    },
+    "camera": [-0.0001100205845432356, 1.6198887586593629, 4.714193820953369],
+    "reducedMotion": true,
+    "marker": {
+      "visible": true,
+      "attached": true,
+      "hasTarget": true,
+      "position": {
+        "x": 0,
+        "y": 1.5000000286102295,
+        "z": 0
+      },
+      "yaw": 0,
+      "alpha": 1,
+      "surfaceY": 2.8610229518832853e-8
+    }
+  },
+  "trainingAfterObjectiveCompleted": {
+    "flow": "gameplay",
+    "objective": {
+      "id": "run_speed",
+      "description": "Maintain running speed for 0.8 seconds.",
+      "type": "maintain_speed",
+      "required": true,
+      "targetSpeed": 5,
+      "targetDurationSeconds": 0.8
+    },
+    "exerciseIndex": 1,
+    "player": {
+      "x": 0,
+      "y": 0.8948974609375,
+      "z": 3
+    },
+    "camera": [0, 1.6198974609375, 3],
+    "reducedMotion": false,
+    "marker": {
+      "visible": true,
+      "attached": true,
+      "hasTarget": true,
+      "position": {
+        "x": 0,
+        "y": 1.4759435646498908,
+        "z": 0
+      },
+      "yaw": 3.66999999999999,
+      "alpha": 1,
+      "surfaceY": 2.8610229518832853e-8
+    }
+  },
+  "trainingNextTarget": {
+    "flow": "gameplay",
+    "objective": {
+      "id": "reach_approach",
+      "description": "Reach the vault approach zone.",
+      "type": "reach_location",
+      "required": true,
+      "position": {
+        "x": 0,
+        "y": 0.93,
+        "z": 0
+      },
+      "radius": 2
+    },
+    "exerciseIndex": 1,
+    "player": {
+      "x": -0.0007705436437390745,
+      "y": 0.8947353363037109,
+      "z": 21.679929733276367
+    },
+    "camera": [-0.0007705436437390745, 1.619735336303711, 21.679929733276367],
+    "reducedMotion": false,
+    "marker": {
+      "visible": true,
+      "attached": true,
+      "hasTarget": true,
+      "position": {
+        "x": 0,
+        "y": 1.4237026725503734,
+        "z": 0
+      },
+      "yaw": 5.470000000000019,
+      "alpha": 1,
+      "surfaceY": 2.8610229518832853e-8
+    }
+  }
+}

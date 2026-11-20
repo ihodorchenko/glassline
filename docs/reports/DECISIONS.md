@@ -676,3 +676,38 @@ skybridge split report-only trigger, service white-point WATCH, wallrun 1 % low
 re-measure, headless caveat, Firefox unverified, W4 listening open). Optional
 owner nit: boot footer «PROLOGUE / ROOFTOP RUN» stays EN during RU boot.
 Nothing merges to `main`.
+
+## D-26 — Objective marker + city-below streets accepted; marker emissive exemption (2026-11-20)
+
+**Trigger.** Owner hands-on feedback: the active goal was not obvious (especially
+in Training) and the city below read empty. AD-7 brief in
+`docs/reports/UX_CITY_TARGETS.md`; both features accepted in a guided A/B
+(no blind: additive changes, below review sightlines or gameplay-only).
+
+**Delivered.** See W5_RELEASE §7.5: in-world apex-down red pyramid marker over
+the active target (Training current/lookahead positional objective; Prologue next
+checkpoint / finish gate; hidden after finish; static under reduced motion; no
+markers in capture mode) and an 8×8 city-below street grid (carriageways,
+sidewalks, markings/crosswalks, lamps, cars, trees, low block buildings ≤ y −4;
+no look/fog changes).
+
+**Emissive exemption (AD wording).** The objective marker is semantic in-world
+runner UI, exempt from the W2 anti-hack "no emissive additions" rule (that rule
+targets architecture/signage and metric faking). Marker: red `0xD52E36`,
+emissive 0.12 (≤0.15 signage cap), no bloom (threshold 1.0), depth-tested, no
+x-ray; absent in capture mode (review frames byte-identical); static under
+reduced motion.
+
+**Budgets.** Boxes +1047 ≤1200 ✓; draw calls +20…26 (new colours duplicated per
+spatial chunk of the existing loader) and triangles +0.59 M (engine beveled box
+≈563 tris vs the brief's ~200 estimate) exceed the brief estimates; the AD
+accepted the overrun as a **brief-estimate error** because the binding perf gate
+is green (headless `--strict` 6/6; headed avg 69.91–88.67 on 6/6; service 1 % low
+56.82 and first-gap 57.14 on a calm re-measure). Trimming only if perf regresses
+later, in this order: merge per-colour instanced batches across chunks → low-poly
+tree crowns → single-box car cabins; keep buildings/crosswalks.
+
+**Verification.** 5/6 review frames byte-identical (first-gap only below the
+parapet), determinism 6/6 accepted (5 px Δ1/255), shifted 50/78 unchanged,
+guardrails unchanged, 368 tests, validate green. Owner play-confirmation of the
+"≤2 s to goal" criterion remains a human step. Nothing merges to `main`.

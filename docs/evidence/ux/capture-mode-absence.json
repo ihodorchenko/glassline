@@ -1,0 +1,33 @@
+{
+  "captureReady": true,
+  "shot": "start-roof",
+  "markerVisible": false,
+  "markerAttached": false,
+  "pyramidInScene": false,
+  "ringInScene": false,
+  "markerSnapshot": {
+    "visible": false,
+    "attached": false,
+    "hasTarget": false,
+    "position": {
+      "x": 0,
+      "y": 0,
+      "z": 0
+    },
+    "yaw": 0,
+    "alpha": 0,
+    "surfaceY": 0
+  },
+  "stats": {
+    "drawCalls": 196,
+    "triangles": 4182467,
+    "textures": 47,
+    "programs": 47,
+    "quality": "high",
+    "canvas": {
+      "width": 1600,
+      "height": 900
+    },
+    "shot": "start-roof"
+  }
+}

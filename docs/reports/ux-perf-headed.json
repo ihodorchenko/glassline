@@ -1,0 +1,286 @@
+{
+  "generator": "tools/capture/perf.mjs",
+  "environment": "headed-edge",
+  "iteration": "ux-perf-headed",
+  "generatedAt": "2026-11-20T16:35:54.320Z",
+  "level": "prologue",
+  "url": "http://127.0.0.1:5310/",
+  "browser": {
+    "name": "Microsoft Edge",
+    "channel": "msedge",
+    "version": "157.0.4341.46"
+  },
+  "viewport": {
+    "width": 1600,
+    "height": 900,
+    "deviceScaleFactor": 1
+  },
+  "host": {
+    "platform": "darwin",
+    "arch": "arm64",
+    "cpuCount": 8,
+    "loadAvg": [
+      5.87,
+      6.12,
+      5.59
+    ]
+  },
+  "frames": {
+    "warmup": 120,
+    "measured": 300
+  },
+  "threshold": {
+    "minFps": 55,
+    "strict": false
+  },
+  "shots": [
+    {
+      "shot": "start-roof",
+      "json": "captures/perf-ux-perf-headed/start-roof.json",
+      "fps": {
+        "avg": 76.19,
+        "median": 62.11,
+        "p1Low": 56.81
+      },
+      "frameTimeMs": {
+        "avg": 13.12,
+        "median": 16.1,
+        "p95": 17.3,
+        "p99": 17.6,
+        "min": 7.3,
+        "max": 18
+      },
+      "durationMs": 3937.4,
+      "stats": {
+        "drawCalls": 196,
+        "triangles": 4182467,
+        "textures": 47,
+        "programs": 47,
+        "quality": "high",
+        "canvas": {
+          "width": 1600,
+          "height": 900
+        },
+        "shot": "start-roof"
+      },
+      "gpu": {
+        "context": "webgl2",
+        "vendor": "WebKit",
+        "renderer": "WebKit WebGL",
+        "unmaskedVendor": "Google Inc. (Apple)",
+        "unmaskedRenderer": "ANGLE (Apple, ANGLE Metal Renderer: Apple M1 Pro, Unspecified Version)"
+      },
+      "passed": true,
+      "consoleErrors": 0,
+      "pageErrors": 0
+    },
+    {
+      "shot": "first-gap",
+      "json": "captures/perf-ux-perf-headed/first-gap.json",
+      "fps": {
+        "avg": 74.89,
+        "median": 61.35,
+        "p1Low": 54.63
+      },
+      "frameTimeMs": {
+        "avg": 13.35,
+        "median": 16.3,
+        "p95": 17.3,
+        "p99": 18.3,
+        "min": 4.9,
+        "max": 20.3
+      },
+      "durationMs": 4005.7,
+      "stats": {
+        "drawCalls": 178,
+        "triangles": 4177051,
+        "textures": 45,
+        "programs": 47,
+        "quality": "high",
+        "canvas": {
+          "width": 1600,
+          "height": 900
+        },
+        "shot": "first-gap"
+      },
+      "gpu": {
+        "context": "webgl2",
+        "vendor": "WebKit",
+        "renderer": "WebKit WebGL",
+        "unmaskedVendor": "Google Inc. (Apple)",
+        "unmaskedRenderer": "ANGLE (Apple, ANGLE Metal Renderer: Apple M1 Pro, Unspecified Version)"
+      },
+      "passed": true,
+      "consoleErrors": 0,
+      "pageErrors": 0
+    },
+    {
+      "shot": "wallrun-corridor",
+      "json": "captures/perf-ux-perf-headed/wallrun-corridor.json",
+      "fps": {
+        "avg": 77.09,
+        "median": 62.11,
+        "p1Low": 57.14
+      },
+      "frameTimeMs": {
+        "avg": 12.97,
+        "median": 16.1,
+        "p95": 17.21,
+        "p99": 17.5,
+        "min": 7.4,
+        "max": 17.7
+      },
+      "durationMs": 3891.8,
+      "stats": {
+        "drawCalls": 166,
+        "triangles": 4178235,
+        "textures": 42,
+        "programs": 47,
+        "quality": "high",
+        "canvas": {
+          "width": 1600,
+          "height": 900
+        },
+        "shot": "wallrun-corridor"
+      },
+      "gpu": {
+        "context": "webgl2",
+        "vendor": "WebKit",
+        "renderer": "WebKit WebGL",
+        "unmaskedVendor": "Google Inc. (Apple)",
+        "unmaskedRenderer": "ANGLE (Apple, ANGLE Metal Renderer: Apple M1 Pro, Unspecified Version)"
+      },
+      "passed": true,
+      "consoleErrors": 0,
+      "pageErrors": 0
+    },
+    {
+      "shot": "service-block",
+      "json": "captures/perf-ux-perf-headed/service-block.json",
+      "fps": {
+        "avg": 69.91,
+        "median": 68.03,
+        "p1Low": 45.86
+      },
+      "frameTimeMs": {
+        "avg": 14.31,
+        "median": 14.7,
+        "p95": 20.31,
+        "p99": 21.8,
+        "min": 6.8,
+        "max": 29.1
+      },
+      "durationMs": 4291.5,
+      "stats": {
+        "drawCalls": 184,
+        "triangles": 4181251,
+        "textures": 45,
+        "programs": 47,
+        "quality": "high",
+        "canvas": {
+          "width": 1600,
+          "height": 900
+        },
+        "shot": "service-block"
+      },
+      "gpu": {
+        "context": "webgl2",
+        "vendor": "WebKit",
+        "renderer": "WebKit WebGL",
+        "unmaskedVendor": "Google Inc. (Apple)",
+        "unmaskedRenderer": "ANGLE (Apple, ANGLE Metal Renderer: Apple M1 Pro, Unspecified Version)"
+      },
+      "passed": true,
+      "consoleErrors": 0,
+      "pageErrors": 0
+    },
+    {
+      "shot": "skybridge",
+      "json": "captures/perf-ux-perf-headed/skybridge.json",
+      "fps": {
+        "avg": 78.59,
+        "median": 63.29,
+        "p1Low": 56.82
+      },
+      "frameTimeMs": {
+        "avg": 12.72,
+        "median": 15.8,
+        "p95": 17.31,
+        "p99": 17.6,
+        "min": 7.4,
+        "max": 24.8
+      },
+      "durationMs": 3817.3,
+      "stats": {
+        "drawCalls": 170,
+        "triangles": 4175247,
+        "textures": 44,
+        "programs": 47,
+        "quality": "high",
+        "canvas": {
+          "width": 1600,
+          "height": 900
+        },
+        "shot": "skybridge"
+      },
+      "gpu": {
+        "context": "webgl2",
+        "vendor": "WebKit",
+        "renderer": "WebKit WebGL",
+        "unmaskedVendor": "Google Inc. (Apple)",
+        "unmaskedRenderer": "ANGLE (Apple, ANGLE Metal Renderer: Apple M1 Pro, Unspecified Version)"
+      },
+      "passed": true,
+      "consoleErrors": 0,
+      "pageErrors": 0
+    },
+    {
+      "shot": "finish-roof",
+      "json": "captures/perf-ux-perf-headed/finish-roof.json",
+      "fps": {
+        "avg": 88.67,
+        "median": 117.65,
+        "p1Low": 57.14
+      },
+      "frameTimeMs": {
+        "avg": 11.28,
+        "median": 8.5,
+        "p95": 17.11,
+        "p99": 17.5,
+        "min": 7.4,
+        "max": 17.6
+      },
+      "durationMs": 3383.4,
+      "stats": {
+        "drawCalls": 139,
+        "triangles": 4159623,
+        "textures": 36,
+        "programs": 44,
+        "quality": "high",
+        "canvas": {
+          "width": 1600,
+          "height": 900
+        },
+        "shot": "finish-roof"
+      },
+      "gpu": {
+        "context": "webgl2",
+        "vendor": "WebKit",
+        "renderer": "WebKit WebGL",
+        "unmaskedVendor": "Google Inc. (Apple)",
+        "unmaskedRenderer": "ANGLE (Apple, ANGLE Metal Renderer: Apple M1 Pro, Unspecified Version)"
+      },
+      "passed": true,
+      "consoleErrors": 0,
+      "pageErrors": 0
+    }
+  ],
+  "summary": {
+    "shots": 6,
+    "passing": 6,
+    "failing": 0,
+    "worstShot": "service-block",
+    "worstAvgFps": 69.91,
+    "belowThreshold": []
+  }
+}
