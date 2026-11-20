@@ -185,9 +185,49 @@ describe("CameraSystem posture and response", () => {
     const landing = createCamera();
 
     renderFrames(standing, movement(), 60);
-    renderFrames(landing, movement({ landingIntensity: 1 }), 60);
+    renderFrames(
+      landing,
+      movement({
+        landingIntensity: 0.5,
+        landingRemainingSeconds: DEFAULT_MOVEMENT_TUNING.landingRecoverySeconds / 2,
+      }),
+      60,
+    );
 
     expect(landing.camera.position.y).toBeLessThan(standing.camera.position.y);
+  });
+
+  it("peaks the landing dip mid-recovery and returns to eye height after it", () => {
+    const camera = createCamera();
+    const recovery = DEFAULT_MOVEMENT_TUNING.landingRecoverySeconds;
+
+    renderFrames(camera, movement(), 60);
+    const baselineY = camera.camera.position.y;
+
+    let minY = baselineY;
+
+    for (let elapsed = 0; elapsed < recovery; elapsed += FIXED_DT) {
+      const remaining = recovery - elapsed;
+
+      camera.renderUpdate({
+        frame: frame(),
+        movement: movement({
+          landingIntensity: remaining / recovery,
+          landingRemainingSeconds: remaining,
+        }),
+        playerPosition: PLAYER_POSITION,
+        deltaSeconds: FIXED_DT,
+      });
+      minY = Math.min(minY, camera.camera.position.y);
+    }
+
+    // The dip is a single bump: deepest around the middle of the window.
+    expect(baselineY - minY).toBeGreaterThan(0.02);
+    expect(baselineY - minY).toBeLessThan(0.07);
+
+    renderFrames(camera, movement(), 30);
+
+    expect(camera.camera.position.y).toBeCloseTo(baselineY, 4);
   });
 
   it("scales landing camera impact by motion intensity", () => {
@@ -204,7 +244,12 @@ describe("CameraSystem posture and response", () => {
       });
     }
 
-    const landing = movement({ landingIntensity: 1, moving: true, speed: 2 });
+    const landing = movement({
+      landingIntensity: 1,
+      landingRemainingSeconds: DEFAULT_MOVEMENT_TUNING.landingRecoverySeconds / 2,
+      moving: true,
+      speed: 2,
+    });
 
     renderFrames(normal, landing, 8);
     renderFrames(muted, landing, 8);

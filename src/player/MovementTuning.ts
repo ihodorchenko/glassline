@@ -11,7 +11,17 @@ export interface MovementTuning {
   readonly crouchHeight: number;
   readonly slideHeight: number;
   readonly groundDetectionDistance: number;
+  /** Height the character controller steps over automatically (up and down). */
   readonly maxStepHeight: number;
+  /** Autostep horizontal tolerance used by the character controller. */
+  readonly stepMinWidth: number;
+  /**
+   * Snap-to-ground distance for descents steeper than `maxStepHeight`: while
+   * within this range below a surface, the body is pulled to it at up to
+   * `groundStickSpeed` instead of entering free fall.
+   */
+  readonly snapToGroundDistance: number;
+  readonly groundStickSpeed: number;
 
   readonly walkSpeed: number;
   readonly runSpeed: number;
@@ -25,10 +35,17 @@ export interface MovementTuning {
 
   readonly gravity: number;
   readonly jumpHeight: number;
+  /** Extra rise added to the impulse so the physical apex still reaches
+   * jumpHeight despite controller offset and snap-to-ground at take-off. */
+  readonly jumpTakeoffCompensationMeters: number;
+  /** Fraction of the full jump velocity kept when jump is released early (variable jump). */
+  readonly minJumpVelocityRatio: number;
   readonly maxFallSpeed: number;
   readonly jumpBufferSeconds: number;
   readonly coyoteTimeSeconds: number;
   readonly jumpReleaseGravityMultiplier: number;
+
+  readonly landingRecoverySeconds: number;
 
   readonly slideMinEntrySpeed: number;
   readonly slideFriction: number;
@@ -47,8 +64,6 @@ export interface MovementTuning {
   readonly wallRunSpeedDecay: number;
   readonly wallJumpOutwardSpeed: number;
   readonly wallJumpUpSpeed: number;
-
-  readonly landingRecoverySeconds: number;
 }
 
 export const DEFAULT_MOVEMENT_TUNING: MovementTuning = {
@@ -60,7 +75,10 @@ export const DEFAULT_MOVEMENT_TUNING: MovementTuning = {
   crouchHeight: 1.15,
   slideHeight: 0.9,
   groundDetectionDistance: 0.12,
-  maxStepHeight: 0.3,
+  maxStepHeight: 0.4,
+  stepMinWidth: 0.08,
+  snapToGroundDistance: 1.0,
+  groundStickSpeed: 9,
 
   walkSpeed: 3.5,
   runSpeed: 6,
@@ -73,10 +91,16 @@ export const DEFAULT_MOVEMENT_TUNING: MovementTuning = {
   maxAirSpeed: 9.5,
 
   gravity: 22,
+  /** Design apex above the take-off surface (docs/12 §6.2). */
   jumpHeight: 1.25,
+  /** Extra rise added to the impulse so the physical apex still reaches
+   * jumpHeight despite the body starting below its nominal ground clearance
+   * (controller offset + snap-to-ground). */
+  jumpTakeoffCompensationMeters: 0.35,
+  minJumpVelocityRatio: 0.6,
   maxFallSpeed: 35,
   jumpBufferSeconds: 0.12,
-  coyoteTimeSeconds: 0.1,
+  coyoteTimeSeconds: 0.14,
   jumpReleaseGravityMultiplier: 2.5,
 
   slideMinEntrySpeed: 5,

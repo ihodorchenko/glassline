@@ -35,6 +35,8 @@ export interface PlayerSystemOptions {
   readonly spawnPoint: Vector3Like;
 }
 
+const DOWN_RAY = { x: 0, y: -1, z: 0 };
+
 function toWorldDirection(move: Vector2Like, viewYaw: number): Vector3Like {
   const forwardX = -Math.sin(viewYaw);
   const forwardZ = -Math.cos(viewYaw);
@@ -81,6 +83,14 @@ export class PlayerSystem implements Disposable {
   private currentPosition: Vector3Like;
   private distanceSinceLastRead = 0;
 
+  /**
+   * Vertically smoothed position used for camera presentation only. Autostep
+   * lifts and landing impacts move the body instantly; the filter lets the
+   * view ride over them while gameplay logic keeps seeing the true position.
+   */
+  private filteredY: number;
+  private lastFilterDeltaSeconds = 1 / 60;
+
   constructor(physics: PhysicsWorld, options: PlayerSystemOptions) {
     this.physics = physics;
     this.tuning = options.tuning ?? DEFAULT_MOVEMENT_TUNING;
@@ -104,8 +114,10 @@ export class PlayerSystem implements Disposable {
 
     this.controller = world.createCharacterController(0.02);
     this.controller.setUp({ x: 0, y: 1, z: 0 });
-    this.controller.enableAutostep(this.tuning.maxStepHeight, 0.1, false);
-    this.controller.enableSnapToGround(this.tuning.groundDetectionDistance);
+    // includeDowncast lets autostep ride *down* over ledges and steps as well,
+    // which removes the "fall off every stair" jolt on descents.
+    this.controller.enableAutostep(this.tuning.maxStepHeight, this.tuning.stepMinWidth, true);
+    this.controller.enableSnapToGround(this.tuning.snapToGroundDistance);
     this.controller.setMaxSlopeClimbAngle((50 * Math.PI) / 180);
     this.controller.setMinSlopeSlideAngle((35 * Math.PI) / 180);
     this.controller.setSlideEnabled(true);
@@ -119,6 +131,7 @@ export class PlayerSystem implements Disposable {
     this.model = new MovementModel(this.tuning);
     this.previousPosition = { ...options.spawnPoint };
     this.currentPosition = { ...options.spawnPoint };
+    this.filteredY = options.spawnPoint.y;
   }
 
   get isActive(): boolean {
@@ -157,6 +170,8 @@ export class PlayerSystem implements Disposable {
     const worldDirection = toWorldDirection(input.move, viewYaw);
     const activeVault = this.model.getActiveVault();
 
+    this.lastFilterDeltaSeconds = deltaSeconds;
+
     if (activeVault) {
       this.updateScriptedVault(input, worldDirection, activeVault, deltaSeconds);
 
@@ -164,7 +179,35 @@ export class PlayerSystem implements Disposable {
     }
 
     const translation = this.body.translation();
-    const grounded = this.controller.computedGrounded();
+    let grounded = this.controller.computedGrounded();
+
+    // Ground-stick: riding *down* over steps and ledges keeps the body glued to
+    // the surface instead of entering micro free-falls between them. The model
+    // arms it only when walking off a ledge — never after jumps or wall kicks.
+    const groundStick = !grounded && this.model.wantsGroundSnap();
+
+    if (groundStick) {
+      const stickHit = this.physics.rapierWorld.castRay(
+        new RAPIER.Ray(
+          { x: translation.x, y: translation.y - this.postureHeight / 2, z: translation.z },
+          DOWN_RAY,
+        ),
+        this.tuning.snapToGroundDistance,
+        true,
+        undefined,
+        undefined,
+        undefined,
+        this.body,
+      );
+
+      if (stickHit) {
+        grounded = true;
+      } else {
+        // Nothing under the feet within snap range: this is a real drop.
+        this.model.disarmGroundSnap();
+      }
+    }
+
     const environment: MovementEnvironment = {
       grounded,
       wallRun: grounded ? null : this.wallRunDetector.detect(translation, this.model.getVelocity()),
@@ -185,6 +228,29 @@ export class PlayerSystem implements Disposable {
     this.desiredTranslation.x = desired.x;
     this.desiredTranslation.y = desired.y;
     this.desiredTranslation.z = desired.z;
+
+    // When ground-sticking, stop exactly at the surface below: the body glides
+    // down step faces without overshooting into them or bouncing off them.
+    if (groundStick && grounded && !this.controller.computedGrounded()) {
+      const feetY = translation.y - this.postureHeight / 2;
+      const hit = this.physics.rapierWorld.castRay(
+        new RAPIER.Ray({ x: translation.x, y: feetY, z: translation.z }, DOWN_RAY),
+        this.tuning.snapToGroundDistance,
+        true,
+        undefined,
+        undefined,
+        undefined,
+        this.body,
+      );
+
+      if (hit) {
+        const maxStickStep = Math.max(0, hit.timeOfImpact);
+
+        if (this.desiredTranslation.y < -maxStickStep) {
+          this.desiredTranslation.y = -maxStickStep;
+        }
+      }
+    }
 
     const translationBefore = this.body.translation();
 
@@ -265,12 +331,27 @@ export class PlayerSystem implements Disposable {
 
   getInterpolatedPosition(alpha: number): Vector3Like {
     const t = clamp(alpha, 0, 1);
+    const rawY = this.previousPosition.y + (this.currentPosition.y - this.previousPosition.y) * t;
 
     return {
       x: this.previousPosition.x + (this.currentPosition.x - this.previousPosition.x) * t,
-      y: this.previousPosition.y + (this.currentPosition.y - this.previousPosition.y) * t,
+      y: this.dampFilteredY(rawY),
       z: this.previousPosition.z + (this.currentPosition.z - this.previousPosition.z) * t,
     };
+  }
+
+  /**
+   * Exponential low-pass on the camera's vertical follow. The time constant is
+   * short (~70 ms) so sustained climbs and falls track exactly, while single
+   * autostep lifts and landing thumps are smoothed away.
+   */
+  private dampFilteredY(targetY: number): number {
+    const lambda = 14;
+    const deltaSeconds = Math.max(1 / 240, Math.min(this.lastFilterDeltaSeconds, 0.1));
+
+    this.filteredY += (targetY - this.filteredY) * (1 - Math.exp(-lambda * deltaSeconds));
+
+    return this.filteredY;
   }
 
   /** Teleports the player and resets transient movement state (used by respawn). */
@@ -285,6 +366,7 @@ export class PlayerSystem implements Disposable {
     this.collider.setTranslation(position);
     this.previousPosition = { ...position };
     this.currentPosition = { ...position };
+    this.filteredY = position.y;
     this.distanceSinceLastRead = 0;
   }
 

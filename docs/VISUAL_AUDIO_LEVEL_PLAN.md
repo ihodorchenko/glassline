@@ -173,7 +173,7 @@ identity (not the exact layout):
 | Vault | `vaultMinHeight 0.35` / `vaultMaxHeight 1.15` | obstacle 0.35 – 1.15 m |
 | Slide clearance | `slideHeight: 0.9` | duct 0.95 – 1.15 m |
 | Wall-run span | `wallRunMinSpeed 5`, `wallRunMaxDuration 1.5` | 6 – 10 m |
-| Step-up | `maxStepHeight: 0.3` | ≤ 0.3 m without jump |
+| Step-up | `maxStepHeight: 0.4` (autostep both ways) | ≤ 0.4 m without jump; ledges down are walked, not fallen |
 
 The first executor task is to verify these limits with a headless movement
 probe rather than trusting the table.

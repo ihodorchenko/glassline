@@ -105,7 +105,11 @@ export class ViewModel implements Disposable {
     const slide = movement.stance === "sliding" ? 1 : 0;
     const wallRun = movement.wallRunSide ? 1 : 0;
     const wallSign = movement.wallRunSide === "left" ? -1 : 1;
-    const landing = movement.landingIntensity;
+    // Match the camera's half-sine dip: zero on touchdown, peak mid-recovery.
+    const landingCurve =
+      movement.landingRemainingSeconds > 0
+        ? Math.sin(Math.PI * (1 - movement.landingIntensity))
+        : 0;
     const time = this.elapsedSeconds;
 
     this.bobPhase += deltaSeconds * (4.2 + speedRatio * 7.4 + air * 1.5);
@@ -124,8 +128,8 @@ export class ViewModel implements Disposable {
 
       arm.root.position.set(
         arm.basePosition.x + bobX * side + idleSway * side,
-        arm.basePosition.y + bobY + breathe - landing * 0.055 - lift * 0.35 + slide * 0.05,
-        arm.basePosition.z - swing - landing * 0.02,
+        arm.basePosition.y + bobY + breathe - landingCurve * 0.055 - lift * 0.35 + slide * 0.05,
+        arm.basePosition.z - swing - landingCurve * 0.02,
       );
       arm.root.rotation.set(
         arm.baseRotation.x - lift + Math.sin(this.bobPhase + phase) * running * 0.04,
@@ -137,7 +141,7 @@ export class ViewModel implements Disposable {
       arm.hand.rotation.z = side * (0.04 + wallRun * 0.12);
     }
 
-    this.root.position.y = -landing * 0.01;
+    this.root.position.y = -landingCurve * 0.01;
     this.light.intensity = 2.2 + Math.sin(time * 1.2) * 0.08;
   }
 

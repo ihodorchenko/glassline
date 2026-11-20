@@ -75,6 +75,9 @@ export class CameraSystem implements Disposable {
   private currentFov: number;
   private currentRoll = 0;
   private bobPhase = 0;
+  /** Sign of the landing roll, fixed at touchdown so it never flips mid-recovery. */
+  private landingRollSign = 1;
+  private lastLandingRemainingSeconds = 0;
   private disposed = false;
 
   constructor(options: CameraSystemOptions) {
@@ -174,16 +177,26 @@ export class CameraSystem implements Disposable {
     this.updateRoll(input.movement, deltaSeconds);
 
     const bobOffset = this.computeBobOffset(input.movement, deltaSeconds);
-    const impact = this.view.reducedMotion
-      ? 0
-      : input.movement.landingIntensity * clamp(this.view.motionIntensity, 0, 1);
-    const landingDip = impact * LANDING_DIP_METERS;
-    const landingLift = Math.sin(this.bobPhase * 3.7) * impact * 0.008;
-    const landingRoll = Math.sin(this.bobPhase * 4.5) * impact * 0.012;
+    const impactScale = this.view.reducedMotion ? 0 : clamp(this.view.motionIntensity, 0, 1);
+    // Deterministic single-bump dip driven only by landing progress — never by
+    // the (airborne-frozen) bob phase, so every landing looks identical instead
+    // of ringing up/down at a random phase. Half-sine: zero on touchdown, peak
+    // mid-recovery, zero again — no jolt at either end.
+    const landingProgress =
+      input.movement.landingRemainingSeconds > 0 && this.tuning.landingRecoverySeconds > 0
+        ? clamp(
+            1 - input.movement.landingRemainingSeconds / this.tuning.landingRecoverySeconds,
+            0,
+            1,
+          )
+        : 0;
+    const landingDip = impactScale * LANDING_DIP_METERS * Math.sin(Math.PI * landingProgress);
+    const landingRoll =
+      impactScale * this.computeLandingRoll(input.movement.landingRemainingSeconds);
 
     this.camera.position.set(
       input.playerPosition.x,
-      input.playerPosition.y + this.currentEyeHeightOffset + bobOffset - landingDip + landingLift,
+      input.playerPosition.y + this.currentEyeHeightOffset + bobOffset - landingDip,
       input.playerPosition.z,
     );
     this.camera.rotation.set(this.pitch, this.yaw, this.currentRoll + landingRoll);
@@ -228,6 +241,8 @@ export class CameraSystem implements Disposable {
     this.pitch = 0;
     this.currentRoll = 0;
     this.bobPhase = 0;
+    this.landingRollSign = 1;
+    this.lastLandingRemainingSeconds = 0;
     this.currentFov = this.view.baseFov;
     this.currentEyeHeightOffset = this.tuning.standingEyeHeight - this.tuning.capsuleHeight / 2;
   }
@@ -290,5 +305,28 @@ export class CameraSystem implements Disposable {
       BOB_AMPLITUDE_METERS * this.view.bobIntensity * this.view.motionIntensity * speedScale;
 
     return Math.sin(this.bobPhase) * amplitude;
+  }
+
+  /**
+   * Tiny deterministic roll wobble during landing: a half-sine over the recovery
+   * window, signed once at touchdown (from the bob swing direction) so the same
+   * landing always looks the same instead of ringing at a random phase.
+   */
+  private computeLandingRoll(landingRemainingSeconds: number): number {
+    const recovery = this.tuning.landingRecoverySeconds;
+
+    if (recovery <= 0 || landingRemainingSeconds <= 0) {
+      return 0;
+    }
+
+    if (this.lastLandingRemainingSeconds <= 0) {
+      this.landingRollSign = Math.sin(this.bobPhase) >= 0 ? 1 : -1;
+    }
+
+    this.lastLandingRemainingSeconds = landingRemainingSeconds;
+
+    const progress = clamp(1 - landingRemainingSeconds / recovery, 0, 1);
+
+    return this.landingRollSign * 0.012 * Math.sin(Math.PI * progress);
   }
 }

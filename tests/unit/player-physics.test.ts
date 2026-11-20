@@ -27,7 +27,9 @@ function input(overrides: Partial<MovementInputSample> = {}): MovementInputSampl
   };
 }
 
-async function createHarness(options: { withWall?: boolean } = {}): Promise<Harness> {
+async function createHarness(
+  options: { withWall?: boolean; withStairs?: boolean } = {},
+): Promise<Harness> {
   const physics = new PhysicsWorld({
     gravity: { x: 0, y: -9.81, z: 0 },
     timestepSeconds: FIXED_DT,
@@ -44,6 +46,19 @@ async function createHarness(options: { withWall?: boolean } = {}): Promise<Harn
     const wallBody = world.createRigidBody(RAPIER.RigidBodyDesc.fixed().setTranslation(0, 1.5, -3));
 
     world.createCollider(RAPIER.ColliderDesc.cuboid(2, 1.5, 0.2), wallBody);
+  }
+
+  if (options.withStairs) {
+    // A staircase descending toward -z: 6 steps of 0.25 m, each 0.7 m deep.
+    for (let index = 0; index < 6; index += 1) {
+      const top = 1.5 - index * 0.25;
+      const depth = 0.7;
+      const body = world.createRigidBody(
+        RAPIER.RigidBodyDesc.fixed().setTranslation(0, top / 2, -4 - index * depth),
+      );
+
+      world.createCollider(RAPIER.ColliderDesc.cuboid(3, top / 2, depth / 2), body);
+    }
   }
 
   const player = new PlayerSystem(physics, {
@@ -175,5 +190,78 @@ describe("PlayerSystem physics integration", () => {
 
     expect(harness.player.getPosition()).toEqual({ x: 0, y: 0.93, z: 0 });
     expect(harness.player.getState()).toBe("IDLE");
+  });
+
+  it("walks down a staircase without free-falling between steps", async () => {
+    const harness = await createHarness({ withStairs: true });
+
+    // Place the player on top of the first step (top surface at y = 1.5).
+    harness.player.teleportTo({ x: 0, y: 1.5 + 0.875, z: -2.5 });
+    step(harness, input(), 60);
+
+    expect(harness.player.getMovementSnapshot().grounded).toBe(true);
+
+    let maxFreeFallSteps = 0;
+    let currentFreeFallSteps = 0;
+    let maxStepDropMeters = 0;
+    let previousY = harness.player.getPosition().y;
+
+    // Walk forward (-z) across all six steps.
+    for (let index = 0; index < 420; index += 1) {
+      harness.player.fixedUpdate(input({ move: { x: 0, y: 1 } }), 0, FIXED_DT);
+      harness.physics.step();
+
+      const snapshot = harness.player.getMovementSnapshot();
+
+      if (!snapshot.grounded && snapshot.state !== "JUMPING") {
+        currentFreeFallSteps += 1;
+        maxFreeFallSteps = Math.max(maxFreeFallSteps, currentFreeFallSteps);
+      } else {
+        currentFreeFallSteps = 0;
+      }
+
+      const y = harness.player.getPosition().y;
+
+      maxStepDropMeters = Math.max(maxStepDropMeters, previousY - y);
+      previousY = y;
+    }
+
+    const finalPosition = harness.player.getPosition();
+
+    // The player must have descended most of the staircase height.
+    expect(finalPosition.y).toBeLessThan(1.0);
+    // Ground-stick keeps the character attached: no long free falls.
+    expect(maxFreeFallSteps).toBeLessThanOrEqual(3);
+    // No single frame drops more than one step height plus margin.
+    expect(maxStepDropMeters).toBeLessThan(0.3);
+  });
+
+  it("keeps the camera's vertical motion bounded while descending stairs", async () => {
+    const harness = await createHarness({ withStairs: true });
+
+    harness.player.teleportTo({ x: 0, y: 1.5 + 0.875, z: -2.5 });
+    step(harness, input(), 60);
+
+    // Warm the vertical filter up to the settled body height before measuring.
+    for (let index = 0; index < 30; index += 1) {
+      harness.player.getInterpolatedPosition(1);
+    }
+
+    let maxCameraJumpPerFrame = 0;
+    let previousCameraY = harness.player.getInterpolatedPosition(1).y;
+
+    for (let index = 0; index < 420; index += 1) {
+      harness.player.fixedUpdate(input({ move: { x: 0, y: 1 } }), 0, FIXED_DT);
+      harness.physics.step();
+
+      const cameraY = harness.player.getInterpolatedPosition(1).y;
+
+      maxCameraJumpPerFrame = Math.max(maxCameraJumpPerFrame, Math.abs(cameraY - previousCameraY));
+      previousCameraY = cameraY;
+    }
+
+    // With ground-stick the body itself never exceeds ~9 m/s descent within snap
+    // range (0.15 m/frame); the vertical filter must keep the view below that.
+    expect(maxCameraJumpPerFrame).toBeLessThan(0.18);
   });
 });

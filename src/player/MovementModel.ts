@@ -153,6 +153,13 @@ export class MovementModel {
   private jumpBufferSeconds = 0;
   private coyoteRemainingSeconds = 0;
   private sprintIntent = false;
+  private jumpCutApplied = false;
+  /** Airborne collision passes since the current jump was executed. */
+  private airborneStepsSinceJump = 0;
+  /** True only during the fixed step that executed the jump. */
+  private jumpExecutedThisStep = false;
+  /** True while the player is walking off ledges and should stick to the ground. */
+  private groundStickArmed = false;
 
   private slideElapsedSeconds = 0;
   private vault: ActiveVault | null = null;
@@ -192,6 +199,19 @@ export class MovementModel {
     return this.vault;
   }
 
+  /**
+   * True when the player just walked off a ledge (with grounded movement input,
+   * never right after a jump) and should keep sticking to the surface below.
+   */
+  wantsGroundSnap(): boolean {
+    return this.groundStickArmed;
+  }
+
+  /** Called by PlayerSystem when no surface exists within snap range below. */
+  disarmGroundSnap(): void {
+    this.groundStickArmed = false;
+  }
+
   /** Advances movement intent by one fixed timestep before collision. */
   step(
     input: MovementInputSample,
@@ -205,9 +225,33 @@ export class MovementModel {
     this.stepEvents = NO_EVENTS;
     this.grounded = environment.grounded;
 
+    // Walking off a ledge (never from a jump or wall kick) starts the coyote
+    // window; while it runs and the player keeps pushing forward, the body
+    // sticks to surfaces within snap range instead of entering micro free-falls
+    // between steps. Leaving the window — by jumping, kicking off a wall, or
+    // falling past the stick distance — turns the drop into a normal fall.
+    if (this.grounded) {
+      this.coyoteRemainingSeconds = 0;
+      this.groundStickArmed = false;
+    } else if (wasGrounded) {
+      this.coyoteRemainingSeconds = tuning.coyoteTimeSeconds;
+      this.groundStickArmed =
+        input.move.y > 0.1 &&
+        this.velocity.y <= 0 &&
+        this.state !== "JUMPING" &&
+        this.state !== "WALLRUN" &&
+        this.state !== "WALLJUMP" &&
+        this.wallJumpRemainingSeconds <= 0;
+    } else if (this.groundStickArmed) {
+      this.coyoteRemainingSeconds = Math.max(0, this.coyoteRemainingSeconds - deltaSeconds);
+
+      if (this.coyoteRemainingSeconds <= 0 || this.velocity.y < -tuning.groundStickSpeed) {
+        this.groundStickArmed = false;
+      }
+    }
+
     this.landingRemainingSeconds = Math.max(0, this.landingRemainingSeconds - deltaSeconds);
     this.jumpBufferSeconds = Math.max(0, this.jumpBufferSeconds - deltaSeconds);
-    this.updateCoyoteTime(wasGrounded, deltaSeconds);
 
     if (input.jumpPressed) {
       this.jumpBufferSeconds = tuning.jumpBufferSeconds;
@@ -284,6 +328,7 @@ export class MovementModel {
     this.applyVerticalMotion(input, deltaSeconds);
     this.updateSlideExit(input, deltaSeconds);
     this.updateState();
+    this.jumpExecutedThisStep = false;
   }
 
   /** Desired world translation for the current fixed step. */
@@ -326,6 +371,17 @@ export class MovementModel {
         landed: true,
         impactSpeed: Math.max(0, -verticalBefore),
       };
+    } else if (groundedAfter) {
+      this.groundStickArmed = false;
+    } else if (wasAirborne || this.groundStickArmed) {
+      // Still airborne inside the stick window: the descent must stay within
+      // one stick step of the surface, otherwise this is a real fall and the
+      // window closes.
+      const dropPerStep = this.tuning.groundStickSpeed * deltaSeconds;
+
+      if (-actualMovement.y > dropPerStep + 1e-4) {
+        this.groundStickArmed = false;
+      }
     }
 
     this.updateState();
@@ -380,16 +436,6 @@ export class MovementModel {
       landingRemainingSeconds: this.landingRemainingSeconds,
       landingIntensity,
     };
-  }
-
-  private updateCoyoteTime(wasGrounded: boolean, deltaSeconds: number): void {
-    if (this.grounded) {
-      this.coyoteRemainingSeconds = 0;
-    } else if (wasGrounded) {
-      this.coyoteRemainingSeconds = this.tuning.coyoteTimeSeconds;
-    } else {
-      this.coyoteRemainingSeconds = Math.max(0, this.coyoteRemainingSeconds - deltaSeconds);
-    }
   }
 
   private beginVault(input: MovementInputSample, environment: MovementEnvironment): boolean {
@@ -553,6 +599,7 @@ export class MovementModel {
     this.velocity.x = tangent.x * speed * 0.9 + normal.x * tuning.wallJumpOutwardSpeed;
     this.velocity.z = tangent.z * speed * 0.9 + normal.z * tuning.wallJumpOutwardSpeed;
     this.velocity.y = tuning.wallJumpUpSpeed;
+    this.groundStickArmed = false;
     this.wallRunSide = null;
     this.wallRunTangent = null;
     this.wallRunElapsedSeconds = 0;
@@ -589,7 +636,13 @@ export class MovementModel {
       this.endSlide();
     }
 
-    this.velocity.y = Math.sqrt(2 * tuning.gravity * tuning.jumpHeight);
+    const effectiveJumpHeight = tuning.jumpHeight + tuning.jumpTakeoffCompensationMeters;
+
+    this.velocity.y = Math.sqrt(2 * tuning.gravity * effectiveJumpHeight);
+    this.jumpCutApplied = false;
+    this.airborneStepsSinceJump = 0;
+    this.jumpExecutedThisStep = true;
+    this.groundStickArmed = false;
     this.grounded = false;
     this.coyoteRemainingSeconds = 0;
     this.jumpBufferSeconds = 0;
@@ -608,17 +661,42 @@ export class MovementModel {
       return;
     }
 
-    if (this.grounded) {
-      this.velocity.y = 0;
+    if (!this.grounded) {
+      // Airborne steps since the jump was executed. The press edge lives for
+      // one fixed step, and depending on sampling order its loss may be read
+      // either on the exec step or on the first airborne step — so releases
+      // are only trusted from the second airborne step onward.
+      if (!this.jumpExecutedThisStep) {
+        this.airborneStepsSinceJump += 1;
+      }
+
+      // Variable jump height: a trusted release while rising cuts the remaining
+      // rise once to `minJumpVelocityRatio` and applies heavier gravity until
+      // the apex. Holding jump keeps the full ballistic arc.
+      const jumpReleased = !input.jumpHeld && this.airborneStepsSinceJump >= 2;
+
+      const rising = this.velocity.y > 0;
+      const gravityScale = jumpReleased && rising ? tuning.jumpReleaseGravityMultiplier : 1;
+
+      this.velocity.y -= tuning.gravity * gravityScale * deltaSeconds;
+      this.velocity.y = Math.max(this.velocity.y, -tuning.maxFallSpeed);
+
+      if (jumpReleased && this.velocity.y > 0 && this.state === "JUMPING" && !this.jumpCutApplied) {
+        this.velocity.y *= tuning.minJumpVelocityRatio;
+        this.jumpCutApplied = true;
+      }
+
+      // Ground-stick: just walked off a ledge within snap range — clamp the
+      // descent to a constant stick speed so stairs and ledges are ridden down
+      // smoothly instead of turning into micro free-falls.
+      if (this.wantsGroundSnap()) {
+        this.velocity.y = Math.max(this.velocity.y, -tuning.groundStickSpeed);
+      }
 
       return;
     }
 
-    const gravityScale =
-      !input.jumpHeld && this.velocity.y > 0 ? tuning.jumpReleaseGravityMultiplier : 1;
-
-    this.velocity.y -= tuning.gravity * gravityScale * deltaSeconds;
-    this.velocity.y = Math.max(this.velocity.y, -tuning.maxFallSpeed);
+    this.velocity.y = 0;
   }
 
   private resolveTargetVelocity(

@@ -215,6 +215,99 @@ describe("MovementModel jumping", () => {
     );
   });
 
+  it("caps the rise speed at minJumpVelocityRatio when jump is released after the grace window", () => {
+    const model = new MovementModel(DEFAULT_MOVEMENT_TUNING);
+
+    model.step(input({ jumpPressed: true, jumpHeld: true }), FORWARD, environment(true), FIXED_DT);
+
+    const fullImpulse = Math.sqrt(
+      2 * DEFAULT_MOVEMENT_TUNING.gravity * DEFAULT_MOVEMENT_TUNING.jumpHeight,
+    );
+
+    // The grace window ignores held=false on the first airborne step; from the
+    // second one on, the release cuts the rise once.
+    let sawCut = false;
+
+    for (let step = 0; step < 6; step += 1) {
+      const before = model.getVelocity().y;
+
+      model.step(input({ jumpHeld: false }), FORWARD, environment(false), FIXED_DT);
+
+      if (model.getVelocity().y < before * DEFAULT_MOVEMENT_TUNING.minJumpVelocityRatio) {
+        sawCut = true;
+      }
+    }
+
+    expect(sawCut).toBe(true);
+    expect(model.getSnapshot().verticalSpeed).toBeLessThan(fullImpulse * 0.75);
+  });
+
+  it("applies the release grace window before trusting held=false", () => {
+    const tapped = new MovementModel(DEFAULT_MOVEMENT_TUNING);
+    const held = new MovementModel(DEFAULT_MOVEMENT_TUNING);
+
+    for (const model of [tapped, held]) {
+      model.step(
+        input({ jumpPressed: true, jumpHeld: true }),
+        FORWARD,
+        environment(true),
+        FIXED_DT,
+      );
+    }
+
+    // Press edge only. The first airborne step must not be cut yet — the edge
+    // may simply have expired. From the second airborne step on the tap is a
+    // real release and its apex stays clearly below the full jump.
+    let tappedApex = 0;
+    let heldApex = 0;
+    let tappedY = 0;
+    let heldY = 0;
+
+    for (let step = 0; step < 40; step += 1) {
+      tapped.step(input({ jumpHeld: false }), FORWARD, environment(false), FIXED_DT);
+      held.step(input({ jumpHeld: true }), FORWARD, environment(false), FIXED_DT);
+      tappedY += tapped.getVelocity().y * FIXED_DT;
+      heldY += held.getVelocity().y * FIXED_DT;
+      tappedApex = Math.max(tappedApex, tappedY);
+      heldApex = Math.max(heldApex, heldY);
+    }
+
+    expect(heldApex).toBeGreaterThan(0.9);
+    expect(tappedApex).toBeLessThan(0.5);
+  });
+
+  it("keeps the full jump when held past the apex", () => {
+    const tapped = new MovementModel(DEFAULT_MOVEMENT_TUNING);
+    const held = new MovementModel(DEFAULT_MOVEMENT_TUNING);
+
+    for (const model of [tapped, held]) {
+      model.step(
+        input({ jumpPressed: true, jumpHeld: true }),
+        FORWARD,
+        environment(true),
+        FIXED_DT,
+      );
+    }
+
+    let tappedApex = 0;
+    let heldApex = 0;
+    let tappedY = 0;
+    let heldY = 0;
+
+    for (let step = 0; step < 90; step += 1) {
+      // Release after the grace window: a real short tap.
+      tapped.step(input({ jumpHeld: step < 2 }), FORWARD, environment(false), FIXED_DT);
+      held.step(input({ jumpHeld: true }), FORWARD, environment(false), FIXED_DT);
+      tappedY += tapped.getVelocity().y * FIXED_DT;
+      heldY += held.getVelocity().y * FIXED_DT;
+      tappedApex = Math.max(tappedApex, tappedY);
+      heldApex = Math.max(heldApex, heldY);
+    }
+
+    expect(heldApex).toBeGreaterThan(tappedApex + 0.25);
+    expect(heldApex).toBeGreaterThan(0.9);
+  });
+
   it("clamps the falling speed", () => {
     const model = new MovementModel(DEFAULT_MOVEMENT_TUNING);
 
@@ -263,6 +356,49 @@ describe("MovementModel collision reconciliation and landing", () => {
     expect(snapshot.state).toBe("LANDING");
     expect(snapshot.grounded).toBe(true);
     expect(snapshot.landingIntensity).toBe(1);
+  });
+
+  it("sticks to the ground within snap range when walking off a ledge", () => {
+    const model = new MovementModel(DEFAULT_MOVEMENT_TUNING);
+
+    // Grounded, running forward.
+    simulate(model, runForward(), 30, true);
+
+    // Walk off the edge: not grounded anymore, but the collision pass reports
+    // only a tiny downward movement — we are just below/at surface level.
+    model.step(runForward(), FORWARD, environment(false), FIXED_DT);
+    model.applyCollisionResult({ x: 0, y: -0.01, z: -0.1 }, FIXED_DT, false);
+
+    expect(model.wantsGroundSnap()).toBe(true);
+
+    // The descent is clamped to the stick speed, not gravity.
+    model.step(runForward(), FORWARD, environment(false), FIXED_DT);
+
+    expect(-model.getVelocity().y).toBeLessThanOrEqual(
+      DEFAULT_MOVEMENT_TUNING.groundStickSpeed + 1e-6,
+    );
+
+    // Once past the snap window — the body falls faster than the stick rate —
+    // normal falling resumes.
+    for (let step = 0; step < 20; step += 1) {
+      model.step(runForward(), FORWARD, environment(false), FIXED_DT);
+      model.applyCollisionResult({ x: 0, y: -0.3, z: -0.1 }, FIXED_DT, false);
+    }
+
+    expect(model.wantsGroundSnap()).toBe(false);
+    expect(-model.getVelocity().y).toBeGreaterThan(DEFAULT_MOVEMENT_TUNING.groundStickSpeed);
+  });
+
+  it("does not engage ground-stick during an intentional jump", () => {
+    const model = new MovementModel(DEFAULT_MOVEMENT_TUNING);
+
+    model.step(input({ jumpPressed: true, jumpHeld: true }), FORWARD, environment(true), FIXED_DT);
+    model.applyCollisionResult({ x: 0, y: 0.05, z: -0.1 }, FIXED_DT, false);
+
+    model.step(input({ jumpHeld: true }), FORWARD, environment(false), FIXED_DT);
+
+    expect(model.getState()).toBe("JUMPING");
+    expect(model.wantsGroundSnap()).toBe(false);
   });
 });
 

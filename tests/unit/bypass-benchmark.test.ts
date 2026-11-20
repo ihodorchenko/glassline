@@ -104,7 +104,9 @@ describe("catwalk line timing", () => {
       if (p.x < 25) break;
     }
 
-    expect(frame).toBeGreaterThan(300);
+    // Tuned movement (variable jump, takeoff compensation) shortens the line:
+    // the direct route now runs ~280 frames instead of the original ~330.
+    expect(frame).toBeGreaterThan(260);
     expect(frame).toBeLessThan(450);
   });
 

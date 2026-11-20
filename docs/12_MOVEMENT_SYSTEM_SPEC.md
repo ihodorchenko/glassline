@@ -245,7 +245,7 @@ Initial tuning values:
 | Standing eye height | 1.60 m |
 | Crouching eye height | 1.05 m |
 | Ground detection distance | 0.12 m |
-| Maximum step height | 0.30 m |
+| Maximum step height | 0.40 m (autostep enabled in both directions) |
 
 These values are starting points, not immutable requirements.
 
@@ -290,7 +290,7 @@ These values should be tested and adjusted during gameplay tuning.
 | Minimum jump height | 0.45 m |
 | Maximum falling speed | 35.0 m/s |
 | Jump input buffer | 0.12 s |
-| Coyote time | 0.10 s |
+| Coyote time | 0.14 s |
 
 Jump height should be calculated from gravity and desired height rather than implemented as an arbitrary impulse.
 
@@ -728,7 +728,7 @@ The player should be allowed to jump shortly after leaving a platform.
 Initial coyote time:
 
 ```text
-coyoteTime = 0.10 seconds
+coyoteTime = 0.14 seconds
 ```
 
 Coyote time should not be refreshed by arbitrary wall contact or invalid collision.
