@@ -52,17 +52,18 @@ describe("InputActionResolver", () => {
     const resolved = resolve(
       rawInput({
         context: "main-menu",
-        heldKeys: new Set(["KeyW", "Space", "ShiftLeft"]),
+        heldKeys: new Set(["KeyW", "Space", "ShiftLeft", "KeyX"]),
       }),
     );
 
     expect(resolved.move).toEqual({ x: 0, y: 0 });
     expect(resolved.actionValues.has("Jump")).toBe(false);
+    expect(resolved.actionValues.has("Crouch")).toBe(false);
     expect(resolved.actionValues.has("Sprint")).toBe(false);
   });
 
   it("maps Sprint, Interact and Restart keys", () => {
-    const resolved = resolve(rawInput({ heldKeys: new Set(["ShiftLeft", "KeyE", "KeyR"]) }));
+    const resolved = resolve(rawInput({ heldKeys: new Set(["KeyX", "KeyE", "KeyR"]) }));
 
     expect(resolved.actionValues.get("Sprint")).toBe(1);
     expect(resolved.actionValues.get("Interact")).toBe(1);
@@ -118,12 +119,51 @@ describe("InputActionResolver", () => {
     expect(resolved.navigate.y).toBe(-1);
   });
 
-  it("binds crouch/slide to C instead of Ctrl", () => {
-    expect(DEFAULT_ACTION_BINDINGS.keyboard.crouch).toEqual(["KeyC"]);
-    expect(resolve(rawInput({ heldKeys: new Set(["KeyC"]) })).actionValues.get("Crouch")).toBe(1);
-    expect(
-      resolve(rawInput({ heldKeys: new Set(["ControlLeft"]) })).actionValues.has("Crouch"),
-    ).toBe(false);
+  it("binds crouch/slide to Shift and sprint to X", () => {
+    expect(DEFAULT_ACTION_BINDINGS.keyboard.crouch).toEqual(["ShiftLeft", "ShiftRight"]);
+    expect(DEFAULT_ACTION_BINDINGS.keyboard.sprint).toEqual(["KeyX"]);
+
+    for (const code of ["ShiftLeft", "ShiftRight"]) {
+      const resolved = resolve(rawInput({ heldKeys: new Set([code]) }));
+
+      expect(resolved.actionValues.get("Crouch")).toBe(1);
+      expect(resolved.actionValues.has("Sprint")).toBe(false);
+    }
+
+    const sprint = resolve(rawInput({ heldKeys: new Set(["KeyX"]) }));
+
+    expect(sprint.actionValues.get("Sprint")).toBe(1);
+    expect(sprint.actionValues.has("Crouch")).toBe(false);
+  });
+
+  it("no longer maps C or Ctrl to crouch/sprint", () => {
+    for (const code of ["KeyC", "ControlLeft"]) {
+      const resolved = resolve(rawInput({ heldKeys: new Set([code]) }));
+
+      expect(resolved.actionValues.has("Crouch")).toBe(false);
+      expect(resolved.actionValues.has("Sprint")).toBe(false);
+    }
+  });
+
+  it("has no duplicate keyboard bindings beyond the intended Space/Escape overlaps", () => {
+    const groupsByKey = new Map<string, string[]>();
+
+    for (const [group, codes] of Object.entries(DEFAULT_ACTION_BINDINGS.keyboard)) {
+      for (const code of codes) {
+        groupsByKey.set(code, [...(groupsByKey.get(code) ?? []), group]);
+      }
+    }
+
+    const duplicates = [...groupsByKey.entries()]
+      .filter(([, groups]) => groups.length > 1)
+      .sort(([left], [right]) => left.localeCompare(right));
+
+    expect(Object.fromEntries(duplicates)).toEqual({
+      Escape: ["pause", "cancel"],
+      Space: ["jump", "confirm"],
+    });
+    expect(groupsByKey.get("KeyX")).toEqual(["sprint"]);
+    expect(groupsByKey.has("KeyC")).toBe(false);
   });
 
   it("maps gamepad A to Confirm in menus", () => {

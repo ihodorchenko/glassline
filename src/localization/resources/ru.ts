@@ -202,7 +202,7 @@ export const RUSSIAN_RESOURCES: TranslationResources = {
   "tutorial.steps.jump.title": "Прыжок",
   "tutorial.steps.jump.hint": "Нажмите пробел, чтобы прыгнуть.",
   "tutorial.steps.slide.title": "Подкат",
-  "tutorial.steps.slide.hint": "Нажмите C на бегу, чтобы подкатиться.",
+  "tutorial.steps.slide.hint": "Удерживайте Shift во время бега, чтобы скользить.",
   "tutorial.steps.vault.title": "Вольт",
   "tutorial.steps.vault.hint": "Нажмите E рядом с невысоким препятствием.",
   "tutorial.steps.wall_run.title": "Бег по стене",
