@@ -649,3 +649,30 @@ false), speed 6.0→**8.5 m/s**, state SPRINTING, FOV 75→81.7; release → neu
 change).
 
 Nothing merges to `main`.
+
+## D-25 — Post-G5.1 cosmetics closed; guided acceptance (2026-11-20)
+
+**Trigger.** Owner asked for the remaining cosmetic follow-ups from the register;
+the art director issued a closed four-item list (no accepted-documented metrics
+reopened, no look changes).
+
+**Delivered and accepted (guided A/B, no blind needed — additive changes):**
+1. skybridge deck-shadow props on the visible shoulders (+ contact decals):
+   shadow coverage **7.27 % → 10.15 %** (target 10–12 %); z adapted to the
+   visible deck (−51.6/−53.0/−54.4) because the literal −44…−48 lies behind the
+   fixed frustum — explicitly accepted; sun/azimuth/GTAO untouched.
+2. BG facade-grid parity: first-gap central slab (Δluma 0.234), finish right ring
+   tower side-face grid (Δluma 0.250), `glass-far` windows to dark-metal; service
+   BG tower verified untouched.
+3. Language value chip (#F1F1ED/#1A1A1A + red accent): contrast **15.37:1** at
+   1280×720 and 1440×900, normal and large-text, no wrap.
+4. Boot tagline localized RU/EN (brand stays EN); rephrased hint renders.
+
+**Verification:** determinism **6/6 byte-identical**, shifted **50/78** identical
+to post-G5 (0 regressions >1 band), guardrails unchanged, +84 boxes / +6 draw
+calls with no perf change, **338 tests**, validate green. Accepted register is
+closed completely; standing residuals remain documented (accepted LC/tc,
+skybridge split report-only trigger, service white-point WATCH, wallrun 1 % low
+re-measure, headless caveat, Firefox unverified, W4 listening open). Optional
+owner nit: boot footer «PROLOGUE / ROOFTOP RUN» stays EN during RU boot.
+Nothing merges to `main`.

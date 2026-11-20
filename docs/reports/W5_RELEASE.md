@@ -192,3 +192,32 @@ from stable content ids, resolution happens at the UI boundaries):
 
 Also fixed a pre-existing results nit found during the checks: the split list no
 longer shows double numbering (`1.` from the `<ol>` plus a manual prefix).
+
+### 7.4 Post-G5.1 cosmetic follow-up (accepted, no blind)
+
+The AD-6 closed list of remaining cosmetic follow-ups was completed and
+**accepted in a guided A/B** (`postg5-final` ↔ `postg51-final`); no blind pass
+was requested because the changes are additive and do not shift the image
+language.
+
+| Item | Result |
+|---|---|
+| skybridge deck shadow coverage (was 7.3 %, low end of the 8–15 % window) | 3 shadow props (vents ×2 + pipe-post) with contact decals on the visible deck shoulders, x ±1.35 — shadow mask **7.27 % → 10.15 %** (target 10–12 %); z placed at the visible shoulders (−51.6/−53.0/−54.4) because the literal −44…−48 sits behind the fixed frustum (AD accepted); sun/azimuth/GTAO untouched |
+| BG facade-grid parity (first-gap central slab, finish right slab) | central slab bands 0.34→0.9 m with white windows/mullions (Δluma **0.234**); finish right ring tower got a side-face (−x) authored grid (spandrel every 3 m, 1.5 m pitch, Δluma **0.250**); `glass-far` towers now use dark-metal windows instead of pale blue; service BG tower verified untouched (Δluma 0.681) |
+| language value contrast at narrow widths | paper/ink chip (#F1F1ED / #1A1A1A + red accent) for the language value: WCAG contrast **15.37:1** at 1280×720 and 1440×900, normal and large-text, no wrap/clip |
+| boot tagline + copy | boot tagline localized: RU «ПАРКУР ОТ ПЕРВОГО ЛИЦА» / EN «FIRST-PERSON PARKOUR» (brand «GLASSLINE / RUNNER NETWORK» stays EN by design); the rephrased settings hint renders |
+
+Final numbers: re-captured `captures/postg51-final` — determinism **6/6
+byte-identical**, shifted **50/78** (identical to post-G5, no band regressions),
+guardrails unchanged (plateau 0, seam/sky-mask/red same), +84 decoration boxes
+with no perf change, **338 tests**, `npm run validate` green. Evidence refreshed
+in [`docs/evidence/w5/`](../evidence/w5/) and
+[`docs/evidence/i18n-content/`](../evidence/i18n-content/) (`postg51-*`); metrics
+in [`postg51-metrics.md`](postg51-metrics.md).
+
+**Accepted register is closed completely**; standing residuals remain as
+documented (accepted-documented LC/tc, skybridge split report-only with trigger,
+service white-point WATCH-verified, wallrun 1 % low re-measure, headless caveat,
+Firefox unverified, **W4 human listening open**). Optional non-blocking nit left
+to the owner: the boot footer «PROLOGUE / ROOFTOP RUN» stays EN during a RU boot
+(reads as a technical codename next to BUILD 0.1.0).

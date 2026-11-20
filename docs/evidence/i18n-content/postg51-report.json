@@ -1,0 +1,586 @@
+{
+  "startedAt": "2026-11-20T15:30:12.495Z",
+  "baseUrl": "http://127.0.0.1:5173/",
+  "checks": [
+    {
+      "name": "ru boot navigator.language",
+      "passed": true,
+      "actual": "ru-RU",
+      "expected": "ru-RU"
+    },
+    {
+      "name": "ru boot tagline text",
+      "passed": true,
+      "actual": "Паркур от первого лица",
+      "expected": "Паркур от первого лица"
+    },
+    {
+      "name": "ru boot tagline rendered uppercase",
+      "passed": true,
+      "contains": "ПАРКУР ОТ ПЕРВОГО ЛИЦА"
+    },
+    {
+      "name": "ru boot brand stays English",
+      "passed": true,
+      "actual": "Glassline / Runner Network",
+      "expected": "Glassline / Runner Network"
+    },
+    {
+      "name": "ru boot brand rendered uppercase",
+      "passed": true,
+      "contains": "GLASSLINE / RUNNER NETWORK"
+    },
+    {
+      "name": "chip class applied (1280)",
+      "passed": true,
+      "actual": true,
+      "expected": true
+    },
+    {
+      "name": "chip text is Русский (1280)",
+      "passed": true,
+      "actual": "Русский",
+      "expected": "Русский"
+    },
+    {
+      "name": "chip single line (1280)",
+      "passed": true,
+      "actual": 1,
+      "expected": 1
+    },
+    {
+      "name": "chip not clipped (1280)",
+      "passed": true,
+      "actual": false,
+      "expected": false
+    },
+    {
+      "name": "chip inside viewport (1280)",
+      "passed": true,
+      "actual": true,
+      "expected": true
+    },
+    {
+      "name": "chip uses nowrap (1280)",
+      "passed": true,
+      "actual": "nowrap",
+      "expected": "nowrap"
+    },
+    {
+      "name": "seven tabs still render (1280)",
+      "passed": true,
+      "actual": 7,
+      "expected": 7
+    },
+    {
+      "name": "RU hidden-unsupported copy renders (1280)",
+      "passed": true,
+      "actual": true,
+      "expected": true
+    },
+    {
+      "name": "DOM chip contrast >= 4.5 (1280)",
+      "passed": true,
+      "actual": 15.369809831734159,
+      "minimum": 4.5
+    },
+    {
+      "name": "screenshot chip contrast >= 4.5 (1280)",
+      "passed": true,
+      "actual": 15.369809831734159,
+      "minimum": 4.5
+    },
+    {
+      "name": "screenshot chip background is solid (1280)",
+      "passed": true,
+      "actual": 0.5227272727272727,
+      "minimum": 0.5
+    },
+    {
+      "name": "screenshot chip background is #F1F1ED (1280)",
+      "passed": true,
+      "actual": "241,241,237",
+      "expected": "241,241,237"
+    },
+    {
+      "name": "screenshot chip ink matches #1A1A1A (1280)",
+      "passed": true,
+      "actual": "26,26,26",
+      "expected": "26,26,26"
+    },
+    {
+      "name": "chip class applied (1280 large)",
+      "passed": true,
+      "actual": true,
+      "expected": true
+    },
+    {
+      "name": "chip text is Русский (1280 large)",
+      "passed": true,
+      "actual": "Русский",
+      "expected": "Русский"
+    },
+    {
+      "name": "chip single line (1280 large)",
+      "passed": true,
+      "actual": 1,
+      "expected": 1
+    },
+    {
+      "name": "chip not clipped (1280 large)",
+      "passed": true,
+      "actual": false,
+      "expected": false
+    },
+    {
+      "name": "chip inside viewport (1280 large)",
+      "passed": true,
+      "actual": true,
+      "expected": true
+    },
+    {
+      "name": "chip uses nowrap (1280 large)",
+      "passed": true,
+      "actual": "nowrap",
+      "expected": "nowrap"
+    },
+    {
+      "name": "seven tabs still render (1280 large)",
+      "passed": true,
+      "actual": 7,
+      "expected": 7
+    },
+    {
+      "name": "RU hidden-unsupported copy renders (1280 large)",
+      "passed": true,
+      "actual": true,
+      "expected": true
+    },
+    {
+      "name": "DOM chip contrast >= 4.5 (1280 large)",
+      "passed": true,
+      "actual": 15.369809831734159,
+      "minimum": 4.5
+    },
+    {
+      "name": "screenshot chip contrast >= 4.5 (1280 large)",
+      "passed": true,
+      "actual": 15.369809831734159,
+      "minimum": 4.5
+    },
+    {
+      "name": "screenshot chip background is solid (1280 large)",
+      "passed": true,
+      "actual": 0.5227272727272727,
+      "minimum": 0.5
+    },
+    {
+      "name": "screenshot chip background is #F1F1ED (1280 large)",
+      "passed": true,
+      "actual": "241,241,237",
+      "expected": "241,241,237"
+    },
+    {
+      "name": "screenshot chip ink matches #1A1A1A (1280 large)",
+      "passed": true,
+      "actual": "26,26,26",
+      "expected": "26,26,26"
+    },
+    {
+      "name": "chip class applied (1440 large)",
+      "passed": true,
+      "actual": true,
+      "expected": true
+    },
+    {
+      "name": "chip text is Русский (1440 large)",
+      "passed": true,
+      "actual": "Русский",
+      "expected": "Русский"
+    },
+    {
+      "name": "chip single line (1440 large)",
+      "passed": true,
+      "actual": 1,
+      "expected": 1
+    },
+    {
+      "name": "chip not clipped (1440 large)",
+      "passed": true,
+      "actual": false,
+      "expected": false
+    },
+    {
+      "name": "chip inside viewport (1440 large)",
+      "passed": true,
+      "actual": true,
+      "expected": true
+    },
+    {
+      "name": "chip uses nowrap (1440 large)",
+      "passed": true,
+      "actual": "nowrap",
+      "expected": "nowrap"
+    },
+    {
+      "name": "seven tabs still render (1440 large)",
+      "passed": true,
+      "actual": 7,
+      "expected": 7
+    },
+    {
+      "name": "RU hidden-unsupported copy renders (1440 large)",
+      "passed": true,
+      "actual": true,
+      "expected": true
+    },
+    {
+      "name": "DOM chip contrast >= 4.5 (1440 large)",
+      "passed": true,
+      "actual": 15.369809831734159,
+      "minimum": 4.5
+    },
+    {
+      "name": "screenshot chip contrast >= 4.5 (1440 large)",
+      "passed": true,
+      "actual": 15.369809831734159,
+      "minimum": 4.5
+    },
+    {
+      "name": "screenshot chip background is solid (1440 large)",
+      "passed": true,
+      "actual": 0.5314685314685315,
+      "minimum": 0.5
+    },
+    {
+      "name": "screenshot chip background is #F1F1ED (1440 large)",
+      "passed": true,
+      "actual": "241,241,237",
+      "expected": "241,241,237"
+    },
+    {
+      "name": "screenshot chip ink matches #1A1A1A (1440 large)",
+      "passed": true,
+      "actual": "26,26,26",
+      "expected": "26,26,26"
+    },
+    {
+      "name": "chip class applied (1440)",
+      "passed": true,
+      "actual": true,
+      "expected": true
+    },
+    {
+      "name": "chip text is Русский (1440)",
+      "passed": true,
+      "actual": "Русский",
+      "expected": "Русский"
+    },
+    {
+      "name": "chip single line (1440)",
+      "passed": true,
+      "actual": 1,
+      "expected": 1
+    },
+    {
+      "name": "chip not clipped (1440)",
+      "passed": true,
+      "actual": false,
+      "expected": false
+    },
+    {
+      "name": "chip inside viewport (1440)",
+      "passed": true,
+      "actual": true,
+      "expected": true
+    },
+    {
+      "name": "chip uses nowrap (1440)",
+      "passed": true,
+      "actual": "nowrap",
+      "expected": "nowrap"
+    },
+    {
+      "name": "seven tabs still render (1440)",
+      "passed": true,
+      "actual": 7,
+      "expected": 7
+    },
+    {
+      "name": "RU hidden-unsupported copy renders (1440)",
+      "passed": true,
+      "actual": true,
+      "expected": true
+    },
+    {
+      "name": "DOM chip contrast >= 4.5 (1440)",
+      "passed": true,
+      "actual": 15.369809831734159,
+      "minimum": 4.5
+    },
+    {
+      "name": "screenshot chip contrast >= 4.5 (1440)",
+      "passed": true,
+      "actual": 15.369809831734159,
+      "minimum": 4.5
+    },
+    {
+      "name": "screenshot chip background is solid (1440)",
+      "passed": true,
+      "actual": 0.5314685314685315,
+      "minimum": 0.5
+    },
+    {
+      "name": "screenshot chip background is #F1F1ED (1440)",
+      "passed": true,
+      "actual": "241,241,237",
+      "expected": "241,241,237"
+    },
+    {
+      "name": "screenshot chip ink matches #1A1A1A (1440)",
+      "passed": true,
+      "actual": "26,26,26",
+      "expected": "26,26,26"
+    },
+    {
+      "name": "en boot navigator.language",
+      "passed": true,
+      "actual": "en-US",
+      "expected": "en-US"
+    },
+    {
+      "name": "en boot tagline text",
+      "passed": true,
+      "actual": "First-person parkour",
+      "expected": "First-person parkour"
+    },
+    {
+      "name": "en boot tagline rendered uppercase",
+      "passed": true,
+      "contains": "FIRST-PERSON PARKOUR"
+    },
+    {
+      "name": "en boot brand stays English",
+      "passed": true,
+      "actual": "Glassline / Runner Network",
+      "expected": "Glassline / Runner Network"
+    },
+    {
+      "name": "clean console (no errors)",
+      "passed": true,
+      "actual": 0,
+      "expected": 0
+    },
+    {
+      "name": "clean page (no uncaught errors)",
+      "passed": true,
+      "actual": 0,
+      "expected": 0
+    }
+  ],
+  "contexts": {
+    "bootRu": {
+      "taglineText": "Паркур от первого лица",
+      "taglineRendered": "ПАРКУР ОТ ПЕРВОГО ЛИЦА",
+      "taglineTransform": "uppercase",
+      "brandText": "Glassline / Runner Network",
+      "brandRendered": "GLASSLINE / RUNNER NETWORK",
+      "stage": "Готово",
+      "navigatorLanguage": "ru-RU"
+    },
+    "bootEn": {
+      "taglineText": "First-person parkour",
+      "taglineRendered": "FIRST-PERSON PARKOUR",
+      "taglineTransform": "uppercase",
+      "brandText": "Glassline / Runner Network",
+      "brandRendered": "GLASSLINE / RUNNER NETWORK",
+      "stage": "READY",
+      "navigatorLanguage": "en-US"
+    }
+  },
+  "measurements": [
+    {
+      "width": 1280,
+      "height": 720,
+      "largeText": false,
+      "screenshot": "captures/i18n-content/postg51-settings-ru-1280-normal.png",
+      "documentLang": "ru",
+      "chip": {
+        "text": "Русский",
+        "hasChipClass": true,
+        "lines": 1,
+        "insideViewport": true,
+        "horizontalOverflow": false,
+        "scrollWidth": 76,
+        "clientWidth": 76,
+        "color": "rgb(26, 26, 26)",
+        "backgroundColor": "rgb(241, 241, 237)",
+        "whiteSpace": "nowrap",
+        "borderLeftColor": "rgb(213, 46, 54)",
+        "width": 78,
+        "height": 24.578125
+      },
+      "row": {
+        "lines": 4,
+        "insideViewport": true
+      },
+      "domContrast": 15.369809831734159,
+      "screenshotContrast": 15.369809831734159,
+      "screenshotBackground": {
+        "r": 241,
+        "g": 241,
+        "b": 237
+      },
+      "screenshotBackgroundShare": 0.5227272727272727,
+      "screenshotText": {
+        "r": 26,
+        "g": 26,
+        "b": 26
+      },
+      "hiddenUnsupportedRendered": true,
+      "tabCount": 7
+    },
+    {
+      "width": 1280,
+      "height": 720,
+      "largeText": true,
+      "screenshot": "captures/i18n-content/postg51-settings-ru-1280-large.png",
+      "documentLang": "ru",
+      "chip": {
+        "text": "Русский",
+        "hasChipClass": true,
+        "lines": 1,
+        "insideViewport": true,
+        "horizontalOverflow": false,
+        "scrollWidth": 76,
+        "clientWidth": 76,
+        "color": "rgb(26, 26, 26)",
+        "backgroundColor": "rgb(241, 241, 237)",
+        "whiteSpace": "nowrap",
+        "borderLeftColor": "rgb(213, 46, 54)",
+        "width": 78,
+        "height": 24.578125
+      },
+      "row": {
+        "lines": 4,
+        "insideViewport": true
+      },
+      "domContrast": 15.369809831734159,
+      "screenshotContrast": 15.369809831734159,
+      "screenshotBackground": {
+        "r": 241,
+        "g": 241,
+        "b": 237
+      },
+      "screenshotBackgroundShare": 0.5227272727272727,
+      "screenshotText": {
+        "r": 26,
+        "g": 26,
+        "b": 26
+      },
+      "hiddenUnsupportedRendered": true,
+      "tabCount": 7
+    },
+    {
+      "width": 1440,
+      "height": 900,
+      "largeText": true,
+      "screenshot": "captures/i18n-content/postg51-settings-ru-1440-large.png",
+      "documentLang": "ru",
+      "chip": {
+        "text": "Русский",
+        "hasChipClass": true,
+        "lines": 1,
+        "insideViewport": true,
+        "horizontalOverflow": false,
+        "scrollWidth": 76,
+        "clientWidth": 76,
+        "color": "rgb(26, 26, 26)",
+        "backgroundColor": "rgb(241, 241, 237)",
+        "whiteSpace": "nowrap",
+        "borderLeftColor": "rgb(213, 46, 54)",
+        "width": 78,
+        "height": 24.578125
+      },
+      "row": {
+        "lines": 4,
+        "insideViewport": true
+      },
+      "domContrast": 15.369809831734159,
+      "screenshotContrast": 15.369809831734159,
+      "screenshotBackground": {
+        "r": 241,
+        "g": 241,
+        "b": 237
+      },
+      "screenshotBackgroundShare": 0.5314685314685315,
+      "screenshotText": {
+        "r": 26,
+        "g": 26,
+        "b": 26
+      },
+      "hiddenUnsupportedRendered": true,
+      "tabCount": 7
+    },
+    {
+      "width": 1440,
+      "height": 900,
+      "largeText": false,
+      "screenshot": "captures/i18n-content/postg51-settings-ru-1440-normal.png",
+      "documentLang": "ru",
+      "chip": {
+        "text": "Русский",
+        "hasChipClass": true,
+        "lines": 1,
+        "insideViewport": true,
+        "horizontalOverflow": false,
+        "scrollWidth": 76,
+        "clientWidth": 76,
+        "color": "rgb(26, 26, 26)",
+        "backgroundColor": "rgb(241, 241, 237)",
+        "whiteSpace": "nowrap",
+        "borderLeftColor": "rgb(213, 46, 54)",
+        "width": 78,
+        "height": 24.578125
+      },
+      "row": {
+        "lines": 4,
+        "insideViewport": true
+      },
+      "domContrast": 15.369809831734159,
+      "screenshotContrast": 15.369809831734159,
+      "screenshotBackground": {
+        "r": 241,
+        "g": 241,
+        "b": 237
+      },
+      "screenshotBackgroundShare": 0.5314685314685315,
+      "screenshotText": {
+        "r": 26,
+        "g": 26,
+        "b": 26
+      },
+      "hiddenUnsupportedRendered": true,
+      "tabCount": 7
+    }
+  ],
+  "screenshots": [
+    "captures/i18n-content/postg51-boot-ru.png",
+    "captures/i18n-content/postg51-settings-ru-1280-normal.png",
+    "captures/i18n-content/postg51-settings-ru-1280-large.png",
+    "captures/i18n-content/postg51-settings-ru-1440-large.png",
+    "captures/i18n-content/postg51-settings-ru-1440-normal.png",
+    "captures/i18n-content/postg51-boot-en.png"
+  ],
+  "consoleErrors": [],
+  "pageErrors": [],
+  "failure": null,
+  "finishedAt": "2026-11-20T15:30:27.805Z",
+  "summary": {
+    "totalChecks": 63,
+    "failedChecks": 0,
+    "consoleErrors": 0,
+    "pageErrors": 0,
+    "passed": true
+  }
+}
