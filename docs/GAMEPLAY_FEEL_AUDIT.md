@@ -1,1549 +1,323 @@
-# GAMEPLAY_FEEL_AUDIT.md
-
-Project: Glassline  
-Document: Gameplay Feel Audit  
-Status: Active  
-Priority: High  
-Scope: Movement, Camera, Input, Traversal, Player Feedback
-
----
+# Gameplay Feel Audit
 
 ## 1. Purpose
 
-This document defines the gameplay feel audit and refinement process for Glassline.
+This document defines how Glassline evaluates, tunes, and verifies the quality of its first-person movement experience.
 
-The objective is to evaluate and improve the quality of the first-person parkour experience without expanding the initial gameplay scope or introducing unnecessary mechanics.
+Movement is the primary gameplay experience. A mechanic is not complete merely because its state transition and physics implementation work: it must also be responsive, readable, predictable, and satisfying to control.
 
-Glassline is a movement-first game.
+This document is an evaluation and quality-control contract. It does not replace the system specifications or authorize new mechanics.
 
-Its primary gameplay experience is not exploration, combat, progression, or visual spectacle.
+## 2. Scope and authority
 
-It is the feeling of moving continuously through an architectural environment while maintaining speed, reading geometry, choosing routes, and executing precise traversal actions.
+Apply this audit whenever a change can affect:
 
-The player should feel:
+- Player input, input buffering, or control responsiveness.
+- Ground movement, acceleration, deceleration, sprinting, jumping, falling, or landing.
+- Crouching, sliding, vaulting, wall running, or wall jumping.
+- Player collision, traversal transitions, or momentum.
+- First-person camera behavior, motion feedback, or visual readability.
+- Movement-related audio, effects, or HUD feedback.
+- Runtime performance when it can affect perceived control or simulation consistency.
 
-- Fast, without losing control.
-- Responsive, without feeling weightless.
-- Physically grounded, without excessive inertia.
-- Skillful, with movement actions that reward timing and execution.
-- Connected to the environment through predictable physical interactions.
-- In control of the camera, even during complex movement.
+Relevant specifications remain authoritative for system ownership and expected behavior:
 
-The audit must evaluate the actual runtime experience, not only the correctness of the underlying implementation.
+- `02_TECHNICAL_ARCHITECTURE.md`
+- `03_GAMEPLAY_SPEC.md`
+- `06_LEVEL_DESIGN_SPEC.md`
+- `08_AUDIO_DESIGN_SPEC.md`
+- `11_INPUT_SYSTEM_SPEC.md`
+- `12_MOVEMENT_SYSTEM_SPEC.md`
+- `13_CAMERA_SYSTEM_SPEC.md`
+- `18_PLAYER_STATE_SYSTEM_SPEC.md`
+- `23_HUD_SYSTEM_SPEC.md`
+- `25_SETTINGS_SYSTEM_SPEC.md`
+- `26_ACCESSIBILITY_SYSTEM_SPEC.md`
 
-### 1.1 Primary Objective
+If this audit appears to conflict with a system specification, do not silently change ownership or contracts. Identify the conflict and reconcile the documents first.
 
-Improve the quality of the existing movement system through controlled evaluation, tuning, and validation.
-
-### 1.2 Secondary Objectives
-
-- Identify inconsistencies between movement mechanics.
-- Improve transitions between movement states.
-- Improve camera feedback and first-person readability.
-- Improve input responsiveness and predictability.
-- Identify level geometry that interferes with movement quality.
-- Improve the relationship between movement, camera, and audio feedback.
-- Establish repeatable gameplay quality checks.
-
-### 1.3 Non-Goals
-
-This document does not authorize:
-
-- Adding new movement mechanics.
-- Expanding the initial movement scope.
-- Replacing Rapier or Three.js.
-- Replacing the existing Movement System architecture.
-- Introducing a new animation framework.
-- Rewriting Player State or Gameplay Session.
-- Introducing online gameplay systems.
-- Changing Speedrun validation rules.
-- Redesigning the Prologue route without a documented gameplay reason.
-
-New mechanics must be proposed separately and approved before implementation.
-
----
-
-## 2. Relationship to Existing Specifications
-
-This document complements existing system specifications.
-
-It does not replace their ownership or implementation contracts.
-
-| Document | Relationship |
-|---|---|
-| `02_TECHNICAL_ARCHITECTURE.md` | Architecture and runtime constraints |
-| `03_GAMEPLAY_SPEC.md` | Core gameplay direction |
-| `06_LEVEL_DESIGN_SPEC.md` | Traversal geometry and level structure |
-| `11_INPUT_SYSTEM_SPEC.md` | Input processing and responsiveness |
-| `12_MOVEMENT_SYSTEM_SPEC.md` | Movement physics and traversal |
-| `13_CAMERA_SYSTEM_SPEC.md` | First-person camera behavior |
-| `18_PLAYER_STATE_SYSTEM_SPEC.md` | Authoritative player state |
-| `23_HUD_SYSTEM_SPEC.md` | Player-facing movement information |
-| `25_SETTINGS_SYSTEM_SPEC.md` | Configuration ownership |
-| `26_ACCESSIBILITY_SYSTEM_SPEC.md` | Accessibility requirements |
-| `08_AUDIO_DESIGN_SPEC.md` | Audio feedback and movement sound |
-
-### 2.1 Ownership Rules
-
-The audit must preserve existing Single Ownership principles.
-
-| Domain | Authoritative Owner |
-|---|---|
-| Physical velocity | Movement System |
-| Acceleration and friction | Movement System |
-| Movement state | Movement System |
-| Player lifecycle state | Player State System |
-| Input actions | Input System |
-| Camera transforms and effects | Camera System |
-| Audio playback and mixing | Audio System |
-| Settings values | Settings System |
-| Level geometry | Level content / Level Runtime |
-| Gameplay progression | Progression System |
-| Run timing and route validation | Speedrun System |
-
-The audit may identify integration problems but must not introduce competing owners.
-
-### 2.2 Tuning Ownership
-
-All gameplay tuning values must remain centralized in their existing authoritative configuration.
-
-Do not introduce a second set of movement or camera settings specifically for the audit.
-
-Temporary experimental configurations are permitted only when isolated from production defaults and clearly identified as test configurations.
-
----
-
-## 3. Gameplay Feel Principles
-
-Every evaluation must consider the following principles.
+## 3. Quality principles
 
 ### 3.1 Responsiveness
 
-Input should produce an understandable and timely response.
+- Player commands should produce timely and understandable responses.
+- Input buffering and coyote time must be intentional, bounded, and consistent with the Movement specification.
+- Releasing input should have a predictable effect.
+- No mechanic should depend on a favorable render frame rate.
 
-The player must not experience unnecessary delays when:
+### 3.2 Momentum continuity
 
-- Starting movement.
-- Changing direction.
-- Jumping.
-- Releasing jump.
-- Starting a slide.
-- Initiating a vault.
-- Starting a wall run.
-- Performing a wall jump.
-- Regaining control after landing.
+- Acceleration, deceleration, air control, landing, and traversal transitions should form a coherent movement model.
+- Mechanics should preserve or modify momentum according to explicit rules.
+- Transitions must not introduce unexplained velocity loss, spikes, or direction changes.
 
-Responsiveness does not mean eliminating acceleration or inertia.
+### 3.3 Physical weight
 
-### 3.2 Momentum Continuity
+- Movement should communicate speed, mass, contact, and impact without making control sluggish.
+- Jump takeoff, fall, landing, slide, vault, and wall interactions should have distinct but coherent feedback.
+- Camera and audio feedback must reinforce the physical event rather than obscure it.
 
-Movement actions must feel like parts of one connected physical system.
+### 3.4 Predictability and fairness
 
-Momentum should be preserved whenever physically reasonable.
+- The same input and equivalent gameplay conditions should produce equivalent outcomes within the deterministic simulation model.
+- Valid traversal opportunities must be readable before the player commits whenever level design allows it.
+- Collision and state-transition rules must not produce arbitrary-looking failures.
+- Failure should be understandable and recoverable.
 
-Examples:
+### 3.5 Skill expression
 
-- Sprinting into a jump should increase traversal potential.
-- A slide should reflect incoming speed.
-- A vault should preserve forward movement.
-- Landing should not arbitrarily eliminate horizontal velocity.
-- Wall jumping should retain an appropriate portion of incoming momentum.
-- Consecutive actions should form continuous movement sequences.
+- Skilled play should reward route reading, timing, speed control, and momentum management.
+- Assistance systems must not erase the intended skill or make outcomes opaque.
+- Tuning must support both learning and mastery.
 
-Unexplained velocity resets are unacceptable.
+### 3.6 First-person readability and comfort
 
-### 3.3 Physical Weight
+- The camera must preserve awareness of nearby geometry, landing surfaces, and traversal targets.
+- Effects must not hide collision-relevant information.
+- Comfort settings and reduced-motion behavior must remain effective.
+- Visual feedback must not imply a gameplay state that the authoritative systems have not entered.
 
-The player should feel connected to the environment.
+## 4. Ownership and implementation boundaries
 
-Movement must have:
+- Movement owns locomotion physics and movement-state behavior.
+- Input owns device abstraction and input interpretation.
+- Camera owns first-person presentation and camera effects.
+- Player State owns aggregated player lifecycle and capabilities.
+- Level Runtime owns runtime level content and lifecycle.
+- HUD presents authoritative state; it does not calculate movement outcomes.
+- Audio reacts to authoritative gameplay events.
+- Settings owns user-facing configuration semantics.
 
-- Acceleration.
-- Deceleration.
-- Gravity.
-- Air resistance.
-- Ground friction.
-- Collision response.
-- Appropriate impact feedback.
+Do not implement a second movement model in the camera, presentation, or level code. Do not use visual transforms as authoritative physics state. Do not add a new mechanic as a tuning workaround.
 
-However, physical weight must never make movement feel unresponsive.
+## 5. Audit workflow
 
-### 3.4 Predictability
+### Phase A — Establish the baseline
 
-Equivalent situations should produce equivalent results.
+Before changing behavior:
 
-The player should be able to learn:
+1. Read this document and the affected system specifications.
+2. Inspect the actual implementation, configuration, tests, and call sites.
+3. Identify the authoritative owner of each affected behavior.
+4. Run the existing relevant tests and available validation commands.
+5. Reproduce the behavior in the running game where possible.
+6. Record the baseline, including the scenario, input device, build, and observed result.
 
-- How far a jump travels.
-- How much speed a slide preserves.
-- Which obstacles can be vaulted.
-- When wall running can begin.
-- How landing affects momentum.
-- How much directional control exists in the air.
+Do not tune values based only on source-code intuition.
 
-Unintended randomness must not determine traversal success.
+### Phase B — Isolate the problem
 
-### 3.5 Skill Expression
+Describe the issue as an observable player-facing symptom. Examples:
 
-Movement should reward player mastery.
+- Jump input is occasionally ignored near landing.
+- Sprint acceleration feels abrupt.
+- Landing removes too much horizontal speed.
+- Slide entry is inconsistent at equivalent speeds.
+- Wall-run activation is difficult to predict.
+- Camera motion hides the next landing surface.
 
-The difference between a beginner and an experienced player should emerge through:
+Separate the likely cause from the symptom. Check input sampling, fixed-step timing, state transitions, collision queries, camera smoothing, and frame pacing before changing tuning constants.
 
-- Better approach angles.
-- Better jump timing.
-- Better momentum management.
-- More efficient route selection.
-- Better use of traversal mechanics.
-- Fewer unnecessary corrections.
-- More consistent execution.
+### Phase C — Form a hypothesis
 
-The game should not compensate for poor execution by silently automating every traversal action.
+For every proposed change, state:
 
-### 3.6 First-Person Readability
+- What observable problem it addresses.
+- Which system owns the behavior.
+- Which parameter, rule, or transition is responsible.
+- Why the proposed change should improve the result.
+- Which other mechanics may be affected.
+- How the result will be measured or observed.
 
-The player must understand their position, velocity, and relationship with nearby geometry.
+### Phase D — Make a controlled change
 
-Camera effects should communicate movement rather than obscure it.
+- Change the smallest relevant set of parameters or rules.
+- Keep gameplay, physics, rendering, and presentation responsibilities separate.
+- Avoid unrelated refactoring.
+- Do not change multiple independent variables at once when evaluating feel.
+- Preserve documented defaults and settings semantics unless the task explicitly changes them.
 
----
+### Phase E — Verify
 
-## 4. Audit Methodology
+Repeat the same baseline scenarios under equivalent conditions. Compare before and after behavior. Run relevant automated tests, type checking, linting, and production build using the actual project scripts.
 
-The audit must be performed in controlled stages.
+Perform browser verification for any change affecting actual movement, camera, input, collision, or traversal when runtime access is available.
 
-Do not begin by modifying movement constants.
+### Phase F — Record and regress
 
-### Phase A — Baseline Inspection
+Record the outcome, including unresolved issues and any trade-offs. Add or update automated regression coverage for deterministic logic and state transitions. Update implementation status only to the level actually verified.
 
-Inspect the current implementation and establish its actual behavior.
+## 6. Mechanics checklist
 
-Required activities:
+Evaluate each affected mechanic against the following criteria.
 
-1. Read the existing Movement System specification.
-2. Inspect MovementController and related movement components.
-3. Inspect MovementTuning and actual runtime values.
-4. Inspect CameraController and camera effect configuration.
-5. Inspect InputManager and action processing.
-6. Inspect Player State integration.
-7. Inspect traversal detection and collision handling.
-8. Inspect Training and Prologue geometry.
-9. Inspect existing automated tests.
-10. Run the current application in a browser.
-
-Record:
-
-- Actual movement values.
-- Actual camera values.
-- Current state transitions.
-- Known limitations.
-- Existing test coverage.
-- Reproducible gameplay issues.
-
-Do not assume specification values are identical to runtime values.
-
-### Phase B — Isolated Mechanics Evaluation
-
-Evaluate every movement mechanic independently.
-
-The objective is to identify problems within individual mechanics before evaluating combinations.
-
-### Phase C — Transition Evaluation
-
-Evaluate movement mechanics in sequence.
-
-Focus on momentum preservation, control continuity, collision handling, and state transitions.
-
-### Phase D — Full Gameplay Evaluation
-
-Perform complete Training and Prologue sessions.
-
-Evaluate movement quality under realistic gameplay conditions.
-
-### Phase E — Controlled Refinement
-
-Make targeted adjustments.
-
-Change one logical group of parameters at a time.
-
-Repeat the same test scenarios after every change.
-
-### Phase F — Regression and Acceptance
-
-Verify that improvements do not introduce regressions in:
-
-- Movement.
-- Camera.
-- Input.
-- Collision.
-- Checkpoints.
-- Respawn.
-- Training.
-- Speedrun.
-- Accessibility.
-- Persistence.
-
----
-
-## 5. Movement Mechanics Audit
-
-Each mechanic must be evaluated independently and as part of combined traversal.
-
-### 5.1 Ground Movement
-
-Evaluate:
-
-- Initial acceleration.
-- Maximum running speed.
-- Sprint acceleration.
-- Deceleration after releasing input.
-- Direction changes.
-- Strafing.
-- Diagonal movement.
-- Movement on slopes.
-- Ground friction.
-- Ground detection stability.
-
-Acceptance criteria:
-
-- Movement starts without noticeable input delay.
-- Acceleration feels progressive.
-- Direction changes remain controllable at high speed.
-- Releasing movement does not cause an unexplained velocity reset.
-- Diagonal movement does not provide unintended speed advantages.
-- Ground movement remains stable on supported surfaces.
-
-### 5.2 Sprinting
-
-Evaluate:
-
-- Sprint activation.
-- Sprint acceleration.
-- Maximum speed.
-- Sprint release.
-- Sprint interruption.
-- Sprint-to-jump transition.
-- Sprint-to-slide transition.
-- Sprint-to-vault transition.
-
-Acceptance criteria:
-
-- Sprint feels meaningfully faster than normal running.
-- Sprint activation does not cause an artificial velocity discontinuity.
-- Sprinting improves traversal potential.
-- Sprint release produces predictable deceleration.
-- Sprint transitions do not interrupt valid movement unnecessarily.
-
-### 5.3 Jumping
-
-Evaluate:
-
-- Jump initiation.
-- Jump buffering.
-- Coyote time.
-- Variable jump height.
-- Jump apex.
-- Gravity.
-- Air control.
-- Horizontal momentum preservation.
-- Jump release behavior.
-- Landing detection.
-
-Acceptance criteria:
-
-- Jump activation is reliable.
-- Buffered input works consistently.
-- Coyote time behaves predictably.
-- Jump height responds correctly to input duration if variable height is supported.
-- Air control provides meaningful directional adjustment.
-- Horizontal momentum is preserved appropriately.
-- The player can understand the jump trajectory through first-person feedback.
-
-### 5.4 Falling
-
-Evaluate:
-
-- Transition from jumping to falling.
-- Maximum falling speed.
-- Air control during falling.
-- Collision with vertical surfaces.
-- Landing detection.
-- Recovery after falling.
-
-Acceptance criteria:
-
-- Falling state transitions are stable.
-- Vertical velocity does not reset unexpectedly.
-- Ground detection does not produce false landings.
-- The player does not remain indefinitely in an invalid movement state.
-
-### 5.5 Landing
-
-Landing is one of the most important gameplay feedback events.
-
-Evaluate:
-
-- Impact detection.
-- Vertical impact speed.
-- Horizontal momentum preservation.
-- Landing on flat surfaces.
-- Landing on narrow platforms.
-- Landing after a long jump.
-- Landing after wall jumping.
-- Landing during high-speed traversal.
-- Landing camera response.
-- Landing audio response.
-
-Acceptance criteria:
-
-- Landing impact reflects actual physical conditions.
-- Horizontal momentum is not arbitrarily removed.
-- Landing does not produce unexpected movement state transitions.
-- The player regains control immediately when appropriate.
-- Landing feedback is noticeable without becoming distracting.
-- Small height differences do not trigger exaggerated impact effects.
-
-### 5.6 Crouching
-
-Evaluate:
-
-- Crouch activation.
-- Collider resizing.
-- Camera height transition.
-- Movement while crouched.
-- Standing up.
-- Ceiling collision.
-- Interaction with low geometry.
-
-Acceptance criteria:
-
-- Collider and camera height remain consistent.
-- Standing up is blocked when overhead geometry prevents it.
-- The player cannot become trapped between collider and camera states.
-- Crouching remains responsive.
-
-### 5.7 Sliding
-
-Evaluate:
-
-- Slide initiation.
-- Minimum entry speed.
-- Slide acceleration.
-- Friction.
-- Duration.
-- Direction control.
-- Collider height.
-- Camera height.
-- Slide-to-jump transition.
-- Slide exit.
-- Low obstacle traversal.
-
-Acceptance criteria:
-
-- Slide entry reflects incoming velocity.
-- High-speed entry produces a meaningful difference.
-- Slide duration emerges primarily from physics rather than an arbitrary timer.
-- Momentum is preserved appropriately.
-- The player can control the slide direction.
-- Collider resizing does not cause penetration.
-- Slide exit is predictable.
-- The slide does not feel like an unrelated scripted animation.
-
-### 5.8 Vaulting
-
-Evaluate:
-
-- Obstacle detection.
-- Approach angle.
-- Approach speed.
-- Obstacle height.
-- Obstacle width.
-- Obstacle depth.
-- Vault initiation.
-- Movement trajectory.
-- Momentum preservation.
-- Landing after vaulting.
-- Invalid vault rejection.
-
-Acceptance criteria:
-
-- Equivalent obstacles produce consistent results.
-- Vault detection does not activate through unrelated geometry.
-- The player does not become trapped inside obstacles.
-- Vaulting preserves appropriate horizontal momentum.
-- The camera follows the physical traversal.
-- The player regains control predictably after the action.
-
-### 5.9 Wall Running
-
-Evaluate:
-
-- Wall detection.
-- Minimum entry speed.
-- Approach angle.
-- Wall contact stability.
-- Vertical movement.
-- Horizontal movement.
-- Duration.
-- Wall-run termination.
-- Camera roll.
-- Wall jump transition.
-
-Acceptance criteria:
-
-- Wall running activates only on valid surfaces.
-- Entry conditions are predictable.
-- The player does not unexpectedly detach from the wall.
-- Wall-run duration is controlled.
-- Camera roll communicates the action without obscuring navigation.
-- Ending a wall run does not leave residual velocity or camera rotation.
-
-### 5.10 Wall Jumping
-
-Evaluate:
-
-- Jump input recognition.
-- Wall normal.
-- Horizontal impulse.
-- Vertical impulse.
-- Incoming momentum preservation.
-- Direction after jumping.
-- Landing after wall jumping.
-
-Acceptance criteria:
-
-- Wall jump direction is understandable.
-- The player is not pushed into the wall.
-- Incoming momentum is preserved appropriately.
-- Wall jumping does not produce unexplained speed amplification.
-- The resulting trajectory remains controllable.
-
----
-
-## 6. Movement Transition Audit
-
-Individual mechanics can work correctly while their transitions feel poor.
-
-This section evaluates the complete movement system.
-
-### 6.1 Required Transition Matrix
-
-| From | To | Primary Evaluation |
-|---|---|---|
-| Running | Sprinting | Acceleration continuity |
-| Sprinting | Jumping | Momentum preservation |
-| Running | Jumping | Jump responsiveness |
-| Jumping | Falling | Apex transition |
-| Falling | Landing | Impact and recovery |
-| Sprinting | Sliding | Entry velocity |
-| Sliding | Jumping | Input responsiveness |
-| Sliding | Running | Exit velocity |
-| Running | Vaulting | Detection and continuity |
-| Falling | Wall Run | Entry conditions |
-| Wall Run | Wall Jump | Direction and impulse |
-| Wall Run | Falling | Exit behavior |
-| Wall Jump | Landing | Momentum and impact |
-| Any valid state | Respawning | State reset and recovery |
-
-### 6.2 Transition Requirements
-
-Every transition must define:
-
-- Entry conditions.
-- Exit conditions.
-- Required input.
-- Velocity behavior.
-- Collider behavior.
-- Camera response.
-- Audio response.
-- Invalid transition behavior.
-
-### 6.3 Transition Acceptance
-
-- No unexpected velocity resets.
-- No duplicate movement states.
-- No permanently active transient states.
-- No unexpected control lock.
-- No camera effect accumulation.
-- No collider mismatch.
-- No dependence on rendering frame timing.
-
----
-
-## 7. Camera Feel Audit
-
-The Camera System must reinforce movement quality without becoming a competing source of movement.
-
-### 7.1 Look Responsiveness
-
-Evaluate:
-
-- Mouse sensitivity.
-- Mouse input latency.
-- Horizontal look.
-- Vertical look.
-- Pitch limits.
-- Gamepad look.
-- Device switching.
-- Pointer lock recovery.
-
-Acceptance criteria:
-
-- Mouse look is immediate by default.
-- Mouse input does not receive unnecessary smoothing.
-- Gamepad look remains controllable.
-- Sensitivity is applied exactly once.
-- Pointer lock loss does not create incorrect camera state.
-
-### 7.2 Field of View
-
-Evaluate:
-
-- Base FOV.
-- Sprint FOV.
-- Acceleration response.
-- Deceleration response.
-- Airborne behavior.
-- Return to neutral.
-
-Acceptance criteria:
-
-- Dynamic FOV communicates speed.
-- FOV changes do not obscure traversal geometry.
-- Transitions remain smooth.
-- FOV always returns to the correct base value.
-- Reduced Motion settings are respected.
-
-### 7.3 Camera Height
-
-Evaluate:
-
-- Standing height.
-- Crouch height.
-- Slide height.
-- Jump response.
-- Landing response.
-- Respawn recovery.
-
-Acceptance criteria:
-
-- Camera height follows authoritative player posture.
-- Camera does not penetrate the ground.
-- Height transitions are smooth.
-- Camera does not independently simulate physical movement.
-
-### 7.4 Camera Bob
-
-Evaluate:
-
-- Running bob.
-- Sprint bob.
-- Frequency.
-- Amplitude.
-- Speed dependency.
-- Acceleration dependency.
-- Stop transition.
-
-Acceptance criteria:
-
-- Bob communicates movement without becoming distracting.
-- Bob does not continue when movement stops.
-- Bob does not accumulate over time.
-- Bob does not interfere with precision jumps.
-- Reduced Motion can minimize or disable it.
-
-### 7.5 Landing Feedback
-
-Evaluate:
-
-- Impact-based intensity.
-- Downward displacement.
-- Rotational response.
-- Recovery duration.
-- Interaction with other camera effects.
-
-Acceptance criteria:
-
-- Camera response reflects actual impact.
-- Repeated landings do not accumulate displacement.
-- Recovery returns to neutral.
-- Landing feedback does not obscure the next traversal target.
-
-### 7.6 Wall-Run and Vault Feedback
-
-Evaluate:
-
-- Wall-run roll.
-- Roll recovery.
-- Vault anticipation.
-- Vault trajectory.
-- Interaction between temporary effects.
-
-Acceptance criteria:
-
-- Effects remain proportional to the movement action.
-- Effects return to neutral.
-- Temporary effects do not permanently modify the base transform.
-- Multiple effects do not produce unstable camera behavior.
-
-### 7.7 Camera Comfort
-
-Test:
-
-- Standard camera preset.
-- Reduced Motion.
-- High-speed traversal.
-- Repeated jumps.
-- Repeated landings.
-- Wall-run sequences.
-- Rapid direction changes.
-
-The camera must remain readable and comfortable.
-
-Accessibility preferences must not disable essential gameplay functionality.
-
----
-
-## 8. Input Feel Audit
-
-### 8.1 Keyboard
-
-Evaluate:
-
-- Key press response.
-- Key release response.
-- Simultaneous inputs.
-- Diagonal movement.
-- Jump buffering.
-- Crouch and slide activation.
-- Sprint activation.
-- Focus loss.
-- Input recovery.
-
-Acceptance criteria:
-
-- No stuck keys.
-- No delayed critical actions.
-- No accidental repeated jump execution.
-- UI input does not leak into gameplay.
-- Input remains consistent across supported frame rates.
-
-### 8.2 Mouse
-
-Evaluate:
-
-- Pointer lock acquisition.
-- Relative movement.
-- Sensitivity.
-- Input accumulation.
-- Pointer lock loss.
-- Pointer lock recovery.
-
-Acceptance criteria:
-
-- No dependence on absolute cursor position.
-- No dropped mouse deltas during normal operation.
-- No sensitivity applied in multiple layers.
-- Mouse look remains predictable.
-
-### 8.3 Gamepad
-
-Evaluate:
-
-- Left stick movement.
-- Right stick camera control.
-- Dead zones.
-- Analog movement intensity.
-- Analog camera response.
-- Button transitions.
-- Device disconnection.
-- Device reconnection.
-
-Acceptance criteria:
-
-- Analog input remains smooth.
-- Dead zones prevent unwanted drift.
-- Device switching does not create invalid input state.
-- Gamepad movement does not introduce inconsistent acceleration.
-
-### 8.4 Input Latency
-
-Measure input-to-response latency where practical.
-
-Record:
-
-- Input event timestamp.
-- Input processing timestamp.
-- Physics step in which the action is consumed.
-- First visible response.
-- Input device.
-- Browser and display conditions.
-
-Do not invent a latency target before establishing a reliable measurement method.
-
----
-
-## 9. Traversal and Level Interaction Audit
-
-Movement quality depends on level geometry.
-
-The same mechanic can feel excellent in an open test environment and frustrating inside a poorly configured level.
-
-### 9.1 Geometry Readability
-
-Evaluate:
-
-- Jump distance visibility.
-- Platform edges.
-- Obstacle dimensions.
-- Vaultable geometry.
-- Wall-run surfaces.
-- Landing areas.
-- Ceiling clearance.
-- Route direction.
-- Alternative traversal paths.
-
-Acceptance criteria:
-
-- Traversal opportunities are visually understandable.
-- Important collision surfaces are predictable.
-- Decorative geometry does not interfere with movement.
-- The player can identify intended landing areas.
-
-### 9.2 Collision Consistency
-
-Evaluate:
-
-- Capsule collision.
-- Wall sliding.
-- Ground detection.
-- Slope handling.
-- Corner collisions.
-- Low ceilings.
-- Narrow platforms.
-- High-speed contact.
-
-Acceptance criteria:
-
-- No unexpected penetration.
-- No artificial stopping on decorative objects.
-- No permanent collision lock.
-- No unintended velocity gain from collision resolution.
-- Equivalent geometry behaves consistently.
-
-### 9.3 Prologue Traversal
-
-Evaluate the complete Rooftop Run route.
-
-| Section | Gameplay Evaluation |
+| Mechanic | Audit questions |
 |---|---|
-| Rooftop | Initial acceleration, movement introduction |
-| Industrial | Sprinting, jumps, obstacle interaction |
-| Construction | Vertical traversal, stairs, momentum |
-| Skybridge | Approach speed, major jump, narrow landing |
-| Finish | Final ascent, scaffold traversal, catwalk turn |
-
-For each section evaluate:
-
-- Route readability.
-- Traversal opportunities.
-- Required mechanics.
-- Movement continuity.
-- Recovery points.
-- Landing safety.
-- Alternative routes.
-- Opportunities for speed optimization.
-
-### 9.4 Training
-
-Evaluate whether each exercise teaches the intended mechanic.
-
-Training should:
-
-- Introduce one primary mechanic at a time.
-- Provide sufficient practice space.
-- Give clear instructions.
-- Provide useful feedback.
-- Avoid unnecessary waiting.
-- Allow repeated attempts.
-- Prepare the player for combined traversal.
-
-The final combined traversal exercise must demonstrate that the player can connect previously learned mechanics.
-
----
-
-## 10. Movement and Sensory Feedback
-
-Movement feedback should be consistent across physics, camera, and audio.
-
-### 10.1 Audio Synchronization
-
-Evaluate:
-
-- Footsteps against actual movement speed.
-- Surface-dependent footsteps.
-- Landing sounds against impact intensity.
-- Slide audio.
-- Wall-run audio.
-- Vault audio.
-- Wind intensity during high-speed movement.
-- Audio transitions after respawn.
-
-Acceptance criteria:
-
-- Audio reflects actual gameplay events.
-- Footsteps do not continue when movement stops.
-- Landing sounds correspond to real landings.
-- Repeated state transitions do not create overlapping loops.
-- Audio does not become the authoritative source of movement state.
-
-### 10.2 Feedback Consistency
-
-A movement event should have a coherent presentation.
-
-Example:
-
-**High-speed landing**
-
-- Movement System reports landing and impact.
-- Camera System produces an appropriate impact response.
-- Audio System plays an appropriate landing sound.
-- HUD displays only relevant information.
-
-Each system reacts to the authoritative event through its existing integration contract.
-
-No system should independently infer and redefine the landing outcome.
-
----
-
-## 11. Performance and Stability
-
-Gameplay feel is directly affected by runtime stability.
-
-Evaluate:
-
-- Fixed-step physics consistency.
-- Rendering frame rate.
-- Frame-time spikes.
-- Physics catch-up behavior.
-- Collision query cost.
-- Allocation frequency.
-- Garbage collection.
-- Camera update stability.
-- Input processing stability.
-
-### 11.1 Required Measurements
-
-Record:
-
-| Metric | Purpose |
-|---|---|
-| Average FPS | General rendering performance |
-| 1% low FPS | Frame-time consistency |
-| Average frame time | Normal rendering cost |
-| Maximum frame time | Worst observed spike |
-| Physics step duration | Simulation cost |
-| Physics catch-up steps | Simulation stability |
-| Input-to-response latency | Responsiveness |
-| Memory usage | Runtime stability |
-| GC activity | Allocation-related interruptions |
-
-Use the same browser, hardware, resolution, and test scenario when comparing results.
-
-### 11.2 Performance Acceptance
-
-- Physics remains independent of rendering FPS.
-- Movement does not become unstable during frame-time spikes.
-- Rendering interpolation does not create visible movement discontinuities.
-- Physics does not enter an uncontrolled catch-up loop.
-- Normal gameplay does not produce recurring severe frame spikes.
-- Existing performance budgets remain valid.
-
-Do not sacrifice movement quality solely to improve a single benchmark.
-
----
-
-## 12. Controlled Tuning Process
-
-All tuning must follow a repeatable process.
-
-### 12.1 Baseline First
-
-Before changing any values:
-
-1. Capture current runtime values.
-2. Run baseline scenarios.
-3. Record observations.
-4. Identify the specific problem.
-5. Determine the owning system.
-6. Identify the smallest relevant parameter group.
-
-### 12.2 Change Isolation
-
-Do not change acceleration, friction, gravity, jump impulse, camera bob, and FOV simultaneously.
-
-Use isolated tuning groups.
-
-Recommended groups:
-
-| Group | Parameters |
-|---|---|
-| Ground Movement | Acceleration, deceleration, friction |
-| Sprint | Speed, acceleration, transitions |
-| Jump | Gravity, jump velocity, buffering, coyote time |
-| Air Control | Air acceleration, air friction, directional control |
-| Slide | Entry speed, friction, duration, exit behavior |
-| Vault | Detection, trajectory, momentum retention |
-| Wall Run | Entry conditions, duration, gravity |
-| Wall Jump | Direction, horizontal and vertical impulse |
-| Camera | FOV, bob, height, landing, roll |
-| Input | Sensitivity, dead zones, processing |
-
-### 12.3 Parameter Evaluation
-
-For every tuning change, record:
-
-- Previous value.
-- New value.
-- Reason for change.
-- Expected effect.
-- Test scenario.
-- Actual result.
-- Regression result.
-
-### 12.4 Rejection Criteria
-
-Reject a tuning change when it:
-
-- Improves one mechanic but breaks another.
-- Produces unexplained velocity discontinuities.
-- Makes movement less predictable.
-- Makes precision traversal harder without a clear gameplay benefit.
-- Creates new collision problems.
-- Introduces camera discomfort.
-- Breaks Training exercises.
-- Invalidates Speedrun route behavior.
-- Reduces performance beyond acceptable limits.
-
-A change is not automatically an improvement because it increases speed or jump distance.
-
----
-
-## 13. Standardized Gameplay Test Scenarios
-
-The following scenarios must be reproducible.
-
-### GF-01 — Ground Acceleration
-
-Start from rest and move forward.
-
-Measure acceleration and time to reach the running speed band.
-
-### GF-02 — Sprint Acceleration
-
-Start from rest and activate sprint.
-
-Measure acceleration and time to reach sprint speed.
-
-### GF-03 — Direction Reversal
-
-Reach high horizontal speed and reverse movement direction.
-
-Evaluate deceleration and directional control.
-
-### GF-04 — Sprint Jump
-
-Reach sprint speed and jump across a known gap.
-
-Evaluate jump distance, trajectory, and momentum preservation.
-
-### GF-05 — Variable Jump
-
-Perform jumps with different input durations.
-
-Evaluate resulting jump height.
-
-### GF-06 — Air Control
-
-Jump while moving and apply directional input during flight.
-
-Evaluate directional influence and consistency.
-
-### GF-07 — Landing Momentum
-
-Jump onto a flat platform and continue moving.
-
-Compare horizontal velocity before and after landing.
-
-### GF-08 — Slide Entry
-
-Enter a slide at different approach speeds.
-
-Compare entry velocity, duration, and exit velocity.
-
-### GF-09 — Slide-to-Jump
-
-Initiate a slide and jump at the earliest valid opportunity.
-
-Evaluate responsiveness and momentum continuity.
-
-### GF-10 — Vault Consistency
-
-Approach the same obstacle repeatedly at equivalent speeds and angles.
-
-Compare detection and resulting trajectories.
-
-### GF-11 — Wall-Run Entry
-
-Approach a valid wall at different speeds and angles.
-
-Evaluate activation boundaries and stability.
-
-### GF-12 — Wall Jump
-
-Perform a wall run followed by a wall jump.
-
-Evaluate direction, impulses, and momentum preservation.
-
-### GF-13 — Narrow Landing
-
-Jump onto a narrow platform at different approach speeds.
-
-Evaluate air control, camera readability, and landing stability.
-
-### GF-14 — Combined Traversal
-
-Perform a continuous sequence:
-
-Sprint → Jump → Land → Slide → Vault → Jump.
-
-Evaluate continuity and player control.
-
-### GF-15 — Full Prologue
-
-Complete the entire Prologue without intentionally stopping.
-
-Evaluate the complete gameplay experience.
-
-### GF-16 — Repeated Attempts
-
-Complete the same route multiple times.
-
-Evaluate consistency and the ability to improve execution.
-
-### GF-17 — Reduced Motion
-
-Repeat representative scenarios with Reduced Motion enabled.
-
-Evaluate gameplay readability and comfort.
-
-### GF-18 — Input Interruption
-
-Interrupt gameplay through focus loss and pointer lock loss.
-
-Evaluate input recovery and movement stability.
-
----
-
-## 14. Quantitative Evaluation
-
-The audit must combine objective measurements and subjective evaluation.
-
-### 14.1 Objective Measurements
-
-Record where applicable:
-
-- Horizontal velocity.
-- Vertical velocity.
-- Acceleration.
-- Jump height.
-- Jump duration.
-- Jump distance.
-- Slide duration.
-- Slide entry and exit speed.
-- Wall-run duration.
-- Wall-jump velocity.
-- Landing impact speed.
-- Input-to-response latency.
-- Physics step duration.
-- Frame-time distribution.
-
-### 14.2 Subjective Evaluation
-
-Evaluate each category on a scale from 1 to 5.
-
-| Score | Meaning |
-|---|---|
-| 1 | Broken or unacceptable |
-| 2 | Noticeably poor |
-| 3 | Functional but needs improvement |
-| 4 | Good and consistent |
-| 5 | Excellent and polished |
-
-Categories:
-
-- Responsiveness.
-- Momentum continuity.
-- Physical weight.
-- Precision.
-- Predictability.
-- Camera readability.
-- Movement comfort.
-- Traversal satisfaction.
-- Overall flow.
-
-These scores are qualitative evaluation records, not automated gameplay metrics.
-
-### 14.3 Evaluation Record
-
-Each evaluation should use this format:
-
-| Field | Value |
-|---|---|
-| Scenario | GF-XX |
-| Build / commit | Exact identifier |
-| Browser | Browser and version |
-| Resolution | Test resolution |
-| Input device | Keyboard / Mouse / Gamepad |
-| Movement configuration | Configuration identifier |
-| Camera configuration | Configuration identifier |
-| Objective measurements | Recorded values |
-| Subjective score | 1–5 |
-| Observed issue | Description |
-| Reproduction steps | Exact steps |
-| Expected behavior | Expected result |
-| Actual behavior | Observed result |
-| Severity | Critical / High / Medium / Low |
-| Status | Open / Investigating / Fixed / Verified |
-
----
-
-## 15. Issue Severity
-
-### Critical
-
-- Movement becomes unusable.
-- Player becomes permanently stuck.
-- Physics produces invalid state.
-- Traversal can consistently bypass required gameplay validation.
-- Input cannot be recovered.
-
-### High
-
-- Core movement mechanic behaves inconsistently.
-- Momentum is unexpectedly lost.
-- Major traversal actions fail under normal conditions.
-- Camera makes important traversal difficult to read.
-- Frequent collision failures occur.
-
-### Medium
-
-- Movement feels inconsistent in specific scenarios.
-- Camera feedback is excessive or insufficient.
-- Minor traversal geometry problems.
-- Unnecessary delays in movement transitions.
-
-### Low
-
-- Minor tuning improvements.
-- Small camera or audio feedback inconsistencies.
-- Non-blocking visual feedback issues.
-
-Critical and High issues must be resolved before declaring the gameplay feel audit accepted.
-
----
-
-## 16. Regression Requirements
-
-Gameplay feel improvements must preserve the existing project functionality.
-
-After relevant changes, verify:
-
-### Movement
-
-- Ground movement.
-- Sprinting.
-- Jumping.
-- Falling.
-- Landing.
-- Crouching.
-- Sliding.
-- Vaulting.
-- Wall running.
-- Wall jumping.
+| Ground movement | Are acceleration, braking, turning, and stopping controllable and consistent? |
+| Sprinting | Is the speed increase readable and predictable? Does sprint entry/exit behave consistently? |
+| Jumping | Is input recognized reliably? Are takeoff, buffering, coyote time, and air control consistent with the specification? |
+| Falling | Is the airborne state clear? Does control remain predictable? |
+| Landing | Is contact detected reliably? Is horizontal momentum handled intentionally? Is impact feedback proportional? |
+| Crouching | Are posture changes, clearance, and movement restrictions coherent? |
+| Sliding | Are entry conditions readable? Does speed and friction behavior feel intentional? Does exit restore a valid posture and state? |
+| Vaulting | Are valid obstacles detected consistently? Is the path clear of collision artifacts? Does the player retain understandable control? |
+| Wall running | Is activation limited to valid surfaces? Is contact loss handled promptly? Is direction and duration predictable? |
+| Wall jumping | Is launch direction understandable? Are wall contact and cooldown rules consistent? |
+
+For every mechanic, inspect both its steady-state behavior and its entry, exit, interruption, and failure transitions.
+
+## 7. Transition audit
+
+At minimum, verify the transitions relevant to the changed mechanics:
+
+- Grounded → Jumping.
+- Jumping → Falling.
+- Falling → Landing / Grounded.
+- Grounded → Crouching.
+- Crouching → Grounded.
+- Running → Sliding → Running.
+- Running → Vaulting → Grounded / Falling.
+- Airborne → Wall Running → Falling.
+- Wall Running → Wall Jumping → Falling.
+- Any active traversal state → Respawn / recovery.
+
+Check that incompatible states cannot remain active simultaneously, that interrupted transitions clean up correctly, and that stale input or events cannot reactivate a previous state.
+
+## 8. Camera and feedback audit
 
 ### Camera
 
-- Mouse look.
-- Camera height.
-- FOV.
-- Bob.
-- Landing response.
-- Wall-run roll.
-- Reduced Motion.
-
-### Input
-
-- Keyboard.
-- Mouse.
-- Gamepad.
-- Pointer lock.
-- Focus loss.
-- Pause and resume.
-
-### Gameplay
-
-- Training exercises.
-- Prologue completion.
-- Checkpoint activation.
-- Respawn.
-- Speedrun timing.
-- Route validation.
-- Medal calculation.
-
-### Long-Term Systems
-
-- Statistics.
-- Achievements.
-- Progression.
-- Save restoration.
-- Settings persistence.
-
-### Runtime
-
-- No new console errors.
-- No unexpected resource leaks.
-- No physics instability.
-- No unacceptable performance regression.
-
----
-
-## 17. Implementation Rules for Agents
-
-The following rules are mandatory.
-
-1. Read `AGENT.md`.
-2. Read `01_AGENT_RULES.md`.
-3. Read `02_TECHNICAL_ARCHITECTURE.md`.
-4. Read all relevant system specifications.
-5. Inspect the actual implementation before making assumptions.
-6. Establish a reproducible baseline.
-7. Do not change architecture without a demonstrated need.
-8. Do not introduce new gameplay mechanics under this audit.
-9. Do not duplicate existing system responsibilities.
-10. Do not introduce arbitrary constants outside authoritative tuning configuration.
-11. Do not change multiple unrelated tuning groups simultaneously.
-12. Preserve deterministic fixed-step physics.
-13. Preserve existing Speedrun and Training contracts.
-14. Preserve accessibility behavior.
-15. Add or update automated tests when behavior changes.
-16. Verify rendering, physics, and input changes in a real browser.
-17. Record before-and-after measurements.
-18. Update `IMPLEMENTATION_STATUS.md` when implementation status changes.
-19. Document unresolved issues honestly.
-20. Do not mark an improvement complete without regression verification.
-
-### 17.1 Audit Before Implementation
-
-The first agent task is an assessment, not a refactor.
-
-The agent must produce:
-
-- Current implementation inventory.
-- Actual runtime tuning values.
-- Existing test coverage.
-- Reproducible gameplay scenarios.
-- Identified problems.
-- Severity classification.
-- Proposed improvements.
-- Expected impact.
-- Regression risks.
-
-Implementation must begin only after the assessment is complete.
-
-### 17.2 No Unjustified Tuning
-
-Do not blindly apply suggested values from the Movement System specification.
-
-Existing values are starting points and design references.
-
-The final values must be justified by measured and observed gameplay behavior.
-
----
-
-## 18. Audit Phases and Deliverables
-
-### Phase 0 — Baseline Audit
-
-Deliverables:
-
-- `GAMEPLAY_FEEL_BASELINE.md`
-- Existing tuning inventory.
-- Existing test inventory.
-- Reproducible issue list.
-- Baseline gameplay observations.
-
-No gameplay tuning changes.
-
-### Phase 1 — Core Movement
-
-Evaluate:
-
-- Ground movement.
-- Sprint.
-- Jump.
-- Falling.
-- Landing.
-- Air control.
-
-Deliverables:
-
-- Movement evaluation.
-- Identified issues.
-- Approved tuning changes.
-- Regression results.
-
-### Phase 2 — Advanced Traversal
-
-Evaluate:
-
-- Sliding.
-- Vaulting.
-- Wall running.
-- Wall jumping.
-- Movement transitions.
-
-Deliverables:
-
-- Traversal evaluation.
-- Transition matrix results.
-- Momentum continuity results.
-- Regression results.
-
-### Phase 3 — Camera and Input
-
-Evaluate:
-
-- Mouse look.
-- Gamepad look.
-- Camera height.
-- FOV.
-- Bob.
-- Landing.
-- Camera roll.
-- Reduced Motion.
-
-Deliverables:
-
-- Camera evaluation.
-- Input responsiveness evaluation.
-- Comfort assessment.
-- Regression results.
-
-### Phase 4 — Full Gameplay
-
-Evaluate:
-
-- Training.
-- Prologue.
-- Full route traversal.
-- Repeated attempts.
-- Speedrun execution.
-- Geometry interaction.
-
-Deliverables:
-
-- Full gameplay evaluation.
-- Level interaction issues.
-- Gameplay flow assessment.
-- Reproducibility results.
-
-### Phase 5 — Final Acceptance
-
-Verify all approved improvements.
-
-Deliverables:
-
-- `GAMEPLAY_FEEL_AUDIT_REPORT.md`
-- Final tuning summary.
-- Test results.
-- Remaining known issues.
-- Acceptance decision.
-
----
-
-## 19. Final Acceptance Criteria
-
-The audit may be accepted when all of the following conditions are satisfied.
-
-### Movement Quality
-
-- All initial movement mechanics behave consistently.
-- Acceleration and deceleration feel responsive.
-- Momentum transitions are understandable.
-- Jumping is predictable.
-- Landing does not arbitrarily remove momentum.
-- Sliding, vaulting, and wall mechanics integrate into continuous traversal.
-
-### Camera Quality
-
-- Camera movement reinforces physical movement.
-- Mouse look remains responsive.
-- Camera effects do not accumulate.
-- Camera remains readable during complex traversal.
-- Reduced Motion is correctly respected.
-
-### Input Quality
-
-- Keyboard and mouse work consistently.
-- Gamepad behavior remains predictable.
-- Input focus transitions do not produce stuck actions.
-- Critical movement actions are not unnecessarily delayed.
-
-### Gameplay Quality
-
-- Training teaches the existing movement mechanics.
-- Prologue supports continuous traversal.
-- The player can complete the route consistently.
-- Repeated attempts allow improvement through execution.
-- Traversal geometry behaves predictably.
-
-### Technical Quality
-
-- Fixed-step physics remains stable.
-- Existing system ownership is preserved.
-- Automated tests pass.
-- Production build passes.
-- Browser gameplay verification passes.
-- No critical or high-severity gameplay issues remain.
-- No unacceptable performance regression is introduced.
-
-### Final Decision
-
-The final report must explicitly select one of:
-
-- **Accepted** — All required criteria are satisfied.
-- **Accepted with Known Issues** — No critical blockers remain, but documented non-blocking issues exist.
-- **Rejected** — One or more acceptance requirements remain unsatisfied.
-
----
-
-## 20. Definition of Success
-
-The most important success criterion is not a specific movement speed, jump height, or number of implemented mechanics.
-
-It is the experience of playing Glassline.
-
-A successful result means:
-
-- The player understands how to move.
-- The player can predict how movement will behave.
-- The player can maintain and build momentum.
-- Movement actions connect naturally.
-- Mistakes feel attributable to execution rather than inconsistent physics.
-- The camera reinforces the experience.
-- The environment invites continuous traversal.
-- Repeating a route feels rewarding because the player can become better at it.
-
-**Movement should feel like one continuous system, not a collection of separate abilities.**
-
-That is the standard against which Glassline gameplay quality must be evaluated.
+Check:
+
+- Look input responsiveness and sensitivity consistency.
+- Camera height during posture changes.
+- FOV changes and their relationship to speed.
+- Head bob, sway, shake, and landing feedback.
+- Camera behavior during vaulting and wall running.
+- Smoothing latency and overshoot.
+- Reduced Motion and other comfort settings.
+- Visibility of the next traversal target and landing surface.
+
+Camera feedback should communicate movement, not compensate for incorrect physics.
+
+### Audio and visual feedback
+
+Check that:
+
+- Footsteps and landing sounds correspond to actual contacts and surfaces.
+- Slide and wall-run loops start and stop with authoritative states.
+- Feedback intensity is proportional to the event.
+- Important cues remain distinguishable in the mix.
+- Visual effects do not obscure geometry or imply false collision.
+- Feedback is not duplicated after restart, respawn, or session replacement.
+
+## 9. Standardized manual scenarios
+
+Use repeatable scenarios to compare behavior. Keep starting position, orientation, input device, and approach speed as consistent as practical.
+
+| ID | Scenario | Expected observation |
+|---|---|---|
+| GF-01 | Walk, accelerate, and stop on flat ground | Smooth, repeatable acceleration and braking |
+| GF-02 | Sprint from rest and release sprint | Predictable speed build-up and exit |
+| GF-03 | Turn while running at several speeds | Controlled turning without unexplained snapping |
+| GF-04 | Jump from standstill | Reliable takeoff and readable arc |
+| GF-05 | Jump while sprinting | Intentional horizontal momentum retention |
+| GF-06 | Press jump shortly before landing | Buffer behavior matches the specification |
+| GF-07 | Jump just after leaving an edge | Coyote-time behavior matches the specification |
+| GF-08 | Land after a low and a high fall | Distinct, proportional landing response |
+| GF-09 | Crouch under a low obstacle | Clearance and posture remain correct |
+| GF-10 | Slide at low and high entry speeds | Valid entry and coherent speed behavior |
+| GF-11 | Exit slide on flat ground and slope | Stable recovery to a valid movement state |
+| GF-12 | Vault equivalent obstacles repeatedly | Consistent detection and traversal |
+| GF-13 | Approach invalid vault geometry | No false activation or collision exploit |
+| GF-14 | Wall-run along a valid surface | Reliable contact, direction, and exit |
+| GF-15 | Lose wall contact during wall-run | Prompt, stable transition out of wall-run |
+| GF-16 | Wall-jump from valid contact | Consistent launch and state cleanup |
+| GF-17 | Traverse a combined movement sequence | Momentum and transitions remain coherent |
+| GF-18 | Repeat a route after respawn or restart | No stale state, input, effects, or resource accumulation |
+
+Not every task requires all scenarios. Select the relevant scenarios and explain any omissions.
+
+## 10. Evaluation record
+
+For each audited issue, record:
+
+- Scenario ID(s).
+- Build or commit under test.
+- Input device and relevant settings.
+- Initial conditions.
+- Observed behavior before the change.
+- Change made and its rationale.
+- Observed behavior after the change.
+- Automated tests and runtime checks executed.
+- Remaining limitations or regressions.
+
+Use a simple 1–5 subjective rating when useful:
+
+1. Unusable or unreliable.
+2. Noticeably poor or inconsistent.
+3. Functional, but with clear friction.
+4. Good and predictable.
+5. Excellent, coherent, and repeatable.
+
+Subjective ratings are supporting observations, not substitutes for reproducible evidence. Do not claim numerical improvement without measurements or a documented evaluation method.
+
+## 11. Issue severity
+
+- **Critical:** input or movement failure blocks progress, causes unrecoverable state, or corrupts a run.
+- **High:** a core mechanic is unreliable, unfair, or regularly causes unintended failure.
+- **Medium:** noticeable responsiveness, readability, or feedback problem with a viable workaround.
+- **Low:** minor inconsistency or polish issue that does not materially affect traversal.
+
+Prioritize issues by player impact and frequency, not by how easy they are to fix.
+
+## 12. Regression requirements
+
+A gameplay-feel change must not silently break:
+
+- Fixed-timestep simulation and frame-rate independence.
+- Movement-state invariants and transition ownership.
+- Collision and traversal validity.
+- Checkpoint, respawn, and session isolation.
+- Speedrun timing and route integrity.
+- Input device abstraction.
+- Accessibility and reduced-motion behavior.
+- Audio event lifecycle.
+- Performance and resource cleanup.
+
+Add deterministic tests for rules that can be tested without rendering. Use manual runtime scenarios for experiential behavior that cannot be meaningfully asserted in unit tests.
+
+## 13. Agent implementation rules
+
+Agents working on gameplay feel must:
+
+1. Read this document and the relevant system specifications before changing behavior.
+2. Inspect the existing implementation and reproduce the issue before tuning, when possible.
+3. Identify the owning system and preserve its contracts.
+4. Establish a baseline and use repeatable scenarios.
+5. Make the smallest controlled change that addresses the observed cause.
+6. Avoid changing several unrelated tuning variables at once.
+7. Verify the result against the same scenarios and relevant regressions.
+8. Report what was actually tested and what remains subjective or unverified.
+9. Update documentation when intended behavior or approved tuning contracts change.
+
+Do not:
+
+- Tune by intuition without inspecting the implementation.
+- Hide a physics defect with camera effects.
+- Use presentation code to change authoritative movement state.
+- Add mechanics or dependencies outside the approved scope.
+- Claim that a mechanic feels correct based only on compilation or unit tests.
+
+## 14. Definition of success
+
+A gameplay-feel change is accepted when:
+
+- The original issue is reproducible or its baseline is clearly documented.
+- The change addresses the identified cause within the correct system.
+- Relevant repeatable scenarios show the intended behavior.
+- No critical movement, transition, input, camera, accessibility, or session regression is introduced.
+- Relevant automated checks and runtime verification are reported honestly.
+- Remaining trade-offs and unverified aspects are explicit.
+
+The goal is not to maximize animation, camera motion, or mechanical complexity. The goal is a first-person parkour experience that feels responsive, coherent, readable, and rewarding to master.
