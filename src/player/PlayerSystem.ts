@@ -288,8 +288,10 @@ export class PlayerSystem implements Disposable {
 
     const computed = this.controller.computedMovement(this.actualMovement);
     const movement = { x: computed.x, y: computed.y, z: computed.z };
+    let glideActive = false;
 
     if (glideTarget) {
+      glideActive = true;
       movement.x = glideTarget.dx;
       movement.y = glideTarget.dy;
       movement.z = glideTarget.dz;
@@ -363,8 +365,18 @@ export class PlayerSystem implements Disposable {
 
     this.body.setNextKinematicTranslation({ x: nextX, y: nextY, z: nextZ });
 
+    // Glide steps are kinematic by construction (the riser and its top were
+    // validated by raycasts), so their travel can legitimately be a tiny
+    // final sliver. Reconciling velocity against that sliver collapses the
+    // commanded speed on every stair (the jerky ascent); preserve the
+    // model's commanded horizontal momentum instead and keep only the
+    // glide's actual vertical lift.
+    const resultMovement = glideActive
+      ? { x: this.desiredTranslation.x, y: movement.y, z: this.desiredTranslation.z }
+      : { x: movement.x, y: movement.y, z: movement.z };
+
     this.model.applyCollisionResult(
-      { x: movement.x, y: movement.y, z: movement.z },
+      resultMovement,
       deltaSeconds,
       this.controller.computedGrounded(),
     );
@@ -587,23 +599,40 @@ export class PlayerSystem implements Disposable {
     const lift = this.tuning.maxStepHeight;
     const feetY = translationBefore.y - this.postureHeight / 2;
 
-    // Riser face: a horizontal ray at foot height hits something within reach.
-    const face = this.physics.rapierWorld.castRay(
-      new RAPIER.Ray(
-        {
-          x: translationBefore.x + dirX * this.tuning.capsuleRadius,
-          y: feetY + 0.08,
-          z: translationBefore.z + dirZ * this.tuning.capsuleRadius,
-        },
-        { x: dirX, y: 0, z: dirZ },
-      ),
-      this.tuning.stepGlideProbeAhead + 0.05,
-      true,
-      undefined,
-      undefined,
-      undefined,
-      this.body,
-    );
+    // Riser face: horizontal rays at foot height hit something within reach.
+    // The rays start at the capsule CENTER, not its front surface: when the
+    // capsule is already touching the riser, a ray from the surface can start
+    // on/inside the face and miss it (jerky stair ascent). Two heights cover
+    // the face even when the feet float slightly above or below the step top.
+    const probeHeights = [feetY + 0.04, feetY + 0.12];
+    let face: RAPIER.RayColliderHit | null = null;
+
+    for (const probeY of probeHeights) {
+      const hit = this.physics.rapierWorld.castRay(
+        new RAPIER.Ray(
+          {
+            x: translationBefore.x,
+            y: probeY,
+            z: translationBefore.z,
+          },
+          { x: dirX, y: 0, z: dirZ },
+        ),
+        this.tuning.stepGlideProbeAhead + this.tuning.capsuleRadius + 0.05,
+        true,
+        undefined,
+        undefined,
+        undefined,
+        this.body,
+      );
+
+      if (!hit) {
+        continue;
+      }
+
+      if (!face || hit.timeOfImpact < face.timeOfImpact) {
+        face = hit;
+      }
+    }
 
     if (!face) {
       this.stepGlideProgress = 0;
@@ -611,8 +640,8 @@ export class PlayerSystem implements Disposable {
       return null;
     }
 
-    const wallX = translationBefore.x + dirX * (this.tuning.capsuleRadius + face.timeOfImpact);
-    const wallZ = translationBefore.z + dirZ * (this.tuning.capsuleRadius + face.timeOfImpact);
+    const wallX = translationBefore.x + dirX * face.timeOfImpact;
+    const wallZ = translationBefore.z + dirZ * face.timeOfImpact;
 
     // Climbable top just behind the face?
     const support = this.physics.rapierWorld.castRayAndGetNormal(
@@ -644,8 +673,9 @@ export class PlayerSystem implements Disposable {
     }
 
     // Glide horizontally from here to where the capsule center sits over the
-    // step top (wall plane plus capsule radius).
-    const horizTarget = Math.max(0.02, this.tuning.capsuleRadius + face.timeOfImpact + 0.12);
+    // step top (wall plane plus 0.12 m of overshoot). The face distance is
+    // measured from the capsule center (see the probe above).
+    const horizTarget = Math.max(0.02, face.timeOfImpact + 0.12);
     const travel = Math.min(
       desiredHorizontal,
       this.tuning.stepGlideSpeed * deltaSeconds,

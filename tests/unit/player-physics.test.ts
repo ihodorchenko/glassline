@@ -523,6 +523,83 @@ describe("PlayerSystem physics integration", () => {
     expect(landedEvents).toBeGreaterThan(0);
   });
 
+  it("climbs a 0.15 m stair flight without per-step velocity collapses", async () => {
+    // Regression for the jerky stair ascent: the step-glide's final sliver
+    // used to reconcile the velocity down to ~1 m/s on every riser, and the
+    // face probe could miss the riser when the capsule was already touching
+    // it (deep stalls). The climb must keep most of the run speed.
+    const physics = new PhysicsWorld({
+      gravity: { x: 0, y: -9.81, z: 0 },
+      timestepSeconds: FIXED_DT,
+    });
+
+    await physics.initialize();
+
+    const world = physics.rapierWorld;
+    const groundBody = world.createRigidBody(
+      RAPIER.RigidBodyDesc.fixed().setTranslation(0, -0.1, 0),
+    );
+
+    world.createCollider(RAPIER.ColliderDesc.cuboid(30, 0.1, 60), groundBody);
+
+    // Ten 0.15 m risers, 0.5 m apart (the skybridge stair proportions).
+    for (let index = 0; index < 10; index += 1) {
+      const top = index === 0 ? 0.15 : 0.15 + index * 0.15;
+
+      const body = world.createRigidBody(
+        RAPIER.RigidBodyDesc.fixed().setTranslation(0, top / 2 - 0.05, -2 - index * 0.5),
+      );
+
+      world.createCollider(RAPIER.ColliderDesc.cuboid(3, top / 2 + 0.05, 0.25), body);
+    }
+
+    const player = new PlayerSystem(physics, {
+      tuning: DEFAULT_MOVEMENT_TUNING,
+      spawnPoint: { x: 0, y: 0.895, z: 0 },
+    });
+
+    player.activate();
+    activeHarnesses.push({ physics, player });
+
+    step({ physics, player }, input(), 60);
+
+    let minSpeed = Number.POSITIVE_INFINITY;
+    let maxSpeedDropPerStep = 0;
+    let previousSpeed: number | null = null;
+
+    for (let index = 0; index < 240; index += 1) {
+      player.fixedUpdate(input({ move: { x: 0, y: 1 } }), 0, FIXED_DT);
+      physics.step();
+
+      const position = player.getPosition();
+      const snapshot = player.getMovementSnapshot();
+
+      // Only measure once the climb has started (first riser reached).
+      if (position.z < -1.2 && position.y > 1.1) {
+        minSpeed = Math.min(minSpeed, snapshot.speed);
+
+        if (previousSpeed !== null) {
+          maxSpeedDropPerStep = Math.max(maxSpeedDropPerStep, previousSpeed - snapshot.speed);
+        }
+
+        previousSpeed = snapshot.speed;
+      }
+
+      if (position.z < -4.6 && position.y > 1.5) {
+        break;
+      }
+    }
+
+    const final = player.getPosition();
+
+    // The flight was climbed…
+    expect(final.z).toBeLessThan(-4.6);
+    // …without stalls: the speed stays in the run band…
+    expect(minSpeed).toBeGreaterThan(3);
+    // …and without per-step collapses.
+    expect(maxSpeedDropPerStep).toBeLessThan(2);
+  });
+
   it("keeps the camera's vertical motion bounded while descending stairs", async () => {
     const harness = await createHarness({ withStairs: true });
 
