@@ -362,6 +362,81 @@ describe("PlayerSystem physics integration", () => {
     expect(reachedTop).toBe(true);
   });
 
+  it("slides down a ramp and exits cleanly at the bottom (GF-11 slope case)", async () => {
+    const physics = new PhysicsWorld({
+      gravity: { x: 0, y: -9.81, z: 0 },
+      timestepSeconds: FIXED_DT,
+    });
+
+    await physics.initialize();
+
+    const world = physics.rapierWorld;
+    const groundBody = world.createRigidBody(
+      RAPIER.RigidBodyDesc.fixed().setTranslation(0, -0.1, 0),
+    );
+
+    world.createCollider(RAPIER.ColliderDesc.cuboid(30, 0.1, 60), groundBody);
+
+    // A 35° ramp rising toward -z (the same shape as the climb test).
+    const angle = (35 * Math.PI) / 180;
+    const rampLength = 8;
+    const rampCenterY = Math.sin(angle) * (rampLength / 2) + 0.02;
+    const rampCenterZ = -(6 + Math.cos(angle) * (rampLength / 2));
+    const rampBody = world.createRigidBody(
+      RAPIER.RigidBodyDesc.fixed()
+        .setTranslation(0, rampCenterY, rampCenterZ)
+        .setRotation({ x: Math.sin(angle / 2), y: 0, z: 0, w: Math.cos(angle / 2) }),
+    );
+
+    world.createCollider(RAPIER.ColliderDesc.cuboid(6, 0.15, rampLength / 2), rampBody);
+
+    const player = new PlayerSystem(physics, {
+      tuning: DEFAULT_MOVEMENT_TUNING,
+      spawnPoint: { x: 0, y: 3.2, z: -9.5 },
+    });
+
+    player.activate();
+    activeHarnesses.push({ physics, player });
+
+    step({ physics, player }, input(), 60);
+
+    let slid = false;
+    let maxSpeedDropPerStep = 0;
+    let previousSpeed: number | null = null;
+    let exitState: string | null = null;
+    let exitY = 0;
+
+    for (let index = 0; index < 300; index += 1) {
+      // Downhill = backward input (+z).
+      player.fixedUpdate(input({ move: { x: 0, y: -1 }, crouchHeld: index > 30 }), 0, FIXED_DT);
+      physics.step();
+
+      const snapshot = player.getMovementSnapshot();
+      const position = player.getPosition();
+
+      if (snapshot.state === "SLIDING") {
+        slid = true;
+
+        if (previousSpeed !== null) {
+          maxSpeedDropPerStep = Math.max(maxSpeedDropPerStep, previousSpeed - snapshot.speed);
+        }
+
+        previousSpeed = snapshot.speed;
+      } else if (slid) {
+        exitState = snapshot.state;
+        exitY = position.y;
+        break;
+      }
+    }
+
+    expect(slid).toBe(true);
+    // No single-step velocity kill on the descent.
+    expect(maxSpeedDropPerStep).toBeLessThan(1);
+    // The slide exits to a valid grounded state at the bottom of the ramp.
+    expect(exitState).toBe("RUNNING");
+    expect(exitY).toBeLessThan(1.2);
+  });
+
   it("emits a landing event after a wall jump touchdown", async () => {
     const physics = new PhysicsWorld({
       gravity: { x: 0, y: -9.81, z: 0 },

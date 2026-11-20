@@ -143,7 +143,7 @@ export const DEFAULT_MOVEMENT_TUNING: MovementTuning = {
   jumpReleaseGravityMultiplier: 2.5,
 
   slideMinEntrySpeed: 5,
-  slideFriction: 2,
+  slideFriction: 4,
   slideMinDurationSeconds: 0.25,
   slideMaxDurationSeconds: 1.2,
   slideExitSpeed: 2.5,
