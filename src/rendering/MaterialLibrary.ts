@@ -1011,7 +1011,7 @@ export class MaterialLibrary implements Disposable {
     if (key === "glass-rail") {
       // Fresnel-weighted transparency: 0.32 head-on, thinner at grazing so the
       // balustrade stops reading milky while the structure below stays visible.
-      applyGlassRailOpacity(material, 0.32, 0.22);
+      applyGlassRailOpacity(material, 0.32, 0.18);
     }
 
     if (key === "glass" || key === "glass-far") {
