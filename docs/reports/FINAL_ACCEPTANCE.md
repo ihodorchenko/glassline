@@ -122,17 +122,21 @@ Both servers are running as managed background jobs. Controls (defaults):
 - `main` has not been merged; the pass lives on `feat/art-audio-level` (owner
   decides merge timing).
 
-## 5. Verdict (owner)
+## 5. Verdict (owner) — ACCEPTED
 
-- Visual look (six review frames): ☐ ACCEPT ☐ ACCEPT WITH NOTES ☐ REJECT
-- Gameplay/controls/marker: ☐ ACCEPT ☐ ACCEPT WITH NOTES ☐ REJECT
-- RU/EN localization: ☐ ACCEPT ☐ ACCEPT WITH NOTES ☐ REJECT
-- Accessibility: ☐ ACCEPT ☐ ACCEPT WITH NOTES ☐ REJECT
-- Audio (listening): ☐ ACCEPT ☐ ACCEPT WITH NOTES ☐ REJECT
-- Performance/stability: ☐ ACCEPT ☐ ACCEPT WITH NOTES ☐ REJECT
-- **Overall:** ☐ ACCEPT ☐ ACCEPT WITH NOTES ☐ REJECT
+**Owner verdict, 2026-11-20: «по чек-листу все апрувлю» — ACCEPT on every area.**
 
-Notes / blockers found:
-```
-(owner)
-```
+- Visual look (six review frames): **ACCEPT**
+- Gameplay/controls/marker: **ACCEPT**
+- RU/EN localization: **ACCEPT**
+- Accessibility: **ACCEPT**
+- Audio (listening): **ACCEPT** — the W4 human listening gate is now closed by the
+  owner's checklist approval.
+- Performance/stability: **ACCEPT**
+- HUD legibility (post-review fix, semi-transparent plates): **ACCEPT**
+- **Overall: ACCEPT.**
+
+Notes / blockers found: none. Optional post-release polish remains documented
+(world branding stays EN by design, Firefox untested, accepted metric residuals,
+city triangle/draw-call overrun accepted with the perf gate green). Merge timing
+to `main` remains the owner's explicit decision.

@@ -4,7 +4,7 @@
 **Project:** Glassline  
 **Last Updated:** 2026-11-20  
 **Project Stage:** Polished Initial Release Candidate  
-**Status:** Phases 0–8 Complete; Release Polish Pass Complete; Art/Audio/Level Pass W0–W5 Complete (G0–G5 closed)
+**Status:** Phases 0–8 Complete; Release Polish Pass Complete; Art/Audio/Level Pass W0–W5 Complete (G0–G5 closed); **release candidate accepted by owner (2026-11-20), pending explicit merge decision**
 
 ## 0. Art/Audio/Level Pass — W0–W5 status (2026-11-20)
 
@@ -22,6 +22,7 @@ modified. The binding look evidence is blind review, not the metric columns.
 | Post-G5 | cosmetic register + RU localization | closed: 6 review frames re-captured (deterministic), RU/EN switch shipped | [`reports/W5_RELEASE.md`](reports/W5_RELEASE.md) §7, [`evidence/i18n/`](evidence/i18n/) |
 | Post-G5.1 | cosmetic follow-ups | accepted (guided A/B): deck shadows, BG grid parity, language chip, boot tagline | [`reports/W5_RELEASE.md`](reports/W5_RELEASE.md) §7.4 |
 | UX/city | objective marker + city-below streets | accepted (guided A/B): in-world red marker, 8x8 street grid below the route | [`reports/W5_RELEASE.md`](reports/W5_RELEASE.md) §7.5 |
+| Acceptance | owner final acceptance | **ACCEPT on every checklist area** (incl. W4 listening); release candidate ready | [`reports/FINAL_ACCEPTANCE.md`](reports/FINAL_ACCEPTANCE.md), [`reports/RELEASE_CANDIDATE.md`](reports/RELEASE_CANDIDATE.md) |
 | G3 | Level/route | route classes C1/C2/C3 finished, checkpoints validated (293+ tests) | [`reports/DECISIONS.md`](reports/DECISIONS.md) D-06 |
 | G4 | Audio foundation | 5/5 mix targets measured; **human listening pass remains open** | [`evidence/video/`](evidence/video/) audio rounds |
 | G5 | Release hygiene | blind 6/6, a11y audit, perf gate, docs; **G5 closed** | [`reports/W5_RELEASE.md`](reports/W5_RELEASE.md) |

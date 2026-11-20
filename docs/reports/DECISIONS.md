@@ -711,3 +711,26 @@ tree crowns → single-box car cabins; keep buildings/crosswalks.
 parapet), determinism 6/6 accepted (5 px Δ1/255), shifted 50/78 unchanged,
 guardrails unchanged, 368 tests, validate green. Owner play-confirmation of the
 "≤2 s to goal" criterion remains a human step. Nothing merges to `main`.
+
+## D-27 — Owner final acceptance: release candidate ACCEPTED (2026-11-20)
+
+**Verdict.** Owner approved the complete final-acceptance checklist
+(«по чек-листу все апрувлю») — ACCEPT on every area: visual look (six review
+frames), gameplay/controls/objective marker, RU/EN localization, accessibility,
+audio listening, performance/stability, HUD legibility. Record:
+[`FINAL_ACCEPTANCE.md`](FINAL_ACCEPTANCE.md) §5.
+
+**Gate consequences.** The W4 human listening gate is now **closed by owner
+listening**; all automated gates were already green. The art/audio/level pass is
+therefore complete as a release candidate on `feat/art-audio-level`
+(43 commits, base `main` @ `ae63a95` untouched), with the documented accepted
+limitations unchanged (accepted-documented metric residuals, skybridge split
+report-only, service white-point WATCH, city triangle/draw-call overrun with the
+perf gate green, Firefox gameplay unverified, world brand signage and static boot
+chrome EN by design).
+
+**Merge policy.** Nothing is merged to `main`; the owner explicitly decides
+merge timing/strategy. Optional post-release polish is documented in
+`W5_RELEASE.md` / `DECISIONS` D-21/D-22/D-26.
+
+Final report: [`RELEASE_CANDIDATE.md`](RELEASE_CANDIDATE.md).

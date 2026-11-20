@@ -12,17 +12,9 @@
           "cssColor": "rgba(247, 245, 238, 0.76)",
           "fontSizePx": 12.48,
           "fontWeight": "400",
-          "backgroundSampledRgb": [
-            164,
-            185,
-            209
-          ],
+          "backgroundSampledRgb": [164, 185, 209],
           "backgroundSamplePixels": 624,
-          "effectiveTextRgb": [
-            227,
-            231,
-            231
-          ],
+          "effectiveTextRgb": [227, 231, 231],
           "contrast": 1.61,
           "passes45": false
         },
@@ -31,17 +23,9 @@
           "cssColor": "rgb(247, 245, 238)",
           "fontSizePx": 15.2,
           "fontWeight": "600",
-          "backgroundSampledRgb": [
-            164,
-            185,
-            209
-          ],
+          "backgroundSampledRgb": [164, 185, 209],
           "backgroundSamplePixels": 624,
-          "effectiveTextRgb": [
-            247,
-            245,
-            238
-          ],
+          "effectiveTextRgb": [247, 245, 238],
           "contrast": 1.84,
           "passes45": false
         },
@@ -50,17 +34,9 @@
           "cssColor": "rgb(247, 245, 238)",
           "fontSizePx": 12.8,
           "fontWeight": "400",
-          "backgroundSampledRgb": [
-            164,
-            185,
-            209
-          ],
+          "backgroundSampledRgb": [164, 185, 209],
           "backgroundSamplePixels": 624,
-          "effectiveTextRgb": [
-            247,
-            245,
-            238
-          ],
+          "effectiveTextRgb": [247, 245, 238],
           "contrast": 1.84,
           "passes45": false
         }
@@ -78,17 +54,9 @@
           "cssColor": "rgb(247, 245, 238)",
           "fontSizePx": 13.12,
           "fontWeight": "600",
-          "backgroundSampledRgb": [
-            221,
-            221,
-            221
-          ],
+          "backgroundSampledRgb": [221, 221, 221],
           "backgroundSamplePixels": 77,
-          "effectiveTextRgb": [
-            247,
-            245,
-            238
-          ],
+          "effectiveTextRgb": [247, 245, 238],
           "contrast": 1.25,
           "passes45": false
         }
@@ -106,17 +74,9 @@
           "cssColor": "rgb(247, 245, 238)",
           "fontSizePx": 27.2,
           "fontWeight": "800",
-          "backgroundSampledRgb": [
-            220,
-            223,
-            226
-          ],
+          "backgroundSampledRgb": [220, 223, 226],
           "backgroundSamplePixels": 1204,
-          "effectiveTextRgb": [
-            247,
-            245,
-            238
-          ],
+          "effectiveTextRgb": [247, 245, 238],
           "contrast": 1.23,
           "passes45": false
         },
@@ -125,17 +85,9 @@
           "cssColor": "rgba(247, 245, 238, 0.76)",
           "fontSizePx": 12.48,
           "fontWeight": "400",
-          "backgroundSampledRgb": [
-            220,
-            223,
-            226
-          ],
+          "backgroundSampledRgb": [220, 223, 226],
           "backgroundSamplePixels": 1204,
-          "effectiveTextRgb": [
-            241,
-            240,
-            235
-          ],
+          "effectiveTextRgb": [241, 240, 235],
           "contrast": 1.17,
           "passes45": false
         }
@@ -153,17 +105,9 @@
           "cssColor": "rgb(247, 245, 238)",
           "fontSizePx": 13.12,
           "fontWeight": "600",
-          "backgroundSampledRgb": [
-            226,
-            228,
-            231
-          ],
+          "backgroundSampledRgb": [226, 228, 231],
           "backgroundSamplePixels": 77,
-          "effectiveTextRgb": [
-            247,
-            245,
-            238
-          ],
+          "effectiveTextRgb": [247, 245, 238],
           "contrast": 1.17,
           "passes45": false
         }
@@ -183,17 +127,9 @@
           "cssColor": "rgba(247, 245, 238, 0.76)",
           "fontSizePx": 12.48,
           "fontWeight": "400",
-          "backgroundSampledRgb": [
-            60,
-            64,
-            66
-          ],
+          "backgroundSampledRgb": [60, 64, 66],
           "backgroundSamplePixels": 4860,
-          "effectiveTextRgb": [
-            202,
-            202,
-            197
-          ],
+          "effectiveTextRgb": [202, 202, 197],
           "contrast": 6.35,
           "passes45": true
         },
@@ -202,17 +138,9 @@
           "cssColor": "rgb(247, 245, 238)",
           "fontSizePx": 15.2,
           "fontWeight": "600",
-          "backgroundSampledRgb": [
-            60,
-            64,
-            66
-          ],
+          "backgroundSampledRgb": [60, 64, 66],
           "backgroundSamplePixels": 4860,
-          "effectiveTextRgb": [
-            247,
-            245,
-            238
-          ],
+          "effectiveTextRgb": [247, 245, 238],
           "contrast": 9.61,
           "passes45": true
         },
@@ -221,17 +149,9 @@
           "cssColor": "rgb(247, 245, 238)",
           "fontSizePx": 12.8,
           "fontWeight": "400",
-          "backgroundSampledRgb": [
-            60,
-            64,
-            66
-          ],
+          "backgroundSampledRgb": [60, 64, 66],
           "backgroundSamplePixels": 4860,
-          "effectiveTextRgb": [
-            247,
-            245,
-            238
-          ],
+          "effectiveTextRgb": [247, 245, 238],
           "contrast": 9.61,
           "passes45": true
         }
@@ -249,17 +169,9 @@
           "cssColor": "rgb(247, 245, 238)",
           "fontSizePx": 13.12,
           "fontWeight": "600",
-          "backgroundSampledRgb": [
-            65,
-            68,
-            70
-          ],
+          "backgroundSampledRgb": [65, 68, 70],
           "backgroundSamplePixels": 874,
-          "effectiveTextRgb": [
-            247,
-            245,
-            238
-          ],
+          "effectiveTextRgb": [247, 245, 238],
           "contrast": 9.0,
           "passes45": true
         }
@@ -277,17 +189,9 @@
           "cssColor": "rgb(247, 245, 238)",
           "fontSizePx": 27.2,
           "fontWeight": "800",
-          "backgroundSampledRgb": [
-            62,
-            67,
-            70
-          ],
+          "backgroundSampledRgb": [62, 67, 70],
           "backgroundSamplePixels": 3946,
-          "effectiveTextRgb": [
-            247,
-            245,
-            238
-          ],
+          "effectiveTextRgb": [247, 245, 238],
           "contrast": 9.18,
           "passes45": true
         },
@@ -296,17 +200,9 @@
           "cssColor": "rgba(247, 245, 238, 0.76)",
           "fontSizePx": 12.48,
           "fontWeight": "400",
-          "backgroundSampledRgb": [
-            62,
-            67,
-            70
-          ],
+          "backgroundSampledRgb": [62, 67, 70],
           "backgroundSamplePixels": 3946,
-          "effectiveTextRgb": [
-            203,
-            202,
-            198
-          ],
+          "effectiveTextRgb": [203, 202, 198],
           "contrast": 6.11,
           "passes45": true
         }
@@ -324,17 +220,9 @@
           "cssColor": "rgb(247, 245, 238)",
           "fontSizePx": 13.12,
           "fontWeight": "600",
-          "backgroundSampledRgb": [
-            60,
-            65,
-            69
-          ],
+          "backgroundSampledRgb": [60, 65, 69],
           "backgroundSamplePixels": 874,
-          "effectiveTextRgb": [
-            247,
-            245,
-            238
-          ],
+          "effectiveTextRgb": [247, 245, 238],
           "contrast": 9.46,
           "passes45": true
         }
