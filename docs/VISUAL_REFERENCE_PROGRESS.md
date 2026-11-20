@@ -3840,6 +3840,77 @@ microrelief).
 
 - Automated run; Safari wall-clock/FPS not stable enough for a performance claim.
 
+## Round 98 — P1 reference recalibration: atmosphere, framing, audio spectrum (2026-11-21)
+
+### Scope
+
+Close the P1 layer of the reference gap (atmosphere/light/framing/spectrum)
+after the 2026-11-20 W2.2/W5 content rounds changed the look without
+re-running the visual gates. Diagnosis: a fresh capture at HEAD measured
+**9/13 shifted / 11/13 tolerance** (2 WATCH: sky-blue 68.5 %, local contrast)
+versus the round-93 reference card; a git bisect of the look path
+(1c3d5e7 → e699249 → 9b33c3c → e398c54) and a VLM frame audit attributed the
+delta to (a) the W2.1 7°-up start-card reframing, (b) the W2.2 cobalt palette /
+sun angles / SkyDome chroma-radiance, and (c) content/materials (straight-tile
+cool cast, mid-deck prop clusters, blue-grey background facades).
+
+### What changed
+
+- `PROLOGUE_ENVIRONMENT` restored to the verified round-93 atmosphere anchors
+  (mid-sky `#8fbde0`, zenith `#2050d8`, horizon `#e8f0f8`, cloud cover 0.5,
+  cloud shadow `#b8c8d8`, hemisphere 0.23, sun 2.25/1.03).
+- `SkyDome`: W1 chroma/radiance restored (`0.55/0.42`, `1.0/1.2`) — W2.2's
+  `0.32/0.22` + `1.05/0.88` had washed the frame pale-blue and, through the
+  PMREM environment map, cooled the decks.
+- `captureShots` start-roof: reverted the W2.1 7°-up pitch to the AD-2
+  reference framing (horizon ~59 %, architecture-dominant card) — the 13 §2.1
+  metrics are only defined against that composition.
+- Grade: exposure 1.65 → 1.56 (W1 sky radiance lifted luma past the shifted
+  band), shadow tint (0.94,1.0,1.10) → (0.95,1.0,1.07) (W2.2 split measured
+  −29.6 vs ref −21.8), bloom 0.18/0.45 → 0.22/0.50 (soft sun/specular glare,
+  threshold unchanged at 4.0 so sunlit whites still do not bloom), sun shadow
+  radius 1 → 2 (~2-texel penumbra, softer rooftop shadows).
+- Audio P1 (dark spectrum toward the reference profile): live mix air layer
+  halved (training 0.009 → 0.0045, prologue 0.012 → 0.005) with the corner
+  raised 2400 → 3200 Hz; offline demo hiss layer 0.006 → 0.003 @ 3200 Hz.
+
+### Result
+
+- Start frame: **10/13 shifted PASS** (round-93 itself was 9/13 shifted),
+  11/13 tolerance. Luma/saturation/split/p25 back inside the shifted bands;
+  exposure-calibrated.
+- Offline audio demo: **5/5 bands held**, moved toward the reference profile —
+  low share 0.896 → 0.900, high share 0.060 → 0.056 (reference ~0.025).
+- 402 tests / 44 files, typecheck, build all green. Six-shot capture set,
+  0 console errors.
+
+### Evidence
+
+- [`start.jpg`](evidence/visual/round-98/start.jpg) ·
+  [six-shot set + metrics.json](evidence/visual/round-98/)
+- [`mix.wav` + metrics](evidence/audio/round-98/)
+- Raw iterations under `captures/p1-base` (pre-P1 baseline) and
+  `captures/p1-ship2` (final).
+
+### Honest gaps
+
+- **Sky-blue share 65.4 % vs reference 43.3 %** remains the top gap. The VLM
+  audit pinpoints it as the *visible* 10–30° sky band reading saturated
+  cornflower (`#5898f8`) where the reference is sun-bleached pale — that is
+  sky palette/chroma shaping plus background-facade colour, i.e. P2 content
+  work, not an atmosphere constant.
+- **Systematic cool cast** on white decks (`#f0f0f8`, B>R) and blue-grey deck
+  shadows vs the reference's warm cream (`#f8f0e8`) — introduced with the
+  straight-tile material conversion (e699249); P2 material pass.
+- **Local contrast / top-third contrast** below band (flat mid-deck prop
+  clusters, single flat cloud) — P2 microrelief + structural clouds.
+- Reference-city colour temperature breaks (orange/yellow accents) absent —
+  P2 background variety.
+- The reference audio has ~2.5 % energy above 2 kHz; the remaining 5.6 %
+  share lives in footstep/whoosh/landing transients and should be shaped with
+  the P2 surface-audio pass, not by muting game feel.
+- 2 WATCH (sky, local contrast) keep the tolerance verdict at 11/13, not 13/13.
+
 ## Round log
 
 | Round | Date | Focus | Outcome |
@@ -3852,3 +3923,4 @@ microrelief).
 | 6 | 2026-11-19 | Final scaffold ascent | ~136 m route, 8.2 m vertical, 8 jump platforms, high finish roof; 271 tests |
 | 7 | 2026-11-19 | High catwalk U-turn | ~220 m route, 8.2 m vertical, exposed catwalk, high gate; 272 tests |
 | 8 | 2026-11-19 | Finale polish + altitude wind | Suspended load, deck seams, high-roof kit, altitude-scaled wind; 272 tests |
+| 98 | 2026-11-21 | P1 reference recalibration: atmosphere/framing/spectrum after W2.2/W5 | 10/13 shifted (round-93: 9/13), 11/13 tolerance; audio 5/5, dark spectrum step; 402 tests green; sky-share and deck-warmth gaps attributed to P2 content |
