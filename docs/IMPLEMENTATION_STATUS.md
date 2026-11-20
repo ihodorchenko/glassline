@@ -27,11 +27,37 @@ modified. The binding look evidence is blind review, not the metric columns.
 | G4 | Audio foundation | 5/5 mix targets measured; **human listening pass remains open** | [`evidence/video/`](evidence/video/) audio rounds |
 | G5 | Release hygiene | blind 6/6, a11y audit, perf gate, docs; **G5 closed** | [`reports/W5_RELEASE.md`](reports/W5_RELEASE.md) |
 
-Current validation: `npm run validate` green (typecheck, biome, 302 tests,
+Current validation: `npm run validate` green (typecheck, biome, **381** tests,
 production build). Known limitations, the accepted-residual register,
 measurement caveats and the do-not-claim list are in
 [`reports/W5_RELEASE.md`](reports/W5_RELEASE.md); the owner's manual acceptance
 checklist is in §5 of the same file.
+
+---
+
+## 0.1. Gameplay Feel Audit — baseline + Group 1 (2026-11-20)
+
+The first systematic gameplay-feel audit was executed per
+[`GAMEPLAY_FEEL_AUDIT.md`](GAMEPLAY_FEEL_AUDIT.md) (rewritten during the audit
+into the current evaluation contract). Baseline deliverable:
+[`GAMEPLAY_FEEL_BASELINE.md`](GAMEPLAY_FEEL_BASELINE.md); structured analysis
+and the prioritized improvement plan:
+[`GAMEPLAY_FEEL_AUDIT_REPORT.md`](GAMEPLAY_FEEL_AUDIT_REPORT.md).
+
+Owner-approved **Group 1** (critical correctness) is implemented and verified:
+
+| Item | Change | Status |
+|---|---|---|
+| GF-ISSUE-01 | Slide velocity-kill: confirmed root cause via a minimal Rapier repro — `enableSnapToGround` × the grounded slide's −0.5 m/s downward bias stalled the controller and killed velocity in one step. Fix: removed the bias (`MovementModel.applyVerticalMotion`, one code path). | **Fixed** — runtime GF-10/11/17 clean (slide now runs the full 1.17 s to the duration cap with exactly 2 m/s² decay); regression tests fail on pre-fix `ba9e477` and pass on the fixed tree |
+| GF-ISSUE-06 | Wall-jump landings emitted no `player:landed` event. Fix: `wasAirborne` now includes `WALLJUMP`. | **Fixed** — unit regression + runtime GF-16 (LANDING with 0.18 s recovery) |
+| Tests | 3 regression tests added (`movement-model`: grounded-slide vy = 0, wall-jump landing event; `player-physics`: slide velocity-kill guard). | 381/381 tests pass |
+
+Open audit issues and the remaining plan groups (2: input edge queue + slide
+steering; 3: vault profiles, wall-run metadata, vault collision validation;
+4: camera feedback; 5: performance; 6: tuning) are tracked in
+[`GAMEPLAY_FEEL_AUDIT_REPORT.md`](GAMEPLAY_FEEL_AUDIT_REPORT.md) §8.
+The slide-fix code is uncommitted at the time of writing (pending owner
+commit/merge decision).
 
 ---
 

@@ -358,6 +358,37 @@ describe("MovementModel collision reconciliation and landing", () => {
     expect(snapshot.landingIntensity).toBe(1);
   });
 
+  it("reports a landing when a wall jump touches down", () => {
+    const model = new MovementModel(DEFAULT_MOVEMENT_TUNING);
+
+    simulate(model, runForward(), 60, true);
+    model.step(runForward(), FORWARD, environment(false), FIXED_DT);
+    model.step(runForward(), FORWARD, WALL_RUN_ENVIRONMENT, FIXED_DT);
+    model.step(
+      input({ move: { x: 0, y: 1 }, jumpPressed: true, jumpHeld: true }),
+      FORWARD,
+      WALL_RUN_ENVIRONMENT,
+      FIXED_DT,
+    );
+
+    expect(model.getState()).toBe("WALLJUMP");
+    model.consumeEvents();
+
+    for (let step = 0; step < 10; step += 1) {
+      model.step(input({ move: { x: 0, y: 1 } }), FORWARD, environment(false), FIXED_DT);
+    }
+
+    expect(model.getState()).toBe("WALLJUMP");
+
+    model.applyCollisionResult({ x: 0, y: 0, z: -0.1 }, FIXED_DT, true);
+
+    const events = model.consumeEvents();
+    const snapshot = model.getSnapshot();
+
+    expect(events.landed).toBe(true);
+    expect(snapshot.grounded).toBe(true);
+  });
+
   it("sticks to the ground within snap range when walking off a ledge", () => {
     const model = new MovementModel(DEFAULT_MOVEMENT_TUNING);
 

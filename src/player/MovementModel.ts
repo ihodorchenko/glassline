@@ -171,6 +171,10 @@ export class MovementModel {
   private wallRunTangent: Vector3Like | null = null;
   private wallRunElapsedSeconds = 0;
   private wallJumpRemainingSeconds = 0;
+  /** The current airborne phase began with a wall jump; landings still count. */
+  private wallJumpLandingPending = false;
+  /** Whether the body was off the ground when the current step began. */
+  private airborneAtStepStart = false;
 
   private stepEvents: MovementStepEvents = NO_EVENTS;
 
@@ -224,6 +228,13 @@ export class MovementModel {
   ): void {
     const tuning = this.tuning;
     const wasGrounded = this.grounded;
+
+    this.airborneAtStepStart =
+      !wasGrounded &&
+      (this.state === "JUMPING" ||
+        this.state === "FALLING" ||
+        this.state === "WALLJUMP" ||
+        this.wallJumpLandingPending);
 
     this.stepEvents = NO_EVENTS;
     this.grounded = environment.grounded;
@@ -331,6 +342,14 @@ export class MovementModel {
     this.applyVerticalMotion(input, deltaSeconds);
     this.updateSlideExit(input, deltaSeconds);
     this.updateState();
+    // A WALLJUMP keeps its landing semantics until a collision pass confirms
+    // the touchdown: `updateState()` relabels it FALLING once the outward kick
+    // expires, and the grounded environment flag can flip before the actual
+    // contact is resolved — neither must swallow the landing event. The flag
+    // is consumed in `applyCollisionResult`.
+    if (this.state === "WALLJUMP") {
+      this.wallJumpLandingPending = true;
+    }
     this.jumpExecutedThisStep = false;
   }
 
@@ -362,9 +381,17 @@ export class MovementModel {
     this.velocity.z = actualMovement.z / deltaSeconds;
     this.velocity.y = groundedAfter ? 0 : actualMovement.y / deltaSeconds;
 
-    const wasAirborne = !this.grounded && (this.state === "JUMPING" || this.state === "FALLING");
+    // Airborne status must be judged against the state at the START of this
+    // step: `step()` may already have flipped `grounded` from the environment
+    // probe or relabeled WALLJUMP as FALLING before contact is resolved. A
+    // pending wall-jump flag keeps the landing semantics across that rename.
+    const wasAirborne = this.airborneAtStepStart;
 
     this.grounded = groundedAfter;
+
+    if (groundedAfter) {
+      this.wallJumpLandingPending = false;
+    }
 
     if (wasAirborne && groundedAfter) {
       this.state = "LANDING";

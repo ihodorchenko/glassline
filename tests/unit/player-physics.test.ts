@@ -362,6 +362,92 @@ describe("PlayerSystem physics integration", () => {
     expect(reachedTop).toBe(true);
   });
 
+  it("emits a landing event after a wall jump touchdown", async () => {
+    const physics = new PhysicsWorld({
+      gravity: { x: 0, y: -9.81, z: 0 },
+      timestepSeconds: FIXED_DT,
+    });
+
+    await physics.initialize();
+
+    const world = physics.rapierWorld;
+    const groundBody = world.createRigidBody(
+      RAPIER.RigidBodyDesc.fixed().setTranslation(0, -0.1, 0),
+    );
+
+    world.createCollider(RAPIER.ColliderDesc.cuboid(20, 0.1, 20), groundBody);
+
+    // Tall wall alongside the sprint line at x = -0.9.
+    const wallBody = world.createRigidBody(
+      RAPIER.RigidBodyDesc.fixed().setTranslation(-0.9, 10, -8),
+    );
+
+    world.createCollider(RAPIER.ColliderDesc.cuboid(0.2, 10, 20), wallBody);
+
+    const player = new PlayerSystem(physics, {
+      tuning: DEFAULT_MOVEMENT_TUNING,
+      spawnPoint: { x: 0, y: 0.93, z: 0 },
+    });
+
+    player.activate();
+    activeHarnesses.push({ physics, player });
+
+    let landedEvents = 0;
+
+    player.onMovementEvent("player:landed", () => {
+      landedEvents += 1;
+    });
+
+    step({ physics, player }, input(), 60);
+    step({ physics, player }, input({ move: { x: 0, y: 1 }, sprintHeld: true }), 80);
+
+    // Jump toward the wall, then kick off it once a wall run is established.
+    player.fixedUpdate(
+      input({ move: { x: 0, y: 1 }, sprintHeld: true, jumpPressed: true, jumpHeld: true }),
+      0,
+      FIXED_DT,
+    );
+    physics.step();
+
+    let sawWallRun = false;
+    let sawWallJump = false;
+
+    for (let index = 0; index < 40 && !sawWallJump; index += 1) {
+      player.fixedUpdate(input({ move: { x: 0, y: 1 }, sprintHeld: true }), 0, FIXED_DT);
+      physics.step();
+
+      if (player.getState() === "WALLRUN") {
+        sawWallRun = true;
+      }
+
+      if (sawWallRun) {
+        player.fixedUpdate(
+          input({ move: { x: 0, y: 1 }, sprintHeld: true, jumpPressed: true, jumpHeld: true }),
+          0,
+          FIXED_DT,
+        );
+        physics.step();
+
+        if (player.getState() === "WALLJUMP") {
+          sawWallJump = true;
+        }
+      }
+    }
+
+    expect(sawWallRun).toBe(true);
+    expect(sawWallJump).toBe(true);
+
+    // Settle back onto the ground: the wall-jump airborne phase must produce a
+    // landing event even though updateState() relabels WALLJUMP as FALLING
+    // before contact resolves.
+    for (let index = 0; index < 200 && landedEvents === 0; index += 1) {
+      player.fixedUpdate(input(), 0, FIXED_DT);
+      physics.step();
+    }
+
+    expect(landedEvents).toBeGreaterThan(0);
+  });
+
   it("keeps the camera's vertical motion bounded while descending stairs", async () => {
     const harness = await createHarness({ withStairs: true });
 
