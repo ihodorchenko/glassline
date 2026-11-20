@@ -16,6 +16,7 @@ function rawInput(overrides: Partial<RawInputState> = {}): RawInputState {
   return {
     context: "gameplay",
     heldKeys: new Set<string>(),
+    pendingPresses: new Set<string>(),
     mouseDeltaX: 0,
     mouseDeltaY: 0,
     gamepad: null,
@@ -220,5 +221,62 @@ describe("InputFrameBuilder", () => {
     const frame = builder.build(rawInput({ context }), 0);
 
     expect(frame.context).toBe(context);
+  });
+
+  it("preserves a press edge when a tap starts and ends inside one frame", () => {
+    const builder = new InputFrameBuilder(DEFAULT_ACTION_BINDINGS);
+
+    // Frame 1: nothing. Frame 2 raw state: keydown+keyup happened between
+    // builds, so the key is not held but its press is pending.
+    builder.build(rawInput(), 0);
+
+    const frame = builder.build(rawInput({ pendingPresses: new Set(["Space"]) }), 16);
+
+    expect(frame.buttons.Jump.pressed).toBe(true);
+    expect(frame.buttons.Jump.held).toBe(false);
+
+    // The edge is one-shot: the next frame carries no press and no release
+    // phantom for the same tap.
+    const next = builder.build(rawInput(), 32);
+
+    expect(next.buttons.Jump.pressed).toBe(false);
+    expect(next.buttons.Jump.released).toBe(false);
+    expect(next.buttons.Jump.held).toBe(false);
+  });
+
+  it("merges pending presses with regular press edges without duplicates", () => {
+    const builder = new InputFrameBuilder(DEFAULT_ACTION_BINDINGS);
+
+    builder.build(rawInput(), 0);
+
+    // Key went down and is still held: regular edge and pending press agree.
+    const frame = builder.build(
+      rawInput({ heldKeys: new Set(["Space"]), pendingPresses: new Set(["Space"]) }),
+      16,
+    );
+
+    expect(frame.buttons.Jump.pressed).toBe(true);
+    expect(frame.buttons.Jump.held).toBe(true);
+
+    // While held across frames, no further press edges appear.
+    const held = builder.build(rawInput({ heldKeys: new Set(["Space"]) }), 32);
+
+    expect(held.buttons.Jump.pressed).toBe(false);
+    expect(held.buttons.Jump.held).toBe(true);
+  });
+
+  it("ignores pending presses in contexts where the action is disabled", () => {
+    const builder = new InputFrameBuilder(DEFAULT_ACTION_BINDINGS);
+
+    builder.build(rawInput({ context: "main-menu" }), 0);
+
+    const frame = builder.build(
+      rawInput({ context: "main-menu", pendingPresses: new Set(["Space"]) }),
+      16,
+    );
+
+    // Space maps to Confirm in menus, not Jump.
+    expect(frame.buttons.Jump.pressed).toBe(false);
+    expect(frame.buttons.Confirm.pressed).toBe(true);
   });
 });

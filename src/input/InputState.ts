@@ -33,6 +33,8 @@ export const IDLE_BUTTON_STATE: ButtonState = {
 export interface RawInputState {
   readonly context: InputContext;
   readonly heldKeys: ReadonlySet<string>;
+  /** Key codes with a (non-repeat) keydown since the previous frame build. */
+  readonly pendingPresses: ReadonlySet<string>;
   readonly mouseDeltaX: number;
   readonly mouseDeltaY: number;
   readonly gamepad: GamepadSnapshot | null;
@@ -45,6 +47,8 @@ export interface ResolvedActions {
   readonly lookMouse: Vector2Like;
   readonly lookGamepad: Vector2Like;
   readonly actionValues: ReadonlyMap<InputAction, number>;
+  /** Button actions whose bound key was pressed since the previous frame. */
+  readonly pressedActions: ReadonlySet<InputAction>;
 }
 
 /** Stable input snapshot consumed by one rendered frame. */
@@ -132,6 +136,7 @@ export class InputActionResolver {
 
   resolve(raw: RawInputState): ResolvedActions {
     const actionValues = new Map<InputAction, number>();
+    const pressedActions = new Set<InputAction>();
 
     for (const route of BUTTON_ROUTES) {
       if (!isActionEnabledInContext(route.action, raw.context)) {
@@ -145,6 +150,15 @@ export class InputActionResolver {
 
       if (value > 0) {
         actionValues.set(route.action, value);
+      }
+
+      // A press that started and ended inside one rendered frame leaves no
+      // held state behind; the pending-press set preserves the edge so a
+      // one-shot action (e.g. a quick jump tap) cannot be lost.
+      if (
+        this.keyboardButtonValue(this.bindings.keyboard[route.keyboard], raw.pendingPresses) > 0
+      ) {
+        pressedActions.add(route.action);
       }
     }
 
@@ -160,6 +174,7 @@ export class InputActionResolver {
         ? this.resolveGamepadLook(raw.gamepad)
         : ZERO_VECTOR,
       actionValues,
+      pressedActions,
     };
   }
 
@@ -312,7 +327,9 @@ export class InputFrameBuilder {
       }
 
       const value = resolved.actionValues.get(action) ?? 0;
-      buttons[action] = this.tracker.update(action, value > 0, value);
+      const state = this.tracker.update(action, value > 0, value);
+
+      buttons[action] = resolved.pressedActions.has(action) ? { ...state, pressed: true } : state;
     }
 
     return {

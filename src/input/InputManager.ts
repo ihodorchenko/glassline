@@ -66,6 +66,13 @@ export class InputManager implements Disposable {
   private readonly heldKeys = new Set<string>();
   private readonly heldMouseButtons = new Set<number>();
   private readonly cleanups: Array<() => void> = [];
+  /**
+   * Key codes with a (non-repeat) keydown since the previous frame build.
+   * A press+release that both happen inside one rendered frame leaves no
+   * held state behind; this set preserves the press edge for the next frame
+   * so one-shot actions cannot be lost (see `11_INPUT_SYSTEM_SPEC.md` §14.4).
+   */
+  private readonly pendingPresses = new Set<string>();
 
   private mouseDeltaX = 0;
   private mouseDeltaY = 0;
@@ -127,6 +134,7 @@ export class InputManager implements Disposable {
       {
         context: this.context,
         heldKeys: this.enabled ? this.heldKeys : EMPTY_KEYS,
+        pendingPresses: this.enabled ? this.pendingPresses : EMPTY_KEYS,
         mouseDeltaX: this.enabled ? this.mouseDeltaX : 0,
         mouseDeltaY: this.enabled ? this.mouseDeltaY : 0,
         gamepad,
@@ -134,6 +142,7 @@ export class InputManager implements Disposable {
       timestampMs,
     );
 
+    this.pendingPresses.clear();
     this.mouseDeltaX = 0;
     this.mouseDeltaY = 0;
   }
@@ -161,6 +170,7 @@ export class InputManager implements Disposable {
   releaseHeldInput(): void {
     this.heldKeys.clear();
     this.heldMouseButtons.clear();
+    this.pendingPresses.clear();
     this.mouseDeltaX = 0;
     this.mouseDeltaY = 0;
     this.frameBuilder.reset();
@@ -190,6 +200,10 @@ export class InputManager implements Disposable {
       const keyboardEvent = event as KeyboardEvent;
 
       this.heldKeys.add(keyboardEvent.code);
+
+      if (!keyboardEvent.repeat) {
+        this.pendingPresses.add(keyboardEvent.code);
+      }
 
       if (this.shouldPreventDefault(keyboardEvent.code)) {
         keyboardEvent.preventDefault();
