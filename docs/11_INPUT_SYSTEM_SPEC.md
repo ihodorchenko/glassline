@@ -325,8 +325,9 @@ Recommended initial layout:
 | Move Left | A |
 | Move Right | D |
 | Jump | Space |
-| Crouch / Slide | C |
-| Sprint | Left Shift |
+| Crouch | Left Shift / Right Shift |
+| Sprint | X |
+| Slide | Left Shift (while running) |
 | Interact | E |
 | Restart | R |
 | Pause | Escape |
@@ -356,8 +357,8 @@ const DEFAULT_KEY_BINDINGS = {
     MoveRight: ["KeyD"],
 
     Jump: ["Space"],
-    Crouch: ["KeyC"],
-    Sprint: ["ShiftLeft"],
+    Crouch: ["ShiftLeft", "ShiftRight"],
+    Sprint: ["KeyX"],
     Interact: ["KeyE"],
     Restart: ["KeyR"],
 

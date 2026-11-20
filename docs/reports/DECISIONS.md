@@ -625,3 +625,27 @@ Also fixed the results split double-numbering nit.
 **Still English by design:** world brand/decor signage (`RUN`, `GLASSLINE`,
 section numerals, `FINISH`, `MOVEMENT YARD`), static `index.html` boot chrome,
 developer console/status overlay. Nothing merges to `main`.
+
+## D-24 — Controls remap: Shift = crouch, X = sprint (2026-11-20)
+
+**Trigger.** Owner request after the localization pass: move crouch to Shift and
+sprint/acceleration to X.
+
+**Change.** `DEFAULT_KEYBOARD_BINDINGS` (src/input/InputActions.ts):
+`crouch: ["ShiftLeft", "ShiftRight"]`, `sprint: ["KeyX"]`; all other keyboard
+actions, action contracts and gamepad mappings unchanged. Duplicate keys are
+only the intended `Space` (jump/confirm) and `Escape` (pause/cancel); `KeyX`
+appears once and `KeyC` is no longer bound. The localized slide hint
+(`tutorial.steps.slide.hint`) was updated in EN and RU, the F3 dev status overlay
+line was corrected, and README + docs/02, docs/03, docs/11 control tables now
+match the new defaults.
+
+**Verification.** Unit suite **336 tests** green (defaults + duplicate-key
+assertions added; stale KeyC test removed), `validate` green. Live dev-server
+Playwright: ShiftLeft/ShiftRight → crouch active (sprint false), posture height
+1.75→1.15 m, camera Y 1.62→1.07; KeyC → neutral; KeyX → sprint active (crouch
+false), speed 6.0→**8.5 m/s**, state SPRINTING, FOV 75→81.7; release → neutral;
+0 console/page errors. Capture-mode frames stayed byte-identical (UI-only
+change).
+
+Nothing merges to `main`.

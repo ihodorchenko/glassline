@@ -188,8 +188,9 @@ During sliding, the physical representation must become lower without allowing t
 | Move right | D |
 | Look around | Mouse |
 | Jump | Space |
-| Sprint | Left Shift |
-| Slide | C |
+| Crouch | Left Shift |
+| Sprint | X |
+| Slide | Left Shift (while running) |
 | Interact / Context action | E |
 | Pause | Escape |
 
