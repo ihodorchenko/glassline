@@ -135,7 +135,7 @@ const MATERIAL_SPECS: Record<MaterialKey, MaterialSpec> = {
     envMapIntensity: 1.2,
     transparent: true,
     depthWrite: false,
-    opacity: 0.35,
+    opacity: 0.32,
     side: THREE.DoubleSide,
   },
   metal: {
@@ -889,6 +889,45 @@ function applyTriplanar(
   material.customProgramCacheKey = () => "glassline-triplanar";
 }
 
+/**
+ * Fresnel-weighted opacity for the transparent glass-rail panels.
+ *
+ * The rail panels are seen at grazing angles on the skybridge, where a flat
+ * transparency lets the bright sky reflection stack up and read milky. This
+ * keeps the authored 0.32 base opacity at head-on angles and falls off toward
+ * `grazingOpacity` as the view grazes the panel (pure ALU: one dot, one pow,
+ * one mix; no extra texture fetch, no change to sorting or the material cache).
+ * `material.opacity` stays the base value, so a head-on fallback is unchanged.
+ */
+function applyGlassRailOpacity(
+  material: THREE.MeshStandardMaterial,
+  baseOpacity: number,
+  grazingOpacity: number,
+): void {
+  material.onBeforeCompile = (shader) => {
+    shader.uniforms.uRailOpacityBase = { value: baseOpacity };
+    shader.uniforms.uRailOpacityGrazing = { value: grazingOpacity };
+
+    shader.fragmentShader = shader.fragmentShader
+      .replace(
+        "#include <common>",
+        `#include <common>
+        uniform float uRailOpacityBase;
+        uniform float uRailOpacityGrazing;`,
+      )
+      .replace(
+        "#include <aomap_fragment>",
+        `#include <aomap_fragment>
+        {
+          float railNdotV = clamp(dot(normalize(vViewPosition), normal), 0.0, 1.0);
+          float railGrazing = pow(1.0 - railNdotV, 1.8);
+          diffuseColor.a = mix(uRailOpacityBase, uRailOpacityGrazing, railGrazing);
+        }`,
+      );
+  };
+  material.customProgramCacheKey = () => "glassline-glass-rail-opacity";
+}
+
 const GLASS_SHEEN_TINT = 0x585c60;
 
 /**
@@ -968,6 +1007,12 @@ export class MaterialLibrary implements Disposable {
       opacity: spec.opacity ?? 1,
       side: spec.side ?? THREE.FrontSide,
     });
+
+    if (key === "glass-rail") {
+      // Fresnel-weighted transparency: 0.32 head-on, thinner at grazing so the
+      // balustrade stops reading milky while the structure below stays visible.
+      applyGlassRailOpacity(material, 0.32, 0.22);
+    }
 
     if (key === "glass" || key === "glass-far") {
       // Env sheen is a pure fragment-shader term; see applyGlassSheen.
