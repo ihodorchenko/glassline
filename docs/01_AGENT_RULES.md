@@ -965,6 +965,16 @@ Avoid excessive:
 
 Visual effects must not hide important movement or collision information.
 
+## 17.5 Gameplay feel audit
+
+For changes that can affect movement feel, traversal, input responsiveness, first-person camera feedback, or movement-related presentation, read and follow `docs/GAMEPLAY_FEEL_AUDIT.md`.
+
+Before tuning, inspect the actual implementation and establish a reproducible baseline when possible. Identify the owning system, isolate the cause, and make the smallest controlled change. Verify the result against the same relevant scenarios and check for regressions in movement, transitions, input, camera readability, accessibility, and session lifecycle.
+
+Do not tune by intuition alone, conceal physics defects with presentation effects, or claim experiential quality based only on compilation or unit tests. Report the scenarios and checks actually performed, including any runtime verification that could not be completed.
+
+This audit supplements the system specifications; it does not replace them or authorize changes to system ownership, approved mechanics, or project scope.
+
 ---
 
 # 18. Definition of Done
