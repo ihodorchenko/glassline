@@ -1,14 +1,20 @@
 import { describe, expect, it } from "vitest";
 
 import {
+  ARCHITECTURE_CAPTURE_LEVEL_ID,
+  ARCHITECTURE_CAPTURE_SHOTS,
   CAPTURE_FOV_DEGREES,
+  CAPTURE_LEVEL_IDS,
   CAPTURE_SHOT_IDS,
   CAPTURE_SHOTS,
+  captureShotsForLevel,
+  findCaptureLevelRoute,
   findCaptureShot,
   parseCaptureRequest,
   SUPPORTED_CAPTURE_LEVEL_ID,
   validateCaptureShots,
 } from "../../src/diagnostics/captureShots";
+import { ARCHITECTURAL_KIT_DEMO_LEVEL_ID } from "../../src/levels/demo/ArchitecturalKitDemo";
 
 const CANONICAL_IDS = [
   "start-roof",
@@ -23,8 +29,10 @@ describe("parseCaptureRequest", () => {
   it("parses the canonical capture URL", () => {
     const request = parseCaptureRequest("?capture=1&level=prologue&shot=start-roof");
 
-    expect(request).toEqual({
+    expect(request).toMatchObject({
       levelId: "prologue",
+      levelDefinitionId: "prologue_test",
+      mode: "prologue",
       shotId: "start-roof",
       requestedShotId: "start-roof",
       shotKnown: true,
@@ -104,6 +112,9 @@ describe("capture shot list", () => {
     expect(findCaptureShot("start-roof")?.id).toBe("start-roof");
     expect(findCaptureShot("finish-roof")?.id).toBe("finish-roof");
     expect(findCaptureShot("nope")).toBeUndefined();
+    expect(findCaptureShot("kit-overview", "architecture")?.id).toBe("kit-overview");
+    expect(findCaptureShot("kit-overview", "prologue")).toBeUndefined();
+    expect(findCaptureShot("start-roof", "architecture")).toBeUndefined();
   });
 
   it("reports structural problems of a broken list", () => {
@@ -124,5 +135,57 @@ describe("capture shot list", () => {
     expect(issues.some((issue) => issue.includes("Expected exactly 6 shots"))).toBe(true);
     expect(issues.some((issue) => issue.includes("invalid fov"))).toBe(true);
     expect(issues.some((issue) => issue.includes("non-finite"))).toBe(true);
+  });
+});
+
+describe("Architectural Kit capture route", () => {
+  it("exposes both capture routes", () => {
+    expect(CAPTURE_LEVEL_IDS).toEqual(["prologue", "architecture"]);
+    expect(captureShotsForLevel("prologue")).toBe(CAPTURE_SHOTS);
+    expect(captureShotsForLevel("architecture")).toBe(ARCHITECTURE_CAPTURE_SHOTS);
+  });
+
+  it("parses the architecture route with its own level, mode and shots", () => {
+    const request = parseCaptureRequest("?capture=1&level=architecture&shot=kit-corner");
+
+    expect(request).toMatchObject({
+      levelId: ARCHITECTURE_CAPTURE_LEVEL_ID,
+      levelDefinitionId: ARCHITECTURAL_KIT_DEMO_LEVEL_ID,
+      mode: "training",
+      shotId: "kit-corner",
+      requestedShotId: "kit-corner",
+      shotKnown: true,
+    });
+  });
+
+  it("falls back to the route's first shot for unknown shot ids", () => {
+    const request = parseCaptureRequest("?capture=1&level=architecture&shot=missing");
+
+    expect(request?.levelId).toBe("architecture");
+    expect(request?.shotId).toBe(ARCHITECTURE_CAPTURE_SHOTS[0]?.id);
+    expect(request?.shotKnown).toBe(false);
+  });
+
+  it("keeps unsupported capture levels closed", () => {
+    expect(parseCaptureRequest("?capture=1&level=training")).toBeNull();
+    expect(parseCaptureRequest("?capture=1&level=architectural_kit_demo")).toBeNull();
+  });
+
+  it("describes the architecture shot list and validates it", () => {
+    expect(ARCHITECTURE_CAPTURE_SHOTS).toHaveLength(9);
+    expect(new Set(ARCHITECTURE_CAPTURE_SHOTS.map((shot) => shot.id)).size).toBe(9);
+    expect(validateCaptureShots(ARCHITECTURE_CAPTURE_SHOTS, 9)).toEqual([]);
+    expect(findCaptureLevelRoute("architecture")?.levelDefinitionId).toBe(
+      ARCHITECTURAL_KIT_DEMO_LEVEL_ID,
+    );
+
+    for (const shot of ARCHITECTURE_CAPTURE_SHOTS) {
+      const [x, y, z] = shot.position;
+      const [lookX, lookY, lookZ] = shot.lookAt;
+
+      expect(shot.fov).toBeGreaterThan(0);
+      expect([x, y, z, lookX, lookY, lookZ].every(Number.isFinite)).toBe(true);
+      expect(shot.intent.trim().length).toBeGreaterThan(0);
+    }
   });
 });
