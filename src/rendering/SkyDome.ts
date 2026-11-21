@@ -108,7 +108,12 @@ const FRAGMENT_SHADER = /* glsl */ `
     // horizon colour stays near-white. (0.18, 0.50) lets the saturated mid
     // band own the upper visible sky while the low band keeps the haze.
     float lowerStops = smoothstep(0.18, 0.50, h);
-    float upperStops = smoothstep(0.55, 0.95, h);
+    // P2 hotfix follow-up (finish-roof look-up audit): the sharp zenith ramp
+    // (0.55 -> 0.95) put a hard cobalt patch with torn cloud edges above the
+    // horizon in every gameplay view that looks up. The reference's high dome
+    // is soft and pale; widen the ramp so zenith saturation only arrives well
+    // overhead, out of typical framing.
+    float upperStops = smoothstep(0.55, 0.99, h);
     vec3 sky = mix(uHorizonColor, midBand, lowerStops);
     sky = mix(sky, uZenithColor, upperStops);
 
@@ -218,6 +223,14 @@ export class SkyDome implements Disposable {
   private disposed = false;
 
   constructor(state: SkyState) {
+    // P2 hotfix (2026-11-21, finish-roof turn-around): the dome used to sit at
+    // the world origin with radius 460 while the camera far plane is 500. At
+    // the north end of the route (~z +50) the southern dome surface fell
+    // beyond `far` and was clipped per-triangle, exposing the flat
+    // scene.background colour as a huge blue disc whose size tracked the
+    // camera position. The mesh now follows the camera every frame (see
+    // update), so the horizon band and the gradient always sit exactly
+    // r units away; the radius stays inside the far plane.
     const geometry = new THREE.SphereGeometry(460, 48, 24);
     this.zenithColor = new THREE.Color(state.zenithColor);
     this.midColor = new THREE.Color(state.midColor);
@@ -273,13 +286,20 @@ export class SkyDome implements Disposable {
     this.cloudCover.value = state.cloudCover;
   }
 
-  update(deltaSeconds: number): void {
+  update(deltaSeconds: number, cameraPosition?: THREE.Vector3 | null): void {
     if (this.disposed) {
       return;
     }
 
     this.elapsedSeconds += deltaSeconds;
     this.skyTime.value = this.elapsedSeconds;
+
+    // Keep the dome centred on the camera so its surface is always exactly
+    // `radius` away: the gradient/horizon stay stable and nothing can reach
+    // the far plane (see the constructor note).
+    if (cameraPosition) {
+      this.mesh.position.copy(cameraPosition);
+    }
   }
 
   dispose(): void {

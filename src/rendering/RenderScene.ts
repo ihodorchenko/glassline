@@ -144,6 +144,7 @@ export class RenderScene implements Disposable {
   private readonly probeRaycaster = new THREE.Raycaster();
   private readonly probeMeshes: THREE.Object3D[] = [];
   private readonly probeOrigin = new THREE.Vector3();
+  private readonly skyFollowPosition = new THREE.Vector3();
   private readonly lastProbePosition = new THREE.Vector3(Number.MAX_VALUE, 0, 0);
   private activeCamera: THREE.Camera | null = null;
   private probeInitialised = false;
@@ -277,7 +278,12 @@ export class RenderScene implements Disposable {
     this.updateAmbientProbe(deltaSeconds);
 
     if (!this.reducedMotion) {
-      this.sky.update(deltaSeconds);
+      // The dome follows the camera (SkyDome constructor note): pass the
+      // active capture/gameplay camera position every frame.
+      const cameraPosition = this.activeCamera
+        ? this.activeCamera.getWorldPosition(this.skyFollowPosition)
+        : null;
+      this.sky.update(deltaSeconds, cameraPosition);
     }
 
     this.cityLife.update(deltaSeconds);
