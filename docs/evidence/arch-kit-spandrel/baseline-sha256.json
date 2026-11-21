@@ -1,0 +1,98 @@
+{
+  "source": "captures/step23b-before (commit 4a502bd, clean tree)",
+  "iteration": "step23b-before",
+  "generatedAt": "2026-11-21T20:19:55.490Z",
+  "browser": {
+    "name": "Microsoft Edge",
+    "channel": "msedge",
+    "version": "157.0.4341.46"
+  },
+  "viewport": {
+    "width": 1600,
+    "height": 900,
+    "deviceScaleFactor": 1
+  },
+  "shots": [
+    {
+      "id": "kit-overview",
+      "sha256": "d8a64e071aae84378114d065f89c7ff75693888c4d4ecf56008cca2bfaa771a0",
+      "drawCalls": 270,
+      "triangles": 305727,
+      "textures": 36,
+      "programs": 41,
+      "consoleErrors": 0
+    },
+    {
+      "id": "kit-facade",
+      "sha256": "0f16edf3994e5d60f4d2af843fec3ca04b13f843a6b19527d12904d039d3e6e0",
+      "drawCalls": 270,
+      "triangles": 305727,
+      "textures": 36,
+      "programs": 41,
+      "consoleErrors": 0
+    },
+    {
+      "id": "kit-glass",
+      "sha256": "87ab8642560ef4042251cdb8efa8f108046bd85338605018639ad510f35e8b94",
+      "drawCalls": 270,
+      "triangles": 305727,
+      "textures": 31,
+      "programs": 38,
+      "consoleErrors": 0
+    },
+    {
+      "id": "kit-corner",
+      "sha256": "b74f03c2c8381e92f34f71490ba18e8051ccaa1dc9ca95d2d935e06bd8c304f4",
+      "drawCalls": 270,
+      "triangles": 305727,
+      "textures": 31,
+      "programs": 38,
+      "consoleErrors": 0
+    },
+    {
+      "id": "kit-canopy",
+      "sha256": "7f1c6d224c127c7923226ac8f3010b1cc67ce9c4ff14c6f059cf155a1ea24b78",
+      "drawCalls": 270,
+      "triangles": 305727,
+      "textures": 31,
+      "programs": 38,
+      "consoleErrors": 0
+    },
+    {
+      "id": "kit-service",
+      "sha256": "800e1c2e857ba937da52a285c6b8643e4d02d9568d4bc896b99529e2042a703b",
+      "drawCalls": 270,
+      "triangles": 305727,
+      "textures": 31,
+      "programs": 38,
+      "consoleErrors": 0
+    },
+    {
+      "id": "kit-player-eyes",
+      "sha256": "b343ab85aa53d2ca5f0775d4d83bd44d160c21920f8c0c2b9ad967e07068dbc2",
+      "drawCalls": 270,
+      "triangles": 305727,
+      "textures": 36,
+      "programs": 41,
+      "consoleErrors": 0
+    },
+    {
+      "id": "kit-distant",
+      "sha256": "6ed2cb8b05ede3093c28501dd362efe10b24c68ecfdf95159838730c0e4d8131",
+      "drawCalls": 270,
+      "triangles": 305727,
+      "textures": 31,
+      "programs": 38,
+      "consoleErrors": 0
+    },
+    {
+      "id": "kit-bridge",
+      "sha256": "05d17e1b1beff72b61466de2866251ce989eb82f6a9f902ca2772f3fa488bc12",
+      "drawCalls": 270,
+      "triangles": 305727,
+      "textures": 36,
+      "programs": 41,
+      "consoleErrors": 0
+    }
+  ]
+}

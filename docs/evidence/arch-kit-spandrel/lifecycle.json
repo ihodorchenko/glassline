@@ -1,0 +1,125 @@
+{
+  "iteration": "arch-kit-lifecycle",
+  "generatedAt": "2026-11-21T20:41:16.322Z",
+  "route": {
+    "level": "architecture",
+    "levelId": "architectural_kit_demo",
+    "shot": "kit-overview"
+  },
+  "browser": {
+    "name": "Microsoft Edge",
+    "channel": "msedge",
+    "version": "157.0.4341.46"
+  },
+  "viewport": {
+    "width": 1600,
+    "height": 900,
+    "deviceScaleFactor": 1
+  },
+  "snapshots": [
+    {
+      "step": "loaded",
+      "missing": false,
+      "flow": "gameplay",
+      "running": true,
+      "sessionStatus": "running",
+      "levelId": "architectural_kit_demo",
+      "sceneChildren": 131,
+      "meshes": 301,
+      "instancedMeshes": 121,
+      "geometries": 118,
+      "textures": 37,
+      "programs": 41,
+      "drawCalls": 270,
+      "triangles": 308463
+    },
+    {
+      "step": "menu",
+      "missing": false,
+      "flow": "main-menu",
+      "running": false,
+      "sessionStatus": "abandoned",
+      "levelId": null,
+      "sceneChildren": 10,
+      "meshes": 180,
+      "instancedMeshes": 1,
+      "geometries": 9,
+      "textures": 37,
+      "programs": 42,
+      "drawCalls": 347,
+      "triangles": 8295
+    },
+    {
+      "step": "reloaded",
+      "missing": false,
+      "flow": "gameplay",
+      "running": true,
+      "sessionStatus": "running",
+      "levelId": "architectural_kit_demo",
+      "sceneChildren": 131,
+      "meshes": 301,
+      "instancedMeshes": 121,
+      "geometries": 118,
+      "textures": 37,
+      "programs": 42,
+      "drawCalls": 374,
+      "triangles": 388051
+    },
+    {
+      "step": "restart-1",
+      "missing": false,
+      "flow": "gameplay",
+      "running": true,
+      "sessionStatus": "running",
+      "levelId": "architectural_kit_demo",
+      "sceneChildren": 131,
+      "meshes": 301,
+      "instancedMeshes": 121,
+      "geometries": 118,
+      "textures": 37,
+      "programs": 42,
+      "drawCalls": 270,
+      "triangles": 308463
+    },
+    {
+      "step": "restart-2",
+      "missing": false,
+      "flow": "gameplay",
+      "running": true,
+      "sessionStatus": "running",
+      "levelId": "architectural_kit_demo",
+      "sceneChildren": 131,
+      "meshes": 301,
+      "instancedMeshes": 121,
+      "geometries": 118,
+      "textures": 37,
+      "programs": 42,
+      "drawCalls": 270,
+      "triangles": 308463
+    },
+    {
+      "step": "menu-again",
+      "missing": false,
+      "flow": "main-menu",
+      "running": false,
+      "sessionStatus": "abandoned",
+      "levelId": null,
+      "sceneChildren": 10,
+      "meshes": 180,
+      "instancedMeshes": 1,
+      "geometries": 9,
+      "textures": 37,
+      "programs": 42,
+      "drawCalls": 347,
+      "triangles": 8295
+    }
+  ],
+  "diagnostics": {
+    "consoleErrors": [],
+    "consoleWarnings": [],
+    "pageErrors": [],
+    "failedRequests": []
+  },
+  "failures": [],
+  "passed": true
+}

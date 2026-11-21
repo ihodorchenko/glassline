@@ -14,6 +14,7 @@ export type MaterialKey =
   | "metal"
   | "aluminium"
   | "composite"
+  | "spandrel"
   | "reveal"
   | "dark-metal"
   | "red"
@@ -205,6 +206,28 @@ const MATERIAL_SPECS: Record<MaterialKey, MaterialSpec> = {
     texture: "facade",
     heightFromAlpha: true,
     envMapIntensity: 0.5,
+  },
+  // Opaque spandrel cassette panel for curtain walls. A spandrel is the solid
+  // band between two glazed storeys, so it must read as a matte clad panel, not
+  // as more glass: `glass-near` is glossy (roughness 0.10), metallic (0.6) and
+  // carries the view-dependent sheen term, while this role is diffuse and
+  // non-metallic, so it answers the warm sun instead of the cool sky.
+  //
+  // Calibration (Step 2.3B): the pale `composite` band it replaces merged with
+  // the white frame, while a first pass at the ART_BRIEF `#2A3A44` sat too close
+  // to the glazing value and read as a recess. This neutral mid-grey renders
+  // between the dark glazing (≈0.31 luma on the shaded review face) and the
+  // anodized frame (≈0.55–0.63), giving the facade a three-value hierarchy
+  // (frame / opaque panel / glass) without adding a colour accent. The facade
+  // panel-joint map at a fine 0.55 uv scale carries the cassette grain up close.
+  spandrel: {
+    color: 0x767d80,
+    roughness: 0.84,
+    metalness: 0.02,
+    uvScale: 0.55,
+    texture: "facade",
+    heightFromAlpha: true,
+    envMapIntensity: 0.3,
   },
   "dark-metal": {
     color: 0x2b3542,

@@ -1,0 +1,341 @@
+{
+  "generatedAt": "2026-11-21T20:39:52.707Z",
+  "regions": {
+    "kit-glass: atrium band, sunlit panel": {
+      "box": [
+        895,
+        574,
+        940,
+        586
+      ],
+      "before": {
+        "meanRgb255": [
+          200.5,
+          200.85,
+          200.06
+        ],
+        "meanLuma01": 0.7871,
+        "p10Luma01": 0.2284,
+        "p90Luma01": 0.9218,
+        "rowRange01": 0.4924,
+        "colRange01": 0.3073
+      },
+      "after": {
+        "meanRgb255": [
+          85.54,
+          106.08,
+          123.13
+        ],
+        "meanLuma01": 0.4037,
+        "p10Luma01": 0.166,
+        "p90Luma01": 0.5896,
+        "rowRange01": 0.3634,
+        "colRange01": 0.2389
+      },
+      "saturationBefore": 0.0039,
+      "saturationAfter": 0.3053
+    },
+    "kit-glass: atrium band, shaded panel": {
+      "box": [
+        1040,
+        558,
+        1070,
+        570
+      ],
+      "before": {
+        "meanRgb255": [
+          179.05,
+          184.44,
+          185.89
+        ],
+        "meanLuma01": 0.7192,
+        "p10Luma01": 0.5681,
+        "p90Luma01": 0.7543,
+        "rowRange01": 0.0039,
+        "colRange01": 0.2778
+      },
+      "after": {
+        "meanRgb255": [
+          77.78,
+          107.28,
+          130.44
+        ],
+        "meanLuma01": 0.4027,
+        "p10Luma01": 0.3714,
+        "p90Luma01": 0.4905,
+        "rowRange01": 0.019,
+        "colRange01": 0.2091
+      },
+      "saturationBefore": 0.0368,
+      "saturationAfter": 0.4037
+    },
+    "kit-glass: glazing above sunlit panel": {
+      "box": [
+        895,
+        520,
+        940,
+        545
+      ],
+      "before": {
+        "meanRgb255": [
+          49.05,
+          72.48,
+          96.78
+        ],
+        "meanLuma01": 0.2716,
+        "p10Luma01": 0.2661,
+        "p90Luma01": 0.2773,
+        "rowRange01": 0.0015,
+        "colRange01": 0.0141
+      },
+      "after": {
+        "meanRgb255": [
+          49.05,
+          72.48,
+          96.78
+        ],
+        "meanLuma01": 0.2716,
+        "p10Luma01": 0.2661,
+        "p90Luma01": 0.2773,
+        "rowRange01": 0.0015,
+        "colRange01": 0.0141
+      },
+      "saturationBefore": 0.4932,
+      "saturationAfter": 0.4932
+    },
+    "kit-glass: glazing above shaded panel": {
+      "box": [
+        1040,
+        520,
+        1070,
+        540
+      ],
+      "before": {
+        "meanRgb255": [
+          65.75,
+          88.2,
+          111.42
+        ],
+        "meanLuma01": 0.3337,
+        "p10Luma01": 0.3027,
+        "p90Luma01": 0.449,
+        "rowRange01": 0.0029,
+        "colRange01": 0.2812
+      },
+      "after": {
+        "meanRgb255": [
+          65.73,
+          88.19,
+          111.4
+        ],
+        "meanLuma01": 0.3337,
+        "p10Luma01": 0.3027,
+        "p90Luma01": 0.449,
+        "rowRange01": 0.0028,
+        "colRange01": 0.2812
+      },
+      "saturationBefore": 0.4099,
+      "saturationAfter": 0.41
+    },
+    "kit-glass: anodized sill below band": {
+      "box": [
+        895,
+        596,
+        940,
+        604
+      ],
+      "before": {
+        "meanRgb255": [
+          175.16,
+          189.85,
+          200.88
+        ],
+        "meanLuma01": 0.7354,
+        "p10Luma01": 0.6229,
+        "p90Luma01": 0.919,
+        "rowRange01": 0.2171,
+        "colRange01": 0.2561
+      },
+      "after": {
+        "meanRgb255": [
+          143.75,
+          164.54,
+          180.03
+        ],
+        "meanLuma01": 0.6323,
+        "p10Luma01": 0.6168,
+        "p90Luma01": 0.754,
+        "rowRange01": 0.0217,
+        "colRange01": 0.0755
+      },
+      "saturationBefore": 0.128,
+      "saturationAfter": 0.2015
+    },
+    "kit-overview: tower band (sunlit)": {
+      "box": [
+        1150,
+        459,
+        1180,
+        470
+      ],
+      "before": {
+        "meanRgb255": [
+          193.63,
+          202.72,
+          208.67
+        ],
+        "meanLuma01": 0.7891,
+        "p10Luma01": 0.6392,
+        "p90Luma01": 0.919,
+        "rowRange01": 0.2428,
+        "colRange01": 0.3989
+      },
+      "after": {
+        "meanRgb255": [
+          143.54,
+          163.48,
+          177.25
+        ],
+        "meanLuma01": 0.6284,
+        "p10Luma01": 0.4941,
+        "p90Luma01": 0.7007,
+        "rowRange01": 0.1048,
+        "colRange01": 0.2299
+      },
+      "saturationBefore": 0.0721,
+      "saturationAfter": 0.1902
+    },
+    "kit-overview: tower glazing above band": {
+      "box": [
+        1150,
+        420,
+        1180,
+        445
+      ],
+      "before": {
+        "meanRgb255": [
+          91.41,
+          119.18,
+          146.7
+        ],
+        "meanLuma01": 0.452,
+        "p10Luma01": 0.4162,
+        "p90Luma01": 0.5463,
+        "rowRange01": 0.0078,
+        "colRange01": 0.2331
+      },
+      "after": {
+        "meanRgb255": [
+          91.41,
+          119.18,
+          146.7
+        ],
+        "meanLuma01": 0.452,
+        "p10Luma01": 0.4162,
+        "p90Luma01": 0.5463,
+        "rowRange01": 0.0078,
+        "colRange01": 0.2331
+      },
+      "saturationBefore": 0.3769,
+      "saturationAfter": 0.3769
+    }
+  },
+  "farCityZeroDiff": {
+    "kit-distant: far-left city tower": {
+      "shot": "kit-distant",
+      "box": [
+        0,
+        280,
+        80,
+        420
+      ],
+      "meanAbsDiff255": 0.0,
+      "maxAbsDiff255": 0,
+      "changedPixels": 0
+    },
+    "kit-distant: far-right city tower": {
+      "shot": "kit-distant",
+      "box": [
+        1430,
+        250,
+        1590,
+        420
+      ],
+      "meanAbsDiff255": 0.0,
+      "maxAbsDiff255": 0,
+      "changedPixels": 0
+    },
+    "kit-overview: far-left city tower": {
+      "shot": "kit-overview",
+      "box": [
+        0,
+        300,
+        100,
+        470
+      ],
+      "meanAbsDiff255": 0.0,
+      "maxAbsDiff255": 0,
+      "changedPixels": 0
+    },
+    "kit-overview: far-right city tower": {
+      "shot": "kit-overview",
+      "box": [
+        1380,
+        40,
+        1560,
+        350
+      ],
+      "meanAbsDiff255": 0.0,
+      "maxAbsDiff255": 0,
+      "changedPixels": 0
+    },
+    "kit-bridge: far-right city": {
+      "shot": "kit-bridge",
+      "box": [
+        1450,
+        200,
+        1590,
+        400
+      ],
+      "meanAbsDiff255": 0.0,
+      "maxAbsDiff255": 0,
+      "changedPixels": 0
+    }
+  },
+  "materialContract": {
+    "spandrel": {
+      "color": "#767D80",
+      "roughness": 0.84,
+      "metalness": 0.02,
+      "envMapIntensity": 0.3,
+      "transparent": false,
+      "depthWrite": true,
+      "opacity": 1,
+      "texture": "facade (uvScale 0.55)",
+      "sheen": false
+    },
+    "glass-near": {
+      "color": "#1A2530",
+      "roughness": 0.1,
+      "metalness": 0.6,
+      "envMapIntensity": 1.3,
+      "transparent": false,
+      "sheen": true,
+      "unnamed": "glassline-glass-sheen"
+    },
+    "composite (replaced in this band)": {
+      "color": "#E2DDD2",
+      "roughness": 0.56,
+      "metalness": 0.04
+    },
+    "reading": {
+      "spandrelVsGlassRoughness": 8.4,
+      "spandrelVsGlassMetalness": "0.02 vs 0.60",
+      "drawBatchesPerModule": {
+        "spandrel": true,
+        "withSpandrel": 5,
+        "withoutSpandrel": 3
+      }
+    }
+  }
+}

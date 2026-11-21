@@ -37,7 +37,7 @@ Fifteen authored modules. Local conventions: metres, Y up, base at local y = 0,
 | Kind | Local origin / direction | Parameters | Material batches | Triangles* |
 |---|---|---|---|---|
 | `facade-bay` | bottom-centre on the wall plane, faces +Z; reveal goes −Z | `width`, `height`, `revealDepth` (0.7), `accent` | 6 | 2,108 |
-| `curtain-wall` | bottom-centre on the wall plane, faces +Z | `width`, `height`, `columns`, `rows`, `depth`, `spandrel` | 3–4 | 376 |
+| `curtain-wall` | bottom-centre on the wall plane, faces +Z | `width`, `height`, `columns`, `rows`, `depth`, `spandrel` | 3–5 | 376 (460 with spandrel) |
 | `corner` | bottom outer corner; wings extend −X / −Z, facades +X / +Z | `width`, `depth`, `height`, `accent` | 6 | 1,776 |
 | `column` | base centre | `height`, `width`, `accent` | 3 | 964 |
 | `cantilever` | floor top at the wall plane, projects +Z | `width`, `depth`, `thickness`, `railing` | 5 | 240 |
@@ -68,6 +68,24 @@ the composition uses one flight.
 - Geometry is authored in module-local space and merged to **one part per material
   batch** before leaving the builder. A module therefore costs 3–6 draw batches,
   independent of how many times it is placed.
+
+### Curtain-wall spandrel zone
+
+`spandrel: true` is an opaque zone of its own, not a flat box behind the glass:
+
+- an expressed dark anodized **head rail** on the glass line — the constructive
+  transition between opaque panel and glazing;
+- a recessed field of matte **cassettes** whose joints align with the mullions
+  above, so the opaque band keeps the facade's grid rhythm;
+- a dark **backing** behind the joints and **shadow gaps** above and below the
+  field, so the panel sits in the frame instead of being pasted on it.
+
+The cassettes are the only `spandrel` batch of the module. The rail, backing and
+shadow gaps reuse the existing `dark-metal` batch (the perimeter frame stays
+`aluminium`), so the module keeps five batches with `spandrel: true` — exactly as
+many as the previous composite band plus lining — and three with
+`spandrel: false`: the number of draw calls per placement is unchanged. `spandrel: false` geometry and materials are
+unchanged from Step 2.3A (unit-pinned).
 
 ## 3. Public API
 
@@ -165,20 +183,23 @@ For every placement the loader:
    atmosphere. No material is disposed — `MaterialLibrary` owns it.
 
 Measured on the review composition: 85 placements, 26 module variants,
-118 geometries, 121 instanced meshes, 270 draw calls, 305,727 rendered triangles
-at the general-view pose (1600×900, high quality). Geometry/child counts return to
-the menu baseline across reload and two restarts (see §7).
+118 geometries, 121 instanced meshes, 270 draw calls, 308,463 rendered triangles
+at the general-view pose (1600×900, high quality). The framed spandrel zone adds
+2,736 triangles across the placed curtain walls; draw calls, geometries and
+instanced meshes are unchanged. Geometry/child counts return to the menu baseline
+across reload and two restarts (see §7).
 
 ## 5. Materials
 
-The kit uses the shared `MaterialLibrary` and extends it with three semantic keys
-(no duplicated library):
+The kit uses the shared `MaterialLibrary` and adds kit-specific semantic keys to
+it (no duplicated library, no per-instance materials):
 
 | Key | Role | Distinguishing response |
 |---|---|---|
 | `white` | architectural white plaster field | rough 0.62, no metalness |
 | `concrete` | warm white structural concrete | rough 0.9 |
 | `composite` | light matte composite cladding/frames | rough 0.56, panel-joint texture |
+| `spandrel` | opaque curtain-wall spandrel cassette panel | `#767D80`, rough 0.84, metal 0.02, low env, no sheen |
 | `reveal` | deep window-reveal lining | rough 0.94, dark warm mineral tone |
 | `glass-near` | near curtain-wall / punched glazing (kit) | ART_BRIEF curtain glass: `#1A2530`, rough 0.10, metal 0.6, near sheen for the reflection gradient |
 | `glass` | Prologue / distant-city glazing (shared) | rough 0.13, metal 0.6, distance-tuned sheen |
@@ -190,9 +211,21 @@ The kit uses the shared `MaterialLibrary` and extends it with three semantic key
 | `red` | runner-red navigation accent | rough 0.6, non-metallic |
 
 Hierarchy per module: a structural mass (`concrete`/`white`), one secondary skin
-(`composite`/`glass-near`/`reveal`), one metal system (`aluminium`/`dark-metal`) and a
-single red accent only where it carries navigation meaning (window reveal line,
-joint, bridge ceiling, railing line, portal jamb, stair nosing, column base tag).
+(`composite`/`spandrel`/`glass-near`/`reveal`), one metal system
+(`aluminium`/`dark-metal`) and a single red accent only where it carries
+navigation meaning (window reveal line, joint, bridge ceiling, railing line,
+portal jamb, stair nosing, column base tag).
+
+**Spandrel calibration note.** `docs/reports/ART_BRIEF.md` §2 anchors the curtain
+spandrel at `#2A3A44`. That dark pass was implemented first and measured in Step
+2.3B: against the near-black glazing the band lost value and read as a recess, not
+as an opaque panel, while the pale `composite` it replaced merged with the white
+frame. The role is therefore calibrated to a neutral mid-grey (`#767D80`) framed
+by a dark anodized transom: the band keeps a mid value between the glazing and the
+frame (measured ≈0.31 / 0.40 / 0.55–0.63 luma on the shaded review face), stays
+matte and non-metallic, and introduces no colour accent. The difference from glass is
+carried by the response — roughness 0.84 vs 0.10, metalness 0.02 vs 0.6, no
+view-dependent sheen — not by a brighter or more saturated fill.
 
 ## 6. Demonstration composition
 
@@ -237,12 +270,12 @@ before/after manifests) lives in `docs/evidence/arch-kit/`.
 |---|---|
 | `npm run typecheck` | pass |
 | `npm run check` (Biome lint + format + imports) | pass |
-| `npm test` | 443/443 pass (49 files) |
+| `npm test` | 448/448 pass (49 files) |
 | `npm run build` | pass; demo level id is absent from the production JS bundle |
-| Kit unit suite | 15 modules build, deterministic, valid geometry, material resolve, triangle budget |
+| Kit unit suite | 15 modules build, deterministic, valid geometry, material resolve, triangle budget; spandrel is opaque, non-glass, local, deterministic and batch-count neutral; `spandrel: false` is pinned to its previous geometry/materials |
 | Composition runtime suite | valid definition, load/unload, geometry disposal, scene-graph return to baseline, reload stability, invalid-data rejection |
-| Capture determinism | 9/9 shots byte-identical across two fresh-browser passes |
-| Load/unload/restart resource probe | geometries 118 → 9 (menu baseline) and identical across reload + 2 restarts; 0 console/page errors |
+| Capture determinism | 9/9 shots byte-identical across two fresh-browser passes (`docs/evidence/arch-kit-spandrel/`) |
+| Load/unload/restart resource probe | geometries 118 → 9 (menu baseline) and identical across reload + 2 restarts; 121 instanced meshes, 270 draw calls; 0 console/page errors |
 | Prologue regression | `start-roof` capture is byte-identical before/after (sha256 `59c977dd…`), 210 draw calls / 4,363,071 triangles unchanged |
 
 ## 8. Known limits
@@ -259,6 +292,9 @@ before/after manifests) lives in `docs/evidence/arch-kit/`.
   distinct parameter variants of the same module raises the draw-call count
   linearly with variants (not placements); the composition deliberately keeps
   variant count small.
+- The spandrel cassette joints (24 mm) and shadow gaps (16–18 mm) are sub-pixel
+  at the general-view capture distance; their reading is verified in the close
+  crops and by geometry/material unit tests, not by the wide shots.
 - Distant context city is authored decoration massing (window bands + roof caps),
   not a procedural city generator; it exists to frame the review composition.
 - The stair uses open treads; it is architectural geometry, not a collision ramp.

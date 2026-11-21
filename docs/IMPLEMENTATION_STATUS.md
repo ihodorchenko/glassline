@@ -186,6 +186,38 @@ layer for a kit-based playable level, without changing the kit contract.
 
 ---
 
+## 0.2.1. Step 2.3B — Curtain-wall spandrel zone (2026-11-21)
+
+Branch `feat/arch-spandrel` (created from `feat/architectural-kit` @ `4a502bd`;
+no merge performed). Detailed record:
+[`reports/ARCH_KIT_STEP_2_3B_SPANDREL.md`](reports/ARCH_KIT_STEP_2_3B_SPANDREL.md).
+
+**Scope:** make the opaque spandrel band of `curtain-wall` read as an opaque facade
+panel. One new `spandrel` material role (opaque, matte, non-metallic, no sheen) and
+a framed zone (dark anodized head rail on the glass line, recessed cassettes
+aligned with the mullion grid, dark backing and shadow gaps). No new module
+parameter, no change to other modules, glass calibration, level content, capture
+shots or composition.
+
+| Area | Result |
+|---|---|
+| Material | `spandrel`: `#767D80`, rough 0.84, metal 0.02, env 0.3, facade panel-joint map; `glass-near`/`glass`/`glass-far`/`glass-rail` untouched |
+| Geometry | demo curtain-wall 328 → 412 triangles; batch count unchanged (3 without spandrel, 5 with); local, deterministic, merged per material |
+| Cost | composition draw calls 270 → 270; triangles 305,727 → 308,463 (+0.9 %); textures 36 → 37 |
+| Tests | 448/448 pass (+4 spandrel material/geometry/determinism tests) |
+| Captures | 9/9 byte-identical; `kit-service` byte-identical; Prologue `start-roof` byte-identical |
+| Lifecycle | 118 geometries / 121 instanced meshes / 270 draw calls; load/reload/restart ×2 stable |
+
+**Known deviation:** `ART_BRIEF.md` §2 anchors the spandrel at `#2A3A44`; that dark
+pass read as a recess against the dark glazing, so the role is calibrated to a
+neutral mid-grey framed by a dark transom (recorded in `ARCHITECTURAL_KIT.md` §5).
+
+**Recommended next task:** review the spandrel calibration; then decide whether
+the transom/joint scale needs enlarging for wide shots and whether a dedicated
+curtain-wall close-up belongs in the capture shot set.
+
+---
+
 ## 1. Purpose
 
 This document is the central implementation tracking reference for Glassline.

@@ -1,0 +1,13 @@
+{
+  "baseline": "captures/step23b-before-prologue",
+  "after": "captures/step23b-after-prologue",
+  "shot": "start-roof",
+  "baselineSha256": "59c977dddc4a9c638995015698a372cc1b933807b6edcff8e81b622cbc936ba2",
+  "afterSha256": "59c977dddc4a9c638995015698a372cc1b933807b6edcff8e81b622cbc936ba2",
+  "byteIdentical": true,
+  "baselineDrawCalls": 210,
+  "afterDrawCalls": 210,
+  "baselineTriangles": 4363071,
+  "afterTriangles": 4363071,
+  "consoleErrors": 0
+}

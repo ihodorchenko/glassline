@@ -226,6 +226,155 @@ describe("Architectural Kit module builders", () => {
     library.dispose();
   });
 
+  it("builds the spandrel as an opaque matte panel with its own material role", () => {
+    const library = new MaterialLibrary();
+    const spandrel = library.get("spandrel");
+    const near = library.get("glass-near");
+    const composite = library.get("composite");
+
+    // Opaque by contract: no blending, no depth-write change, full opacity.
+    expect(spandrel.transparent).toBe(false);
+    expect(spandrel.depthWrite).toBe(true);
+    expect(spandrel.opacity).toBe(1);
+
+    // The difference from glass is carried by the response, not by hue alone:
+    // 8.4x the roughness, essentially non-metallic, a fraction of the env
+    // response and no view-dependent sheen term (the glass roles run one).
+    expect(spandrel.roughness).toBeGreaterThan(near.roughness * 4);
+    expect(spandrel.roughness).toBeGreaterThan(0.7);
+    expect(spandrel.metalness).toBeLessThan(0.1);
+    expect(spandrel.metalness).toBeLessThan(near.metalness / 10);
+    expect(spandrel.envMapIntensity).toBeLessThan(near.envMapIntensity / 3);
+    expect(spandrel.customProgramCacheKey()).not.toBe(near.customProgramCacheKey());
+    expect(spandrel.color.getHexString()).not.toBe(near.color.getHexString());
+    // Part of the neutral architectural envelope, not a coloured insert: the
+    // matte panel replaces the pale composite the band used to share.
+    expect(spandrel.color.getHexString()).toBe("767d80");
+    expect(spandrel.color.getHexString()).not.toBe(composite.color.getHexString());
+
+    // One semantic role shared by every placement; never per-instance.
+    expect(library.get("spandrel")).toBe(spandrel);
+
+    library.dispose();
+  });
+
+  it("keeps spandrel: false on the previous curtain-wall behaviour", () => {
+    const model = build({ kind: "curtain-wall", width: 6, height: 4.2, columns: 3, rows: 1 });
+
+    // Same batches, triangle count and glazing seat as before Step 2.3B: the
+    // opaque zone must not leak into the glazed-only variant.
+    expect(model.parts.map((part) => part.material)).toEqual([
+      "glass-far",
+      "aluminium",
+      "glass-near",
+    ]);
+    expect(model.triangles).toBe(328);
+
+    const glazing = model.parts.find((part) => part.material === "glass-near");
+
+    expect(glazing?.geometry.boundingBox?.min.y).toBeCloseTo(0.1275, 3);
+    expect(glazing?.geometry.boundingBox?.max.y).toBeCloseTo(4.0725, 3);
+  });
+
+  it("builds the spandrel as a framed matte field inside the storey band", () => {
+    const model = build({
+      kind: "curtain-wall",
+      width: 6,
+      height: 4.2,
+      columns: 3,
+      rows: 1,
+      spandrel: true,
+    });
+    const panel = model.parts.find((part) => part.material === "spandrel");
+    const box = panel?.geometry.boundingBox;
+
+    // Exactly one opaque batch for the whole band: cassettes are merged per
+    // material, and the dark frame/joints reuse the module's metal batch.
+    expect(model.parts.filter((part) => part.material === "spandrel")).toHaveLength(1);
+    expect(model.parts.map((part) => part.material).sort()).toEqual([
+      "aluminium",
+      "dark-metal",
+      "glass-far",
+      "glass-near",
+      "spandrel",
+    ]);
+    // Five batches, exactly as many as the composite band used to occupy: no
+    // extra draw call per placement.
+    expect(model.parts).toHaveLength(5);
+    // Glazing 328 + framed spandrel zone 84 triangles for the demo variant.
+    expect(model.triangles).toBe(412);
+
+    // The field stays inside the 0.48 m band, spans the usable width (with a
+    // half joint gap at each jamb) and is recessed behind the glazing plane so
+    // the frame reads in front of it.
+    expect(box).not.toBeNull();
+    expect(box?.min.y).toBeGreaterThanOrEqual(0.1);
+    expect(box?.max.y).toBeLessThanOrEqual(0.58);
+    expect(box?.min.x).toBeCloseTo(-2.888, 3);
+    expect(box?.max.x).toBeCloseTo(2.888, 3);
+    expect(box?.max.z).toBeLessThan(0.0375);
+    expect(box?.min.z).toBeGreaterThan(-0.14);
+
+    // The glazing keeps its exact geometry and only moves above the band.
+    const glazing = model.parts.find((part) => part.material === "glass-near");
+    const glazingBox = glazing?.geometry.boundingBox;
+
+    expect(glazingBox?.min.y).toBeCloseTo(0.6075, 3);
+    expect(glazingBox?.max.y).toBeCloseTo(4.0725, 3);
+    expect(glazingBox?.min.x).toBeCloseTo(-2.872, 3);
+    expect(glazingBox?.max.x).toBeCloseTo(2.872, 3);
+  });
+
+  it("builds finite, local and deterministic spandrel geometry", () => {
+    const definition = {
+      kind: "curtain-wall",
+      width: 6,
+      height: 4.2,
+      columns: 3,
+      rows: 1,
+      spandrel: true,
+    } as const;
+    const first = build(definition);
+    const second = build(definition);
+
+    expect(second.key).toBe(first.key);
+    expect(second.triangles).toBe(first.triangles);
+    expect(second.parts.map((part) => part.material)).toEqual(
+      first.parts.map((part) => part.material),
+    );
+
+    for (let index = 0; index < first.parts.length; index += 1) {
+      const firstPart = first.parts[index];
+      const secondPart = second.parts[index];
+
+      if (!firstPart || !secondPart) {
+        continue;
+      }
+
+      const box = firstPart.geometry.boundingBox;
+      const position = firstPart.geometry.getAttribute("position");
+
+      expect(position).toBeTruthy();
+
+      for (const value of Array.from(position.array as Float32Array)) {
+        expect(Number.isFinite(value)).toBe(true);
+      }
+
+      // Module-local metres: nothing escapes the authored 6 x 4.2 x 0.34 bay.
+      expect(box?.min.x).toBeGreaterThanOrEqual(-3.01);
+      expect(box?.max.x).toBeLessThanOrEqual(3.01);
+      expect(box?.min.y).toBeGreaterThanOrEqual(-0.01);
+      expect(box?.max.y).toBeLessThanOrEqual(4.21);
+      expect(box?.min.z).toBeGreaterThanOrEqual(-0.16);
+      expect(box?.max.z).toBeLessThanOrEqual(0.17);
+
+      expect(secondPart.geometry.boundingSphere?.radius).toBeCloseTo(
+        firstPart.geometry.boundingSphere?.radius ?? Number.NaN,
+        5,
+      );
+    }
+  });
+
   it("stays inside a sane triangle budget for a reusable kit", () => {
     let total = 0;
 

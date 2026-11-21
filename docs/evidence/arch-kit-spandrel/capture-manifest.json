@@ -1,0 +1,389 @@
+{
+  "iteration": "step23b-final",
+  "generatedAt": "2026-11-21T20:39:52.707Z",
+  "generator": "tools/capture/capture.mjs",
+  "mode": "capture",
+  "level": "architecture",
+  "url": "http://127.0.0.1:5199/",
+  "browser": {
+    "name": "Microsoft Edge",
+    "channel": "msedge",
+    "version": "157.0.4341.46"
+  },
+  "viewport": {
+    "width": 1600,
+    "height": 900,
+    "deviceScaleFactor": 1
+  },
+  "frames": 30,
+  "shots": [
+    {
+      "id": "kit-overview",
+      "file": "captures/step23b-final/kit-overview.png",
+      "sha256": "b6a68439d8dea8044709b178f5a0bd003e6b967db51ea8aef0dc99d377d2e0f1",
+      "png": {
+        "width": 1600,
+        "height": 900,
+        "bytes": 1470700
+      },
+      "stats": {
+        "drawCalls": 270,
+        "triangles": 308463,
+        "textures": 37,
+        "programs": 41,
+        "quality": "high",
+        "canvas": {
+          "width": 1600,
+          "height": 900
+        },
+        "shot": "kit-overview"
+      },
+      "consoleErrors": []
+    },
+    {
+      "id": "kit-facade",
+      "file": "captures/step23b-final/kit-facade.png",
+      "sha256": "99a2f9e5a3f17cbbc93529d74ee9e5b6422096d7f977ec3f2065f6fa4948ebfb",
+      "png": {
+        "width": 1600,
+        "height": 900,
+        "bytes": 1377520
+      },
+      "stats": {
+        "drawCalls": 270,
+        "triangles": 308463,
+        "textures": 32,
+        "programs": 38,
+        "quality": "high",
+        "canvas": {
+          "width": 1600,
+          "height": 900
+        },
+        "shot": "kit-facade"
+      },
+      "consoleErrors": []
+    },
+    {
+      "id": "kit-glass",
+      "file": "captures/step23b-final/kit-glass.png",
+      "sha256": "2a9615230fb0948dfdda99f368498a560f2ae4e0cc42825177b19f9fcabd7753",
+      "png": {
+        "width": 1600,
+        "height": 900,
+        "bytes": 1427935
+      },
+      "stats": {
+        "drawCalls": 270,
+        "triangles": 308463,
+        "textures": 32,
+        "programs": 38,
+        "quality": "high",
+        "canvas": {
+          "width": 1600,
+          "height": 900
+        },
+        "shot": "kit-glass"
+      },
+      "consoleErrors": []
+    },
+    {
+      "id": "kit-corner",
+      "file": "captures/step23b-final/kit-corner.png",
+      "sha256": "b24726a7a26a03751bb692e79b9f11688a5ddb9c67ee5acc0165e212b47c96b7",
+      "png": {
+        "width": 1600,
+        "height": 900,
+        "bytes": 1444314
+      },
+      "stats": {
+        "drawCalls": 270,
+        "triangles": 308463,
+        "textures": 32,
+        "programs": 38,
+        "quality": "high",
+        "canvas": {
+          "width": 1600,
+          "height": 900
+        },
+        "shot": "kit-corner"
+      },
+      "consoleErrors": []
+    },
+    {
+      "id": "kit-canopy",
+      "file": "captures/step23b-final/kit-canopy.png",
+      "sha256": "dd65a57a985f1ad5e1cc7b1704117a829bed1a3d4a89e31f9916d64c91e60e3f",
+      "png": {
+        "width": 1600,
+        "height": 900,
+        "bytes": 1528311
+      },
+      "stats": {
+        "drawCalls": 270,
+        "triangles": 308463,
+        "textures": 37,
+        "programs": 41,
+        "quality": "high",
+        "canvas": {
+          "width": 1600,
+          "height": 900
+        },
+        "shot": "kit-canopy"
+      },
+      "consoleErrors": []
+    },
+    {
+      "id": "kit-service",
+      "file": "captures/step23b-final/kit-service.png",
+      "sha256": "800e1c2e857ba937da52a285c6b8643e4d02d9568d4bc896b99529e2042a703b",
+      "png": {
+        "width": 1600,
+        "height": 900,
+        "bytes": 1410198
+      },
+      "stats": {
+        "drawCalls": 270,
+        "triangles": 308463,
+        "textures": 32,
+        "programs": 38,
+        "quality": "high",
+        "canvas": {
+          "width": 1600,
+          "height": 900
+        },
+        "shot": "kit-service"
+      },
+      "consoleErrors": []
+    },
+    {
+      "id": "kit-player-eyes",
+      "file": "captures/step23b-final/kit-player-eyes.png",
+      "sha256": "6cb011a67c2be31284ad3f3acea584939c21400dc6b10c7c3a9623f149b78092",
+      "png": {
+        "width": 1600,
+        "height": 900,
+        "bytes": 1465264
+      },
+      "stats": {
+        "drawCalls": 270,
+        "triangles": 308463,
+        "textures": 37,
+        "programs": 41,
+        "quality": "high",
+        "canvas": {
+          "width": 1600,
+          "height": 900
+        },
+        "shot": "kit-player-eyes"
+      },
+      "consoleErrors": []
+    },
+    {
+      "id": "kit-distant",
+      "file": "captures/step23b-final/kit-distant.png",
+      "sha256": "c270bc3792b2d945ff60d83d745da29ce25753ae9df6780344f1cbb889a59712",
+      "png": {
+        "width": 1600,
+        "height": 900,
+        "bytes": 1448904
+      },
+      "stats": {
+        "drawCalls": 270,
+        "triangles": 308463,
+        "textures": 32,
+        "programs": 38,
+        "quality": "high",
+        "canvas": {
+          "width": 1600,
+          "height": 900
+        },
+        "shot": "kit-distant"
+      },
+      "consoleErrors": []
+    },
+    {
+      "id": "kit-bridge",
+      "file": "captures/step23b-final/kit-bridge.png",
+      "sha256": "394a691e4e6863ce4501a660c807fcd0d6e6fe14c1d07fdfa42cedeaf82c6f82",
+      "png": {
+        "width": 1600,
+        "height": 900,
+        "bytes": 1489780
+      },
+      "stats": {
+        "drawCalls": 270,
+        "triangles": 308463,
+        "textures": 32,
+        "programs": 38,
+        "quality": "high",
+        "canvas": {
+          "width": 1600,
+          "height": 900
+        },
+        "shot": "kit-bridge"
+      },
+      "consoleErrors": []
+    }
+  ],
+  "determinism": {
+    "verified": true,
+    "passed": true,
+    "byteIdentical": true,
+    "byteMatches": 9,
+    "matches": 9,
+    "passedShots": 9,
+    "total": 9,
+    "tolerance": 1,
+    "maxShare": 0.0001,
+    "maxAllowedPixels": 144,
+    "differingPixels": 0,
+    "maxChannelDelta": 0,
+    "keptSecondPassDir": null,
+    "shots": [
+      {
+        "id": "kit-overview",
+        "sha256First": "b6a68439d8dea8044709b178f5a0bd003e6b967db51ea8aef0dc99d377d2e0f1",
+        "sha256Second": "b6a68439d8dea8044709b178f5a0bd003e6b967db51ea8aef0dc99d377d2e0f1",
+        "byteIdentical": true,
+        "passed": true,
+        "differingPixels": 0,
+        "differingShare": 0,
+        "maxChannelDelta": 0,
+        "differingBytes": 0,
+        "firstDifference": -1,
+        "boundingBox": null,
+        "samples": [],
+        "statsIdentical": true,
+        "reason": null
+      },
+      {
+        "id": "kit-facade",
+        "sha256First": "99a2f9e5a3f17cbbc93529d74ee9e5b6422096d7f977ec3f2065f6fa4948ebfb",
+        "sha256Second": "99a2f9e5a3f17cbbc93529d74ee9e5b6422096d7f977ec3f2065f6fa4948ebfb",
+        "byteIdentical": true,
+        "passed": true,
+        "differingPixels": 0,
+        "differingShare": 0,
+        "maxChannelDelta": 0,
+        "differingBytes": 0,
+        "firstDifference": -1,
+        "boundingBox": null,
+        "samples": [],
+        "statsIdentical": true,
+        "reason": null
+      },
+      {
+        "id": "kit-glass",
+        "sha256First": "2a9615230fb0948dfdda99f368498a560f2ae4e0cc42825177b19f9fcabd7753",
+        "sha256Second": "2a9615230fb0948dfdda99f368498a560f2ae4e0cc42825177b19f9fcabd7753",
+        "byteIdentical": true,
+        "passed": true,
+        "differingPixels": 0,
+        "differingShare": 0,
+        "maxChannelDelta": 0,
+        "differingBytes": 0,
+        "firstDifference": -1,
+        "boundingBox": null,
+        "samples": [],
+        "statsIdentical": false,
+        "reason": null
+      },
+      {
+        "id": "kit-corner",
+        "sha256First": "b24726a7a26a03751bb692e79b9f11688a5ddb9c67ee5acc0165e212b47c96b7",
+        "sha256Second": "b24726a7a26a03751bb692e79b9f11688a5ddb9c67ee5acc0165e212b47c96b7",
+        "byteIdentical": true,
+        "passed": true,
+        "differingPixels": 0,
+        "differingShare": 0,
+        "maxChannelDelta": 0,
+        "differingBytes": 0,
+        "firstDifference": -1,
+        "boundingBox": null,
+        "samples": [],
+        "statsIdentical": true,
+        "reason": null
+      },
+      {
+        "id": "kit-canopy",
+        "sha256First": "dd65a57a985f1ad5e1cc7b1704117a829bed1a3d4a89e31f9916d64c91e60e3f",
+        "sha256Second": "dd65a57a985f1ad5e1cc7b1704117a829bed1a3d4a89e31f9916d64c91e60e3f",
+        "byteIdentical": true,
+        "passed": true,
+        "differingPixels": 0,
+        "differingShare": 0,
+        "maxChannelDelta": 0,
+        "differingBytes": 0,
+        "firstDifference": -1,
+        "boundingBox": null,
+        "samples": [],
+        "statsIdentical": false,
+        "reason": null
+      },
+      {
+        "id": "kit-service",
+        "sha256First": "800e1c2e857ba937da52a285c6b8643e4d02d9568d4bc896b99529e2042a703b",
+        "sha256Second": "800e1c2e857ba937da52a285c6b8643e4d02d9568d4bc896b99529e2042a703b",
+        "byteIdentical": true,
+        "passed": true,
+        "differingPixels": 0,
+        "differingShare": 0,
+        "maxChannelDelta": 0,
+        "differingBytes": 0,
+        "firstDifference": -1,
+        "boundingBox": null,
+        "samples": [],
+        "statsIdentical": true,
+        "reason": null
+      },
+      {
+        "id": "kit-player-eyes",
+        "sha256First": "6cb011a67c2be31284ad3f3acea584939c21400dc6b10c7c3a9623f149b78092",
+        "sha256Second": "6cb011a67c2be31284ad3f3acea584939c21400dc6b10c7c3a9623f149b78092",
+        "byteIdentical": true,
+        "passed": true,
+        "differingPixels": 0,
+        "differingShare": 0,
+        "maxChannelDelta": 0,
+        "differingBytes": 0,
+        "firstDifference": -1,
+        "boundingBox": null,
+        "samples": [],
+        "statsIdentical": true,
+        "reason": null
+      },
+      {
+        "id": "kit-distant",
+        "sha256First": "c270bc3792b2d945ff60d83d745da29ce25753ae9df6780344f1cbb889a59712",
+        "sha256Second": "c270bc3792b2d945ff60d83d745da29ce25753ae9df6780344f1cbb889a59712",
+        "byteIdentical": true,
+        "passed": true,
+        "differingPixels": 0,
+        "differingShare": 0,
+        "maxChannelDelta": 0,
+        "differingBytes": 0,
+        "firstDifference": -1,
+        "boundingBox": null,
+        "samples": [],
+        "statsIdentical": false,
+        "reason": null
+      },
+      {
+        "id": "kit-bridge",
+        "sha256First": "394a691e4e6863ce4501a660c807fcd0d6e6fe14c1d07fdfa42cedeaf82c6f82",
+        "sha256Second": "394a691e4e6863ce4501a660c807fcd0d6e6fe14c1d07fdfa42cedeaf82c6f82",
+        "byteIdentical": true,
+        "passed": true,
+        "differingPixels": 0,
+        "differingShare": 0,
+        "maxChannelDelta": 0,
+        "differingBytes": 0,
+        "firstDifference": -1,
+        "boundingBox": null,
+        "samples": [],
+        "statsIdentical": false,
+        "reason": null
+      }
+    ]
+  }
+}

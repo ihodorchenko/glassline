@@ -188,16 +188,60 @@ export function buildCurtainWall(collector: KitPartCollector, definition: Curtai
   }
 
   if (spandrel) {
+    // The spandrel is the opaque band between two glazed storeys, so it is
+    // built as an architectural zone of its own: an expressed metal head rail
+    // on the glass line, a recessed field of matte cassettes aligned with the
+    // mullion grid, and shadow gaps that seat the field between the rails.
+    // The rail, backing and shadow gaps reuse the module's existing dark-metal
+    // batch; only the cassette field needs a new material role.
+    const bandTop = border + spandrelHeight;
+    // Glass panes are inset 0.0275 m inside their cell; the head rail ends on
+    // that edge so the glazing reads as seated in the frame above the band.
+    const headHeight = 0.075;
+    const headBottom = bandTop + 0.0275 - headHeight;
+    const jointGap = 0.024;
+    const cassetteTop = headBottom - 0.016;
+    const cassetteBottom = border + 0.018;
+    const cassetteHeight = cassetteTop - cassetteBottom;
+    const cassetteCenterY = (cassetteTop + cassetteBottom) / 2;
+    const cassetteWidth = usableWidth / columns;
+    const cassetteDepth = 0.045;
+    const cassetteFront = 0.02;
+    const cassetteCenterZ = cassetteFront - cassetteDepth / 2;
+
+    // Dark backing behind the cassette joints: a gap between panels must read
+    // as a recessed press joint, not as a hole through the glazing cavity.
     collector.box(
-      [usableWidth, spandrelHeight - 0.06, 0.06],
-      [0, border + spandrelHeight / 2, 0.03],
-      "composite",
-    );
-    collector.box(
-      [usableWidth, 0.025, 0.025],
-      [0, border + spandrelHeight - 0.005, 0.07],
+      [usableWidth, cassetteHeight + 0.016, 0.012],
+      [0, cassetteCenterY, cassetteCenterZ - cassetteDepth / 2 - 0.006],
       "dark-metal",
     );
+
+    // Opaque matte cassette per structural bay. Joints land on the mullion
+    // lines above, so the opaque band keeps the facade's grid rhythm.
+    for (let column = 0; column < columns; column += 1) {
+      collector.box(
+        [cassetteWidth - jointGap, cassetteHeight, cassetteDepth],
+        [-halfWidth + border + cassetteWidth * (column + 0.5), cassetteCenterY, cassetteCenterZ],
+        "spandrel",
+      );
+    }
+
+    // Expressed head rail in the transom plane: the constructive transition
+    // between opaque panel and glass. Dark anodized metal keeps the glass line
+    // dark and lets the matte panel read as the lighter element between the
+    // dark transom above and the pale frame below. Its depth carries a shadow
+    // gradient down the recessed field.
+    collector.box(
+      [usableWidth, headHeight, 0.15],
+      [0, headBottom + headHeight / 2, 0.075],
+      "dark-metal",
+    );
+
+    // Shadow gaps above and below the field: the cassettes sit in the frame
+    // instead of being pasted onto the facade.
+    collector.box([usableWidth - 0.02, 0.016, 0.03], [0, cassetteTop + 0.008, 0.045], "dark-metal");
+    collector.box([usableWidth - 0.02, 0.018, 0.024], [0, border + 0.009, 0.045], "dark-metal");
   }
 }
 
