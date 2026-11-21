@@ -3911,6 +3911,81 @@ cool cast, mid-deck prop clusters, blue-grey background facades).
   the P2 surface-audio pass, not by muting game feel.
 - 2 WATCH (sky, local contrast) keep the tolerance verdict at 11/13, not 13/13.
 
+## Round 99 — P2 content/material round: reference horizon, warm deck, structural clouds (2026-11-21)
+
+### Scope
+
+Close the P2 gaps left by round 98 (visible-band sky whitening, straight-tile
+deck cool cast, local/top contrast, skyline density). Nine measured capture
+iterations; a VLM audit compared the before/after frames natively (start,
+wallrun, skybridge, finish) against the reference contact sheet.
+
+### What changed
+
+- **Sky** (`SkyDome.ts`): gradient stops re-placed — the visible 10–30° band
+  now holds the near-white horizon colour with the saturated mid band only
+  above the frame (`lowerStops` 0/0.26 → 0.18/0.50), and the radiance slope is
+  scaled down (1.0/1.2 → 0.80/0.95) to compensate the whitened band's extra
+  luma. Clouds: UV scale 1.05 → 1.4 (a field of smaller cumulus instead of one
+  flat cotton pad), deeper bases (0.38 + 0.28·underside), sharper lit split.
+- **Deck materials** (`MaterialLibrary.ts`): the roof/plaster/concrete
+  straight-tile paint kits shifted warm (roof base #f8f8f5 → #faf7ee, warm
+  mottle/speckle/panels/seams/stains) — the deck reads the reference warm
+  cream instead of the straight-tile cool cast; roof seam groove alpha
+  0.66 → 0.78 for block-level contrast.
+- **Glass** (`MaterialLibrary.ts`): three measured iterations of the far-glass
+  tone. Saturated-but-bright towers trip the primary sky metric's 0.45 blue
+  floor (sun + sky reflections lift blue to ~0.6); the final values are
+  dark saturated blues with hard-trimmed env reflections (`glass` 0x0e1d2a @
+  env 0.5, `glass-far` 0x0d1a26 @ env 0.35) — reference-style near-silhouette
+  towers against the bright sky.
+- **Skyline** (`PrologueCity.ts`): the W2 far wall topped out at 10–20 m and
+  left ~16° of open sky in the start frame. Heights roughly doubled (46/38/
+  42/46 m), three mid-band towers added outside the |x| ≥ 20 route corridor,
+  and the 48×32 far hero mass moved off the finish axis (x 4 → −34, top 58 →
+  36) after the VLM verdict flagged it dominating the finish-roof frame.
+- Grade: chroma 2.5 and exposure 1.59 were measured and reverted (documented
+  in-line); 2.4 / 1.56 keep the better metric trade.
+
+### Result
+
+- Start frame: **10/13 shifted, 12/13 tolerance, 1 WATCH** (edge energy —
+  our frame is *sharper* than the reference mean, not softer). Round-93 for
+  comparison: 9/13 shifted, 13/13 tolerance. All three remaining shifted
+  misses (saturation −0.019, local contrast −0.023, sky +9.1) are inside
+  their tolerance bands.
+- VLM verdict: "the start frame reads reference-grade in spirit — white
+  city, sun, monumentality"; the cool-cast, cornflower flood, flat cloud and
+  open-horizon issues from the round-98 audit are closed. Route red line
+  unobstructed in all six views.
+- Performance: 60 fps avg / 59.9 median / 59.5 p1-low, p95 16.7 ms on the
+  start pose (headless Edge, M1 Pro); draw calls unchanged at 194 (static
+  merge absorbs the towers), triangles 4.18M → 4.36M (+4 %).
+- 402 tests / 44 files, typecheck, build all green; six-shot capture with
+  0 console errors.
+
+### Evidence
+
+- [six-shot set + metrics.json + perf](evidence/visual/round-99/)
+- Raw iterations under `captures/p2-final`.
+
+### Honest gaps
+
+- **Sun-bleached exposure**: the reference's near-white share is 34.5 % vs
+  our 25.4 — the ME frames read overexposed/blazing; ours reads correctly
+  exposed. Closing this needs a deliberate highlight-shoulder/exposure
+  decision, not a nudge (measured: +2 % exposure moves near-white +0.2 pp).
+- **Sky consistency across views**: the finish-roof view still shows the
+  saturated zenith and softer clouds (high camera pitch reaches the upper
+  dome) — the gradient fix is framing-dependent by design.
+- **Dark tower treatment**: the far towers are flat dark slabs; the
+  reference alternates dark glass with white facades and orange/yellow
+  accents (billboards, cranes). Colour breaks are the next content pass.
+- Saturation 0.222 vs reference 0.300 — structural: the reference's
+  saturation lives partly in its saturated-blue sky patches and city colour
+  breaks, both of which this round deliberately traded away for the
+  sun-bleached horizon.
+
 ## Round log
 
 | Round | Date | Focus | Outcome |
@@ -3924,3 +3999,4 @@ cool cast, mid-deck prop clusters, blue-grey background facades).
 | 7 | 2026-11-19 | High catwalk U-turn | ~220 m route, 8.2 m vertical, exposed catwalk, high gate; 272 tests |
 | 8 | 2026-11-19 | Finale polish + altitude wind | Suspended load, deck seams, high-roof kit, altitude-scaled wind; 272 tests |
 | 98 | 2026-11-21 | P1 reference recalibration: atmosphere/framing/spectrum after W2.2/W5 | 10/13 shifted (round-93: 9/13), 11/13 tolerance; audio 5/5, dark spectrum step; 402 tests green; sky-share and deck-warmth gaps attributed to P2 content |
+| 99 | 2026-11-21 | P2 content/material: reference horizon, warm deck, structural clouds, dark towers | 10/13 shifted, 12/13 tolerance, 1 WATCH (edge sharper than ref); 60 fps, 194 draw calls; VLM verdict "reference-grade in spirit" |
