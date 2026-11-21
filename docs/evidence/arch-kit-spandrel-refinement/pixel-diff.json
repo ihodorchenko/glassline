@@ -14,6 +14,11 @@
     "maxChannel255": 163,
     "changedPixelShare": 0.010292
   },
+  "kit-spandrel-closeup": {
+    "meanAbs255": 7.6942,
+    "maxChannel255": 171,
+    "changedPixelShare": 0.203367
+  },
   "kit-corner": {
     "meanAbs255": 0.3979,
     "maxChannel255": 162,

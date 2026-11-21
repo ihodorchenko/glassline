@@ -205,7 +205,8 @@ shots or composition.
 | Geometry | demo curtain-wall 328 → 412 triangles; batch count unchanged (3 without spandrel, 5 with); local, deterministic, merged per material |
 | Cost | composition draw calls 270 → 270; triangles 305,727 → 308,463 (+0.9 %); textures 36 → 37 |
 | Tests | 448/448 pass (+4 spandrel material/geometry/determinism tests) |
-| Captures | 9/9 byte-identical; `kit-service` byte-identical; Prologue `start-roof` byte-identical |
+| Capture shot | new permanent `kit-spandrel-closeup` (1600×900, fov 40, slight three-quarter angle) for the face, joint, gasket, backing and head rail transition; the nine original shots are unchanged |
+| Captures | 10/10 byte-identical; the nine original hashes match the Step 2.3B run; `kit-service` byte-identical; Prologue `start-roof` byte-identical |
 | Lifecycle | 118 geometries / 121 instanced meshes / 270 draw calls; load/reload/restart ×2 stable |
 
 **Known deviation:** `ART_BRIEF.md` §2 anchors the spandrel at `#2A3A44`; that dark
@@ -225,9 +226,9 @@ Branch `feat/arch-spandrel-refinement` (created from `feat/arch-spandrel` @
 [`reports/ARCH_KIT_STEP_2_3C_SPANDREL_REFINEMENT.md`](reports/ARCH_KIT_STEP_2_3C_SPANDREL_REFINEMENT.md).
 
 **Scope:** local refinement of the spandrel cassette edges/shadow gaps and of the
-`spandrel` material. No facade geometry, module size, band height, cassette pitch
-or width, glass role, lighting, renderer or post-processing change, and no new
-module parameter.
+`spandrel` material, plus a permanent close-up regression capture. No facade
+geometry, module size, band height, cassette pitch or width, glass role,
+lighting, renderer or post-processing change, and no new module parameter.
 
 | Area | Result |
 |---|---|
@@ -237,7 +238,8 @@ module parameter.
 | Seams | close-up joint luma 0.273 vs 0.475 panel; far tower band profile std 6.5 → 9.3 levels, mean internal joint dip 18.6 → 38.4 levels |
 | Cost | composition draw calls 270 → 270; triangles 308,463 → 309,423 (+0.31 %); textures 37 → 36 |
 | Tests | 450/450 pass (+2 new spandrel edge/neutrality tests; existing spandrel and `spandrel: false` pins updated) |
-| Captures | 9/9 byte-identical; `kit-service` byte-identical; Prologue `start-roof` byte-identical |
+| Capture shot | new permanent `kit-spandrel-closeup` (1600×900, fov 40, slight three-quarter angle) for the face, joint, gasket, backing and head rail transition; the nine original shots are unchanged |
+| Captures | 10/10 byte-identical; the nine original hashes match the Step 2.3B run; `kit-service` byte-identical; Prologue `start-roof` byte-identical |
 | Lifecycle | 118 geometries / 121 instanced meshes / 270 draw calls / 36 textures / 41 programs; load/reload/restart ×2 stable |
 
 **Known deviation:** the neutral `#5E5E5E` is a further step away from
@@ -245,9 +247,9 @@ module parameter.
 glazing and the anodized frame and is the only tone that stays grey under both
 sun and ambient; recorded in `ARCHITECTURAL_KIT.md` §5.
 
-**Recommended next task:** review the seam scale and the panel value; then decide
-whether a dedicated curtain-wall close-up belongs in the deterministic capture
-set (the current 9 shots were not changed).
+**Recommended next task:** review the seam scale and the panel value; the
+dedicated curtain-wall close-up is now part of the deterministic capture set
+(`kit-spandrel-closeup`).
 
 ---
 

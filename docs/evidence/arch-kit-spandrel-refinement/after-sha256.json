@@ -10,11 +10,18 @@
     "sha256": "86af7ca0799ac66fa965e8c707b1d80179a00b896db224631c7af4b6d6fc1945",
     "drawCalls": 270,
     "triangles": 309423,
-    "textures": 36,
-    "programs": 41
+    "textures": 31,
+    "programs": 38
   },
   "kit-glass": {
     "sha256": "0540169890380506a5086b037f0dfeb72a179d1fa23d6981061e34280fd47ca7",
+    "drawCalls": 270,
+    "triangles": 309423,
+    "textures": 36,
+    "programs": 41
+  },
+  "kit-spandrel-closeup": {
+    "sha256": "32bd04be55b81f03220520d854b7c41ec99cfa865c188f072ab926794704dcd0",
     "drawCalls": 270,
     "triangles": 309423,
     "textures": 31,
@@ -24,8 +31,8 @@
     "sha256": "c2cfa4610aa3879453996603ddb73fbca79f0ab645dacbe53896224fdd1f6136",
     "drawCalls": 270,
     "triangles": 309423,
-    "textures": 36,
-    "programs": 41
+    "textures": 31,
+    "programs": 38
   },
   "kit-canopy": {
     "sha256": "b2e6802ec34087da80d1081d559fd3a103f5cca102f2f8758dd4ab6607dcec80",
@@ -52,14 +59,14 @@
     "sha256": "e5795f2db8350e98954c08067e00b114b48aef69c3de087fcd9ad0ef0fb2356f",
     "drawCalls": 270,
     "triangles": 309423,
-    "textures": 36,
-    "programs": 41
+    "textures": 31,
+    "programs": 38
   },
   "kit-bridge": {
     "sha256": "a25e7e23cbf997e6be91a66d9bfab9a392c591633be905975f585f48275c2c2e",
     "drawCalls": 270,
     "triangles": 309423,
-    "textures": 36,
-    "programs": 41
+    "textures": 31,
+    "programs": 38
   }
 }

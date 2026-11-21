@@ -1,8 +1,8 @@
 {
-  "generatedAt": "2026-11-21T22:26:54.122Z",
+  "generatedAt": "2026-11-21T22:44:43.104Z",
   "baseline": {
     "run": "captures/step23c-before",
-    "note": "clean tree at c94ec0a (the 2.3B commit); 9/9 hashes match the archived Step 2.3B after run"
+    "note": "clean tree at c94ec0a (the 2.3B commit); the nine original shots match the archived Step 2.3B after run, plus the new close-up shot"
   },
   "after": {
     "run": "captures/step23c-final"
@@ -55,6 +55,22 @@
         "p25": 0.3002,
         "p95": 0.9558,
         "saturation": 0.2033
+      }
+    },
+    "kit-spandrel-closeup": {
+      "before": {
+        "lumaMean": 0.3347,
+        "lumaStd": 0.1752,
+        "p25": 0.1999,
+        "p95": 0.6539,
+        "saturation": 0.3512
+      },
+      "after": {
+        "lumaMean": 0.3124,
+        "lumaStd": 0.1622,
+        "p25": 0.1968,
+        "p95": 0.6106,
+        "saturation": 0.339
       }
     },
     "kit-corner": {
@@ -169,6 +185,11 @@
       "meanAbs255": 0.2869,
       "maxChannel255": 163,
       "changedPixelShare": 0.010292
+    },
+    "kit-spandrel-closeup": {
+      "meanAbs255": 7.6942,
+      "maxChannel255": 171,
+      "changedPixelShare": 0.203367
     },
     "kit-corner": {
       "meanAbs255": 0.3979,
@@ -385,6 +406,221 @@
       }
     }
   },
+  "closeUpRegions": {
+    "cassette face, sunlit": {
+      "box": [
+        150,
+        420,
+        450,
+        480
+      ],
+      "before": {
+        "meanRgb255": [
+          109.85,
+          128.68,
+          142.56
+        ],
+        "meanLuma01": 0.4929,
+        "meanSaturation": 0.2324
+      },
+      "after": {
+        "meanRgb255": [
+          90.43,
+          96.08,
+          104.64
+        ],
+        "meanLuma01": 0.3745,
+        "meanSaturation": 0.1513
+      }
+    },
+    "expressed joint between cassettes": {
+      "box": [
+        705,
+        400,
+        730,
+        500
+      ],
+      "before": {
+        "meanRgb255": [
+          105.16,
+          120.84,
+          132.74
+        ],
+        "meanLuma01": 0.4642,
+        "meanSaturation": 0.2303
+      },
+      "after": {
+        "meanRgb255": [
+          60.28,
+          67.49,
+          77.86
+        ],
+        "meanLuma01": 0.2616,
+        "meanSaturation": 0.2811
+      }
+    },
+    "gasket / dark backing band": {
+      "box": [
+        200,
+        362,
+        400,
+        378
+      ],
+      "before": {
+        "meanRgb255": [
+          42.99,
+          55.71,
+          71.49
+        ],
+        "meanLuma01": 0.2123,
+        "meanSaturation": 0.4039
+      },
+      "after": {
+        "meanRgb255": [
+          42.99,
+          55.71,
+          71.49
+        ],
+        "meanLuma01": 0.2123,
+        "meanSaturation": 0.4039
+      }
+    },
+    "head rail front": {
+      "box": [
+        200,
+        315,
+        500,
+        345
+      ],
+      "before": {
+        "meanRgb255": [
+          35.7,
+          48.4,
+          63.01
+        ],
+        "meanLuma01": 0.1833,
+        "meanSaturation": 0.4334
+      },
+      "after": {
+        "meanRgb255": [
+          35.7,
+          48.4,
+          63.01
+        ],
+        "meanLuma01": 0.1833,
+        "meanSaturation": 0.4334
+      }
+    },
+    "glazing above the head rail": {
+      "box": [
+        200,
+        180,
+        500,
+        260
+      ],
+      "before": {
+        "meanRgb255": [
+          38.14,
+          52.39,
+          68.56
+        ],
+        "meanLuma01": 0.1981,
+        "meanSaturation": 0.4437
+      },
+      "after": {
+        "meanRgb255": [
+          38.14,
+          52.39,
+          68.56
+        ],
+        "meanLuma01": 0.1981,
+        "meanSaturation": 0.4437
+      }
+    }
+  },
+  "seams": {
+    "detailBand": {
+      "region": {
+        "source": "captures/step23c-detail-before|detail",
+        "x": [
+          1800,
+          2260
+        ],
+        "y0": 1181.8,
+        "slope": -0.1715,
+        "halfHeight": 5
+      },
+      "profileStd255": {
+        "before": 16.08,
+        "after": 17.5
+      },
+      "joints": {
+        "z=-42": {
+          "x": 1838.4,
+          "dipBefore255": -1.47,
+          "dipAfter255": -1.74
+        },
+        "z=-44": {
+          "x": 1968.4,
+          "dipBefore255": -3.71,
+          "dipAfter255": -4.04
+        },
+        "z=-46": {
+          "x": 2082.9,
+          "dipBefore255": -1.33,
+          "dipAfter255": -0.08
+        },
+        "z=-48": {
+          "x": 2184.6,
+          "dipBefore255": -0.19,
+          "dipAfter255": -0.19
+        }
+      }
+    },
+    "overviewTowerBand": {
+      "region": {
+        "source": "captures/step23c-before|final",
+        "x": [
+          1080,
+          1220
+        ],
+        "y0": 486.6,
+        "slope": -0.3053,
+        "halfHeight": 3
+      },
+      "profileStd255": {
+        "before": 6.53,
+        "after": 9.27
+      },
+      "joints": {
+        "z=-40": {
+          "x": 1100.3,
+          "dipBefore255": -30.72,
+          "dipAfter255": -50.08
+        },
+        "z=-42": {
+          "x": 1128.3,
+          "dipBefore255": -25.77,
+          "dipAfter255": -44.62
+        },
+        "z=-44 (module boundary)": {
+          "x": 1154.2,
+          "dipBefore255": -33.56,
+          "dipAfter255": -15.63
+        },
+        "z=-46": {
+          "x": 1178.3,
+          "dipBefore255": -12.98,
+          "dipAfter255": -43.48
+        },
+        "z=-48": {
+          "x": 1200.6,
+          "dipBefore255": -4.99,
+          "dipAfter255": -15.44
+        }
+      }
+    }
+  },
   "farCityZeroDiff": {
     "kit-distant: right tower glazing": {
       "box": [
@@ -456,10 +692,10 @@
     "verified": true,
     "passed": true,
     "byteIdentical": true,
-    "byteMatches": 9,
-    "matches": 9,
-    "passedShots": 9,
-    "total": 9,
+    "byteMatches": 10,
+    "matches": 10,
+    "passedShots": 10,
+    "total": 10,
     "tolerance": 1,
     "maxShare": 0.0001,
     "maxAllowedPixels": 144,
@@ -496,13 +732,29 @@
         "firstDifference": -1,
         "boundingBox": null,
         "samples": [],
-        "statsIdentical": true,
+        "statsIdentical": false,
         "reason": null
       },
       {
         "id": "kit-glass",
         "sha256First": "0540169890380506a5086b037f0dfeb72a179d1fa23d6981061e34280fd47ca7",
         "sha256Second": "0540169890380506a5086b037f0dfeb72a179d1fa23d6981061e34280fd47ca7",
+        "byteIdentical": true,
+        "passed": true,
+        "differingPixels": 0,
+        "differingShare": 0,
+        "maxChannelDelta": 0,
+        "differingBytes": 0,
+        "firstDifference": -1,
+        "boundingBox": null,
+        "samples": [],
+        "statsIdentical": false,
+        "reason": null
+      },
+      {
+        "id": "kit-spandrel-closeup",
+        "sha256First": "32bd04be55b81f03220520d854b7c41ec99cfa865c188f072ab926794704dcd0",
+        "sha256Second": "32bd04be55b81f03220520d854b7c41ec99cfa865c188f072ab926794704dcd0",
         "byteIdentical": true,
         "passed": true,
         "differingPixels": 0,
@@ -528,7 +780,7 @@
         "firstDifference": -1,
         "boundingBox": null,
         "samples": [],
-        "statsIdentical": false,
+        "statsIdentical": true,
         "reason": null
       },
       {
@@ -544,7 +796,7 @@
         "firstDifference": -1,
         "boundingBox": null,
         "samples": [],
-        "statsIdentical": false,
+        "statsIdentical": true,
         "reason": null
       },
       {
@@ -576,7 +828,7 @@
         "firstDifference": -1,
         "boundingBox": null,
         "samples": [],
-        "statsIdentical": false,
+        "statsIdentical": true,
         "reason": null
       },
       {
@@ -654,58 +906,20 @@
     "viewDependentSheen": false,
     "unitsPerCassette": "one role for every cassette; no per-cassette colour variation"
   },
-  "seams": {
-    "closeUpJoints": {
-      "source": "captures/step23c-before|final kit-glass.png (1600x900)",
-      "note": "Region means in kit-glass.png (1600x900). Each joint box is 3 px wide for a 1-2 px expressed joint, so the box also covers the chamfered panel edge: the rendered line is darker than the mean. Visual proof in detail-kit-glass-band.jpg.",
-      "sunlitPanelLuma": 0.4746,
-      "shadedPanelLuma": 0.3294,
-      "joint1Luma": 0.2726,
-      "joint2Luma": 0.2881,
-      "joint1RelDarkening": 0.4256,
-      "joint2RelDarkening": 0.1254,
-      "beforeJoint1Luma": 0.515,
-      "beforeJoint2Luma": 0.3781
-    },
-    "farView": {
-      "source": "captures/step23c-before|final kit-overview.png (1600x900), tower top storey band",
-      "method": "slanted strip along the projected band centreline (x 1080-1220, slope -0.3053, +-3 px), detrended profile; a seam reads as a negative dip",
-      "profileStd255": {
-        "before": 6.53,
-        "after": 9.27
-      },
-      "joints": {
-        "z=-40": {
-          "x": 1100.3,
-          "dipBefore255": -30.72,
-          "dipAfter255": -50.08
-        },
-        "z=-42": {
-          "x": 1128.3,
-          "dipBefore255": -25.77,
-          "dipAfter255": -44.62
-        },
-        "z=-44 (module boundary)": {
-          "x": 1154.2,
-          "dipBefore255": -33.56,
-          "dipAfter255": -15.63
-        },
-        "z=-46": {
-          "x": 1178.3,
-          "dipBefore255": -12.98,
-          "dipAfter255": -43.48
-        },
-        "z=-48": {
-          "x": 1200.6,
-          "dipBefore255": -4.99,
-          "dipAfter255": -15.44
-        }
-      },
-      "internalJointMeanDip255": {
-        "before": -18.61,
-        "after": -38.41
-      },
-      "note": "z=-44 is the boundary between two 6 m modules, where two authored joints meet; it was already a dark break before this step."
-    }
+  "closeUpShot": {
+    "id": "kit-spandrel-closeup",
+    "title": "Curtain-Wall Spandrel \u2014 Cassette Close-Up",
+    "position": [
+      -2.34,
+      5.08,
+      -42.24
+    ],
+    "lookAt": [
+      -4.97,
+      4.58,
+      -43.2
+    ],
+    "fov": 40,
+    "purpose": "permanent regression capture for the spandrel edges, gasket, backing and head rail transition"
   }
 }

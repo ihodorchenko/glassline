@@ -6,11 +6,16 @@ and the local `spandrel` material correction of the `curtain-wall` module.
 - **Base:** `c94ec0a6b01187113217291c1e56cbd42856baa1` (`feat/arch-spandrel`,
   Step 2.3B).
 - **Baseline:** `captures/step23c-before` — captured from a clean tree at the base
-  commit on the new branch; 9/9 hashes match the archived Step 2.3B after run
-  `captures/step23b-final` exactly.
-- **After:** `captures/step23c-final` — branch `feat/arch-spandrel-refinement`.
+  commit on the new branch; the nine original hashes match the archived Step 2.3B
+  after run `captures/step23b-final` exactly. The tenth shot
+  (`kit-spandrel-closeup`) is new in Step 2.3C and was captured on the same clean
+  baseline.
+- **After:** `captures/step23c-final` — branch `feat/arch-spandrel-refinement`,
+  10 shots.
 - **Detail pass:** `captures/step23c-detail` (same `kit-glass` route at
-  3200×1800) and `captures/step23c-detail-before` (the same pass on the baseline).
+  3200×1800), `captures/step23c-detail-before` (the same pass on the baseline)
+  and `captures/step23c-detail-closeup` (the new close-up at 3200×1800,
+  after-only supporting pass).
 - **Route:** `?capture=1&level=architecture&shot=<id>`, 1600×900, DPR 1,
   Microsoft Edge 157 headless, display quality `high`.
 - **Commands:**
@@ -20,6 +25,8 @@ npm run capture -- --iteration step23c-before --level architecture --shot all
 npm run capture -- --iteration step23c-final --level architecture --shot all
 npm run capture -- --iteration step23c-detail --level architecture --shot kit-glass \
   --width 3200 --height 1800 --no-verify-determinism
+npm run capture -- --iteration step23c-detail-closeup --level architecture \
+  --shot kit-spandrel-closeup --width 3200 --height 1800 --no-verify-determinism
 npm run capture -- --iteration step23c-after-prologue --level prologue --shot start-roof \
   --no-verify-determinism
 npm run kit:lifecycle -- --iteration step23c-lifecycle
@@ -35,21 +42,25 @@ runs were captured on a clean stash of the same tree.
 | 1 | `kit-overview` | `610da66437872f1ca6cb880cc276e81d97f0a3feef6316d60c98fb4d1b8df4f4` | 270 | 309,423 |
 | 2 | `kit-facade` | `86af7ca0799ac66fa965e8c707b1d80179a00b896db224631c7af4b6d6fc1945` | 270 | 309,423 |
 | 3 | `kit-glass` | `0540169890380506a5086b037f0dfeb72a179d1fa23d6981061e34280fd47ca7` | 270 | 309,423 |
-| 4 | `kit-corner` | `c2cfa4610aa3879453996603ddb73fbca79f0ab645dacbe53896224fdd1f6136` | 270 | 309,423 |
-| 5 | `kit-canopy` | `b2e6802ec34087da80d1081d559fd3a103f5cca102f2f8758dd4ab6607dcec80` | 270 | 309,423 |
-| 6 | `kit-service` | `800e1c2e857ba937da52a285c6b8643e4d02d9568d4bc896b99529e2042a703b` | 270 | 309,423 |
-| 7 | `kit-player-eyes` | `45e08dad85e25d98b4da3f017141134a77893991e65044057f43e17113ac9c1a` | 270 | 309,423 |
-| 8 | `kit-distant` | `e5795f2db8350e98954c08067e00b114b48aef69c3de087fcd9ad0ef0fb2356f` | 270 | 309,423 |
-| 9 | `kit-bridge` | `a25e7e23cbf997e6be91a66d9bfab9a392c591633be905975f585f48275c2c2e` | 270 | 309,423 |
+| 4 | `kit-spandrel-closeup` | `32bd04be55b81f03220520d854b7c41ec99cfa865c188f072ab926794704dcd0` | 270 | 309,423 |
+| 5 | `kit-corner` | `c2cfa4610aa3879453996603ddb73fbca79f0ab645dacbe53896224fdd1f6136` | 270 | 309,423 |
+| 6 | `kit-canopy` | `b2e6802ec34087da80d1081d559fd3a103f5cca102f2f8758dd4ab6607dcec80` | 270 | 309,423 |
+| 7 | `kit-service` | `800e1c2e857ba937da52a285c6b8643e4d02d9568d4bc896b99529e2042a703b` | 270 | 309,423 |
+| 8 | `kit-player-eyes` | `45e08dad85e25d98b4da3f017141134a77893991e65044057f43e17113ac9c1a` | 270 | 309,423 |
+| 9 | `kit-distant` | `e5795f2db8350e98954c08067e00b114b48aef69c3de087fcd9ad0ef0fb2356f` | 270 | 309,423 |
+| 10 | `kit-bridge` | `a25e7e23cbf997e6be91a66d9bfab9a392c591633be905975f585f48275c2c2e` | 270 | 309,423 |
 
-Determinism: **9/9 byte-identical** across two fresh Edge instances, 0 differing
-pixels, 0 console and 0 page errors on every shot. Draw calls are unchanged
-(270); triangles rise from 308,463 to **309,423** (+960, +0.31 %) because of the
-chamfered cassette plates. `kit-service` is byte-identical to the baseline: that
-frame contains no curtain wall, so the change is scoped to the spandrel modules.
+Determinism: **10/10 byte-identical** across two fresh Edge instances, 0 differing
+pixels, 0 console and 0 page errors on every shot. The nine original frames kept
+their previous hashes. Draw calls are unchanged (270); triangles rise from
+308,463 to **309,423** (+960, +0.31 %) because of the chamfered cassette plates.
+`kit-service` is byte-identical to the baseline: that frame contains no curtain
+wall, so the change is scoped to the spandrel modules.
 
 Baseline hashes (`baseline-sha256.json`) are byte-identical to the archived Step
-2.3B after run: the branch starts from the reviewed 2.3B state.
+2.3B after run for the nine original shots: the branch starts from the reviewed
+2.3B state. The new close-up is the permanent regression view for the spandrel
+edges, gasket reveal, dark backing and head rail transition.
 
 ## Panel / seam metrics (atrium east face, `kit-glass`, 1600×900)
 
@@ -72,6 +83,21 @@ keeps the three-value hierarchy frame (≈0.52) / panel (0.475 sun, 0.329 shade)
 glazing (0.275). Joints are now distinctly darker than the face (0.273 vs 0.475
 in sun, 0.288 vs 0.329 in shade) where the baseline joints were a pale speckled
 strip (0.515 / 0.378).
+
+## Permanent close-up (`kit-spandrel-closeup`, 1600×900)
+
+| Region | before luma | after luma | before sat | after sat |
+|---|---:|---:|---:|---:|
+| cassette face (sunlit) | 0.493 | **0.375** | 0.232 | **0.151** |
+| expressed joint between cassettes | 0.464 | **0.262** | 0.230 | 0.281 |
+| gasket / dark backing band | 0.212 | 0.212 | 0.404 | 0.404 |
+| head rail front | 0.183 | 0.183 | 0.433 | 0.433 |
+| glazing above the head rail | 0.198 | 0.198 | 0.444 | 0.444 |
+
+The joint-to-face contrast rises from 5.8 % (0.493 → 0.464) to 30.1 %
+(0.375 → 0.262); the gasket, head rail and glazing are pixel-identical (they are
+the untouched `dark-metal` and `glass-near`). This shot is part of the
+deterministic contract now, not a supporting one-off.
 
 ## Far-view seam legibility (`kit-overview`, tower top storey)
 
@@ -119,18 +145,21 @@ Far-city regions on the shared `glass` / `glass-far` roles are pixel-identical
 - `capture-manifest.json` — full after run, including the determinism verdict.
 - `baseline-sha256.json` / `after-sha256.json` — compact hash tables.
 - `pixel-diff.json` — whole-frame before/after difference per shot.
-- `spandrel-metrics.json` — whole-frame metrics, panel/joint regions, close-up
-  and far-view seam metrics, far-city zero-diff checks, renderer counters,
-  lifecycle summary, material contract.
+- `spandrel-metrics.json` — whole-frame metrics, panel/joint regions, permanent
+  close-up regions, close-up and far-view seam metrics, far-city zero-diff
+  checks, renderer counters, lifecycle summary, material contract and the
+  close-up shot definition.
 - `lifecycle.json` — load / reload / restart ×2 / unload probe (118 geometries,
   121 instanced meshes, 270 draw calls, 36 textures, 41 programs; menu returns to
   9 geometries; 0 errors).
 - `prologue-regression.json` — Prologue hash and renderer stats.
-- `kit-*.jpg` — after review copies of the nine shots.
-- `compare-kit-*.jpg` — before | after frames for all nine shots.
+- `kit-*.jpg` — after review copies of the ten shots.
+- `compare-kit-*.jpg` — before | after frames for all ten shots.
 - `detail-kit-glass-band.jpg` — atrium east-face band, before | after (5×).
 - `detail-kit-glass-band-2x.jpg` — same band from the 3200×1800 pass, before |
   after (2× of the crop).
+- `detail-kit-spandrel-closeup.jpg` — permanent close-up, before | after (2×).
+- `detail-kit-spandrel-closeup-2x.jpg` — after-only 3200×1800 close-up crop.
 - `detail-kit-overview-tower.jpg` — tower storey bands at review distance,
   before | after (4×).
 - `detail-kit-player-eyes-band.jpg` — atrium band from the player-eye shot,

@@ -104,6 +104,8 @@ many as the previous composite band plus lining — and three with
 `spandrel: false` geometry and materials are unchanged from Step 2.3A
 (unit-pinned).
 
+The zone has a dedicated regression capture: `kit-spandrel-closeup` (see §6).
+
 ## 3. Public API
 
 `src/levels/architecture/`:
@@ -281,7 +283,7 @@ construction joints between facade bays.
 ### Review route and capture
 
 ```bash
-# Nine deterministic shots (byte-identical on re-capture):
+# Ten deterministic shots (byte-identical on re-capture):
 npm run capture -- --iteration arch-kit --level architecture --shot all
 
 # Load / reload / restart x2 / unload resource-count probe:
@@ -294,6 +296,13 @@ Runtime (`startGameplay("training", "architectural_kit_demo")`), not through a
 second loader. Evidence (shots, capture manifest, lifecycle report, Prologue
 before/after manifests) lives in `docs/evidence/arch-kit/`.
 
+The ten shots include the permanent spandrel regression view
+`kit-spandrel-closeup` (atrium east face, middle storey band, fov 40, slight
+three-quarter angle). It frames a cassette face, the expressed joint, the
+20 mm gasket reveal, the dark backing and the head rail transition, so any future
+change to the spandrel edge geometry or material moves this frame. The nine
+original review shots are unchanged.
+
 ## 7. Verification record
 
 | Check | Result |
@@ -304,7 +313,7 @@ before/after manifests) lives in `docs/evidence/arch-kit/`.
 | `npm run build` | pass; demo level id is absent from the production JS bundle |
 | Kit unit suite | 15 modules build, deterministic, valid geometry, material resolve, triangle budget; spandrel is opaque, neutral, matte, non-glass, local and batch-count neutral; the cassette pitch, joint width and field extents are pinned, the chamfered face is measured in the geometry, and `spandrel: false` is pinned to its previous geometry/materials |
 | Composition runtime suite | valid definition, load/unload, geometry disposal, scene-graph return to baseline, reload stability, invalid-data rejection |
-| Capture determinism | 9/9 shots byte-identical across two fresh-browser passes (`docs/evidence/arch-kit-spandrel-refinement/`) |
+| Capture determinism | 10/10 shots byte-identical across two fresh-browser passes (`docs/evidence/arch-kit-spandrel-refinement/`); the nine original hashes match the Step 2.3B run |
 | Load/unload/restart resource probe | geometries 118 → 9 (menu baseline) and identical across reload + 2 restarts; 121 instanced meshes, 118 geometries, 36 textures, 270 draw calls; 0 console/page errors |
 | Prologue regression | `start-roof` capture is byte-identical before/after (sha256 `59c977dd…`), 210 draw calls / 4,363,071 triangles unchanged |
 

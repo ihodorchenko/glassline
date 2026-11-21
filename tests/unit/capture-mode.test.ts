@@ -172,9 +172,9 @@ describe("Architectural Kit capture route", () => {
   });
 
   it("describes the architecture shot list and validates it", () => {
-    expect(ARCHITECTURE_CAPTURE_SHOTS).toHaveLength(9);
-    expect(new Set(ARCHITECTURE_CAPTURE_SHOTS.map((shot) => shot.id)).size).toBe(9);
-    expect(validateCaptureShots(ARCHITECTURE_CAPTURE_SHOTS, 9)).toEqual([]);
+    expect(ARCHITECTURE_CAPTURE_SHOTS).toHaveLength(10);
+    expect(new Set(ARCHITECTURE_CAPTURE_SHOTS.map((shot) => shot.id)).size).toBe(10);
+    expect(validateCaptureShots(ARCHITECTURE_CAPTURE_SHOTS, 10)).toEqual([]);
     expect(findCaptureLevelRoute("architecture")?.levelDefinitionId).toBe(
       ARCHITECTURAL_KIT_DEMO_LEVEL_ID,
     );

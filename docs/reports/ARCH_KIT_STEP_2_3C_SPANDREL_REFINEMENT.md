@@ -7,10 +7,12 @@ regression-наборы сняты, ожидает ревью. Merge не вып
 **Ветка:** `feat/arch-spandrel-refinement`, создана от `feat/arch-spandrel` на
 commit `c94ec0a6b01187113217291c1e56cbd42856baa1` (Step 2.3B).
 **Baseline:** `captures/step23c-before` — снят с чистого дерева базового commit;
-9/9 sha256 совпадают с архивным прогоном Step 2.3B (`captures/step23b-final`),
-то есть ветка стартует ровно с отревьюенного состояния 2.3B.
-**After:** `captures/step23c-final`; дополнительно `captures/step23c-detail`
-(тот же кадр `kit-glass` при 3200×1800) и `captures/step23c-detail-before`.
+9/9 исходных sha256 совпадают с архивным прогоном Step 2.3B
+(`captures/step23b-final`), плюс новый кадр `kit-spandrel-closeup`, снятый на
+том же baseline. Ветка стартует ровно с отревьюенного состояния 2.3B.
+**After:** `captures/step23c-final` (10 кадров); дополнительно
+`captures/step23c-detail` (+ baseline `step23c-detail-before`) и
+`captures/step23c-detail-closeup` (after-only) — те же кадры при 3200×1800.
 **Detail pass:** supporting-артефакт, не часть deterministic-контракта.
 **Маршрут:** `?capture=1&level=architecture&shot=<id>`, 1600×900, DPR 1,
 Microsoft Edge 157 headless, display quality `high`.
@@ -25,13 +27,17 @@ Microsoft Edge 157 headless, display quality `high`.
 | `src/levels/architecture/KitGeometry.ts` | `KitPartCollector.extrusion`: необязательный `bevelOffset` — позволяет автору инвертировать фаску (end faces внутрь, максимальное сечение на середине глубины) |
 | `src/rendering/MaterialLibrary.ts` | локальная коррекция роли `spandrel`: `#5E5E5E` (идеально нейтральный), roughness 0.90, metalness 0, без карты и без sheen |
 | `tests/unit/architectural-kit.test.ts` | 3 обновлённых + 2 новых теста (итого 15 тестов в файле): материал/нейтральность, `spandrel: false`, кассетное поле, фаска/тёмное основание, неизменность шага/ширины/поля |
-| `docs/ARCHITECTURAL_KIT.md` | каталог, описание зоны, геометрия, материал `spandrel`, калибровочная заметка, verification record, known limits |
+| `src/diagnostics/captureShots.ts` | новый постоянный shot `kit-spandrel-closeup` (1600×900, fov 40) для регрессии спанреля |
+| `tests/unit/capture-mode.test.ts` | список архитектурных кадров 9 → 10 |
+| `docs/ARCHITECTURAL_KIT.md` | каталог, описание зоны, геометрия, материал `spandrel`, калибровочная заметка, capture-набор, verification record, known limits |
 | `docs/IMPLEMENTATION_STATUS.md` | новая запись §0.2.2 |
 | `docs/reports/ARCH_KIT_STEP_2_3C_SPANDREL_REFINEMENT.md` | этот отчёт |
-| `docs/evidence/arch-kit-spandrel-refinement/` | evidence-набор: манифест, sha256, pixel-diff, `spandrel-metrics.json`, lifecycle, Prologue, 25 JPG |
+| `docs/evidence/arch-kit-spandrel-refinement/` | evidence-набор: манифест, sha256, pixel-diff, `spandrel-metrics.json`, lifecycle, Prologue, 28 JPG |
 
 `KitTypes.ts`, `KitDemoLayout.ts`, загрузчик, размещение, коллизии, остальные 14
-модулей, glass-роли, освещение, Renderer, PostPipeline **не менялись**.
+модулей, glass-роли, освещение, Renderer, PostPipeline **не менялись**. Из девяти
+прежних capture-кадров не изменён ни один: набор только расширен постоянным
+close-up'ом.
 
 ---
 
@@ -241,6 +247,28 @@ diff --git a/src/rendering/MaterialLibrary.ts b/src/rendering/MaterialLibrary.ts
 308,463 → **309,423** (+960, +0.31 %); текстур 37 → **36** (роль больше не
 держит facade-карту); программа 41. Это единственные изменения ресурсов.
 
+### 3.5 Постоянный close-up ракурс
+
+По решению ревью в штатный capture-набор добавлен десятый кадр:
+
+| Параметр | Значение |
+|---|---|
+| id | `kit-spandrel-closeup` |
+| title | Curtain-Wall Spandrel — Cassette Close-Up |
+| position | `[-2.34, 5.08, -42.24]` (площадь перед восточной гранью атриума) |
+| lookAt | `[-4.97, 4.58, -43.2]` (средняя полоса, y = 4.3…4.78) |
+| fov | 40° |
+| контракт | 1600×900, DPR 1, тот же deterministic-маршрут `?capture=1&level=architecture&shot=kit-spandrel-closeup` |
+
+Ракурс — лёгкий three-quarter (≈23° от нормали, ≈10° сверху), в кадре две
+кассеты и шов между ними: фаска лица, 20 мм gasket-reveal, тёмное основание,
+shadow gaps и переход к head rail. Это не «красивый скриншот», а постоянная
+регрессия: любое будущее изменение геометрии кромок или материала спанреля
+обязано сдвинуть этот кадр и проверяться по нему. Кадр снят и на baseline
+(`captures/step23c-before/kit-spandrel-closeup.png`, 2.3B), поэтому имеет
+полноценное before/after; дополнительно снят 3200×1800 supporting-прогон
+`captures/step23c-detail-closeup`.
+
 ---
 
 ## 4. Результаты проверок
@@ -250,9 +278,9 @@ diff --git a/src/rendering/MaterialLibrary.ts b/src/rendering/MaterialLibrary.ts
 | `npm run typecheck` | **pass** (`tsc --noEmit`, exit 0) |
 | `npm run check` | **pass**, 0 errors; 15 warnings + 1 info — все pre-existing и вне изменённых файлов |
 | `npm test` | **49 files / 450 tests — all pass** (было 448; +2 новых теста) |
-| `npm run build` | **pass**, `dist/assets/index-CgNKpRSZ.js` 5,430,337 B (gzip 1,935,334 B); chunk-size warning — pre-existing; demo level id в production JS отсутствует |
+| `npm run build` | **pass**, `dist/assets/index-jF0tZJHP.js` 5,430,680 B (gzip 1,935,500 B); chunk-size warning — pre-existing; demo level id в production JS отсутствует |
 | `npm run kit:lifecycle` | **PASSED**: loaded 118 geometries / 121 instanced / 36 textures / 41 programs / 270 draw calls; menu 9 geometries; reload/restart ×2 стабильны; 0 errors |
-| Deterministic captures | **9/9 byte-identical** (два свежих Edge-инстанса, 0 differing pixels), 0 console/page errors |
+| Deterministic captures | **10/10 byte-identical** (два свежих Edge-инстанса, 0 differing pixels), 0 console/page errors; девять прежних кадров сохранили прежние хеши |
 | Prologue regression | `start-roof` **байт-в-байт** `59c977dd…`, 210 draw calls / 4,363,071 triangles — без изменений |
 | Far-city zero-diff | 5 областей на `glass`/`glass-far` в `kit-distant` / `kit-overview` / `kit-bridge` — max channel delta **0** |
 
@@ -265,6 +293,7 @@ diff --git a/src/rendering/MaterialLibrary.ts b/src/rendering/MaterialLibrary.ts
 | `kit-overview` | `b6a68439d8dea8044709b178f5a0bd003e6b967db51ea8aef0dc99d377d2e0f1` | `610da66437872f1ca6cb880cc276e81d97f0a3feef6316d60c98fb4d1b8df4f4` |
 | `kit-facade` | `99a2f9e5a3f17cbbc93529d74ee9e5b6422096d7f977ec3f2065f6fa4948ebfb` | `86af7ca0799ac66fa965e8c707b1d80179a00b896db224631c7af4b6d6fc1945` |
 | `kit-glass` | `2a9615230fb0948dfdda99f368498a560f2ae4e0cc42825177b19f9fcabd7753` | `0540169890380506a5086b037f0dfeb72a179d1fa23d6981061e34280fd47ca7` |
+| `kit-spandrel-closeup` | `a280011f381984f9d407acccf3c6df6c8cab25d161b1a68060bb057f7770352a` | `32bd04be55b81f03220520d854b7c41ec99cfa865c188f072ab926794704dcd0` |
 | `kit-corner` | `b24726a7a26a03751bb692e79b9f11688a5ddb9c67ee5acc0165e212b47c96b7` | `c2cfa4610aa3879453996603ddb73fbca79f0ab645dacbe53896224fdd1f6136` |
 | `kit-canopy` | `dd65a57a985f1ad5e1cc7b1704117a829bed1a3d4a89e31f9916d64c91e60e3f` | `b2e6802ec34087da80d1081d559fd3a103f5cca102f2f8758dd4ab6607dcec80` |
 | `kit-service` | `800e1c2e857ba937da52a285c6b8643e4d02d9568d4bc896b99529e2042a703b` | `800e1c2e857ba937da52a285c6b8643e4d02d9568d4bc896b99529e2042a703b` (без изменений) |
@@ -279,6 +308,7 @@ Whole-frame diff (1600×900):
 | `kit-overview` | 0.136 | 162 | 0.504 % |
 | `kit-facade` | 0.351 | 160 | 1.408 % |
 | `kit-glass` | 0.287 | 163 | 1.029 % |
+| `kit-spandrel-closeup` | 7.694 | 171 | 20.337 % |
 | `kit-corner` | 0.398 | 162 | 1.404 % |
 | `kit-canopy` | 0.236 | 179 | 0.806 % |
 | `kit-service` | 0 | 0 | 0 % |
@@ -319,10 +349,25 @@ Whole-frame diff (1600×900):
 тёмные насечки на полосе в `detail-kit-overview-tower.jpg`; до шага полоса была
 сплошной светлой лентой без делений.
 
-### 5.3 Whole-frame luma
+### 5.3 Метрики постоянного close-up (1600×900)
 
-Средняя яркость кадра меняется не более чем на **0.0012** (0.12 %), std — не
-более 0.0009. Общая яркость и контраст фасада сохранены; меняется только
+| Область | Before luma | After luma | Before sat | After sat |
+|---|---:|---:|---:|---:|
+| кассетное лицо (солнечное) | 0.493 | **0.375** | 0.232 | **0.151** |
+| выраженный шов между кассетами | 0.464 | **0.262** | 0.230 | 0.281 |
+| gasket / тёмное основание | 0.212 | 0.212 | 0.404 | 0.404 |
+| head rail, фронтальная полка | 0.183 | 0.183 | 0.433 | 0.433 |
+| остекление над head rail | 0.198 | 0.198 | 0.444 | 0.444 |
+
+Контраст шва относительно лица вырос с 5.8 % (0.493 → 0.464) до 30.1 %
+(0.375 → 0.262); gasket, head rail и остекление попиксельно идентичны
+(max channel delta 0 — это неизменные `dark-metal` и `glass-near`). Именно этот кадр стал постоянным регрессионным
+контролем.
+
+### 5.4 Whole-frame luma
+
+По девяти прежним кадрам средняя яркость меняется не более чем на **0.0012**
+(0.12 %), std — не более 0.0009. Общая яркость и контраст фасада сохранены; меняется только
 локальная иерархия внутри полосы.
 
 ---
@@ -332,6 +377,7 @@ Whole-frame diff (1600×900):
 Слева baseline, справа after.
 
 ![kit-glass before | after](../evidence/arch-kit-spandrel-refinement/compare-kit-glass.jpg)
+![kit-spandrel-closeup before | after](../evidence/arch-kit-spandrel-refinement/compare-kit-spandrel-closeup.jpg)
 ![kit-overview before | after](../evidence/arch-kit-spandrel-refinement/compare-kit-overview.jpg)
 ![kit-player-eyes before | after](../evidence/arch-kit-spandrel-refinement/compare-kit-player-eyes.jpg)
 ![kit-distant before | after](../evidence/arch-kit-spandrel-refinement/compare-kit-distant.jpg)
@@ -339,6 +385,8 @@ Whole-frame diff (1600×900):
 Крупные фрагменты:
 
 ![spandrel band detail](../evidence/arch-kit-spandrel-refinement/detail-kit-glass-band.jpg)
+![spandrel close-up detail](../evidence/arch-kit-spandrel-refinement/detail-kit-spandrel-closeup.jpg)
+![spandrel close-up 2x](../evidence/arch-kit-spandrel-refinement/detail-kit-spandrel-closeup-2x.jpg)
 ![spandrel band 2x detail](../evidence/arch-kit-spandrel-refinement/detail-kit-glass-band-2x.jpg)
 ![tower bands at review distance](../evidence/arch-kit-spandrel-refinement/detail-kit-overview-tower.jpg)
 ![player-eye atrium band](../evidence/arch-kit-spandrel-refinement/detail-kit-player-eyes-band.jpg)
@@ -389,8 +437,10 @@ Whole-frame diff (1600×900):
 7. **Кассетное лицо уменьшилось на 20 мм с каждой стороны** из-за gasket'а;
    шаг кассет, ширина модуля, границы поля и число колонн/рядов не менялись —
    это локальная геометрия кромок, а не изменение размеров кассет.
-8. **Детальный прогон 3200×1800** — supporting-артефакт, не часть
-   deterministic-контракта; штатный набор из 9 кадров не менялся.
+8. **Набор capture-кадров расширен с 9 до 10.** Девять исходных ракурсов не
+   менялись (их хеши совпадают с прежними прогонами); добавлен постоянный
+   `kit-spandrel-closeup`. Детальные прогоны 3200×1800 остаются
+   supporting-артефактами, не частью deterministic-контракта.
 
 ---
 
@@ -419,10 +469,8 @@ Whole-frame diff (1600×900):
 2. Достаточен ли выраженный шов ≈64 мм для чтения сетки на дистанции обзора,
    или нужен более широкий gasket (например, 30 мм → шов 84 мм) ценой более
    узкого лица?
-3. Оставлять ли фаску 9 мм или увеличить её до 12–14 мм для более явной
-   толщины кромки вблизи?
-4. Нужен ли отдельный штатный close-up ракурс curtain wall в наборе capture
-   shots (сейчас деталь снимается supporting-прогоном 3200×1800)?
+3. Достаточна ли фаска 9 мм, или для будущих более близких кадров нужна 12–14
+   мм (в рамках этого шага фаска зафиксирована)?
 
 ---
 
@@ -430,15 +478,15 @@ Whole-frame diff (1600×900):
 
 `docs/evidence/arch-kit-spandrel-refinement/`:
 
-- `capture-manifest.json` — after-прогон + determinism 9/9;
+- `capture-manifest.json` — after-прогон (10 кадров) + determinism 10/10;
 - `baseline-sha256.json`, `after-sha256.json`;
-- `pixel-diff.json` — все 9 кадров;
+- `pixel-diff.json` — все 10 кадров;
 - `spandrel-metrics.json` — кадровые метрики, регионы панель/шов/стекло/рама,
   близкие и дальние метрики швов, far-city zero-diff, счётчики рендера,
   lifecycle, material contract;
 - `lifecycle.json` — load/reload/restart ×2/unload;
 - `prologue-regression.json`;
-- `kit-*.jpg`, `compare-kit-*.jpg`, `detail-*.jpg`.
+- `kit-*.jpg` (10), `compare-kit-*.jpg` (10), `detail-*.jpg` (8).
 
 Короткий индекс:
 [`docs/evidence/arch-kit-spandrel-refinement/README.md`](../evidence/arch-kit-spandrel-refinement/README.md).

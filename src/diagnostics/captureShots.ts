@@ -156,7 +156,9 @@ export const CAPTURE_SHOT_IDS: readonly string[] = CAPTURE_SHOTS.map((shot) => s
  * - skybridge: deck y = 8.4, z = -44, spanning x = -5…10;
  * - canopy: y = 4.2 on the atrium south face, 3.4 m projection;
  * - technical annex: x = -12…8, z = -68…-60, 4.2 m tall;
- * - plaza deck: 64 x 56 m, top y = 0.
+ * - plaza deck: 64 x 56 m, top y = 0;
+ * - spandrel close-up: atrium east face (x = -5, z = -44), middle storey band
+ *   y = 4.3…4.78, viewed from the plaza side at a slight three-quarter angle.
  */
 export const ARCHITECTURE_CAPTURE_SHOTS: readonly CaptureShot[] = [
   {
@@ -185,6 +187,15 @@ export const ARCHITECTURE_CAPTURE_SHOTS: readonly CaptureShot[] = [
     fov: CAPTURE_FOV_DEGREES,
     intent:
       "Curtain wall as a glass volume: mullion grid, spandrel rhythm, corner expression and the cantilever balcony.",
+  },
+  {
+    id: "kit-spandrel-closeup",
+    title: "Curtain-Wall Spandrel — Cassette Close-Up",
+    position: [-2.34, 5.08, -42.24],
+    lookAt: [-4.97, 4.58, -43.2],
+    fov: 40,
+    intent:
+      "Permanent regression close-up of the spandrel at a slight three-quarter angle: chamfered cassette face, 20 mm gasket reveal, dark backing and shadow gaps, and the transition to the head rail.",
   },
   {
     id: "kit-corner",
@@ -242,7 +253,7 @@ export const ARCHITECTURE_CAPTURE_SHOTS: readonly CaptureShot[] = [
   },
 ];
 
-/** Ordered ids of the nine Architectural Kit review shots. */
+/** Ordered ids of the ten Architectural Kit review shots. */
 export const ARCHITECTURE_CAPTURE_SHOT_IDS: readonly string[] = ARCHITECTURE_CAPTURE_SHOTS.map(
   (shot) => shot.id,
 );

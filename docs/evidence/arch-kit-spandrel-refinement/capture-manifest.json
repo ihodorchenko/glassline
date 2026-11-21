@@ -1,6 +1,6 @@
 {
   "iteration": "step23c-final",
-  "generatedAt": "2026-11-21T22:26:54.122Z",
+  "generatedAt": "2026-11-21T22:44:43.104Z",
   "generator": "tools/capture/capture.mjs",
   "mode": "capture",
   "level": "architecture",
@@ -52,8 +52,8 @@
       "stats": {
         "drawCalls": 270,
         "triangles": 309423,
-        "textures": 36,
-        "programs": 41,
+        "textures": 31,
+        "programs": 38,
         "quality": "high",
         "canvas": {
           "width": 1600,
@@ -75,6 +75,29 @@
       "stats": {
         "drawCalls": 270,
         "triangles": 309423,
+        "textures": 36,
+        "programs": 41,
+        "quality": "high",
+        "canvas": {
+          "width": 1600,
+          "height": 900
+        },
+        "shot": "kit-glass"
+      },
+      "consoleErrors": []
+    },
+    {
+      "id": "kit-spandrel-closeup",
+      "file": "captures/step23c-final/kit-spandrel-closeup.png",
+      "sha256": "32bd04be55b81f03220520d854b7c41ec99cfa865c188f072ab926794704dcd0",
+      "png": {
+        "width": 1600,
+        "height": 900,
+        "bytes": 1182406
+      },
+      "stats": {
+        "drawCalls": 270,
+        "triangles": 309423,
         "textures": 31,
         "programs": 38,
         "quality": "high",
@@ -82,7 +105,7 @@
           "width": 1600,
           "height": 900
         },
-        "shot": "kit-glass"
+        "shot": "kit-spandrel-closeup"
       },
       "consoleErrors": []
     },
@@ -98,8 +121,8 @@
       "stats": {
         "drawCalls": 270,
         "triangles": 309423,
-        "textures": 36,
-        "programs": 41,
+        "textures": 31,
+        "programs": 38,
         "quality": "high",
         "canvas": {
           "width": 1600,
@@ -190,8 +213,8 @@
       "stats": {
         "drawCalls": 270,
         "triangles": 309423,
-        "textures": 36,
-        "programs": 41,
+        "textures": 31,
+        "programs": 38,
         "quality": "high",
         "canvas": {
           "width": 1600,
@@ -213,8 +236,8 @@
       "stats": {
         "drawCalls": 270,
         "triangles": 309423,
-        "textures": 36,
-        "programs": 41,
+        "textures": 31,
+        "programs": 38,
         "quality": "high",
         "canvas": {
           "width": 1600,
@@ -229,10 +252,10 @@
     "verified": true,
     "passed": true,
     "byteIdentical": true,
-    "byteMatches": 9,
-    "matches": 9,
-    "passedShots": 9,
-    "total": 9,
+    "byteMatches": 10,
+    "matches": 10,
+    "passedShots": 10,
+    "total": 10,
     "tolerance": 1,
     "maxShare": 0.0001,
     "maxAllowedPixels": 144,
@@ -269,13 +292,29 @@
         "firstDifference": -1,
         "boundingBox": null,
         "samples": [],
-        "statsIdentical": true,
+        "statsIdentical": false,
         "reason": null
       },
       {
         "id": "kit-glass",
         "sha256First": "0540169890380506a5086b037f0dfeb72a179d1fa23d6981061e34280fd47ca7",
         "sha256Second": "0540169890380506a5086b037f0dfeb72a179d1fa23d6981061e34280fd47ca7",
+        "byteIdentical": true,
+        "passed": true,
+        "differingPixels": 0,
+        "differingShare": 0,
+        "maxChannelDelta": 0,
+        "differingBytes": 0,
+        "firstDifference": -1,
+        "boundingBox": null,
+        "samples": [],
+        "statsIdentical": false,
+        "reason": null
+      },
+      {
+        "id": "kit-spandrel-closeup",
+        "sha256First": "32bd04be55b81f03220520d854b7c41ec99cfa865c188f072ab926794704dcd0",
+        "sha256Second": "32bd04be55b81f03220520d854b7c41ec99cfa865c188f072ab926794704dcd0",
         "byteIdentical": true,
         "passed": true,
         "differingPixels": 0,
@@ -301,7 +340,7 @@
         "firstDifference": -1,
         "boundingBox": null,
         "samples": [],
-        "statsIdentical": false,
+        "statsIdentical": true,
         "reason": null
       },
       {
@@ -317,7 +356,7 @@
         "firstDifference": -1,
         "boundingBox": null,
         "samples": [],
-        "statsIdentical": false,
+        "statsIdentical": true,
         "reason": null
       },
       {
@@ -349,7 +388,7 @@
         "firstDifference": -1,
         "boundingBox": null,
         "samples": [],
-        "statsIdentical": false,
+        "statsIdentical": true,
         "reason": null
       },
       {
