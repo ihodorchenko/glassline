@@ -94,11 +94,21 @@ const FRAGMENT_SHADER = /* glsl */ `
     // Three-stop clear-sky gradient: hazy horizon -> mid sky -> cobalt zenith.
     // The mid stop is the level-owned environment sky colour, so the palette
     // stays data-driven; only the stop placement is a rendering constant.
-    // Pull the mid stop toward the zenith so the 10-30 degree band reads as
-    // saturated cyan-blue instead of washing out at the horizon value.
+    // P2 (2026-11-21, vision audit): the reference sky is sun-bleached — the
+    // visible 10-30 degree band stays near the (near-white) horizon colour and
+    // only the high dome goes cobalt. The W1 placement (mid band fully in by
+    // h 0.26) saturated the whole visible band as cornflower (#5898f8, sky
+    // share 65 % vs the reference 43 %). The stops now keep the horizon
+    // colour through h ~0.38 (above the 4.5-deg capture pitch + 25-deg
+    // half-FOV, i.e. out of the reference framing) and reach the mid band
+    // only by h 0.72, the zenith by h 0.95.
     vec3 midBand = mix(uMidColor, uZenithColor, 0.35);
-    float lowerStops = smoothstep(0.0, 0.26, h);
-    float upperStops = smoothstep(0.22, 0.90, h);
+    // P2 iteration 2: (0.38, 0.72) whitened too far — the frame lost mean
+    // saturation (0.21 vs band 0.241) because chroma 0.55 of a near-white
+    // horizon colour stays near-white. (0.18, 0.50) lets the saturated mid
+    // band own the upper visible sky while the low band keeps the haze.
+    float lowerStops = smoothstep(0.18, 0.50, h);
+    float upperStops = smoothstep(0.55, 0.95, h);
     vec3 sky = mix(uHorizonColor, midBand, lowerStops);
     sky = mix(sky, uZenithColor, upperStops);
 
@@ -124,8 +134,12 @@ const FRAGMENT_SHADER = /* glsl */ `
     // pale-blue sky (sky-blue share 68 % vs the reference 43 %) and, through the
     // PMREM environment map, cooled and darkened the white decks. Restored the
     // verified W1 values.
+    // P2 (2026-11-21): the whitened visible band is also brighter than the
+    // mid band it replaced (horizon luma ~0.87 vs ~0.42), which pushed the
+    // start-frame luma +0.06 past the band. The radiance slope is scaled down
+    // to compensate: the pale band reads as sun-bleached haze, not white glow.
     float skyChroma = mix(0.55, 0.42, smoothstep(0.40, 0.95, h));
-    float skyRadiance = mix(1.0, 1.2, smoothstep(0.30, 0.90, h));
+    float skyRadiance = mix(0.80, 0.95, smoothstep(0.30, 0.90, h));
     sky = mix(vec3(skyLuma(sky)), sky, skyChroma) * skyRadiance;
 
     float sunAlignment = max(dot(direction, normalize(uSunDirection)), 0.0);
@@ -140,12 +154,15 @@ const FRAGMENT_SHADER = /* glsl */ `
     if (direction.y > -0.04) {
       // Perspective projection with a wide denominator so low-elevation clouds
       // keep cumulus-sized shapes instead of smearing into horizontal streaks.
+      // P2 (2026-11-21): the UV scale 1.05 -> 1.4 breaks the single flat
+      // "cotton pad" of the reference audit into a field of smaller cumulus,
+      // which is what carries top-third contrast (band min 0.235, was 0.215).
       vec2 cloudUv = direction.xz / (max(direction.y, 0.08) + 0.26) * 0.95;
       cloudUv += vec2(uTime * 0.0018, uTime * 0.0007);
 
-      float base = fbm(cloudUv * 1.05);
-      float billow = fbm(cloudUv * 2.2 + vec2(4.1, 1.3));
-      float erosion = fbm(cloudUv * 4.6 + vec2(11.7, 6.3));
+      float base = fbm(cloudUv * 1.4);
+      float billow = fbm(cloudUv * 2.9 + vec2(4.1, 1.3));
+      float erosion = fbm(cloudUv * 6.0 + vec2(11.7, 6.3));
       float density = base * 0.62 + billow * 0.28 + erosion * 0.10;
 
       // env.cloudCover 0 = few wisps, 1 = heavy cumulus deck.
@@ -157,11 +174,13 @@ const FRAGMENT_SHADER = /* glsl */ `
       cloud *= 1.0 - smoothstep(0.90, 0.999, height) * 0.35;
 
       // Sun-facing tops are lit, the undersides keep the cool reference base.
+      // P2: deepened bases and a sharper lit/underside split give the clouds
+      // the internal volume the reference shows (flat veils measured low).
       float lit = fbm((cloudUv + normalize(uSunDirection).xz * 0.15) * 1.4);
       float underside = fbm(cloudUv * 1.8 + vec2(2.6, 9.1));
-      float topLight = smoothstep(0.30, 0.72, lit) * 0.85 + 0.15;
+      float topLight = smoothstep(0.26, 0.66, lit) * 0.95 + 0.05;
       vec3 cloudLit = uCloudColor * (1.25 + 1.15 * topLight);
-      vec3 cloudBase = uCloudShadowColor * (0.55 + underside * 0.30);
+      vec3 cloudBase = uCloudShadowColor * (0.38 + underside * 0.28);
       vec3 cloudColor = mix(cloudBase, cloudLit, topLight);
       // Silver lining only within ~20 degrees of the sun.
       cloudColor += uSunColor * pow(sunAlignment, 10.0) * 0.05 * uSunIntensity;

@@ -114,18 +114,25 @@ const MATERIAL_SPECS: Record<MaterialKey, MaterialSpec> = {
     heightFromAlpha: true,
   },
   glass: {
-    color: 0x1a2530,
+    // P2 (2026-11-21, vision audit): the far glass read grey-blue (sat ~0.15)
+    // where the reference towers are saturated dark blue (#284060/#506888) —
+    // dark against the bright sky, near-silhouette. Three measured iterations:
+    // saturated-but-bright towers trip the primary sky metric's 0.45 blue
+    // floor (sun + sky reflections lift the blue channel to ~0.6), so the
+    // albedo is dark AND the env reflection is trimmed hard; the tone keeps
+    // the saturation without reading as sky.
+    color: 0x0e1d2a,
     roughness: 0.13,
     metalness: 0.6,
     uvScale: 0.4,
-    envMapIntensity: 1.55,
+    envMapIntensity: 0.5,
   },
   "glass-far": {
-    color: 0x283038,
+    color: 0x0d1a26,
     roughness: 0.2,
     metalness: 0.5,
     uvScale: 0.4,
-    envMapIntensity: 1.25,
+    envMapIntensity: 0.35,
   },
   "glass-rail": {
     color: 0x1a2530,
@@ -566,10 +573,12 @@ function paintTexture(kind: TextureKind): HTMLCanvasElement {
       // Straight-tile plaster: albedo + grain live in RGB, the alpha channel
       // carries only straight trowel bands. Radial mottle stays out of the
       // height channel, so long white walls cannot pick up swirl-bump.
-      beginTileMap(context, "#f9f9f7", 0.86);
-      addMottle(context, random, 90, 0.05, "#ffffff", "#e0e0dd", 64);
-      addCracks(context, random, 9, "#b4b4b0", 0.1);
-      addSpeckle(context, random, 2000, ["#ffffff", "#e8e8e5", "#d6d6d2"], 1.2);
+      // P2: warm kit (see the roof case) — walls share the reference's warm
+      // white instead of the straight-tile cool cast.
+      beginTileMap(context, "#faf8f1", 0.86);
+      addMottle(context, random, 90, 0.05, "#fffdf6", "#e2dfd5", 64);
+      addCracks(context, random, 9, "#b2ada0", 0.1);
+      addSpeckle(context, random, 2000, ["#fffefa", "#eeebe1", "#ddd8cb"], 1.2);
       cutHorizontalBands(context, 128, 3, 0.1, -64);
       finishTileMap(context);
       break;
@@ -578,12 +587,13 @@ function paintTexture(kind: TextureKind): HTMLCanvasElement {
       // Straight-tile concrete: formwork joints are authored straight in the
       // albedo and again as grooves in the alpha height channel; stains and
       // cracks stay albedo-only so they cannot bend the bump map.
-      beginTileMap(context, "#f4f5f4", 0.8);
-      addMottle(context, random, 110, 0.06, "#ffffff", "#c2c7c8", 80);
-      drawSeams(context, 128, "#cfd3d4", 1.4, 0.24, -64);
-      drawSeams(context, 128, "#ffffff", 1, 0.16, -62);
-      addCracks(context, random, 16, "#9a9fa0", 0.18);
-      addSpeckle(context, random, 4200, ["#ffffff", "#dcdfe0", "#b9bec0"], 1.4);
+      // P2: warm kit (see the roof case).
+      beginTileMap(context, "#f5f4ef", 0.8);
+      addMottle(context, random, 110, 0.06, "#fffdf6", "#c5c8c4", 80);
+      drawSeams(context, 128, "#cecfc8", 1.4, 0.24, -64);
+      drawSeams(context, 128, "#fdfaf1", 1, 0.16, -62);
+      addCracks(context, random, 16, "#98948a", 0.18);
+      addSpeckle(context, random, 4200, ["#fffefa", "#dadcd3", "#b7b3a7"], 1.4);
 
       for (let index = 0; index < 20; index += 1) {
         const x = random() * TEXTURE_SIZE;
@@ -609,15 +619,19 @@ function paintTexture(kind: TextureKind): HTMLCanvasElement {
       // the 0.96 m seam grid repeated in the alpha height channel as straight
       // grooves. No radial gradient reaches the bump map, so the deck keeps
       // seam detail without swirl-bump at grazing angles.
-      beginTileMap(context, "#f8f8f5", 0.82);
-      addMottle(context, random, 90, 0.06, "#ffffff", "#eaeae6", 110);
-      addSpeckle(context, random, 1600, ["#fbfbf9", "#f0f0ed", "#e6e6e2"], 1.4);
+      // P2 (2026-11-21, vision audit): the deck read cool (#f0f0f8, B>R) where
+      // the reference roof is warm cream (#f8f0e8, R>B). The whole paint kit
+      // is shifted warm (base, mottle, speckle, panels, seams, stains) so the
+      // sunlit deck lands on the reference cream instead of a blue-tinted white.
+      beginTileMap(context, "#faf7ee", 0.82);
+      addMottle(context, random, 90, 0.06, "#fffdf6", "#e9e4d8", 110);
+      addSpeckle(context, random, 1600, ["#fdfbf3", "#f2efe5", "#e7e3d6"], 1.4);
 
       // Painted sheet panels aligned to the seam grid: 64 px at the roof UV
       // scale is the 0.6-1.2 m seam language from the art brief.
       for (let y = 32; y < TEXTURE_SIZE; y += 64) {
         for (let x = 32; x < TEXTURE_SIZE; x += 64) {
-          context.fillStyle = random() > 0.5 ? "#ffffff" : "#deded9";
+          context.fillStyle = random() > 0.5 ? "#fffefa" : "#e0dbd0";
           context.globalAlpha = 0.012 + random() * 0.03;
           context.fillRect(x + 1, y + 1, 62, 62);
         }
@@ -626,9 +640,12 @@ function paintTexture(kind: TextureKind): HTMLCanvasElement {
       context.globalAlpha = 1;
       // Raised seam albedo (dark groove + mid lip) so the near-white deck keeps
       // edge detail instead of reading as chalk.
-      drawSeams(context, 64, "#b0b0ab", 1.9, 0.66, -32);
-      drawSeams(context, 64, "#dcdcd7", 1.1, 0.55, -29.9);
-      addCracks(context, random, 10, "#948f89", 0.1);
+      // P2: groove alpha 0.66 -> 0.78, lip 0.55 -> 0.62 — the block-level
+      // local-contrast metric sat 0.03 below the shifted band; the seam grid
+      // is the deck's own contrast carrier.
+      drawSeams(context, 64, "#aca69b", 1.9, 0.78, -32);
+      drawSeams(context, 64, "#ded8cb", 1.1, 0.62, -29.9);
+      addCracks(context, random, 10, "#97907f", 0.1);
 
       for (let index = 0; index < 30; index += 1) {
         const x = random() * TEXTURE_SIZE;
@@ -636,8 +653,8 @@ function paintTexture(kind: TextureKind): HTMLCanvasElement {
         const radius = 8 + random() * 34;
         const gradient = context.createRadialGradient(x, y, 0, x, y, radius);
 
-        gradient.addColorStop(0, `rgba(118, 117, 112, ${0.05 + random() * 0.08})`);
-        gradient.addColorStop(1, "rgba(118, 117, 112, 0)");
+        gradient.addColorStop(0, `rgba(150, 140, 120, ${0.05 + random() * 0.08})`);
+        gradient.addColorStop(1, "rgba(150, 140, 120, 0)");
         context.fillStyle = gradient;
         context.beginPath();
         context.arc(x, y, radius, 0, Math.PI * 2);

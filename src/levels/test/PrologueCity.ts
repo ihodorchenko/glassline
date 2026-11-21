@@ -1156,40 +1156,74 @@ function addNearCity(builder: CityBuilder): void {
   });
 
   // Towers ahead, forming the main skyline wall behind the finish.
+  // P2 (2026-11-21, reference horizon): the W2 skyline wall topped out at
+  // 10-20 m, leaving ~16 deg of open sky above the towers inside the start
+  // frame (sky-blue share 55 % vs reference 43 %, luma +0.04 over band).
+  // The reference prologue horizon is a high-rise wall: dark glass masses
+  // close the sky line. Heights roughly doubled; the far 48x32 hero mass
+  // becomes a proper tower; a central mid-band fills the open gap.
   addBuilding(builder, -32, -84, 24, 24, {
     material: "glass-far",
-    top: 20,
+    top: 46,
     facing: "south",
     roofProps: true,
     seed: 31,
   });
   addBuilding(builder, 22, -96, 20, 26, {
     material: "facade",
-    top: 16,
+    top: 38,
     facing: "south",
     roofProps: true,
     seed: 37,
   });
-  addBuilding(builder, 4, -215, 48, 32, {
+  addBuilding(builder, -34, -215, 48, 32, {
     material: "glass-far",
-    top: 10,
+    // P2 vision-verdict fix: kept at 36 m and moved off the finish axis (was
+    // x 4 / top 58) — the giant dark slab dominated ~40 % of the finish-roof
+    // frame behind the FINISH gate; at x -34 it still closes the start-view
+    // horizon (8 deg left of the start axis) without walling the finish.
+    top: 36,
     facing: "south",
     roofProps: false,
     seed: 41,
   });
   addBuilding(builder, -60, -66, 24, 30, {
     material: "concrete",
-    top: 16,
+    top: 42,
     facing: "east",
     roofProps: true,
     seed: 43,
   });
   addBuilding(builder, 64, -64, 28, 28, {
     material: "glass-far",
-    top: 20,
+    top: 46,
     facing: "west",
     roofProps: true,
     seed: 47,
+  });
+  // Central mid-band: closes the open gap straight ahead of the start view.
+  // Kept outside the |x| >= 20 route corridor so the red line stays readable
+  // and no tower wall visually blocks the playable deck.
+  addBuilding(builder, -26, -120, 18, 18, {
+    material: "glass-far",
+    top: 34,
+    facing: "south",
+    roofProps: false,
+    seed: 61,
+  });
+  addBuilding(builder, 28, -140, 22, 18, {
+    material: "facade",
+    top: 42,
+    facing: "south",
+    roofProps: false,
+    seed: 67,
+  });
+  addBuilding(builder, -24, -160, 16, 14, {
+    material: "concrete",
+    top: 30,
+    facing: "east",
+    roofProps: false,
+    seed: 71,
   });
 
   // Behind the start, so turning around still shows a city.

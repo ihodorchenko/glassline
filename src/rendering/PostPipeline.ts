@@ -72,6 +72,9 @@ const GRADE_SHADER = {
     /** Monotone S-curve amplitude (0 = off; 0.5–0.9 for the reference look). */
     uContrast: { value: 0.68 },
     /** Chroma multiplier applied around display luma. */
+    // P2 note: 2.5 was measured and reverted — +4 % chroma lifted the frame
+    // saturation only +0.007 while feeding the blue-dominant sky count +1.1 pp
+    // and pushing split toward the band edge. 2.4 keeps the better trade.
     uSaturation: { value: 2.4 },
     /** Multiplier for the darkest tones (cool blue shadows). */
     // P1: shadow blue 1.10 -> 1.07 — the W2.2 grade measured split -29.6 vs
