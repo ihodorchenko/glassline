@@ -7,6 +7,7 @@ import type {
   AudioParamLike,
   BiquadFilterNodeLike,
   ConvolverNodeLike,
+  DelayNodeLike,
   DynamicsCompressorNodeLike,
   GainNodeLike,
   OscillatorNodeLike,
@@ -125,6 +126,11 @@ export class FakeConvolver extends FakeNode implements ConvolverNodeLike {
   normalize = true;
 }
 
+/** P3 city slapback. */
+export class FakeDelay extends FakeNode implements DelayNodeLike {
+  readonly delayTime = new FakeParam(0);
+}
+
 export class FakeCompressor extends FakeNode implements DynamicsCompressorNodeLike {
   readonly threshold = new FakeParam();
   readonly knee = new FakeParam();
@@ -143,6 +149,7 @@ export class FakeAudioContext implements AudioContextLike {
   readonly bufferSources: FakeBufferSource[] = [];
   readonly filters: FakeFilter[] = [];
   readonly convolvers: FakeConvolver[] = [];
+  readonly delays: FakeDelay[] = [];
   readonly compressors: FakeCompressor[] = [];
   resumeCount = 0;
   closeCount = 0;
@@ -189,6 +196,14 @@ export class FakeAudioContext implements AudioContextLike {
     this.convolvers.push(convolver);
 
     return convolver;
+  }
+
+  createDelay(): DelayNodeLike {
+    const delay = new FakeDelay();
+
+    this.delays.push(delay);
+
+    return delay;
   }
 
   createDynamicsCompressor(): DynamicsCompressorNodeLike {

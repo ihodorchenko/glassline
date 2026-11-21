@@ -824,7 +824,10 @@ export class AudioManager implements Disposable {
 
     this.masterGain = context.createGain();
     this.mixTrim = context.createGain();
-    this.mixTrim.gain.value = 2.5;
+    // P3 (2026-11-21): 2.5 -> 2.3 (~ -0.7 dB) — the live mix measured LUFS
+    // -26.0, hard against the -26 band edge (reference prologue -26.2 with a
+    // 15 dB short-term swing). Mirrors the offline demo trim change.
+    this.mixTrim.gain.value = 2.3;
     this.masterGain.connect(this.mixTrim);
     this.mixTrim.connect(this.limiter);
 
@@ -847,6 +850,35 @@ export class AudioManager implements Disposable {
     this.reverbSend = context.createGain();
     this.reverbSend.gain.value = 1;
     this.reverbSend.connect(convolver);
+
+    // P3 (2026-11-21, city slapback): a short filtered delay tapped off the
+    // environment bus and returned into the master — the outdoor echo of
+    // facades that the reference mix carries between its low-band thumps.
+    // 110 ms one-way (≈ 38 m wall bounce), 22 % feedback two taps deep,
+    // low-passed at 1.4 kHz so the echo stays in the reference's dark band.
+    // createDelay is optional on AudioContextLike, so minimal harnesses
+    // simply skip the echo instead of failing the graph build.
+    const createDelay = context.createDelay;
+    if (createDelay) {
+      const slapDelay = createDelay.call(context, 0.5);
+      slapDelay.delayTime.value = 0.11;
+      const slapFilter = context.createBiquadFilter();
+      slapFilter.type = "lowpass";
+      slapFilter.frequency.value = 1400;
+      const slapFeedback = context.createGain();
+      slapFeedback.gain.value = 0.22;
+      const slapSend = context.createGain();
+      slapSend.gain.value = 0.12;
+
+      slapSend.connect(slapDelay);
+      slapDelay.connect(slapFilter);
+      slapFilter.connect(slapFeedback);
+      slapFeedback.connect(slapDelay);
+      slapFilter.connect(this.masterGain);
+      // The echo follows the ambience only: footsteps/whooshes keep their dry
+      // transients (the reference's steps are dry, the city breathes around).
+      this.buses.environment?.connect(slapSend);
+    }
 
     this.buffers = createNoiseBuffers(context, 0x51f15e);
     this.applyVolumes();

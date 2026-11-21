@@ -541,7 +541,9 @@ async function renderScheduledDemo(
 export async function renderAudioDemo(durationSeconds = 24): Promise<AudioDemoResult> {
   return renderScheduledDemo(
     durationSeconds,
-    2.15,
+    // P3 (2026-11-21): 2.15 -> 2.0 (~ -0.6 dB) — the demo measured LUFS
+    // -26.0 hard against the band edge; the reference prologue sits at -26.2.
+    2.0,
     -20,
     (context, buffers, buses, reverb, master) => {
       scheduleAmbience(context, buffers, buses.environment ?? master, reverb);

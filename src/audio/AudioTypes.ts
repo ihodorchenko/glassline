@@ -23,6 +23,11 @@ export interface GainNodeLike extends AudioNodeLike {
   readonly gain: AudioParamLike;
 }
 
+/** P3 city slapback node. */
+export interface DelayNodeLike extends AudioNodeLike {
+  readonly delayTime: AudioParamLike;
+}
+
 export interface OscillatorNodeLike extends AudioNodeLike {
   type: string;
   readonly frequency: AudioParamLike;
@@ -94,6 +99,8 @@ export interface AudioContextLike {
   createBuffer(channels: number, length: number, sampleRate: number): AudioBufferLike;
   createConvolver(): ConvolverNodeLike;
   createDynamicsCompressor(): DynamicsCompressorNodeLike;
+  /** P3 city slapback; optional so minimal harnesses can omit it. */
+  createDelay?(maxDelaySeconds?: number): DelayNodeLike;
   createStereoPanner?(): StereoPannerNodeLike;
   createAnalyser?(): AnalyserNodeLike;
 }

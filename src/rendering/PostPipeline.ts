@@ -23,9 +23,14 @@ const EXPOSURE_SHADER = {
   uniforms: {
     tDiffuse: { value: null as THREE.Texture | null },
     /** Calibrated camera exposure (linear multiplier). */
-    // P1: 1.65 -> 1.60 — the restored W1 sky radiance lifted the start-frame
+    // P1: 1.65 -> 1.56 — the restored W1 sky radiance lifted the start-frame
     // luma to 0.656 (shifted band tops at 0.646); -3 % exposure brings it back
     // while keeping p95/near-white margins.
+    // P3 note (2026-11-21, blazing-sun experiment): 1.62 + a widened shoulder
+    // (knee 0.86 / range 0.13) was measured and reverted — near-white moved
+    // only +0.4 pp because the reference's 34.5 % is COMPOSITIONAL (huge
+    // sunlit white facades in frame), not tonal; the lower knee also
+    // compressed 0.95-pixels DOWN and thinned the split/luma margins.
     uExposure: { value: 1.56 },
     /** Camera white balance in linear space; neutral = vec3(1). */
     uWhiteBalance: { value: new THREE.Vector3(1.004, 1.008, 1.02) },
@@ -89,6 +94,9 @@ const GRADE_SHADER = {
     uBlackLift: { value: 0.02 },
     /** Highlight shoulder: identity to the knee, exponential approach to
      *  knee + range (0.985) so nothing ever reaches a flat 1.0 plateau. */
+    // P3 note: knee 0.86 / range 0.13 was measured and reverted (see the
+    // exposure note above) — it compressed the 0.95 band down instead of
+    // lifting it; 0.92/0.06 keeps the sunlit whites parked at 0.90-0.93.
     uHighlightKnee: { value: 0.92 },
     uHighlightRange: { value: 0.06 },
     uVignette: { value: 0.03 },

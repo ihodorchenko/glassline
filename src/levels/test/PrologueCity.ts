@@ -1226,6 +1226,67 @@ function addNearCity(builder: CityBuilder): void {
     seed: 71,
   });
 
+  // P3 (2026-11-21, vision audit): reference colour breaks. The ME far city
+  // alternates dark glass with white facades AND warm accents (amber
+  // billboards, yellow construction cranes); the round-99 audit called the
+  // all-blue-grey skyline monotone. Two warm billboards on the start-view
+  // skyline wall, a yellow tower crane on the east tower roof, and an amber
+  // aviation beacon on the far hero mass. All outside the route corridor.
+  builder.plane(22, 30, -82.8, 10, 4.4, 0, {
+    text: "AURORA",
+    background: 0xd98030,
+    textColor: 0x1c1610,
+    accentColor: 0xfff2df,
+  });
+  builder.plane(-32, 33, -71.8, 7.5, 3.4, 0, {
+    text: "SIGNAL",
+    background: 0xc8641e,
+    textColor: 0xf5ead9,
+    accentColor: 0x2a1c10,
+  });
+  // Yellow tower crane on the (64, -64, top 46) east tower: mast, slew,
+  // jib with counter-weight, hanging cable and a red load.
+  builder.box(64, 52, -64, 1.1, 12, 1.1, {
+    color: 0xd9a521,
+    castShadow: false,
+    receiveShadow: false,
+  });
+  builder.box(64, 58.4, -64, 1.8, 1.4, 1.8, {
+    color: 0xc28f18,
+    castShadow: false,
+    receiveShadow: false,
+  });
+  builder.box(55.5, 59.2, -64, 17.5, 1.0, 1.0, {
+    color: 0xd9a521,
+    castShadow: false,
+    receiveShadow: false,
+  });
+  builder.box(68.5, 58.8, -64, 5.5, 0.8, 1.6, {
+    color: 0x8f8f8a,
+    castShadow: false,
+    receiveShadow: false,
+  });
+  builder.box(49.4, 55.5, -64, 0.14, 7.4, 0.14, {
+    color: 0x3a3a38,
+    castShadow: false,
+    receiveShadow: false,
+  });
+  builder.box(49.4, 51.8, -64, 1.4, 1.2, 1.4, {
+    color: 0xd52e36,
+    emissive: 0xd52e36,
+    emissiveIntensity: 0.06,
+    castShadow: false,
+    receiveShadow: false,
+  });
+  // Amber aviation beacon on the far hero skyline mass.
+  builder.box(-34, 36.6, -215, 0.5, 0.5, 0.5, {
+    color: 0xffb84d,
+    emissive: 0xffb84d,
+    emissiveIntensity: 0.55,
+    castShadow: false,
+    receiveShadow: false,
+  });
+
   // Behind the start, so turning around still shows a city.
   addBuilding(builder, -26, 58, 30, 26, {
     material: "facade",
