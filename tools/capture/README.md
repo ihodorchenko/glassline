@@ -107,6 +107,23 @@ programs, canvas size) plus the PNG sha256. Legacy frames are useful for quick
 look checks but are **not** deterministic evidence: time-driven animation is
 still running, so use capture mode for anything that must be reproduced.
 
+### Architectural Kit review route
+
+The same harness captures the dev-only Architectural Kit composition through
+the existing Level Runtime:
+
+```bash
+# All nine review shots (general view, facade, glass, corner, canopy,
+# technical zone, player eye level, distance, skybridge).
+node tools/capture/capture.mjs --iteration arch-kit --level architecture --shot all
+
+# Load / reload / restart x2 / unload resource-count probe for that level.
+npm run kit:lifecycle
+```
+
+The architecture route is `/` only in development builds: production keeps the
+shipped level list unchanged and the demo definitions are not registered.
+
 ## 2. Metrics
 
 ```bash

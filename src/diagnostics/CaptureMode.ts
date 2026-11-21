@@ -2,15 +2,16 @@ import type { Object3D, PerspectiveCamera, Scene, WebGLInfo, WebGLRenderer } fro
 
 import {
   CAPTURE_FOV_DEGREES,
-  CAPTURE_SHOTS,
+  type CaptureLevelId,
   type CaptureRequest,
   type CaptureShot,
+  captureShotsForLevel,
   findCaptureShot,
   parseCaptureRequest,
 } from "./captureShots";
 
 /**
- * Dev-only deterministic capture boot (`?capture=1&level=prologue&shot=<id>`).
+ * Dev-only deterministic capture boot (`?capture=1&level=<route>&shot=<id>`).
  *
  * The mode is intentionally isolated from `Application`: it reaches into the
  * existing dev handle through a narrow structural interface (TypeScript `private`
@@ -153,7 +154,8 @@ interface GameplaySessionManagerLike {
 }
 
 interface CaptureApplicationLike {
-  startGameplay(mode: string): Promise<void>;
+  /** Dev-only level override: the second argument is the capture route's level. */
+  startGameplay(mode: string, levelId?: string): Promise<void>;
   readonly viewModel: ViewModelLike | null;
   readonly renderScene: RenderSceneLike | null;
   readonly cameraSystem: CameraSystemLike | null;
@@ -165,6 +167,7 @@ interface CaptureApplicationLike {
 
 interface CaptureRuntimeState {
   app: CaptureApplicationLike | null;
+  levelId: CaptureLevelId;
   shotId: string;
   lastStats: GlasslineCaptureStats | null;
   /** True while the settle gate records GPU frame checksums. */
@@ -210,6 +213,7 @@ export function prepareCaptureMode(search = window.location.search): CaptureMode
 
   const state: CaptureRuntimeState = {
     app: null,
+    levelId: request.levelId,
     shotId: request.shotId,
     lastStats: null,
     probeActive: false,
@@ -227,7 +231,7 @@ export function prepareCaptureMode(search = window.location.search): CaptureMode
 
       await pinDisplayQuality(state.app);
       installFreezes(state);
-      await startPrologue(state.app);
+      await startCaptureLevel(state.app, request);
 
       // Reset the time-driven layer once more after the level session has
       // started, then re-pin the surface and rebuild every GPU-side cache
@@ -236,7 +240,7 @@ export function prepareCaptureMode(search = window.location.search): CaptureMode
       resetAnimatedTime(state.app);
       pinCaptureSurface(state.app);
       rebuildDeterministicGpuState(state.app);
-      primeShaderPrograms(state.app);
+      primeShaderPrograms(state.app, state);
 
       applyShot(state, request.shotId);
 
@@ -254,7 +258,7 @@ export function prepareCaptureMode(search = window.location.search): CaptureMode
 function createCaptureApi(state: CaptureRuntimeState): GlasslineCaptureApi {
   return {
     ready: false,
-    shots: CAPTURE_SHOTS.map((shot) => ({
+    shots: captureShotsForLevel(state.levelId).map((shot) => ({
       id: shot.id,
       title: shot.title,
       position: [...shot.position] as [number, number, number],
@@ -275,7 +279,7 @@ function createCaptureApi(state: CaptureRuntimeState): GlasslineCaptureApi {
  * not exposed a camera yet.
  */
 function applyShot(state: CaptureRuntimeState, id: string): boolean {
-  const shot = findCaptureShot(typeof id === "string" ? id.trim() : "");
+  const shot = findCaptureShot(typeof id === "string" ? id.trim() : "", state.levelId);
 
   if (!shot) {
     return false;
@@ -505,7 +509,7 @@ function rebuildDeterministicGpuState(app: CaptureApplicationLike): void {
  * depends on which camera happened to be active when a material/program pair was
  * first used.
  */
-function primeShaderPrograms(app: CaptureApplicationLike): void {
+function primeShaderPrograms(app: CaptureApplicationLike, state: CaptureRuntimeState): void {
   const renderer = app.renderer;
   const cameraSystem = app.cameraSystem;
   const scene = app.renderScene?.scene;
@@ -517,7 +521,7 @@ function primeShaderPrograms(app: CaptureApplicationLike): void {
   const camera = cameraSystem.camera;
   const threeRenderer = renderer.threeRenderer;
 
-  for (const shot of CAPTURE_SHOTS) {
+  for (const shot of captureShotsForLevel(state.levelId)) {
     positionCamera(camera, shot);
     threeRenderer.compile(scene, camera);
   }
@@ -615,8 +619,11 @@ function readFrameStats(state: CaptureRuntimeState): GlasslineCaptureStats | nul
 /* Boot                                                                       */
 /* -------------------------------------------------------------------------- */
 
-async function startPrologue(app: CaptureApplicationLike): Promise<void> {
-  await app.startGameplay("prologue");
+async function startCaptureLevel(
+  app: CaptureApplicationLike,
+  request: CaptureRequest,
+): Promise<void> {
+  await app.startGameplay(request.mode, request.levelDefinitionId);
 
   const deadline = Date.now() + GAMEPLAY_READY_TIMEOUT_MS;
 
@@ -628,7 +635,9 @@ async function startPrologue(app: CaptureApplicationLike): Promise<void> {
     await delay(GAMEPLAY_POLL_INTERVAL_MS);
   }
 
-  throw new Error("[Glassline] Capture mode timed out waiting for the prologue gameplay state.");
+  throw new Error(
+    `[Glassline] Capture mode timed out waiting for the "${request.levelId}" gameplay state.`,
+  );
 }
 
 function nextAnimationFrames(count: number): Promise<void> {

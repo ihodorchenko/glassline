@@ -22,6 +22,7 @@
     "test:watch": "vitest",
     "validate": "npm run typecheck && npm run check && npm run test && vite build",
     "capture": "node tools/capture/capture.mjs",
+    "kit:lifecycle": "node tools/capture/kit-lifecycle.mjs",
     "metrics": "python3 tools/capture/metrics.py",
     "audio:render": "node tools/capture/audio-render.mjs",
     "audio:probe": "node tools/capture/audio-probe.mjs",

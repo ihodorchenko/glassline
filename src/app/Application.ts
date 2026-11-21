@@ -18,6 +18,7 @@ import type { InputContext } from "../input/InputActions";
 import { InputManager } from "../input/InputManager";
 import { IDLE_INPUT_FRAME, type InputFrame } from "../input/InputState";
 import { InteractionSystem } from "../interaction/InteractionSystem";
+import { ARCHITECTURAL_KIT_DEMO_DEFINITIONS } from "../levels/demo/ArchitecturalKitDemo";
 import { LevelRuntimeManager } from "../levels/LevelRuntimeManager";
 import type { LevelDefinition, SurfaceType } from "../levels/LevelTypes";
 import type { TriggerEvent } from "../levels/TriggerManager";
@@ -452,10 +453,18 @@ export class Application implements Disposable {
       throw new Error("Level Runtime requires initialized rendering and physics.");
     }
 
+    const definitions = [...TRAINING_TEST_LEVEL_DEFINITIONS, ...PROLOGUE_TEST_LEVEL_DEFINITIONS];
+
+    // The Architectural Kit review composition is a development/capture-only
+    // level: production builds keep the shipped level list unchanged.
+    if (import.meta.env.DEV) {
+      definitions.push(...ARCHITECTURAL_KIT_DEMO_DEFINITIONS);
+    }
+
     this.levelRuntime = new LevelRuntimeManager({
       scene: this.renderScene,
       physics: this.physics,
-      definitions: [...TRAINING_TEST_LEVEL_DEFINITIONS, ...PROLOGUE_TEST_LEVEL_DEFINITIONS],
+      definitions,
     });
     this.resources.push(this.levelRuntime);
   }
@@ -1608,7 +1617,12 @@ export class Application implements Disposable {
     }
   }
 
-  private async startGameplay(mode: GameplayMode): Promise<void> {
+  /**
+   * Starts a gameplay session. `levelIdOverride` is a dev-only capture hook
+   * (the Architectural Kit review composition); shipped flows keep the
+   * mode-to-level mapping below.
+   */
+  private async startGameplay(mode: GameplayMode, levelIdOverride?: string): Promise<void> {
     if (this.busy) {
       return;
     }
@@ -1642,7 +1656,8 @@ export class Application implements Disposable {
 
       this.syncInputContext();
 
-      const levelId = mode === "training" ? TRAINING_LEVEL_ID : PROLOGUE_LEVEL_ID;
+      const levelId =
+        levelIdOverride ?? (mode === "training" ? TRAINING_LEVEL_ID : PROLOGUE_LEVEL_ID);
       const result = await this.sessionManager?.startSession({
         mode,
         levelId,

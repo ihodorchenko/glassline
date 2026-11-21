@@ -19,8 +19,22 @@ export const CAPTURE_VIEW_PARAM = "view";
 /** URL parameter selecting the level; only the prologue capture route exists. */
 export const CAPTURE_LEVEL_PARAM = "level";
 
-/** The only level supported by the capture boot mode. */
+/** The shipped capture route (Prologue look review). */
 export const SUPPORTED_CAPTURE_LEVEL_ID = "prologue";
+
+/**
+ * Architectural Kit review route. Boots the dev-only kit composition through
+ * the existing Level Runtime; it is never registered in a production build.
+ */
+export const ARCHITECTURE_CAPTURE_LEVEL_ID = "architecture";
+
+/** Capture routes understood by `?capture=1&level=<id>`. */
+export const CAPTURE_LEVEL_IDS = [
+  SUPPORTED_CAPTURE_LEVEL_ID,
+  ARCHITECTURE_CAPTURE_LEVEL_ID,
+] as const;
+
+export type CaptureLevelId = (typeof CAPTURE_LEVEL_IDS)[number];
 
 /** Fixed field of view (degrees) applied to every capture shot. */
 export const CAPTURE_FOV_DEGREES = 50;
@@ -133,23 +147,169 @@ export const CAPTURE_SHOTS: readonly CaptureShot[] = [
 /** Ordered ids of the six canonical shots. */
 export const CAPTURE_SHOT_IDS: readonly string[] = CAPTURE_SHOTS.map((shot) => shot.id);
 
+/**
+ * Architectural Kit review shots. Geometry references:
+ *
+ * - facade wing: x = -17, z = -29.8…-38.2 and -49.8…-58.2, 8.4 m tall;
+ * - glazed atrium: x = -17…-5, z = -38…-50, 12.6 m tall + parapet;
+ * - east tower: x = 10…20, z = -38…-50, 12.6 m tall;
+ * - skybridge: deck y = 8.4, z = -44, spanning x = -5…10;
+ * - canopy: y = 4.2 on the atrium south face, 3.4 m projection;
+ * - technical annex: x = -12…8, z = -68…-60, 4.2 m tall;
+ * - plaza deck: 64 x 56 m, top y = 0.
+ */
+export const ARCHITECTURE_CAPTURE_SHOTS: readonly CaptureShot[] = [
+  {
+    id: "kit-overview",
+    title: "Architectural Kit — Overview",
+    position: [36, 16, -10],
+    lookAt: [-5, 5, -50],
+    fov: CAPTURE_FOV_DEGREES,
+    intent:
+      "General view of the whole composition: facade wing, glazed atrium, tower, bridge and canopy read as one architecture.",
+  },
+  {
+    id: "kit-facade",
+    title: "Facade Wing — Deep Reveals",
+    position: [-3.5, 5.6, -28.5],
+    lookAt: [-17.5, 4.4, -36],
+    fov: CAPTURE_FOV_DEGREES,
+    intent:
+      "Close facade read: two bays x two storeys, reveal depth, protruding sill, articulated joints and parapet silhouette.",
+  },
+  {
+    id: "kit-glass",
+    title: "Glazed Atrium",
+    position: [8, 8, -28],
+    lookAt: [-11, 7, -44],
+    fov: CAPTURE_FOV_DEGREES,
+    intent:
+      "Curtain wall as a glass volume: mullion grid, spandrel rhythm, corner expression and the cantilever balcony.",
+  },
+  {
+    id: "kit-corner",
+    title: "Architectural Corner",
+    position: [8, 7.5, -26],
+    lookAt: [-6, 6, -39.5],
+    fov: 40,
+    intent:
+      "Expressed corner: concrete pier, glass returns, coping caps, metal drip edge and the red navigation reveal.",
+  },
+  {
+    id: "kit-canopy",
+    title: "Canopy and Structure",
+    position: [-3.5, 2.0, -28.5],
+    lookAt: [-11, 4.4, -37.5],
+    fov: 55,
+    intent:
+      "Canopy blade, tension rods, columns and the cantilevered balcony above: the structural language of the kit at eye level.",
+  },
+  {
+    id: "kit-service",
+    title: "Technical Zone",
+    position: [3, 3.2, -47],
+    lookAt: [-4, 3.4, -61],
+    fov: 55,
+    intent:
+      "Service annex: louvered portal, intake, louver screen and roof plant, framed by the reflection pool in the court.",
+  },
+  {
+    id: "kit-player-eyes",
+    title: "Player Eye Level",
+    position: [11, 1.65, -27],
+    lookAt: [-8, 5.0, -45],
+    fov: 60,
+    intent:
+      "First-person framing from the plaza spawn: scale, route reading and the architecture above the player.",
+  },
+  {
+    id: "kit-distant",
+    title: "Distant Silhouette",
+    position: [46, 20, 2],
+    lookAt: [-2, 4, -48],
+    fov: 45,
+    intent:
+      "Long view: the composition as a skyline element above the podium and the lower city context.",
+  },
+  {
+    id: "kit-bridge",
+    title: "Skybridge Crossing",
+    position: [12, 14, -28],
+    lookAt: [-1, 9.2, -43],
+    fov: CAPTURE_FOV_DEGREES,
+    intent:
+      "Aerial crossing between the glazed volume and the tower: portal frames, glazed sides, roof edge and understructure.",
+  },
+];
+
+/** Ordered ids of the nine Architectural Kit review shots. */
+export const ARCHITECTURE_CAPTURE_SHOT_IDS: readonly string[] = ARCHITECTURE_CAPTURE_SHOTS.map(
+  (shot) => shot.id,
+);
+
+/** One capture route: level definition, session mode and authored shots. */
+export interface CaptureLevelRoute {
+  readonly id: CaptureLevelId;
+  readonly levelDefinitionId: string;
+  readonly mode: "prologue" | "training";
+  readonly shots: readonly CaptureShot[];
+}
+
+/** Routes resolved from `?capture=1&level=<id>`. */
+export const CAPTURE_LEVELS: readonly CaptureLevelRoute[] = [
+  {
+    id: SUPPORTED_CAPTURE_LEVEL_ID,
+    levelDefinitionId: "prologue_test",
+    mode: "prologue",
+    shots: CAPTURE_SHOTS,
+  },
+  {
+    id: ARCHITECTURE_CAPTURE_LEVEL_ID,
+    // Kept as a literal so capture metadata never imports level content.
+    levelDefinitionId: "architectural_kit_demo",
+    mode: "training",
+    shots: ARCHITECTURE_CAPTURE_SHOTS,
+  },
+];
+
 const CAPTURE_DISABLED_VALUES = new Set(["", "0", "false", "off", "no"]);
 
 /** Resolved capture request produced by {@link parseCaptureRequest}. */
 export interface CaptureRequest {
-  /** Level id that will be started; always `prologue`. */
-  readonly levelId: string;
+  /** Capture route id (`prologue` or `architecture`). */
+  readonly levelId: CaptureLevelId;
+  /** Authored level definition started through the Level Runtime. */
+  readonly levelDefinitionId: string;
+  /** Gameplay session mode used to boot the route. */
+  readonly mode: "prologue" | "training";
   /** Shot id that must be applied on boot (first shot when unspecified). */
   readonly shotId: string;
   /** Raw `?shot=` / `?view=` value, `null` when absent. */
   readonly requestedShotId: string | null;
-  /** Whether the requested shot id exists in {@link CAPTURE_SHOTS}. */
+  /** Whether the requested shot id exists in the route's shot list. */
   readonly shotKnown: boolean;
 }
 
-/** Looks a shot up by id; returns `undefined` for unknown ids. */
-export function findCaptureShot(id: string): CaptureShot | undefined {
-  return CAPTURE_SHOTS.find((shot) => shot.id === id);
+/** Looks a capture route up by id. */
+export function findCaptureLevelRoute(levelId: CaptureLevelId): CaptureLevelRoute | undefined {
+  return CAPTURE_LEVELS.find((route) => route.id === levelId);
+}
+
+/** Shot list for one capture route; unknown ids fall back to the Prologue list. */
+export function captureShotsForLevel(levelId: CaptureLevelId): readonly CaptureShot[] {
+  return findCaptureLevelRoute(levelId)?.shots ?? CAPTURE_SHOTS;
+}
+
+/** Looks a shot up by id within a route; returns `undefined` for unknown ids. */
+export function findCaptureShot(
+  id: string,
+  levelId: CaptureLevelId = SUPPORTED_CAPTURE_LEVEL_ID,
+): CaptureShot | undefined {
+  return captureShotsForLevel(levelId).find((shot) => shot.id === id);
+}
+
+function isCaptureLevelId(value: string): value is CaptureLevelId {
+  return (CAPTURE_LEVEL_IDS as readonly string[]).includes(value);
 }
 
 /**
@@ -157,8 +317,8 @@ export function findCaptureShot(id: string): CaptureShot | undefined {
  *
  * Returns `null` when the page must boot normally: no `capture` flag, an
  * explicitly false flag, or an unsupported level. Unknown shot ids are tolerated
- * and fall back to the first shot (`shotKnown === false`) so a typo cannot make
- * the harness hang without a frame.
+ * and fall back to the route's first shot (`shotKnown === false`) so a typo
+ * cannot make the harness hang without a frame.
  */
 export function parseCaptureRequest(search: string): CaptureRequest | null {
   const normalized = search.startsWith("?") ? search.slice(1) : search;
@@ -177,21 +337,30 @@ export function parseCaptureRequest(search: string): CaptureRequest | null {
     .trim()
     .toLowerCase();
 
-  if (requestedLevel !== SUPPORTED_CAPTURE_LEVEL_ID) {
+  if (!isCaptureLevelId(requestedLevel)) {
+    return null;
+  }
+
+  const route = findCaptureLevelRoute(requestedLevel);
+
+  if (!route) {
     return null;
   }
 
   const requestedShotId =
     params.get(CAPTURE_SHOT_PARAM)?.trim() || params.get(CAPTURE_VIEW_PARAM)?.trim() || null;
-  const requestedShot = requestedShotId === null ? undefined : findCaptureShot(requestedShotId);
-  const resolvedShot = requestedShot ?? CAPTURE_SHOTS[0];
+  const requestedShot =
+    requestedShotId === null ? undefined : findCaptureShot(requestedShotId, route.id);
+  const resolvedShot = requestedShot ?? route.shots[0];
 
   if (!resolvedShot) {
     return null;
   }
 
   return {
-    levelId: SUPPORTED_CAPTURE_LEVEL_ID,
+    levelId: route.id,
+    levelDefinitionId: route.levelDefinitionId,
+    mode: route.mode,
     shotId: resolvedShot.id,
     requestedShotId,
     shotKnown: requestedShotId === null || requestedShot !== undefined,
@@ -202,11 +371,14 @@ export function parseCaptureRequest(search: string): CaptureRequest | null {
  * Validates a shot list used by the capture boot. Returns a list of human
  * readable problems; an empty array means the list is usable.
  */
-export function validateCaptureShots(shots: readonly CaptureShot[] = CAPTURE_SHOTS): string[] {
+export function validateCaptureShots(
+  shots: readonly CaptureShot[] = CAPTURE_SHOTS,
+  expectedCount = CAPTURE_SHOTS.length,
+): string[] {
   const issues: string[] = [];
 
-  if (shots.length !== 6) {
-    issues.push(`Expected exactly 6 shots, received ${shots.length}.`);
+  if (shots.length !== expectedCount) {
+    issues.push(`Expected exactly ${expectedCount} shots, received ${shots.length}.`);
   }
 
   const seen = new Set<string>();
