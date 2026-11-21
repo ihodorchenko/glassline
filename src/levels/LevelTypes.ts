@@ -1,5 +1,7 @@
 /** Authored level definitions consumed by the Level Runtime (`docs/15`). */
 
+import type { ArchitecturalModuleDefinition } from "./architecture/KitTypes";
+
 export type GameMode = "training" | "prologue";
 
 export type SurfaceType = "concrete" | "metal" | "rubber" | "glass" | "asphalt";
@@ -60,6 +62,9 @@ export type LevelMaterialType =
   | "glass-far"
   | "glass-rail"
   | "metal"
+  | "aluminium"
+  | "composite"
+  | "reveal"
   | "dark-metal"
   | "red"
   | "orange"
@@ -95,6 +100,27 @@ export interface LevelDecorationDefinition {
   readonly emissiveIntensity?: number;
   readonly castShadow?: boolean;
   readonly receiveShadow?: boolean;
+}
+
+/**
+ * Authored placement of one reusable Architectural Kit module (see
+ * `docs/ARCHITECTURAL_KIT.md`). The module is generated once per variant and
+ * instanced across placements; it is visual-only and never receives a collider.
+ *
+ * `position` is the module origin in world metres:
+ * - facade-facing modules expect the wall plane at z = 0 facing +Z;
+ * - `rotationY` turns the module around its vertical axis (radians);
+ * - `rotationX` / `rotationZ` are reserved for authored tilted pieces.
+ */
+export interface LevelArchitecturePlacement {
+  readonly id: string;
+  readonly sectionId: string;
+  readonly position: LevelVector3;
+  /** Procedural module and its authored dimensions. */
+  readonly module: ArchitecturalModuleDefinition;
+  readonly rotationX?: number;
+  readonly rotationY?: number;
+  readonly rotationZ?: number;
 }
 
 /** Lighting, fog, and sky treatment applied while a level is loaded. */
@@ -207,6 +233,8 @@ export interface LevelDefinition {
   readonly geometry: readonly LevelGeometryDefinition[];
   readonly surfaces: readonly LevelSurfaceDefinition[];
   readonly decorations?: readonly LevelDecorationDefinition[];
+  /** Reusable procedural Architectural Kit placements (visual-only). */
+  readonly architecture?: readonly LevelArchitecturePlacement[];
   readonly environment?: LevelEnvironmentDefinition;
   readonly metadata: LevelMetadata;
 }

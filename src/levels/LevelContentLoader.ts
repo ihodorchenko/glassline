@@ -7,7 +7,14 @@ import type { Disposable } from "../core/Disposable";
 import type { PhysicsWorld } from "../physics/PhysicsWorld";
 import type { MaterialLibrary } from "../rendering/MaterialLibrary";
 import type { RenderScene } from "../rendering/RenderScene";
+import {
+  architecturalModuleKey,
+  buildArchitecturalModule,
+  type KitModuleModel,
+} from "./architecture/ArchitecturalKit";
+import { KitGeometryPool } from "./architecture/KitGeometry";
 import type {
+  LevelArchitecturePlacement,
   LevelDecorationDefinition,
   LevelDefinition,
   LevelGeometryDefinition,
@@ -93,6 +100,24 @@ function decorationMatrix(decoration: LevelDecorationDefinition): THREE.Matrix4 
   return new THREE.Matrix4().compose(position, rotation, scale);
 }
 
+function architectureMatrix(placement: LevelArchitecturePlacement): THREE.Matrix4 {
+  const position = new THREE.Vector3(
+    placement.position.x,
+    placement.position.y,
+    placement.position.z,
+  );
+  const rotation = new THREE.Quaternion().setFromEuler(
+    new THREE.Euler(
+      placement.rotationX ?? 0,
+      placement.rotationY ?? 0,
+      placement.rotationZ ?? 0,
+      "YXZ",
+    ),
+  );
+
+  return new THREE.Matrix4().compose(position, rotation, new THREE.Vector3(1, 1, 1));
+}
+
 interface DecorationBatch {
   readonly shape: "box" | "cylinder";
   readonly material: THREE.MeshStandardMaterial;
@@ -106,7 +131,9 @@ interface DecorationBatch {
  * and registers level runtime objects.
  *
  * Visual decorations are batched into instanced meshes by material and shape so
- * dense city dressing stays inside a small draw-call budget.
+ * dense city dressing stays inside a small draw-call budget. Architectural Kit
+ * modules are generated once per variant and instanced per material batch; they
+ * remain visual-only, exactly like authored decorations.
  */
 export class BoxLevelContentLoader {
   async load(
@@ -134,9 +161,13 @@ export class BoxLevelContentLoader {
     const library: MaterialLibrary = dependencies.scene.materials;
     const meshes: THREE.Mesh[] = [];
     const decorationMeshes: THREE.InstancedMesh[] = [];
+    const architectureMeshes: THREE.InstancedMesh[] = [];
     const transparentMeshes: THREE.Mesh[] = [];
     const transparentMaterials: THREE.MeshStandardMaterial[] = [];
     const ownedDecorationGeometries: THREE.BufferGeometry[] = [];
+    const kitPool = new KitGeometryPool();
+    const kitModels = new Map<string, KitModuleModel>();
+    const kitBatches = new Map<string, { model: KitModuleModel; matrices: THREE.Matrix4[] }>();
     const bodies: RAPIER.RigidBody[] = [];
     const world = dependencies.physics.rapierWorld;
 
@@ -338,6 +369,45 @@ export class BoxLevelContentLoader {
       decorationMeshes.push(mesh);
     }
 
+    // Architectural Kit: one generated geometry per authored module variant,
+    // one instanced draw per material batch, shared across every placement.
+    for (const placement of definition.architecture ?? []) {
+      const key = architecturalModuleKey(placement.module);
+      let model = kitModels.get(key);
+
+      if (!model) {
+        model = buildArchitecturalModule(placement.module, kitPool);
+        kitModels.set(key, model);
+      }
+
+      let batch = kitBatches.get(key);
+
+      if (!batch) {
+        batch = { model, matrices: [] };
+        kitBatches.set(key, batch);
+      }
+
+      batch.matrices.push(architectureMatrix(placement));
+    }
+
+    for (const batch of kitBatches.values()) {
+      for (const part of batch.model.parts) {
+        const material = library.get(part.material);
+        const mesh = new THREE.InstancedMesh(part.geometry, material, batch.matrices.length);
+
+        batch.matrices.forEach((matrix, index) => {
+          mesh.setMatrixAt(index, matrix);
+        });
+
+        mesh.instanceMatrix.needsUpdate = true;
+        mesh.castShadow = part.castShadow;
+        mesh.receiveShadow = part.receiveShadow;
+        mesh.frustumCulled = false;
+        dependencies.scene.addObject(mesh);
+        architectureMeshes.push(mesh);
+      }
+    }
+
     for (const spawnPoint of definition.spawnPoints) {
       dependencies.spawnPoints.register(spawnPoint);
       dependencies.objects.register(
@@ -408,6 +478,17 @@ export class BoxLevelContentLoader {
           mesh.dispose();
         }
 
+        for (const mesh of architectureMeshes) {
+          dependencies.scene.removeObject(mesh);
+          mesh.dispose();
+        }
+
+        for (const model of kitModels.values()) {
+          model.dispose();
+        }
+
+        kitPool.dispose();
+
         for (const mesh of transparentMeshes) {
           dependencies.scene.removeObject(mesh);
         }
@@ -436,6 +517,9 @@ export class BoxLevelContentLoader {
 
         meshes.length = 0;
         decorationMeshes.length = 0;
+        architectureMeshes.length = 0;
+        kitModels.clear();
+        kitBatches.clear();
         transparentMeshes.length = 0;
         transparentMaterials.length = 0;
         ownedDecorationGeometries.length = 0;

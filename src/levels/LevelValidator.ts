@@ -1,3 +1,4 @@
+import { validateArchitecturalModuleDefinition } from "./architecture/KitTypes";
 import type {
   AuthoredCheckpointDefinition,
   LevelDefinition,
@@ -94,6 +95,10 @@ function validateLevelBasics(collector: ValidationCollector, definition: LevelDe
 
   if (definition.decorations) {
     validateUniqueIds(collector, "Decorations", definition.decorations);
+  }
+
+  if (definition.architecture) {
+    validateUniqueIds(collector, "Architecture", definition.architecture);
   }
 }
 
@@ -466,6 +471,48 @@ function validateDecorations(
   }
 }
 
+function validateArchitecture(
+  collector: ValidationCollector,
+  definition: LevelDefinition,
+  sectionIds: ReadonlySet<string>,
+): void {
+  for (const placement of definition.architecture ?? []) {
+    if (!sectionIds.has(placement.sectionId)) {
+      collector.error(
+        "INVALID_ARCHITECTURE_SECTION",
+        `Architecture placement "${placement.id}" belongs to unknown section "${placement.sectionId}".`,
+        placement.id,
+      );
+    }
+
+    if (!isFiniteVector(placement.position)) {
+      collector.error(
+        "INVALID_ARCHITECTURE_POSITION",
+        `Architecture placement "${placement.id}" has a non-finite position.`,
+        placement.id,
+      );
+    }
+
+    for (const [axis, rotation] of [
+      ["rotationX", placement.rotationX],
+      ["rotationY", placement.rotationY],
+      ["rotationZ", placement.rotationZ],
+    ] as const) {
+      if (rotation !== undefined && !Number.isFinite(rotation)) {
+        collector.error(
+          "INVALID_ARCHITECTURE_ROTATION",
+          `Architecture placement "${placement.id}" has a non-finite ${axis}.`,
+          placement.id,
+        );
+      }
+    }
+
+    for (const issue of validateArchitecturalModuleDefinition(placement.module)) {
+      collector.error("INVALID_ARCHITECTURE_MODULE", `"${placement.id}": ${issue}`, placement.id);
+    }
+  }
+}
+
 function validateInteractionTargets(
   collector: ValidationCollector,
   definition: LevelDefinition,
@@ -557,6 +604,7 @@ export function validateLevelDefinition(definition: LevelDefinition): LevelValid
   validateTriggers(collector, definition, sectionIds, checkpointIds);
   validateCheckpoints(collector, definition, sectionIds, spawnPointIds, triggerIds);
   validateInteractionTargets(collector, definition, sectionIds);
+  validateArchitecture(collector, definition, sectionIds);
   validateDecorations(collector, definition, sectionIds);
   validatePrologueSections(collector, definition);
 

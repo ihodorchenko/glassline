@@ -11,6 +11,9 @@ export type MaterialKey =
   | "glass-far"
   | "glass-rail"
   | "metal"
+  | "aluminium"
+  | "composite"
+  | "reveal"
   | "dark-metal"
   | "red"
   | "orange"
@@ -152,6 +155,37 @@ const MATERIAL_SPECS: Record<MaterialKey, MaterialSpec> = {
     uvScale: 0.34,
     texture: "metal",
     envMapIntensity: 1.05,
+  },
+  // Architectural Kit (2026-11-21): anodized aluminium is deliberately lighter,
+  // smoother and more reflective than the structural `metal`, so mullions and
+  // trims separate from steel structure by response to light, not only hue.
+  aluminium: {
+    color: 0xb9c0c3,
+    roughness: 0.3,
+    metalness: 0.92,
+    uvScale: 0.34,
+    envMapIntensity: 1.2,
+  },
+  // Deep window-reveal lining: a darker warm mineral tone so a punched opening
+  // reads as depth from the first frame, instead of relying on the shadow term
+  // alone. Rough and non-metallic like the concrete it belongs to.
+  reveal: {
+    color: 0x8d8f8a,
+    roughness: 0.94,
+    metalness: 0,
+    uvScale: 0.24,
+    envMapIntensity: 0.32,
+  },
+  // Light matte composite cladding: warm pale panel, rougher than painted
+  // white plaster and with the facade panel-joint texture carrying the seams.
+  composite: {
+    color: 0xe2ddd2,
+    roughness: 0.56,
+    metalness: 0.04,
+    uvScale: 0.22,
+    texture: "facade",
+    heightFromAlpha: true,
+    envMapIntensity: 0.5,
   },
   "dark-metal": {
     color: 0x2b3542,
