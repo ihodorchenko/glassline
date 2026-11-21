@@ -9,7 +9,7 @@
 [Финальный отчёт](docs/FINAL_REPORT.md) — что достигнуто и что осталось.
 [Нормализованный полный забег](docs/evidence/review/full-run-review.mp4) — спавн → FINISH, 0 респавнов.
 [Воспроизводимость забега](docs/evidence/video/round-89/README.md) — 4×0 респавнов, 21,8–23,1 с.
-[Решение на раунде 100](docs/DECISION_AT_100.md) — статус и варианты A/B/C.
+[Решение на раунде 100](docs/DECISION_AT_100.md) — **принято (A)**: reference-inspired vertical slice, цель закрыта 2026-11-21 после серии P1–P3 (раунды 98–100).
 
 **A first-person parkour game focused on movement, momentum, and mastery.**
 
