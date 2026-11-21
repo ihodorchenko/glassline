@@ -8,7 +8,13 @@
  * stack (white composite frame / tinted glass / anodized metal / red accent).
  */
 
-import { count, dimension, type KitPartCollector, rectRingShape } from "./KitGeometry";
+import {
+  count,
+  dimension,
+  type KitPartCollector,
+  rectRingShape,
+  roundedRectShape,
+} from "./KitGeometry";
 import type {
   CornerModule,
   CurtainWallModule,
@@ -190,40 +196,71 @@ export function buildCurtainWall(collector: KitPartCollector, definition: Curtai
   if (spandrel) {
     // The spandrel is the opaque band between two glazed storeys, so it is
     // built as an architectural zone of its own: an expressed metal head rail
-    // on the glass line, a recessed field of matte cassettes aligned with the
-    // mullion grid, and shadow gaps that seat the field between the rails.
-    // The rail, backing and shadow gaps reuse the module's existing dark-metal
-    // batch; only the cassette field needs a new material role.
+    // on the glass line, a field of matte cassettes seated in a dark reveal,
+    // and shadow gaps that keep every panel edge legible at review distance.
+    //
+    // Step 2.3C refines the local edge geometry only. The band height, the
+    // cassette pitch (`columns`) and the field extents are unchanged. Each
+    // cassette face is now a chamfered plate standing 28 mm proud of a
+    // recessed dark backing, framed by a 20 mm gasket reveal. Joint + reveals
+    // give a ~64 mm expressed seam: two pixels at the atrium review distance,
+    // where the old 24 mm joint was sub-pixel and the band read as one flat
+    // strip. The head rail, backing and gasket reuse the module's existing
+    // dark-metal batch; only the face plates need the `spandrel` role, so the
+    // module keeps five batches and the draw-call count per placement.
     const bandTop = border + spandrelHeight;
     // Glass panes are inset 0.0275 m inside their cell; the head rail ends on
     // that edge so the glazing reads as seated in the frame above the band.
     const headHeight = 0.075;
     const headBottom = bandTop + 0.0275 - headHeight;
+    const fieldBottom = border;
+    const fieldTop = headBottom;
+    const fieldHeight = fieldTop - fieldBottom;
+    const fieldCenterY = (fieldTop + fieldBottom) / 2;
+    // Shadow gaps seat the cassette field between the head rail and the sill
+    // frame; like the joint below they are local edge geometry, not new bands.
+    const shadowGapTop = 0.024;
+    const shadowGapBottom = 0.026;
+    // Expressed joint between cassettes: unchanged, so the cassette pitch and
+    // the cassette body stay exactly as authored in Step 2.3B.
     const jointGap = 0.024;
-    const cassetteTop = headBottom - 0.016;
-    const cassetteBottom = border + 0.018;
+    // Gasket reveal inside each bay: the dark ring that frames the face plate.
+    const gasketReveal = 0.02;
+    const cassetteTop = fieldTop - shadowGapTop;
+    const cassetteBottom = fieldBottom + shadowGapBottom;
     const cassetteHeight = cassetteTop - cassetteBottom;
     const cassetteCenterY = (cassetteTop + cassetteBottom) / 2;
     const cassetteWidth = usableWidth / columns;
-    const cassetteDepth = 0.045;
-    const cassetteFront = 0.02;
-    const cassetteCenterZ = cassetteFront - cassetteDepth / 2;
+    const faceWidth = cassetteWidth - jointGap - gasketReveal * 2;
+    const faceHeight = cassetteHeight - gasketReveal * 2;
+    // Chamfered face plate: the bevel is offset inward by its own size, so the
+    // end faces sit 9 mm inside the widest section and the perimeter rolls
+    // 45° back to the gasket. The front face stands 28 mm proud of the backing,
+    // enough to read as a seated panel from the plaza and to keep the gasket
+    // ring in shadow.
+    const faceBevel = 0.009;
+    const faceDepth = 0.012;
+    const faceFront = 0.03;
+    const faceCenterZ = faceFront - faceDepth / 2 - faceBevel;
 
-    // Dark backing behind the cassette joints: a gap between panels must read
-    // as a recessed press joint, not as a hole through the glazing cavity.
-    collector.box(
-      [usableWidth, cassetteHeight + 0.016, 0.012],
-      [0, cassetteCenterY, cassetteCenterZ - cassetteDepth / 2 - 0.006],
-      "dark-metal",
-    );
+    // Dark reveal behind the whole field: the gasket ring, the joints and the
+    // shadow gaps all read as one recessed plane, and the face plates stand in
+    // front of it. Previously the gaps above and below the field were separate
+    // strips pasted over a narrow backing; one continuous plate is cheaper
+    // (12 triangles instead of 36) and gives the seams a common dark ground.
+    collector.box([usableWidth, fieldHeight, 0.014], [0, fieldCenterY, -0.005], "dark-metal");
 
-    // Opaque matte cassette per structural bay. Joints land on the mullion
-    // lines above, so the opaque band keeps the facade's grid rhythm.
+    // Matte cassette face per structural bay. Joints stay centred on the
+    // mullion grid, so the opaque band keeps the facade's rhythm. The plate is
+    // extruded rather than a plain box because the chamfer is what makes the
+    // panel read as a pressed metal cassette instead of a painted stripe.
     for (let column = 0; column < columns; column += 1) {
-      collector.box(
-        [cassetteWidth - jointGap, cassetteHeight, cassetteDepth],
-        [-halfWidth + border + cassetteWidth * (column + 0.5), cassetteCenterY, cassetteCenterZ],
+      collector.extrusion(
+        roundedRectShape(faceWidth, faceHeight, 0),
+        faceDepth,
+        [-halfWidth + border + cassetteWidth * (column + 0.5), cassetteCenterY, faceCenterZ],
         "spandrel",
+        { bevel: faceBevel, bevelOffset: -faceBevel },
       );
     }
 
@@ -237,11 +274,6 @@ export function buildCurtainWall(collector: KitPartCollector, definition: Curtai
       [0, headBottom + headHeight / 2, 0.075],
       "dark-metal",
     );
-
-    // Shadow gaps above and below the field: the cassettes sit in the frame
-    // instead of being pasted onto the facade.
-    collector.box([usableWidth - 0.02, 0.016, 0.03], [0, cassetteTop + 0.008, 0.045], "dark-metal");
-    collector.box([usableWidth - 0.02, 0.018, 0.024], [0, border + 0.009, 0.045], "dark-metal");
   }
 }
 

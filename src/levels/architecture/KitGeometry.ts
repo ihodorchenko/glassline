@@ -366,13 +366,22 @@ export class KitPartCollector {
   /**
    * Extrudes a 2D shape along Z, centred on local z = 0. The shape is authored
    * in the module's XY plane (frames, joints, tapered profiles).
+   *
+   * `bevelOffset` follows the extrusion's own semantics: the bevel starts that
+   * far from the authored outline. A negative offset equal to `bevel` turns
+   * the default outward roll into a *chamfer* — the end faces come out inset
+   * and the widest section sits mid-depth — which is how a pressed cassette
+   * plate is authored (curtain-wall spandrel, Step 2.3C).
    */
   extrusion(
     shape: THREE.Shape,
     depth: number,
     position: Vector3Tuple,
     material: MaterialKey,
-    options: Omit<KitPartOptions, "position" | "scale"> & { readonly bevel?: number } = {},
+    options: Omit<KitPartOptions, "position" | "scale"> & {
+      readonly bevel?: number;
+      readonly bevelOffset?: number;
+    } = {},
   ): void {
     this.assertPositive([depth], "extrusion depth");
 
@@ -382,6 +391,7 @@ export class KitPartCollector {
       bevelEnabled: bevel > 0,
       bevelThickness: bevel,
       bevelSize: bevel,
+      bevelOffset: options.bevelOffset ?? 0,
       bevelSegments: 1,
       curveSegments: 6,
       steps: 1,

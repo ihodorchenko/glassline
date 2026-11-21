@@ -37,7 +37,7 @@ Fifteen authored modules. Local conventions: metres, Y up, base at local y = 0,
 | Kind | Local origin / direction | Parameters | Material batches | Triangles* |
 |---|---|---|---|---|
 | `facade-bay` | bottom-centre on the wall plane, faces +Z; reveal goes −Z | `width`, `height`, `revealDepth` (0.7), `accent` | 6 | 2,108 |
-| `curtain-wall` | bottom-centre on the wall plane, faces +Z | `width`, `height`, `columns`, `rows`, `depth`, `spandrel` | 3–5 | 376 (460 with spandrel) |
+| `curtain-wall` | bottom-centre on the wall plane, faces +Z | `width`, `height`, `columns`, `rows`, `depth`, `spandrel` | 3–5 | 376 (484 with spandrel) |
 | `corner` | bottom outer corner; wings extend −X / −Z, facades +X / +Z | `width`, `depth`, `height`, `accent` | 6 | 1,776 |
 | `column` | base centre | `height`, `width`, `accent` | 3 | 964 |
 | `cantilever` | floor top at the wall plane, projects +Z | `width`, `depth`, `thickness`, `railing` | 5 | 240 |
@@ -64,6 +64,9 @@ the composition uses one flight.
   openings, expressed frames, copings, fascia blades, fins and joints.
 - **Lofted prisms** for the tapered, chamfered column shaft.
 - **Faceted cylinders** for rods, handrails and posts.
+- **Chamfered plates** (`ExtrudeGeometry` with an inward `bevelOffset`) for the
+  spandrel cassette faces, so the perimeter rolls back to the gasket instead of
+  ending in a flat cut (Step 2.3C).
 - Plain boxes only for genuinely thin elements (mullions, glass, gaskets).
 - Geometry is authored in module-local space and merged to **one part per material
   batch** before leaving the builder. A module therefore costs 3–6 draw batches,
@@ -75,17 +78,31 @@ the composition uses one flight.
 
 - an expressed dark anodized **head rail** on the glass line — the constructive
   transition between opaque panel and glazing;
-- a recessed field of matte **cassettes** whose joints align with the mullions
-  above, so the opaque band keeps the facade's grid rhythm;
-- a dark **backing** behind the joints and **shadow gaps** above and below the
-  field, so the panel sits in the frame instead of being pasted on it.
+- a field of matte **cassette faces** whose joints align with the mullions above,
+  so the opaque band keeps the facade's grid rhythm;
+- a continuous dark **backing** behind the field; the **gasket reveal** around
+  each face, the **joints** between cassettes and the **shadow gaps** above and
+  below the field all read as one recessed plane, so the faces sit in the frame
+  instead of being pasted on it.
+
+Step 2.3C refines the local edges only: the band height, the cassette pitch, the
+module width and the field extents are unchanged. Each cassette face is a
+**chamfered plate** (1.8693 × 0.3425 m for the 6 m / 3-column variant) that
+stands 28 mm proud of the dark backing. Its perimeter rolls 9 mm inward at 45°,
+so the chamfered edge catches its own highlight instead of ending in a flat cut,
+and the seated depth reads even when the face is only a few pixels tall. The
+24 mm authored joint is unchanged; the 20 mm gasket reveal on each side turns it
+into a ~64 mm expressed seam (two pixels at the atrium review distance, where
+the old 24 mm joint was sub-pixel). The shadow gaps are 24 mm (top) and 26 mm
+(bottom).
 
 The cassettes are the only `spandrel` batch of the module. The rail, backing and
-shadow gaps reuse the existing `dark-metal` batch (the perimeter frame stays
+gasket reuse the existing `dark-metal` batch (the perimeter frame stays
 `aluminium`), so the module keeps five batches with `spandrel: true` — exactly as
 many as the previous composite band plus lining — and three with
-`spandrel: false`: the number of draw calls per placement is unchanged. `spandrel: false` geometry and materials are
-unchanged from Step 2.3A (unit-pinned).
+`spandrel: false`: the number of draw calls per placement is unchanged.
+`spandrel: false` geometry and materials are unchanged from Step 2.3A
+(unit-pinned).
 
 ## 3. Public API
 
@@ -183,10 +200,12 @@ For every placement the loader:
    atmosphere. No material is disposed — `MaterialLibrary` owns it.
 
 Measured on the review composition: 85 placements, 26 module variants,
-118 geometries, 121 instanced meshes, 270 draw calls, 308,463 rendered triangles
-at the general-view pose (1600×900, high quality). The framed spandrel zone adds
-2,736 triangles across the placed curtain walls; draw calls, geometries and
-instanced meshes are unchanged. Geometry/child counts return to the menu baseline
+118 geometries, 121 instanced meshes, 270 draw calls, 309,423 rendered triangles
+at the general-view pose (1600×900, high quality). The framed spandrel zone added
+2,736 triangles in Step 2.3B and its 2.3C edge refinement adds another 960
+(+0.31 % over 2.3B); draw calls, geometries and instanced meshes are unchanged,
+and the texture set shrank from 37 to 36 because 2.3C removed the spandrel
+role's generated facade map. Geometry/child counts return to the menu baseline
 across reload and two restarts (see §7).
 
 ## 5. Materials
@@ -199,7 +218,7 @@ it (no duplicated library, no per-instance materials):
 | `white` | architectural white plaster field | rough 0.62, no metalness |
 | `concrete` | warm white structural concrete | rough 0.9 |
 | `composite` | light matte composite cladding/frames | rough 0.56, panel-joint texture |
-| `spandrel` | opaque curtain-wall spandrel cassette panel | `#767D80`, rough 0.84, metal 0.02, low env, no sheen |
+| `spandrel` | opaque curtain-wall spandrel cassette panel | `#5E5E5E` (neutral), rough 0.90, metal 0, matte painted panel, no map, no sheen |
 | `reveal` | deep window-reveal lining | rough 0.94, dark warm mineral tone |
 | `glass-near` | near curtain-wall / punched glazing (kit) | ART_BRIEF curtain glass: `#1A2530`, rough 0.10, metal 0.6, near sheen for the reflection gradient |
 | `glass` | Prologue / distant-city glazing (shared) | rough 0.13, metal 0.6, distance-tuned sheen |
@@ -220,12 +239,23 @@ portal jamb, stair nosing, column base tag).
 spandrel at `#2A3A44`. That dark pass was implemented first and measured in Step
 2.3B: against the near-black glazing the band lost value and read as a recess, not
 as an opaque panel, while the pale `composite` it replaced merged with the white
-frame. The role is therefore calibrated to a neutral mid-grey (`#767D80`) framed
-by a dark anodized transom: the band keeps a mid value between the glazing and the
-frame (measured ≈0.31 / 0.40 / 0.55–0.63 luma on the shaded review face), stays
-matte and non-metallic, and introduces no colour accent. The difference from glass is
-carried by the response — roughness 0.84 vs 0.10, metalness 0.02 vs 0.6, no
-view-dependent sheen — not by a brighter or more saturated fill.
+frame. Step 2.3B therefore calibrated a neutral mid-grey (`#767D80`) framed by a
+dark anodized transom.
+
+Step 2.3C corrects the role locally: `#5E5E5E` is a perfectly neutral grey (no
+channel imbalance), roughness rises to 0.90 and metalness drops to 0, and the
+shared facade panel-joint map is no longer applied to this role (it tiled a
+second, arbitrary joint grid inside each cassette and read as speckle). On the
+review face the sunlit cassette now measures 0.475 luma with saturation 0.08
+(2.3B: 0.585 / 0.20) and the shaded cassette 0.329 / 0.28 (2.3B: 0.409 / 0.39),
+while the glazing above is unchanged at 0.275 and the anodized sill stays at
+0.52. The band therefore keeps a three-value hierarchy — frame / matte panel /
+glazing — and the material itself contributes no hue in sun or shade; the
+remaining cool cast on the shaded face is the scene's ambient light (and the
+grade's shadow tint) on an achromatic surface, not a property of the role. The
+difference from glass is carried by the response — roughness 0.90 vs 0.10,
+metalness 0 vs 0.6, no view-dependent sheen — not by a brighter or more
+saturated fill.
 
 ## 6. Demonstration composition
 
@@ -270,12 +300,12 @@ before/after manifests) lives in `docs/evidence/arch-kit/`.
 |---|---|
 | `npm run typecheck` | pass |
 | `npm run check` (Biome lint + format + imports) | pass |
-| `npm test` | 448/448 pass (49 files) |
+| `npm test` | 450/450 pass (49 files) |
 | `npm run build` | pass; demo level id is absent from the production JS bundle |
-| Kit unit suite | 15 modules build, deterministic, valid geometry, material resolve, triangle budget; spandrel is opaque, non-glass, local, deterministic and batch-count neutral; `spandrel: false` is pinned to its previous geometry/materials |
+| Kit unit suite | 15 modules build, deterministic, valid geometry, material resolve, triangle budget; spandrel is opaque, neutral, matte, non-glass, local and batch-count neutral; the cassette pitch, joint width and field extents are pinned, the chamfered face is measured in the geometry, and `spandrel: false` is pinned to its previous geometry/materials |
 | Composition runtime suite | valid definition, load/unload, geometry disposal, scene-graph return to baseline, reload stability, invalid-data rejection |
-| Capture determinism | 9/9 shots byte-identical across two fresh-browser passes (`docs/evidence/arch-kit-spandrel/`) |
-| Load/unload/restart resource probe | geometries 118 → 9 (menu baseline) and identical across reload + 2 restarts; 121 instanced meshes, 270 draw calls; 0 console/page errors |
+| Capture determinism | 9/9 shots byte-identical across two fresh-browser passes (`docs/evidence/arch-kit-spandrel-refinement/`) |
+| Load/unload/restart resource probe | geometries 118 → 9 (menu baseline) and identical across reload + 2 restarts; 121 instanced meshes, 118 geometries, 36 textures, 270 draw calls; 0 console/page errors |
 | Prologue regression | `start-roof` capture is byte-identical before/after (sha256 `59c977dd…`), 210 draw calls / 4,363,071 triangles unchanged |
 
 ## 8. Known limits
@@ -292,9 +322,13 @@ before/after manifests) lives in `docs/evidence/arch-kit/`.
   distinct parameter variants of the same module raises the draw-call count
   linearly with variants (not placements); the composition deliberately keeps
   variant count small.
-- The spandrel cassette joints (24 mm) and shadow gaps (16–18 mm) are sub-pixel
-  at the general-view capture distance; their reading is verified in the close
-  crops and by geometry/material unit tests, not by the wide shots.
+- The spandrel cassettes now carry a ~64 mm expressed seam (24 mm joint plus the
+  20 mm gasket reveal on each side) and 24–26 mm shadow gaps: they read at the
+  review distance (the tower band in `kit-overview`) and in the close-ups, but at
+  true city distance (`kit-distant`) the whole 0.48 m band is only a few pixels
+  tall, so the seams collapse into a tonal rhythm rather than lines. Widening
+  them further would start to change the cassette proportions, which is out of
+  scope for this step.
 - Distant context city is authored decoration massing (window bands + roof caps),
   not a procedural city generator; it exists to frame the review composition.
 - The stair uses open treads; it is architectural geometry, not a collision ramp.

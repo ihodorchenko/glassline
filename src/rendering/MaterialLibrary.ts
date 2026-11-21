@@ -215,18 +215,38 @@ const MATERIAL_SPECS: Record<MaterialKey, MaterialSpec> = {
   //
   // Calibration (Step 2.3B): the pale `composite` band it replaces merged with
   // the white frame, while a first pass at the ART_BRIEF `#2A3A44` sat too close
-  // to the glazing value and read as a recess. This neutral mid-grey renders
-  // between the dark glazing (≈0.31 luma on the shaded review face) and the
-  // anodized frame (≈0.55–0.63), giving the facade a three-value hierarchy
-  // (frame / opaque panel / glass) without adding a colour accent. The facade
-  // panel-joint map at a fine 0.55 uv scale carries the cassette grain up close.
+  // to the glazing value and read as a recess. The role is a mid-grey between
+  // the dark glazing (≈0.31 luma on the shaded review face) and the anodized
+  // frame (≈0.55–0.63), giving the facade a three-value hierarchy without
+  // adding a colour accent.
+  //
+  // Step 2.3C local correction:
+  // - `#5E5E5E`: a fully neutral grey (no channel imbalance at all). The old
+  //   `#767D80` carried a 10/255 cool bias of its own on top of the scene's
+  //   cool ambient, so on a shaded face the panel drifted blue while the
+  //   sunlit face read as a pale, slightly cream strip. A neutral albedo
+  //   cannot add a cast in either state; whatever tint remains is the scene
+  //   lighting on an achromatic surface. The value is tuned against the
+  //   modelled material so the panel still renders between the glazing and
+  //   the anodized frame (see the Step 2.3C evidence).
+  // - roughness 0.90 and metalness 0: painted metal cassette, a pure
+  //   dielectric matte finish. The previous 0.84/0.02 pass kept a small
+  //   specular lobe that mirrored the blue sky exactly where the band was in
+  //   shade.
+  // - no map: the shared facade panel-joint map tiled a second, arbitrary
+  //   1.8 m joint grid inside each 1.9 m cassette (Step 2.3B used uv 0.55), so
+  //   the face read as speckled noise instead of a pressed plate — and its
+  //   albedo mottle fought the modelled joint rhythm. The cassette is a
+  //   painted panel: it now carries its grain in the chamfer and the exposed
+  //   joints, which also removes one generated texture and the triplanar
+  //   sampling cost from every spandrel instance. `uvScale` is therefore
+  //   unused by this role; it stays declared (the spec type requires it) and
+  //   would apply again if a map were reintroduced.
   spandrel: {
-    color: 0x767d80,
-    roughness: 0.84,
-    metalness: 0.02,
-    uvScale: 0.55,
-    texture: "facade",
-    heightFromAlpha: true,
+    color: 0x5e5e5e,
+    roughness: 0.9,
+    metalness: 0,
+    uvScale: 0.12,
     envMapIntensity: 0.3,
   },
   "dark-metal": {

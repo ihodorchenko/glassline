@@ -1,0 +1,711 @@
+{
+  "generatedAt": "2026-11-21T22:26:54.122Z",
+  "baseline": {
+    "run": "captures/step23c-before",
+    "note": "clean tree at c94ec0a (the 2.3B commit); 9/9 hashes match the archived Step 2.3B after run"
+  },
+  "after": {
+    "run": "captures/step23c-final"
+  },
+  "route": "?capture=1&level=architecture&shot=<id>, 1600x900 DPR 1, Microsoft Edge 157 headless, display quality high",
+  "frames": {
+    "kit-overview": {
+      "before": {
+        "lumaMean": 0.7073,
+        "lumaStd": 0.286,
+        "p25": 0.4271,
+        "p95": 0.9558,
+        "saturation": 0.1342
+      },
+      "after": {
+        "lumaMean": 0.7069,
+        "lumaStd": 0.2863,
+        "p25": 0.4241,
+        "p95": 0.9558,
+        "saturation": 0.1338
+      }
+    },
+    "kit-facade": {
+      "before": {
+        "lumaMean": 0.5913,
+        "lumaStd": 0.326,
+        "p25": 0.21,
+        "p95": 0.9485,
+        "saturation": 0.2268
+      },
+      "after": {
+        "lumaMean": 0.5901,
+        "lumaStd": 0.3269,
+        "p25": 0.21,
+        "p95": 0.9485,
+        "saturation": 0.2252
+      }
+    },
+    "kit-glass": {
+      "before": {
+        "lumaMean": 0.6403,
+        "lumaStd": 0.2987,
+        "p25": 0.3039,
+        "p95": 0.9558,
+        "saturation": 0.2042
+      },
+      "after": {
+        "lumaMean": 0.6394,
+        "lumaStd": 0.2994,
+        "p25": 0.3002,
+        "p95": 0.9558,
+        "saturation": 0.2033
+      }
+    },
+    "kit-corner": {
+      "before": {
+        "lumaMean": 0.5907,
+        "lumaStd": 0.2964,
+        "p25": 0.2921,
+        "p95": 0.9386,
+        "saturation": 0.2335
+      },
+      "after": {
+        "lumaMean": 0.5895,
+        "lumaStd": 0.2971,
+        "p25": 0.2907,
+        "p95": 0.9386,
+        "saturation": 0.2324
+      }
+    },
+    "kit-canopy": {
+      "before": {
+        "lumaMean": 0.6017,
+        "lumaStd": 0.3122,
+        "p25": 0.2262,
+        "p95": 0.9445,
+        "saturation": 0.2299
+      },
+      "after": {
+        "lumaMean": 0.601,
+        "lumaStd": 0.3127,
+        "p25": 0.2254,
+        "p95": 0.9445,
+        "saturation": 0.2291
+      }
+    },
+    "kit-service": {
+      "before": {
+        "lumaMean": 0.7358,
+        "lumaStd": 0.265,
+        "p25": 0.6841,
+        "p95": 0.9594,
+        "saturation": 0.1186
+      },
+      "after": {
+        "lumaMean": 0.7358,
+        "lumaStd": 0.265,
+        "p25": 0.6841,
+        "p95": 0.9594,
+        "saturation": 0.1186
+      }
+    },
+    "kit-player-eyes": {
+      "before": {
+        "lumaMean": 0.6911,
+        "lumaStd": 0.2807,
+        "p25": 0.5,
+        "p95": 0.9569,
+        "saturation": 0.184
+      },
+      "after": {
+        "lumaMean": 0.6907,
+        "lumaStd": 0.2812,
+        "p25": 0.4963,
+        "p95": 0.9569,
+        "saturation": 0.1837
+      }
+    },
+    "kit-distant": {
+      "before": {
+        "lumaMean": 0.6646,
+        "lumaStd": 0.288,
+        "p25": 0.3005,
+        "p95": 0.9479,
+        "saturation": 0.1391
+      },
+      "after": {
+        "lumaMean": 0.6643,
+        "lumaStd": 0.2881,
+        "p25": 0.3005,
+        "p95": 0.9479,
+        "saturation": 0.1389
+      }
+    },
+    "kit-bridge": {
+      "before": {
+        "lumaMean": 0.6523,
+        "lumaStd": 0.3001,
+        "p25": 0.2744,
+        "p95": 0.9479,
+        "saturation": 0.1865
+      },
+      "after": {
+        "lumaMean": 0.6519,
+        "lumaStd": 0.3004,
+        "p25": 0.2744,
+        "p95": 0.9479,
+        "saturation": 0.1859
+      }
+    }
+  },
+  "pixelDiff": {
+    "kit-overview": {
+      "meanAbs255": 0.1363,
+      "maxChannel255": 162,
+      "changedPixelShare": 0.005035
+    },
+    "kit-facade": {
+      "meanAbs255": 0.3515,
+      "maxChannel255": 160,
+      "changedPixelShare": 0.014078
+    },
+    "kit-glass": {
+      "meanAbs255": 0.2869,
+      "maxChannel255": 163,
+      "changedPixelShare": 0.010292
+    },
+    "kit-corner": {
+      "meanAbs255": 0.3979,
+      "maxChannel255": 162,
+      "changedPixelShare": 0.014037
+    },
+    "kit-canopy": {
+      "meanAbs255": 0.2356,
+      "maxChannel255": 179,
+      "changedPixelShare": 0.008063
+    },
+    "kit-service": {
+      "meanAbs255": 0.0,
+      "maxChannel255": 0,
+      "changedPixelShare": 0.0
+    },
+    "kit-player-eyes": {
+      "meanAbs255": 0.1288,
+      "maxChannel255": 130,
+      "changedPixelShare": 0.004481
+    },
+    "kit-distant": {
+      "meanAbs255": 0.095,
+      "maxChannel255": 142,
+      "changedPixelShare": 0.003715
+    },
+    "kit-bridge": {
+      "meanAbs255": 0.1893,
+      "maxChannel255": 151,
+      "changedPixelShare": 0.00716
+    }
+  },
+  "regions": {
+    "atrium band, sunlit cassette": {
+      "box": [
+        908,
+        579,
+        948,
+        589
+      ],
+      "before": {
+        "meanRgb255": [
+          132.53,
+          152.62,
+          164.26
+        ],
+        "meanLuma01": 0.5851,
+        "meanSaturation": 0.1991
+      },
+      "after": {
+        "meanRgb255": [
+          117.92,
+          121.29,
+          127.5
+        ],
+        "meanLuma01": 0.4746,
+        "meanSaturation": 0.0818
+      }
+    },
+    "atrium band, shaded cassette": {
+      "box": [
+        1018,
+        567,
+        1056,
+        577
+      ],
+      "before": {
+        "meanRgb255": [
+          80.91,
+          108.71,
+          131.16
+        ],
+        "meanLuma01": 0.4095,
+        "meanSaturation": 0.3931
+      },
+      "after": {
+        "meanRgb255": [
+          73.8,
+          85.44,
+          99.75
+        ],
+        "meanLuma01": 0.3294,
+        "meanSaturation": 0.2771
+      }
+    },
+    "atrium band, expressed joint 1": {
+      "box": [
+        952,
+        573,
+        955,
+        585
+      ],
+      "before": {
+        "meanRgb255": [
+          113.17,
+          135.0,
+          148.53
+        ],
+        "meanLuma01": 0.515,
+        "meanSaturation": 0.2495
+      },
+      "after": {
+        "meanRgb255": [
+          62.53,
+          70.33,
+          81.92
+        ],
+        "meanLuma01": 0.2726,
+        "meanSaturation": 0.2729
+      }
+    },
+    "atrium band, expressed joint 2": {
+      "box": [
+        1008,
+        564,
+        1011,
+        575
+      ],
+      "before": {
+        "meanRgb255": [
+          71.82,
+          100.94,
+          124.0
+        ],
+        "meanLuma01": 0.3781,
+        "meanSaturation": 0.4209
+      },
+      "after": {
+        "meanRgb255": [
+          64.09,
+          74.7,
+          88.76
+        ],
+        "meanLuma01": 0.2881,
+        "meanSaturation": 0.2781
+      }
+    },
+    "glazing above the band": {
+      "box": [
+        908,
+        545,
+        948,
+        560
+      ],
+      "before": {
+        "meanRgb255": [
+          49.71,
+          73.29,
+          97.65
+        ],
+        "meanLuma01": 0.2747,
+        "meanSaturation": 0.491
+      },
+      "after": {
+        "meanRgb255": [
+          49.71,
+          73.29,
+          97.65
+        ],
+        "meanLuma01": 0.2747,
+        "meanSaturation": 0.491
+      }
+    },
+    "anodized sill below the band": {
+      "box": [
+        940,
+        594,
+        1000,
+        602
+      ],
+      "before": {
+        "meanRgb255": [
+          111.45,
+          136.11,
+          156.53
+        ],
+        "meanLuma01": 0.519,
+        "meanSaturation": 0.3098
+      },
+      "after": {
+        "meanRgb255": [
+          111.89,
+          136.51,
+          156.87
+        ],
+        "meanLuma01": 0.5206,
+        "meanSaturation": 0.3089
+      }
+    },
+    "south face band, shaded": {
+      "box": [
+        600,
+        760,
+        660,
+        776
+      ],
+      "before": {
+        "meanRgb255": [
+          74.25,
+          99.31,
+          123.28
+        ],
+        "meanLuma01": 0.3753,
+        "meanSaturation": 0.4099
+      },
+      "after": {
+        "meanRgb255": [
+          71.48,
+          92.25,
+          114.54
+        ],
+        "meanLuma01": 0.3508,
+        "meanSaturation": 0.3815
+      }
+    }
+  },
+  "farCityZeroDiff": {
+    "kit-distant: right tower glazing": {
+      "box": [
+        1220,
+        120,
+        1400,
+        300
+      ],
+      "maxChannelDelta": 0,
+      "meanAbs": 0.0
+    },
+    "kit-distant: left tower glazing": {
+      "box": [
+        30,
+        300,
+        140,
+        440
+      ],
+      "maxChannelDelta": 0,
+      "meanAbs": 0.0
+    },
+    "kit-overview: right tower glazing": {
+      "box": [
+        1220,
+        90,
+        1330,
+        300
+      ],
+      "maxChannelDelta": 0,
+      "meanAbs": 0.0
+    },
+    "kit-overview: far block glazing": {
+      "box": [
+        600,
+        380,
+        660,
+        450
+      ],
+      "maxChannelDelta": 0,
+      "meanAbs": 0.0
+    },
+    "kit-bridge: deck glazing": {
+      "box": [
+        300,
+        250,
+        380,
+        330
+      ],
+      "maxChannelDelta": 0,
+      "meanAbs": 0.0
+    }
+  },
+  "counters": {
+    "before": {
+      "drawCalls": 270,
+      "triangles": 308463
+    },
+    "after": {
+      "drawCalls": 270,
+      "triangles": 309423
+    },
+    "compositionTextures": {
+      "before": 37,
+      "after": 36,
+      "note": "lifecycle probe loaded-state texture count; the spandrel role no longer owns a facade map"
+    }
+  },
+  "determinism": {
+    "verified": true,
+    "passed": true,
+    "byteIdentical": true,
+    "byteMatches": 9,
+    "matches": 9,
+    "passedShots": 9,
+    "total": 9,
+    "tolerance": 1,
+    "maxShare": 0.0001,
+    "maxAllowedPixels": 144,
+    "differingPixels": 0,
+    "maxChannelDelta": 0,
+    "keptSecondPassDir": null,
+    "shots": [
+      {
+        "id": "kit-overview",
+        "sha256First": "610da66437872f1ca6cb880cc276e81d97f0a3feef6316d60c98fb4d1b8df4f4",
+        "sha256Second": "610da66437872f1ca6cb880cc276e81d97f0a3feef6316d60c98fb4d1b8df4f4",
+        "byteIdentical": true,
+        "passed": true,
+        "differingPixels": 0,
+        "differingShare": 0,
+        "maxChannelDelta": 0,
+        "differingBytes": 0,
+        "firstDifference": -1,
+        "boundingBox": null,
+        "samples": [],
+        "statsIdentical": true,
+        "reason": null
+      },
+      {
+        "id": "kit-facade",
+        "sha256First": "86af7ca0799ac66fa965e8c707b1d80179a00b896db224631c7af4b6d6fc1945",
+        "sha256Second": "86af7ca0799ac66fa965e8c707b1d80179a00b896db224631c7af4b6d6fc1945",
+        "byteIdentical": true,
+        "passed": true,
+        "differingPixels": 0,
+        "differingShare": 0,
+        "maxChannelDelta": 0,
+        "differingBytes": 0,
+        "firstDifference": -1,
+        "boundingBox": null,
+        "samples": [],
+        "statsIdentical": true,
+        "reason": null
+      },
+      {
+        "id": "kit-glass",
+        "sha256First": "0540169890380506a5086b037f0dfeb72a179d1fa23d6981061e34280fd47ca7",
+        "sha256Second": "0540169890380506a5086b037f0dfeb72a179d1fa23d6981061e34280fd47ca7",
+        "byteIdentical": true,
+        "passed": true,
+        "differingPixels": 0,
+        "differingShare": 0,
+        "maxChannelDelta": 0,
+        "differingBytes": 0,
+        "firstDifference": -1,
+        "boundingBox": null,
+        "samples": [],
+        "statsIdentical": true,
+        "reason": null
+      },
+      {
+        "id": "kit-corner",
+        "sha256First": "c2cfa4610aa3879453996603ddb73fbca79f0ab645dacbe53896224fdd1f6136",
+        "sha256Second": "c2cfa4610aa3879453996603ddb73fbca79f0ab645dacbe53896224fdd1f6136",
+        "byteIdentical": true,
+        "passed": true,
+        "differingPixels": 0,
+        "differingShare": 0,
+        "maxChannelDelta": 0,
+        "differingBytes": 0,
+        "firstDifference": -1,
+        "boundingBox": null,
+        "samples": [],
+        "statsIdentical": false,
+        "reason": null
+      },
+      {
+        "id": "kit-canopy",
+        "sha256First": "b2e6802ec34087da80d1081d559fd3a103f5cca102f2f8758dd4ab6607dcec80",
+        "sha256Second": "b2e6802ec34087da80d1081d559fd3a103f5cca102f2f8758dd4ab6607dcec80",
+        "byteIdentical": true,
+        "passed": true,
+        "differingPixels": 0,
+        "differingShare": 0,
+        "maxChannelDelta": 0,
+        "differingBytes": 0,
+        "firstDifference": -1,
+        "boundingBox": null,
+        "samples": [],
+        "statsIdentical": false,
+        "reason": null
+      },
+      {
+        "id": "kit-service",
+        "sha256First": "800e1c2e857ba937da52a285c6b8643e4d02d9568d4bc896b99529e2042a703b",
+        "sha256Second": "800e1c2e857ba937da52a285c6b8643e4d02d9568d4bc896b99529e2042a703b",
+        "byteIdentical": true,
+        "passed": true,
+        "differingPixels": 0,
+        "differingShare": 0,
+        "maxChannelDelta": 0,
+        "differingBytes": 0,
+        "firstDifference": -1,
+        "boundingBox": null,
+        "samples": [],
+        "statsIdentical": false,
+        "reason": null
+      },
+      {
+        "id": "kit-player-eyes",
+        "sha256First": "45e08dad85e25d98b4da3f017141134a77893991e65044057f43e17113ac9c1a",
+        "sha256Second": "45e08dad85e25d98b4da3f017141134a77893991e65044057f43e17113ac9c1a",
+        "byteIdentical": true,
+        "passed": true,
+        "differingPixels": 0,
+        "differingShare": 0,
+        "maxChannelDelta": 0,
+        "differingBytes": 0,
+        "firstDifference": -1,
+        "boundingBox": null,
+        "samples": [],
+        "statsIdentical": false,
+        "reason": null
+      },
+      {
+        "id": "kit-distant",
+        "sha256First": "e5795f2db8350e98954c08067e00b114b48aef69c3de087fcd9ad0ef0fb2356f",
+        "sha256Second": "e5795f2db8350e98954c08067e00b114b48aef69c3de087fcd9ad0ef0fb2356f",
+        "byteIdentical": true,
+        "passed": true,
+        "differingPixels": 0,
+        "differingShare": 0,
+        "maxChannelDelta": 0,
+        "differingBytes": 0,
+        "firstDifference": -1,
+        "boundingBox": null,
+        "samples": [],
+        "statsIdentical": true,
+        "reason": null
+      },
+      {
+        "id": "kit-bridge",
+        "sha256First": "a25e7e23cbf997e6be91a66d9bfab9a392c591633be905975f585f48275c2c2e",
+        "sha256Second": "a25e7e23cbf997e6be91a66d9bfab9a392c591633be905975f585f48275c2c2e",
+        "byteIdentical": true,
+        "passed": true,
+        "differingPixels": 0,
+        "differingShare": 0,
+        "maxChannelDelta": 0,
+        "differingBytes": 0,
+        "firstDifference": -1,
+        "boundingBox": null,
+        "samples": [],
+        "statsIdentical": false,
+        "reason": null
+      }
+    ]
+  },
+  "lifecycle": {
+    "passed": true,
+    "loaded": {
+      "geometries": 118,
+      "instancedMeshes": 121,
+      "textures": 36,
+      "programs": 41,
+      "drawCalls": 270,
+      "triangles": 309423
+    },
+    "menu": {
+      "geometries": 9,
+      "sceneChildren": 10
+    },
+    "reloadRestartStable": true,
+    "consoleErrors": 0,
+    "pageErrors": 0,
+    "failures": []
+  },
+  "prologue": {
+    "baseline": "captures/step23c-before-prologue",
+    "after": "captures/step23c-after-prologue",
+    "shot": "start-roof",
+    "baselineSha256": "59c977dddc4a9c638995015698a372cc1b933807b6edcff8e81b622cbc936ba2",
+    "afterSha256": "59c977dddc4a9c638995015698a372cc1b933807b6edcff8e81b622cbc936ba2",
+    "baselineDrawCalls": 210,
+    "afterDrawCalls": 210,
+    "baselineTriangles": 4363071,
+    "afterTriangles": 4363071,
+    "byteIdentical": true
+  },
+  "material": {
+    "key": "spandrel",
+    "color": "#5E5E5E (neutral: R = G = B)",
+    "roughness": 0.9,
+    "metalness": 0,
+    "texture": null,
+    "heightFromAlpha": false,
+    "viewDependentSheen": false,
+    "unitsPerCassette": "one role for every cassette; no per-cassette colour variation"
+  },
+  "seams": {
+    "closeUpJoints": {
+      "source": "captures/step23c-before|final kit-glass.png (1600x900)",
+      "note": "Region means in kit-glass.png (1600x900). Each joint box is 3 px wide for a 1-2 px expressed joint, so the box also covers the chamfered panel edge: the rendered line is darker than the mean. Visual proof in detail-kit-glass-band.jpg.",
+      "sunlitPanelLuma": 0.4746,
+      "shadedPanelLuma": 0.3294,
+      "joint1Luma": 0.2726,
+      "joint2Luma": 0.2881,
+      "joint1RelDarkening": 0.4256,
+      "joint2RelDarkening": 0.1254,
+      "beforeJoint1Luma": 0.515,
+      "beforeJoint2Luma": 0.3781
+    },
+    "farView": {
+      "source": "captures/step23c-before|final kit-overview.png (1600x900), tower top storey band",
+      "method": "slanted strip along the projected band centreline (x 1080-1220, slope -0.3053, +-3 px), detrended profile; a seam reads as a negative dip",
+      "profileStd255": {
+        "before": 6.53,
+        "after": 9.27
+      },
+      "joints": {
+        "z=-40": {
+          "x": 1100.3,
+          "dipBefore255": -30.72,
+          "dipAfter255": -50.08
+        },
+        "z=-42": {
+          "x": 1128.3,
+          "dipBefore255": -25.77,
+          "dipAfter255": -44.62
+        },
+        "z=-44 (module boundary)": {
+          "x": 1154.2,
+          "dipBefore255": -33.56,
+          "dipAfter255": -15.63
+        },
+        "z=-46": {
+          "x": 1178.3,
+          "dipBefore255": -12.98,
+          "dipAfter255": -43.48
+        },
+        "z=-48": {
+          "x": 1200.6,
+          "dipBefore255": -4.99,
+          "dipAfter255": -15.44
+        }
+      },
+      "internalJointMeanDip255": {
+        "before": -18.61,
+        "after": -38.41
+      },
+      "note": "z=-44 is the boundary between two 6 m modules, where two authored joints meet; it was already a dark break before this step."
+    }
+  }
+}

@@ -226,7 +226,7 @@ describe("Architectural Kit module builders", () => {
     library.dispose();
   });
 
-  it("builds the spandrel as an opaque matte panel with its own material role", () => {
+  it("builds the spandrel as an opaque, neutral and matte panel role", () => {
     const library = new MaterialLibrary();
     const spandrel = library.get("spandrel");
     const near = library.get("glass-near");
@@ -237,22 +237,33 @@ describe("Architectural Kit module builders", () => {
     expect(spandrel.depthWrite).toBe(true);
     expect(spandrel.opacity).toBe(1);
 
+    // Grey by construction, in sun and in shade: the albedo carries no channel
+    // imbalance at all, so the material cannot add a cool or warm cast of its
+    // own. Whatever tint a review frame shows in shadow is the scene's cool
+    // ambient on an achromatic surface.
+    const color = spandrel.color;
+
+    expect(color.r).toBe(color.g);
+    expect(color.g).toBe(color.b);
+    expect(color.getHexString()).toBe("5e5e5e");
+
     // The difference from glass is carried by the response, not by hue alone:
-    // 8.4x the roughness, essentially non-metallic, a fraction of the env
-    // response and no view-dependent sheen term (the glass roles run one).
+    // 9x the roughness, strictly non-metallic, a fraction of the env response
+    // and no view-dependent sheen term (the glass roles run one).
+    expect(spandrel.roughness).toBeCloseTo(0.9, 6);
     expect(spandrel.roughness).toBeGreaterThan(near.roughness * 4);
-    expect(spandrel.roughness).toBeGreaterThan(0.7);
-    expect(spandrel.metalness).toBeLessThan(0.1);
+    expect(spandrel.metalness).toBe(0);
     expect(spandrel.metalness).toBeLessThan(near.metalness / 10);
     expect(spandrel.envMapIntensity).toBeLessThan(near.envMapIntensity / 3);
     expect(spandrel.customProgramCacheKey()).not.toBe(near.customProgramCacheKey());
-    expect(spandrel.color.getHexString()).not.toBe(near.color.getHexString());
-    // Part of the neutral architectural envelope, not a coloured insert: the
-    // matte panel replaces the pale composite the band used to share.
-    expect(spandrel.color.getHexString()).toBe("767d80");
+    // No map: the shared facade panel-joint map tiled a second, arbitrary joint
+    // grid inside each cassette and read as speckled noise, not as a pressed
+    // plate. The panel grain is modelled now (chamfer + exposed joints).
+    expect(spandrel.map).toBeNull();
     expect(spandrel.color.getHexString()).not.toBe(composite.color.getHexString());
 
-    // One semantic role shared by every placement; never per-instance.
+    // One semantic role shared by every placement and every cassette; never
+    // per-instance and never varied per cassette.
     expect(library.get("spandrel")).toBe(spandrel);
 
     library.dispose();
@@ -276,7 +287,7 @@ describe("Architectural Kit module builders", () => {
     expect(glazing?.geometry.boundingBox?.max.y).toBeCloseTo(4.0725, 3);
   });
 
-  it("builds the spandrel as a framed matte field inside the storey band", () => {
+  it("builds the spandrel as a framed field of chamfered cassettes", () => {
     const model = build({
       kind: "curtain-wall",
       width: 6,
@@ -301,19 +312,21 @@ describe("Architectural Kit module builders", () => {
     // Five batches, exactly as many as the composite band used to occupy: no
     // extra draw call per placement.
     expect(model.parts).toHaveLength(5);
-    // Glazing 328 + framed spandrel zone 84 triangles for the demo variant.
-    expect(model.triangles).toBe(412);
+    // Glazing 328 + spandrel zone 108 (backing, head rail, 3 chamfered plates
+    // at 28 triangles each) for the demo variant.
+    expect(model.triangles).toBe(436);
+    expect(panel?.geometry.getAttribute("position")?.count ?? 0).toBe(84 * 3);
 
-    // The field stays inside the 0.48 m band, spans the usable width (with a
-    // half joint gap at each jamb) and is recessed behind the glazing plane so
-    // the frame reads in front of it.
+    // The field stays inside the 0.48 m band, spans the usable width less the
+    // gasket reveal at the jambs, and its face is recessed behind the glazing
+    // plane while standing 28 mm proud of the dark backing.
     expect(box).not.toBeNull();
-    expect(box?.min.y).toBeGreaterThanOrEqual(0.1);
-    expect(box?.max.y).toBeLessThanOrEqual(0.58);
-    expect(box?.min.x).toBeCloseTo(-2.888, 3);
-    expect(box?.max.x).toBeCloseTo(2.888, 3);
-    expect(box?.max.z).toBeLessThan(0.0375);
-    expect(box?.min.z).toBeGreaterThan(-0.14);
+    expect(box?.min.y).toBeCloseTo(0.146, 3);
+    expect(box?.max.y).toBeCloseTo(0.4885, 3);
+    expect(box?.min.x).toBeCloseTo(-2.868, 3);
+    expect(box?.max.x).toBeCloseTo(2.868, 3);
+    expect(box?.min.z).toBeCloseTo(0, 3);
+    expect(box?.max.z).toBeCloseTo(0.03, 3);
 
     // The glazing keeps its exact geometry and only moves above the band.
     const glazing = model.parts.find((part) => part.material === "glass-near");
@@ -323,6 +336,160 @@ describe("Architectural Kit module builders", () => {
     expect(glazingBox?.max.y).toBeCloseTo(4.0725, 3);
     expect(glazingBox?.min.x).toBeCloseTo(-2.872, 3);
     expect(glazingBox?.max.x).toBeCloseTo(2.872, 3);
+  });
+
+  it("expresses each cassette as a chamfered plate seated in a dark reveal", () => {
+    const model = build({
+      kind: "curtain-wall",
+      width: 6,
+      height: 4.2,
+      columns: 3,
+      rows: 1,
+      spandrel: true,
+    });
+    const panel = model.parts.find((part) => part.material === "spandrel");
+    const backing = model.parts.find((part) => part.material === "dark-metal");
+    const position = panel?.geometry.getAttribute("position");
+
+    expect(position).toBeTruthy();
+
+    // The plate is widest at mid-depth (the authored face size) and its front
+    // cap is inset by the 9 mm chamfer, so a sunlit panel carries a bright
+    // rolled edge instead of ending in a flat cut.
+    let frontMinX = Number.POSITIVE_INFINITY;
+    let frontMaxX = Number.NEGATIVE_INFINITY;
+    let frontMinY = Number.POSITIVE_INFINITY;
+    let frontMaxY = Number.NEGATIVE_INFINITY;
+    let outlineMinX = Number.POSITIVE_INFINITY;
+    let outlineMaxX = Number.NEGATIVE_INFINITY;
+
+    if (position) {
+      for (let index = 0; index < position.count; index += 1) {
+        const z = position.getZ(index);
+        const x = position.getX(index);
+        const y = position.getY(index);
+
+        if (z > 0.0089 && z < 0.0211) {
+          outlineMinX = Math.min(outlineMinX, x);
+          outlineMaxX = Math.max(outlineMaxX, x);
+        }
+
+        if (z < 0.0299) {
+          continue;
+        }
+
+        frontMinX = Math.min(frontMinX, x);
+        frontMaxX = Math.max(frontMaxX, x);
+        frontMinY = Math.min(frontMinY, y);
+        frontMaxY = Math.max(frontMaxY, y);
+      }
+    }
+
+    // Each front cap is chamfered back 9 mm on every edge: the global front
+    // span is narrower than the widest (mid-depth) span by one chamfer at each
+    // jamb, and the face height is the authored 0.3425 m less two chamfers.
+    expect(frontMinX - outlineMinX).toBeCloseTo(0.009, 3);
+    expect(outlineMaxX - frontMaxX).toBeCloseTo(0.009, 3);
+    expect(frontMaxY - frontMinY).toBeCloseTo(0.3425 - 0.018, 3);
+
+    // The dark seat is one continuous plate behind the field: it reaches below
+    // the faces (its front is at z = 0.002) and covers the joints, the gasket
+    // rings and the shadow gaps from the sill frame up to the head rail.
+    const backingBox = backing?.geometry.boundingBox;
+
+    expect(backingBox?.min.z).toBeCloseTo(-0.012, 3);
+    expect(backingBox?.min.y).toBeCloseTo(0.1, 3);
+    expect(backingBox?.max.y).toBeCloseTo(0.6075, 3);
+    expect(backingBox?.min.x).toBeCloseTo(-2.9, 3);
+    expect(backingBox?.max.x).toBeCloseTo(2.9, 3);
+  });
+
+  it("keeps the cassette pitch, joint width and field extents when refining edges", () => {
+    const definition = {
+      kind: "curtain-wall",
+      width: 6,
+      height: 4.2,
+      columns: 3,
+      rows: 1,
+      spandrel: true,
+    } as const;
+    const model = build(definition);
+    const panel = model.parts.find((part) => part.material === "spandrel");
+    const position = panel?.geometry.getAttribute("position");
+
+    expect(position).toBeTruthy();
+
+    // Recover the three cassette extents from the widest (mid-depth) outline
+    // of each plate; the inset front caps are ignored so the seam can be read.
+    const uniqueX = new Set<number>();
+
+    if (position) {
+      for (let index = 0; index < position.count; index += 1) {
+        const z = position.getZ(index);
+
+        if (z > 0.0089 && z < 0.0211) {
+          uniqueX.add(Number(position.getX(index).toFixed(4)));
+        }
+      }
+    }
+
+    const sortedX = [...uniqueX].sort((left, right) => left - right);
+    const clusters: { min: number; max: number }[] = [];
+
+    for (const x of sortedX) {
+      const current = clusters[clusters.length - 1];
+
+      // Edge values arrive as left/right pairs: the jump within one cassette is
+      // the face width (~1.87 m), while the jump between cassettes is the
+      // expressed seam (~0.064 m). A seam therefore starts a new cluster.
+      if (current && x - current.max > 0.1) {
+        current.max = x;
+      } else {
+        clusters.push({ min: x, max: x });
+      }
+    }
+
+    expect(clusters).toHaveLength(3);
+
+    // Pitch is the authored `usableWidth / columns`; the expressed seam is the
+    // unchanged 24 mm joint plus the 20 mm gasket reveal on each side.
+    const pitch = 5.8 / 3;
+    const centers = clusters.map((cluster) => (cluster.min + cluster.max) / 2);
+
+    expect(centers[0]).toBeCloseTo(-pitch, 3);
+    expect(centers[1]).toBeCloseTo(0, 3);
+    expect(centers[2]).toBeCloseTo(pitch, 3);
+
+    for (let index = 1; index < clusters.length; index += 1) {
+      const previous = clusters[index - 1];
+      const current = clusters[index];
+
+      if (!previous || !current) {
+        continue;
+      }
+
+      expect(current.min - previous.max).toBeCloseTo(0.024 + 0.02 * 2, 3);
+    }
+
+    // The three faces, the two expressed seams between them and the half joint
+    // plus gasket at each jamb fill the usable width with no gap and no
+    // overlap: local edge geometry did not resize the field.
+    const faces = clusters.reduce((total, cluster) => total + (cluster.max - cluster.min), 0);
+    const seam = 0.024 + 0.02 * 2;
+    const jambSeam = 0.024 / 2 + 0.02;
+
+    expect(faces + 2 * seam + 2 * jambSeam).toBeCloseTo(5.8, 3);
+
+    // The cassette cell itself is also unchanged: one face plus the 20 mm
+    // gasket reveal on each side is exactly the authored pitch less the 24 mm
+    // joint, so the gasket/face split is edge treatment, not a resize.
+    const middle = clusters[1];
+
+    expect(middle).toBeDefined();
+
+    if (middle) {
+      expect(middle.max - middle.min + 0.02 * 2).toBeCloseTo(pitch - 0.024, 3);
+    }
   });
 
   it("builds finite, local and deterministic spandrel geometry", () => {

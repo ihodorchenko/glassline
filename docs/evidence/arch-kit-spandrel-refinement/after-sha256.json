@@ -1,0 +1,65 @@
+{
+  "kit-overview": {
+    "sha256": "610da66437872f1ca6cb880cc276e81d97f0a3feef6316d60c98fb4d1b8df4f4",
+    "drawCalls": 270,
+    "triangles": 309423,
+    "textures": 36,
+    "programs": 41
+  },
+  "kit-facade": {
+    "sha256": "86af7ca0799ac66fa965e8c707b1d80179a00b896db224631c7af4b6d6fc1945",
+    "drawCalls": 270,
+    "triangles": 309423,
+    "textures": 36,
+    "programs": 41
+  },
+  "kit-glass": {
+    "sha256": "0540169890380506a5086b037f0dfeb72a179d1fa23d6981061e34280fd47ca7",
+    "drawCalls": 270,
+    "triangles": 309423,
+    "textures": 31,
+    "programs": 38
+  },
+  "kit-corner": {
+    "sha256": "c2cfa4610aa3879453996603ddb73fbca79f0ab645dacbe53896224fdd1f6136",
+    "drawCalls": 270,
+    "triangles": 309423,
+    "textures": 36,
+    "programs": 41
+  },
+  "kit-canopy": {
+    "sha256": "b2e6802ec34087da80d1081d559fd3a103f5cca102f2f8758dd4ab6607dcec80",
+    "drawCalls": 270,
+    "triangles": 309423,
+    "textures": 31,
+    "programs": 38
+  },
+  "kit-service": {
+    "sha256": "800e1c2e857ba937da52a285c6b8643e4d02d9568d4bc896b99529e2042a703b",
+    "drawCalls": 270,
+    "triangles": 309423,
+    "textures": 31,
+    "programs": 38
+  },
+  "kit-player-eyes": {
+    "sha256": "45e08dad85e25d98b4da3f017141134a77893991e65044057f43e17113ac9c1a",
+    "drawCalls": 270,
+    "triangles": 309423,
+    "textures": 31,
+    "programs": 38
+  },
+  "kit-distant": {
+    "sha256": "e5795f2db8350e98954c08067e00b114b48aef69c3de087fcd9ad0ef0fb2356f",
+    "drawCalls": 270,
+    "triangles": 309423,
+    "textures": 36,
+    "programs": 41
+  },
+  "kit-bridge": {
+    "sha256": "a25e7e23cbf997e6be91a66d9bfab9a392c591633be905975f585f48275c2c2e",
+    "drawCalls": 270,
+    "triangles": 309423,
+    "textures": 36,
+    "programs": 41
+  }
+}

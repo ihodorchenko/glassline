@@ -218,6 +218,39 @@ curtain-wall close-up belongs in the capture shot set.
 
 ---
 
+## 0.2.2. Step 2.3C — Spandrel visual refinement (2026-11-22)
+
+Branch `feat/arch-spandrel-refinement` (created from `feat/arch-spandrel` @
+`c94ec0a`; no merge performed). Detailed record:
+[`reports/ARCH_KIT_STEP_2_3C_SPANDREL_REFINEMENT.md`](reports/ARCH_KIT_STEP_2_3C_SPANDREL_REFINEMENT.md).
+
+**Scope:** local refinement of the spandrel cassette edges/shadow gaps and of the
+`spandrel` material. No facade geometry, module size, band height, cassette pitch
+or width, glass role, lighting, renderer or post-processing change, and no new
+module parameter.
+
+| Area | Result |
+|---|---|
+| Geometry | chamfered cassette faces (9 mm chamfer, 28 mm proud of the backing), 20 mm gasket reveal, 24/26 mm shadow gaps, one continuous dark backing; 24 mm joint unchanged; 6 m/3-column/1-row 412 → 436 triangles; batches still 5 |
+| Material | `spandrel`: neutral `#5E5E5E`, rough 0.90, metal 0, no map, no sheen; `glass-near`/`glass`/`glass-far`/`glass-rail` untouched |
+| Panels | sunlit cassette 0.585 → 0.475 luma, sat 0.20 → 0.08; shaded 0.409 → 0.329, sat 0.39 → 0.28; glazing above unchanged (0.275), sill unchanged (0.52) |
+| Seams | close-up joint luma 0.273 vs 0.475 panel; far tower band profile std 6.5 → 9.3 levels, mean internal joint dip 18.6 → 38.4 levels |
+| Cost | composition draw calls 270 → 270; triangles 308,463 → 309,423 (+0.31 %); textures 37 → 36 |
+| Tests | 450/450 pass (+2 new spandrel edge/neutrality tests; existing spandrel and `spandrel: false` pins updated) |
+| Captures | 9/9 byte-identical; `kit-service` byte-identical; Prologue `start-roof` byte-identical |
+| Lifecycle | 118 geometries / 121 instanced meshes / 270 draw calls / 36 textures / 41 programs; load/reload/restart ×2 stable |
+
+**Known deviation:** the neutral `#5E5E5E` is a further step away from
+`ART_BRIEF.md` §2 (`#2A3A44`), but it renders on the review face between the
+glazing and the anodized frame and is the only tone that stays grey under both
+sun and ambient; recorded in `ARCHITECTURAL_KIT.md` §5.
+
+**Recommended next task:** review the seam scale and the panel value; then decide
+whether a dedicated curtain-wall close-up belongs in the deterministic capture
+set (the current 9 shots were not changed).
+
+---
+
 ## 1. Purpose
 
 This document is the central implementation tracking reference for Glassline.

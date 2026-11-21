@@ -1,0 +1,47 @@
+{
+  "kit-overview": {
+    "meanAbs255": 0.1363,
+    "maxChannel255": 162,
+    "changedPixelShare": 0.005035
+  },
+  "kit-facade": {
+    "meanAbs255": 0.3515,
+    "maxChannel255": 160,
+    "changedPixelShare": 0.014078
+  },
+  "kit-glass": {
+    "meanAbs255": 0.2869,
+    "maxChannel255": 163,
+    "changedPixelShare": 0.010292
+  },
+  "kit-corner": {
+    "meanAbs255": 0.3979,
+    "maxChannel255": 162,
+    "changedPixelShare": 0.014037
+  },
+  "kit-canopy": {
+    "meanAbs255": 0.2356,
+    "maxChannel255": 179,
+    "changedPixelShare": 0.008063
+  },
+  "kit-service": {
+    "meanAbs255": 0.0,
+    "maxChannel255": 0,
+    "changedPixelShare": 0.0
+  },
+  "kit-player-eyes": {
+    "meanAbs255": 0.1288,
+    "maxChannel255": 130,
+    "changedPixelShare": 0.004481
+  },
+  "kit-distant": {
+    "meanAbs255": 0.095,
+    "maxChannel255": 142,
+    "changedPixelShare": 0.003715
+  },
+  "kit-bridge": {
+    "meanAbs255": 0.1893,
+    "maxChannel255": 151,
+    "changedPixelShare": 0.00716
+  }
+}
