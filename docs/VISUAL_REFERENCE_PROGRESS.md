@@ -3986,6 +3986,58 @@ wallrun, skybridge, finish) against the reference contact sheet.
   breaks, both of which this round deliberately traded away for the
   sun-bleached horizon.
 
+## Round 100 — P3 colour breaks + reference audio spectrum (2026-11-21)
+
+### Scope
+
+The last P2 audit items: warm city accents (billboards/crane/beacon), the
+blazing-sun exposure decision, and the audio surface/spectrum pass.
+
+### What changed
+
+- **City colour breaks** (`PrologueCity.ts`): two warm billboards on the
+  start-view skyline wall (AURORA amber #d98030 on the facade tower, SIGNAL
+  deep-orange #c8641e on the glass tower), a yellow tower crane on the east
+  tower roof (mast/slew/jib/counter-weight, red hanging load), and an amber
+  aviation beacon on the far hero mass. All outside the route corridor.
+- **Blazing-sun experiment — measured and reverted** (`PostPipeline.ts`):
+  exposure 1.62 + widened shoulder (knee 0.86 / range 0.13) moved near-white
+  only +0.4 pp: the reference's 34.5 % near-white is COMPOSITIONAL (huge
+  sunlit white facades), not tonal, and the lower knee compressed 0.95
+  pixels down. In-line notes document the dead end.
+- **Audio surface pass** (`surfaceAudio.ts`): every preset darkened — noise
+  band-pass centres ~−30 %, ticks ~−25 % and quieter, impact thumps deeper
+  and hotter (concrete 92 → 78 Hz @ 0.28). Metal ring / glass tonal kept.
+- **City slapback** (`AudioManager.ts`): 110 ms filtered delay (LP 1.4 kHz,
+  22 % feedback) tapped off the environment bus into master — the outdoor
+  facade echo; footsteps stay dry like the reference. `createDelay` is
+  optional on `AudioContextLike` (mock extended).
+- **Mix trims**: live 2.5 → 2.3, offline demo 2.15 → 2.0 (~ −0.7 dB).
+
+### Result
+
+- Audio offline demo: **5/5 bands, reference-matched** — low 0.917 (ref
+  0.904), high 0.044 (was 0.056, ref ~0.025), LUFS −26.45 (ref segment
+  −26.2), peak −5.46, range 23.4.
+- Start frame: 10/13 shifted, 12/13 tolerance, 1 WATCH (edge) — unchanged
+  from round 99 (the grade experiment was reverted), red accent 1.70 → 1.77.
+- 402 tests / 44 files, typecheck, build green.
+
+### Evidence
+
+- [six-shot set + metrics](evidence/visual/round-100/)
+- [mix.wav + audio metrics](evidence/audio/round-100/)
+
+### Honest gaps
+
+- The blazing-sun near-white gap (25.4 vs 34.5) is compositional: closing it
+  needs bigger sunlit white architecture in frame, i.e. level geometry, not
+  grading.
+- The city slapback is live-only (the offline demo builds its own graph);
+  a perceptual A/B listen is still pending, as it has been since round 59.
+- Sky/saturation shifted misses are unchanged from round 99 (documented
+  there as structural composition differences).
+
 ## Round log
 
 | Round | Date | Focus | Outcome |
@@ -4000,3 +4052,4 @@ wallrun, skybridge, finish) against the reference contact sheet.
 | 8 | 2026-11-19 | Finale polish + altitude wind | Suspended load, deck seams, high-roof kit, altitude-scaled wind; 272 tests |
 | 98 | 2026-11-21 | P1 reference recalibration: atmosphere/framing/spectrum after W2.2/W5 | 10/13 shifted (round-93: 9/13), 11/13 tolerance; audio 5/5, dark spectrum step; 402 tests green; sky-share and deck-warmth gaps attributed to P2 content |
 | 99 | 2026-11-21 | P2 content/material: reference horizon, warm deck, structural clouds, dark towers | 10/13 shifted, 12/13 tolerance, 1 WATCH (edge sharper than ref); 60 fps, 194 draw calls; VLM verdict "reference-grade in spirit" |
+| 100 | 2026-11-21 | P3 colour breaks (billboards/crane/beacon) + audio reference spectrum (dark surfaces, slapback, trims) | Visuals held (10/13, 12/13); audio 5/5 reference-matched: low 0.917, LUFS −26.45; blazing-sun experiment measured and reverted |
