@@ -86,7 +86,7 @@ export function buildFacadeBay(collector: KitPartCollector, definition: FacadeBa
   collector.box(
     [openingWidth - 0.09, openingHeight - 0.09, 0.04],
     [0, openingCenterY, glassZ],
-    "glass",
+    "glass-near",
   );
 
   // Dark anodized lining around the glass: a crisp shadow line that keeps the
@@ -170,7 +170,7 @@ export function buildCurtainWall(collector: KitPartCollector, definition: Curtai
       const y = baseY + panelHeight * (row + 0.5);
       const paneZ = (column + row) % 2 === 0 ? 0.055 : 0.02;
 
-      collector.box([panelWidth - 0.055, panelHeight - 0.055, 0.035], [x, y, paneZ], "glass");
+      collector.box([panelWidth - 0.055, panelHeight - 0.055, 0.035], [x, y, paneZ], "glass-near");
     }
   }
 
@@ -230,7 +230,7 @@ export function buildCorner(collector: KitPartCollector, definition: CornerModul
   collector.box(
     [0.06, glassHeight, depth - 1.2],
     [-0.02, glassBottom + glassHeight / 2, -depth / 2],
-    "glass",
+    "glass-near",
   );
   collector.box(
     [0.1, glassHeight, 0.08],
@@ -254,7 +254,7 @@ export function buildCorner(collector: KitPartCollector, definition: CornerModul
   collector.box(
     [width - 1.2, glassHeight, 0.06],
     [-width / 2, glassBottom + glassHeight / 2, -0.02],
-    "glass",
+    "glass-near",
   );
   collector.box(
     [0.08, glassHeight, 0.1],

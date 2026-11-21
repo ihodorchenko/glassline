@@ -1,0 +1,202 @@
+{
+  "after": "captures/step23a-final2",
+  "shots": [
+    {
+      "id": "kit-overview",
+      "sha256": "d8a64e071aae84378114d065f89c7ff75693888c4d4ecf56008cca2bfaa771a0"
+    },
+    {
+      "id": "kit-facade",
+      "sha256": "0f16edf3994e5d60f4d2af843fec3ca04b13f843a6b19527d12904d039d3e6e0"
+    },
+    {
+      "id": "kit-glass",
+      "sha256": "87ab8642560ef4042251cdb8efa8f108046bd85338605018639ad510f35e8b94"
+    },
+    {
+      "id": "kit-corner",
+      "sha256": "b74f03c2c8381e92f34f71490ba18e8051ccaa1dc9ca95d2d935e06bd8c304f4"
+    },
+    {
+      "id": "kit-canopy",
+      "sha256": "7f1c6d224c127c7923226ac8f3010b1cc67ce9c4ff14c6f059cf155a1ea24b78"
+    },
+    {
+      "id": "kit-service",
+      "sha256": "800e1c2e857ba937da52a285c6b8643e4d02d9568d4bc896b99529e2042a703b"
+    },
+    {
+      "id": "kit-player-eyes",
+      "sha256": "b343ab85aa53d2ca5f0775d4d83bd44d160c21920f8c0c2b9ad967e07068dbc2"
+    },
+    {
+      "id": "kit-distant",
+      "sha256": "6ed2cb8b05ede3093c28501dd362efe10b24c68ecfdf95159838730c0e4d8131"
+    },
+    {
+      "id": "kit-bridge",
+      "sha256": "05d17e1b1beff72b61466de2866251ce989eb82f6a9f902ca2772f3fa488bc12"
+    }
+  ],
+  "determinism": {
+    "verified": true,
+    "passed": true,
+    "byteIdentical": true,
+    "byteMatches": 9,
+    "matches": 9,
+    "passedShots": 9,
+    "total": 9,
+    "tolerance": 1,
+    "maxShare": 0.0001,
+    "maxAllowedPixels": 144,
+    "differingPixels": 0,
+    "maxChannelDelta": 0,
+    "keptSecondPassDir": null,
+    "shots": [
+      {
+        "id": "kit-overview",
+        "sha256First": "d8a64e071aae84378114d065f89c7ff75693888c4d4ecf56008cca2bfaa771a0",
+        "sha256Second": "d8a64e071aae84378114d065f89c7ff75693888c4d4ecf56008cca2bfaa771a0",
+        "byteIdentical": true,
+        "passed": true,
+        "differingPixels": 0,
+        "differingShare": 0,
+        "maxChannelDelta": 0,
+        "differingBytes": 0,
+        "firstDifference": -1,
+        "boundingBox": null,
+        "samples": [],
+        "statsIdentical": false,
+        "reason": null
+      },
+      {
+        "id": "kit-facade",
+        "sha256First": "0f16edf3994e5d60f4d2af843fec3ca04b13f843a6b19527d12904d039d3e6e0",
+        "sha256Second": "0f16edf3994e5d60f4d2af843fec3ca04b13f843a6b19527d12904d039d3e6e0",
+        "byteIdentical": true,
+        "passed": true,
+        "differingPixels": 0,
+        "differingShare": 0,
+        "maxChannelDelta": 0,
+        "differingBytes": 0,
+        "firstDifference": -1,
+        "boundingBox": null,
+        "samples": [],
+        "statsIdentical": true,
+        "reason": null
+      },
+      {
+        "id": "kit-glass",
+        "sha256First": "87ab8642560ef4042251cdb8efa8f108046bd85338605018639ad510f35e8b94",
+        "sha256Second": "87ab8642560ef4042251cdb8efa8f108046bd85338605018639ad510f35e8b94",
+        "byteIdentical": true,
+        "passed": true,
+        "differingPixels": 0,
+        "differingShare": 0,
+        "maxChannelDelta": 0,
+        "differingBytes": 0,
+        "firstDifference": -1,
+        "boundingBox": null,
+        "samples": [],
+        "statsIdentical": true,
+        "reason": null
+      },
+      {
+        "id": "kit-corner",
+        "sha256First": "b74f03c2c8381e92f34f71490ba18e8051ccaa1dc9ca95d2d935e06bd8c304f4",
+        "sha256Second": "b74f03c2c8381e92f34f71490ba18e8051ccaa1dc9ca95d2d935e06bd8c304f4",
+        "byteIdentical": true,
+        "passed": true,
+        "differingPixels": 0,
+        "differingShare": 0,
+        "maxChannelDelta": 0,
+        "differingBytes": 0,
+        "firstDifference": -1,
+        "boundingBox": null,
+        "samples": [],
+        "statsIdentical": false,
+        "reason": null
+      },
+      {
+        "id": "kit-canopy",
+        "sha256First": "7f1c6d224c127c7923226ac8f3010b1cc67ce9c4ff14c6f059cf155a1ea24b78",
+        "sha256Second": "7f1c6d224c127c7923226ac8f3010b1cc67ce9c4ff14c6f059cf155a1ea24b78",
+        "byteIdentical": true,
+        "passed": true,
+        "differingPixels": 0,
+        "differingShare": 0,
+        "maxChannelDelta": 0,
+        "differingBytes": 0,
+        "firstDifference": -1,
+        "boundingBox": null,
+        "samples": [],
+        "statsIdentical": true,
+        "reason": null
+      },
+      {
+        "id": "kit-service",
+        "sha256First": "800e1c2e857ba937da52a285c6b8643e4d02d9568d4bc896b99529e2042a703b",
+        "sha256Second": "800e1c2e857ba937da52a285c6b8643e4d02d9568d4bc896b99529e2042a703b",
+        "byteIdentical": true,
+        "passed": true,
+        "differingPixels": 0,
+        "differingShare": 0,
+        "maxChannelDelta": 0,
+        "differingBytes": 0,
+        "firstDifference": -1,
+        "boundingBox": null,
+        "samples": [],
+        "statsIdentical": false,
+        "reason": null
+      },
+      {
+        "id": "kit-player-eyes",
+        "sha256First": "b343ab85aa53d2ca5f0775d4d83bd44d160c21920f8c0c2b9ad967e07068dbc2",
+        "sha256Second": "b343ab85aa53d2ca5f0775d4d83bd44d160c21920f8c0c2b9ad967e07068dbc2",
+        "byteIdentical": true,
+        "passed": true,
+        "differingPixels": 0,
+        "differingShare": 0,
+        "maxChannelDelta": 0,
+        "differingBytes": 0,
+        "firstDifference": -1,
+        "boundingBox": null,
+        "samples": [],
+        "statsIdentical": true,
+        "reason": null
+      },
+      {
+        "id": "kit-distant",
+        "sha256First": "6ed2cb8b05ede3093c28501dd362efe10b24c68ecfdf95159838730c0e4d8131",
+        "sha256Second": "6ed2cb8b05ede3093c28501dd362efe10b24c68ecfdf95159838730c0e4d8131",
+        "byteIdentical": true,
+        "passed": true,
+        "differingPixels": 0,
+        "differingShare": 0,
+        "maxChannelDelta": 0,
+        "differingBytes": 0,
+        "firstDifference": -1,
+        "boundingBox": null,
+        "samples": [],
+        "statsIdentical": false,
+        "reason": null
+      },
+      {
+        "id": "kit-bridge",
+        "sha256First": "05d17e1b1beff72b61466de2866251ce989eb82f6a9f902ca2772f3fa488bc12",
+        "sha256Second": "05d17e1b1beff72b61466de2866251ce989eb82f6a9f902ca2772f3fa488bc12",
+        "byteIdentical": true,
+        "passed": true,
+        "differingPixels": 0,
+        "differingShare": 0,
+        "maxChannelDelta": 0,
+        "differingBytes": 0,
+        "firstDifference": -1,
+        "boundingBox": null,
+        "samples": [],
+        "statsIdentical": true,
+        "reason": null
+      }
+    ]
+  }
+}

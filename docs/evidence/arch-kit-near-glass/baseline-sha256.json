@@ -1,0 +1,41 @@
+{
+  "baseline": "docs/evidence/arch-kit/capture-manifest.json",
+  "shots": [
+    {
+      "id": "kit-overview",
+      "sha256": "b51341fe5d529665be704cacce5dbc05451748c5fafed880f65264578bac72fa"
+    },
+    {
+      "id": "kit-facade",
+      "sha256": "862932413b6b1722b9645a1a6449142a8ee7b50133b156354b4ad7fc25036ba8"
+    },
+    {
+      "id": "kit-glass",
+      "sha256": "4aee63f9590d2bd20f01bda921ee31f13161a130efbb03bd2ba4f5955a08e3f5"
+    },
+    {
+      "id": "kit-corner",
+      "sha256": "6cb801b1d3bdaf3e6596c06ad4c9e8e0603f08093c62a181a53dd89a4559475b"
+    },
+    {
+      "id": "kit-canopy",
+      "sha256": "a633457918eeb8d63fb4d3972908bb48cc69e6cb5ddc071411b08f8d4fa52422"
+    },
+    {
+      "id": "kit-service",
+      "sha256": "4e57722b3312541f0b1e5cb2ee8e53f41bb42c31251e7bde3af02c1b5f74e50d"
+    },
+    {
+      "id": "kit-player-eyes",
+      "sha256": "ee7573fc1711f6b61ed5d181e8d1d5382a0c246927155ef310bf73c3a3e087e6"
+    },
+    {
+      "id": "kit-distant",
+      "sha256": "9013fca0c03867668cdd23d375890759e91413ec323562fcb67cbcd4c28d09bb"
+    },
+    {
+      "id": "kit-bridge",
+      "sha256": "1dfe4655706700894ae71cc14ee794c7361aff6bb13888a025ecd6b2e87289cb"
+    }
+  ]
+}

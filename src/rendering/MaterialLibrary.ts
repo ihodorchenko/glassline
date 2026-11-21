@@ -8,6 +8,7 @@ export type MaterialKey =
   | "roof"
   | "facade"
   | "glass"
+  | "glass-near"
   | "glass-far"
   | "glass-rail"
   | "metal"
@@ -129,6 +130,24 @@ const MATERIAL_SPECS: Record<MaterialKey, MaterialSpec> = {
     metalness: 0.6,
     uvScale: 0.4,
     envMapIntensity: 0.5,
+  },
+  "glass-near": {
+    // Architectural Kit near glazing (ART_BRIEF §2 curtain glass): the shared
+    // `glass` is calibrated for the distant city, where a strong sky response
+    // pushes the towers past the sky metric. At facade distance that same trim
+    // leaves vertical panes nearly black, so the near role keeps the dark
+    // blue-graphite albedo but restores the authored sky reflection.
+    //
+    // NOTE: `envMapIntensity` is the authored ART_BRIEF value. With three r187
+    // the renderer replaces the material value with `scene.environmentIntensity`
+    // whenever the material has no own `envMap` (all materials here use the
+    // scene PMREM), so the 1.3 does not reach the shader; the visible near-glass
+    // lift comes from the albedo/roughness and the sheen term.
+    color: 0x1a2530,
+    roughness: 0.1,
+    metalness: 0.6,
+    uvScale: 0.4,
+    envMapIntensity: 1.3,
   },
   "glass-far": {
     color: 0x0d1a26,
@@ -982,15 +1001,31 @@ function applyGlassRailOpacity(
 const GLASS_SHEEN_TINT = 0x585c60;
 
 /**
- * Grazing sheen for the dark glass masses.
+ * Near-glazing sheen: `glass` and `glass-far` run a low base (0.07/0.15) and
+ * strength (0.9/1.0) because they are tuned for the distant city, where a
+ * brighter response breaks the sky silhouette. At close range a vertical pane
+ * needs the view-dependent term to carry the reflection gradient, so
+ * `glass-near` raises the base from 0.08 at normal incidence to ~0.55 at
+ * grazing before the 2.0 strength is applied — still below a mirror response.
+ * Higher bases (0.24 and 0.12) were measured first: they lifted the whole pane
+ * uniformly and read as flat blue paint, while the panel gradient barely moved.
+ * The low base keeps head-on glass dark and lets the grazing term carry the
+ * reflection.
+ */
+const GLASS_NEAR_SHEEN_BASE = 0.08;
+const GLASS_NEAR_SHEEN_STRENGTH = 2.0;
+
+/**
+ * Grazing sheen for the dark glass roles.
  *
  * With `metalness` 0.6 the specular lobe is tinted by the dark albedo, so a
  * large facade seen close to normal reads as flat near-black instead of a
  * reflective mass. This adds a view-dependent blue-grey term to the indirect
  * specular (pure ALU: one dot, one pow, one add in the glass fragment shaders;
- * no extra texture fetch, so the `low` tier cost is unchanged). At normal
- * incidence it is ~0, at grazing angles it restores the sky-gradient sheen
- * without brightening the albedo.
+ * no extra texture fetch, so the `low` tier cost is unchanged). The shared
+ * `glass` roles keep the term near zero at normal incidence; the near role
+ * starts from a higher base so a close facade carries the gradient too. The
+ * term tints only the reflection, never the albedo.
  */
 function applyGlassSheen(
   material: THREE.MeshStandardMaterial,
@@ -1063,6 +1098,12 @@ export class MaterialLibrary implements Disposable {
       // Fresnel-weighted transparency: 0.32 head-on, thinner at grazing so the
       // balustrade stops reading milky while the structure below stays visible.
       applyGlassRailOpacity(material, 0.32, 0.18);
+    }
+
+    if (key === "glass-near") {
+      // Same sheen shader/cache key as the other glass roles; only the
+      // per-material uniforms differ, so this adds no shader program.
+      applyGlassSheen(material, GLASS_SHEEN_TINT, GLASS_NEAR_SHEEN_STRENGTH, GLASS_NEAR_SHEEN_BASE);
     }
 
     if (key === "glass" || key === "glass-far") {

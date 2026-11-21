@@ -157,7 +157,7 @@ export function buildLouver(collector: KitPartCollector, definition: LouverModul
   const spacing = usableWidth / bladeCount;
 
   // Tinted glass behind the screen keeps the louver reading as a facade layer.
-  collector.box([width - 0.1, height - 0.2, 0.025], [0, height / 2, -0.06], "glass");
+  collector.box([width - 0.1, height - 0.2, 0.025], [0, height / 2, -0.06], "glass-near");
 
   // Frame rails and side posts.
   collector.box([width, 0.11, depth * 0.78], [0, height - 0.055, depth * 0.28], "dark-metal");
@@ -188,7 +188,7 @@ export function buildFacadeScreen(
   const spacing = (height - 0.3) / ribbons;
 
   // Glass behind the ribbon screen.
-  collector.box([width - 0.1, height - 0.1, 0.025], [0, height / 2, -0.04], "glass");
+  collector.box([width - 0.1, height - 0.1, 0.025], [0, height / 2, -0.04], "glass-near");
 
   // Three vertical supports carry the ribbons.
   for (const x of [-width / 3, 0, width / 3]) {

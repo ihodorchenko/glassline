@@ -1,0 +1,151 @@
+{
+  "regions": {
+    "kit-glass: bridge pane (left)": {
+      "before": {
+        "mean": 0.1682,
+        "p10": 0.1615,
+        "p90": 0.1794,
+        "rowRange": 0.012,
+        "colRange": 0.0182
+      },
+      "after": {
+        "mean": 0.2167,
+        "p10": 0.2033,
+        "p90": 0.2361,
+        "rowRange": 0.0183,
+        "colRange": 0.0325
+      }
+    },
+    "kit-glass: bridge pane (middle)": {
+      "before": {
+        "mean": 0.1563,
+        "p10": 0.1542,
+        "p90": 0.1587,
+        "rowRange": 0.0029,
+        "colRange": 0.0031
+      },
+      "after": {
+        "mean": 0.1927,
+        "p10": 0.1878,
+        "p90": 0.196,
+        "rowRange": 0.0044,
+        "colRange": 0.0081
+      }
+    },
+    "kit-glass: curtain-wall pane (right face)": {
+      "before": {
+        "mean": 0.1908,
+        "p10": 0.1867,
+        "p90": 0.1946,
+        "rowRange": 0.0054,
+        "colRange": 0.0037
+      },
+      "after": {
+        "mean": 0.2728,
+        "p10": 0.2691,
+        "p90": 0.277,
+        "rowRange": 0.005,
+        "colRange": 0.0073
+      }
+    },
+    "kit-facade: punched window, upper-left half": {
+      "before": {
+        "mean": 0.1536,
+        "p10": 0.1455,
+        "p90": 0.1578,
+        "rowRange": 0.0052,
+        "colRange": 0.0128
+      },
+      "after": {
+        "mean": 0.1841,
+        "p10": 0.1707,
+        "p90": 0.1915,
+        "rowRange": 0.0104,
+        "colRange": 0.0242
+      }
+    },
+    "kit-facade: punched window, upper-right half": {
+      "before": {
+        "mean": 0.1571,
+        "p10": 0.1536,
+        "p90": 0.1607,
+        "rowRange": 0.0069,
+        "colRange": 0.0024
+      },
+      "after": {
+        "mean": 0.1909,
+        "p10": 0.1853,
+        "p90": 0.1946,
+        "rowRange": 0.0124,
+        "colRange": 0.0039
+      }
+    },
+    "kit-corner: corner return, left face": {
+      "before": {
+        "mean": 0.2063,
+        "p10": 0.2021,
+        "p90": 0.2103,
+        "rowRange": 0.0064,
+        "colRange": 0.0088
+      },
+      "after": {
+        "mean": 0.2949,
+        "p10": 0.2859,
+        "p90": 0.3016,
+        "rowRange": 0.0074,
+        "colRange": 0.0162
+      }
+    },
+    "kit-corner: corner return, right face": {
+      "before": {
+        "mean": 0.2015,
+        "p10": 0.1971,
+        "p90": 0.2083,
+        "rowRange": 0.0114,
+        "colRange": 0.0071
+      },
+      "after": {
+        "mean": 0.2829,
+        "p10": 0.2736,
+        "p90": 0.2916,
+        "rowRange": 0.0156,
+        "colRange": 0.0135
+      }
+    }
+  },
+  "orientation": {
+    "curtainWallRightFaceMeanAfter": 0.2728,
+    "punchedWindowMeanAfter": 0.1841,
+    "relativeDeltaPct": 48.2,
+    "cornerReturnLeftMeanAfter": 0.2949,
+    "cornerReturnRightMeanAfter": 0.2829,
+    "cornerReturnRelativeDeltaPct": -4.1
+  },
+  "farCity": {
+    "kit-bridge: far-right city tower": {
+      "meanAbsDiff255": 0.0,
+      "maxAbsDiff255": 0,
+      "changedPx": 0
+    },
+    "kit-distant: far-left city": {
+      "meanAbsDiff255": 0.0,
+      "maxAbsDiff255": 0,
+      "changedPx": 0
+    },
+    "kit-distant: far-right city": {
+      "meanAbsDiff255": 0.0,
+      "maxAbsDiff255": 0,
+      "changedPx": 0
+    },
+    "kit-overview: far-left city": {
+      "meanAbsDiff255": 0.0,
+      "maxAbsDiff255": 0,
+      "changedPx": 0
+    },
+    "kit-overview: far-right city": {
+      "meanAbsDiff255": 0.0,
+      "maxAbsDiff255": 0,
+      "changedPx": 0
+    }
+  }
+}

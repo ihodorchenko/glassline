@@ -244,7 +244,7 @@ export function buildBridge(collector: KitPartCollector, definition: BridgeModul
     collector.box(
       [length - 0.55, glassHeight, 0.03],
       [0, glassBottom + glassHeight / 2, side * (halfWidth - 0.04)],
-      "glass",
+      "glass-near",
     );
     collector.box(
       [length, 0.1, 0.13],

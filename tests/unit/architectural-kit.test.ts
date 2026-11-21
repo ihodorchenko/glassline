@@ -164,7 +164,8 @@ describe("Architectural Kit module builders", () => {
     // semantic key of the shared library.
     expect(used.size).toBeGreaterThanOrEqual(6);
     expect(used.has("concrete")).toBe(true);
-    expect(used.has("glass")).toBe(true);
+    expect(used.has("glass-near")).toBe(true);
+    expect(used.has("glass")).toBe(false);
     expect(used.has("aluminium")).toBe(true);
     expect(used.has("composite")).toBe(true);
     expect(used.has("dark-metal")).toBe(true);
@@ -179,6 +180,48 @@ describe("Architectural Kit module builders", () => {
     expect(composite.roughness).toBeGreaterThan(0.4);
     expect(reveal.roughness).toBeGreaterThan(0.8);
     expect(aluminium.roughness).toBeLessThan(composite.roughness);
+
+    library.dispose();
+  });
+
+  it("keeps glass-near calibrated for close panes without retuning shared glass roles", () => {
+    const library = new MaterialLibrary();
+    const near = library.get("glass-near");
+    const shared = library.get("glass");
+    const far = library.get("glass-far");
+    const rail = library.get("glass-rail");
+
+    // ART_BRIEF §2 curtain glass: dark blue-graphite albedo, glossy but opaque.
+    expect(near.color.getHexString()).toBe("1a2530");
+    expect(near.roughness).toBeCloseTo(0.1, 5);
+    expect(near.metalness).toBeCloseTo(0.6, 5);
+    expect(near.envMapIntensity).toBeCloseTo(1.3, 5);
+    expect(near.transparent).toBe(false);
+    expect(near.depthWrite).toBe(true);
+
+    // The distant-city and balustrade roles keep their previous calibration.
+    expect(shared.color.getHexString()).toBe("0e1d2a");
+    expect(shared.roughness).toBeCloseTo(0.13, 5);
+    expect(shared.metalness).toBeCloseTo(0.6, 5);
+    expect(shared.envMapIntensity).toBeCloseTo(0.5, 5);
+    expect(shared.transparent).toBe(false);
+
+    expect(far.color.getHexString()).toBe("0d1a26");
+    expect(far.roughness).toBeCloseTo(0.2, 5);
+    expect(far.metalness).toBeCloseTo(0.5, 5);
+    expect(far.envMapIntensity).toBeCloseTo(0.35, 5);
+    expect(far.transparent).toBe(false);
+
+    expect(rail.roughness).toBeCloseTo(0.08, 5);
+    expect(rail.metalness).toBeCloseTo(0.2, 5);
+    expect(rail.envMapIntensity).toBeCloseTo(1.2, 5);
+    expect(rail.transparent).toBe(true);
+    expect(rail.depthWrite).toBe(false);
+    expect(rail.opacity).toBeCloseTo(0.32, 5);
+
+    // The near role reuses the existing sheen shader; only uniforms differ.
+    expect(near.customProgramCacheKey()).toBe("glassline-glass-sheen");
+    expect(near.customProgramCacheKey()).toBe(shared.customProgramCacheKey());
 
     library.dispose();
   });

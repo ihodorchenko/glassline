@@ -180,7 +180,8 @@ The kit uses the shared `MaterialLibrary` and extends it with three semantic key
 | `concrete` | warm white structural concrete | rough 0.9 |
 | `composite` | light matte composite cladding/frames | rough 0.56, panel-joint texture |
 | `reveal` | deep window-reveal lining | rough 0.94, dark warm mineral tone |
-| `glass` | tinted curtain-wall / punched glazing | rough 0.13, metal 0.6, sky sheen |
+| `glass-near` | near curtain-wall / punched glazing (kit) | ART_BRIEF curtain glass: `#1A2530`, rough 0.10, metal 0.6, near sheen for the reflection gradient |
+| `glass` | Prologue / distant-city glazing (shared) | rough 0.13, metal 0.6, distance-tuned sheen |
 | `glass-far` | glazing cavity / distant glass | dark, rougher, lower env response |
 | `glass-rail` | balustrade glass | transparent 0.32 with Fresnel falloff |
 | `aluminium` | anodized aluminium mullions/trims/rods | rough 0.30, metal 0.92, env 1.2 |
@@ -189,7 +190,7 @@ The kit uses the shared `MaterialLibrary` and extends it with three semantic key
 | `red` | runner-red navigation accent | rough 0.6, non-metallic |
 
 Hierarchy per module: a structural mass (`concrete`/`white`), one secondary skin
-(`composite`/`glass`/`reveal`), one metal system (`aluminium`/`dark-metal`) and a
+(`composite`/`glass-near`/`reveal`), one metal system (`aluminium`/`dark-metal`) and a
 single red accent only where it carries navigation meaning (window reveal line,
 joint, bridge ceiling, railing line, portal jamb, stair nosing, column base tag).
 
