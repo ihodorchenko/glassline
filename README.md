@@ -4,7 +4,7 @@
 
 [Release notes](docs/RELEASE_NOTES.md) — как открыть, управление, ограничения, решение.
 [Пакет для решения по референсу](docs/REFERENCE_REVIEW.md) — контактный лист, нормализованное видео и варианты приёмки.
-[Итоговая верификация](docs/VERIFICATION.md) — замороженный срез (282 теста, 13/13 старта, 5/5 звука, 352 draw calls; текущий набор — 402 теста).
+[Итоговая верификация](docs/VERIFICATION.md) — замороженный срез (282 теста, 13/13 старта, 5/5 звука, 352 draw calls; текущий набор — 419 тестов).
 [Кросс-браузерный аудит](docs/CROSS_BROWSER.md) — Chromium и Safari PASS (полный забег); Firefox environment-limited.
 [Финальный отчёт](docs/FINAL_REPORT.md) — что достигнуто и что осталось.
 [Нормализованный полный забег](docs/evidence/review/full-run-review.mp4) — спавн → FINISH, 0 респавнов.
@@ -171,6 +171,24 @@ The route contains five required checkpoints.
 The level is designed around continuous traversal, route readability, movement combinations, and speedrun replayability.
 
 Initial completion-time targets are approximately 2–3 minutes for a normal completion and 1–2 minutes for an experienced run. These are design targets, not gameplay restrictions.
+
+### Architectural Kit
+
+The reusable **Architectural Kit** (`docs/ARCHITECTURAL_KIT.md`) provides fifteen
+procedural architectural modules — deep-reveal facade bays, curtain walls,
+expressed corners, columns, cantilevers, canopies, a skybridge, a stair, parapets,
+service portals, ventilation intakes, louvers, glass railings, ribbon screens and
+construction joints — plus a dev-only review composition that shows them as one
+designed ensemble. Modules are generated once per authored variant, instanced by
+material batch, and disposed with the level content; they are visual-only and
+never own colliders or gameplay state.
+
+![Architectural Kit review composition](docs/evidence/arch-kit/kit-overview.jpg)
+
+```bash
+npm run capture -- --iteration arch-kit --level architecture --shot all
+npm run kit:lifecycle
+```
 
 ### Speedrunning
 
@@ -348,6 +366,7 @@ The `docs/` directory is the primary source of implementation specifications.
 | [`26_ACCESSIBILITY_SYSTEM_SPEC.md`](docs/26_ACCESSIBILITY_SYSTEM_SPEC.md) | Accessibility policies and adaptations |
 | [`27_LOCALIZATION_SYSTEM_SPEC.md`](docs/27_LOCALIZATION_SYSTEM_SPEC.md) | Translation and localization |
 | [`GAMEPLAY_FEEL_AUDIT.md`](docs/GAMEPLAY_FEEL_AUDIT.md) | Gameplay feel evaluation, tuning methodology, repeatable scenarios, and acceptance criteria |
+| [`ARCHITECTURAL_KIT.md`](docs/ARCHITECTURAL_KIT.md) | Procedural architectural modules, level contract extension, review composition |
 
 ### Project Tracking
 

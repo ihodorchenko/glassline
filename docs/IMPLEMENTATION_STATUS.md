@@ -2,7 +2,7 @@
 
 **Document:** `IMPLEMENTATION_STATUS.md`  
 **Project:** Glassline  
-**Last Updated:** 2026-11-20  
+**Last Updated:** 2026-11-21  
 **Project Stage:** Polished Initial Release Candidate  
 **Status:** Phases 0–8 Complete; Release Polish Pass Complete; Art/Audio/Level Pass W0–W5 Complete (G0–G5 closed); **release candidate accepted by owner (2026-11-20), pending explicit merge decision**
 
@@ -134,6 +134,55 @@ decision for the owner.
 
 Remaining blockers are human: the human camera/audio passes and
 level-slope verification when slope geometry is authored.
+
+---
+
+## 0.2. Architectural Kit — Task 1 (2026-11-21)
+
+Branch `feat/architectural-kit` (created from `feat/art-audio-level`; `main` was
+not modified, no merge performed). Contract and ownership:
+[`ARCHITECTURAL_KIT.md`](ARCHITECTURAL_KIT.md).
+
+**Scope:** reusable procedural architecture for Glassline — 15 modules, a minimal
+additive level contract, integration through the existing Level Runtime content
+loader, and a dev-only demonstration composition with deterministic review shots.
+
+| Area | Result |
+|---|---|
+| Modules | 15 authored kinds: facade-bay, curtain-wall, corner, column, cantilever, canopy, bridge, stair, parapet, service-portal, ventilation, louver, glass-railing, facade-screen, joint |
+| Geometry | beveled boxes, extruded punched wall fields/profiles, lofted tapered column, faceted cylinders, merged one part per material batch; ~20 k triangles for all 15 canonical variants |
+| Materials | existing `MaterialLibrary` + 3 semantic keys (`aluminium`, `composite`, `reveal`); no duplicate library, no per-instance materials |
+| Level contract | additive optional `LevelDefinition.architecture` (+ `LevelArchitecturePlacement`); validated by `LevelValidator`; consumed by the existing `BoxLevelContentLoader` |
+| Batching | one generated model per authored variant, one `InstancedMesh` per material batch; 85 placements → 26 variants → 270 draw calls at the general-view pose |
+| Teardown | instanced meshes removed/disposed, merged module geometries and geometry pool disposed, materials remain library-owned |
+| Demo | dev-only `architectural_kit_demo` Level Definition (mode `training`, one section, one spawn, plaza deck as the only physical element, no triggers/checkpoints/interactions) |
+| Capture | dev-only `?capture=1&level=architecture&shot=<id>` route, 9 authored shots, registered in `captureShots.ts`; production JS bundle does not contain the demo level |
+
+### Verification (executed)
+
+| Command / check | Result |
+|---|---|
+| `npm run typecheck` | pass |
+| `npm run check` | pass (generated evidence JSON under `docs/evidence/**` was added to the existing Biome ignore set; the unrelated 15 pre-existing warnings remain report-only) |
+| `npm test` | **419/419** pass, 46 files (was 402; +17 kit/composition/capture tests) |
+| `npm run build` | pass; demo level id absent from `dist/assets/*.js` (only in source map) |
+| Kit unit suite | all 15 modules: finite geometry, deterministic rebuild, material resolve, triangle budget; invalid data rejected |
+| Composition runtime suite | valid definition; load/unload; >80 geometry disposals; scene graph returns to baseline; reload identical; invalid module/section rejected |
+| Capture determinism | 9/9 shots byte-identical across two fresh-browser passes (`docs/evidence/arch-kit/capture-manifest.json`) |
+| Lifecycle probe | load → menu → load → restart ×2 → menu: geometries 118 ↔ 9 baseline, 0 page/console errors (`docs/evidence/arch-kit/lifecycle.json`) |
+| Prologue regression | `start-roof` capture byte-identical before/after: sha256 `59c977dd…`, 210 draw calls / 4,363,071 triangles unchanged (`prologue-baseline-manifest.json` vs `prologue-after-manifest.json`) |
+
+Evidence: `docs/evidence/arch-kit/` — 9 review shots, capture manifest, lifecycle
+report, Prologue before/after manifests.
+
+**Known limits:** the kit is visual-only (no colliders by design); the
+demonstration composition is a review scene, not a gameplay level; the capture
+route exists in DEV builds only; draw calls scale with *distinct module variants*,
+not placements; the frame-stair is architectural geometry, not a collision ramp.
+
+**Recommended next task:** author a second kit-backed composition (different
+architectural program, e.g. an elevated transit station) and/or add a physical
+layer for a kit-based playable level, without changing the kit contract.
 
 ---
 

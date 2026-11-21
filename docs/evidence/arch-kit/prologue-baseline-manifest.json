@@ -1,0 +1,45 @@
+{
+  "iteration": "arch-kit-before",
+  "generatedAt": "2026-11-21T17:45:42.473Z",
+  "generator": "tools/capture/capture.mjs",
+  "mode": "capture",
+  "level": "prologue",
+  "url": "http://127.0.0.1:5199/",
+  "browser": {
+    "name": "Microsoft Edge",
+    "channel": "msedge",
+    "version": "157.0.4341.46"
+  },
+  "viewport": {
+    "width": 1600,
+    "height": 900,
+    "deviceScaleFactor": 1
+  },
+  "frames": 30,
+  "shots": [
+    {
+      "id": "start-roof",
+      "file": "captures/arch-kit-before/start-roof.png",
+      "sha256": "59c977dddc4a9c638995015698a372cc1b933807b6edcff8e81b622cbc936ba2",
+      "png": {
+        "width": 1600,
+        "height": 900,
+        "bytes": 1588987
+      },
+      "stats": {
+        "drawCalls": 210,
+        "triangles": 4363071,
+        "textures": 48,
+        "programs": 47,
+        "quality": "high",
+        "canvas": {
+          "width": 1600,
+          "height": 900
+        },
+        "shot": "start-roof"
+      },
+      "consoleErrors": []
+    }
+  ],
+  "determinism": null
+}

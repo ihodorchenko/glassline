@@ -12,7 +12,8 @@
       "!.npm-cache",
       "!package-lock.json",
       "!**/*.md",
-      "!docs/reports/*.json"
+      "!docs/reports/*.json",
+      "!docs/evidence/**/*.json"
     ]
   },
   "formatter": {

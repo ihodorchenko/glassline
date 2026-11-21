@@ -231,6 +231,30 @@ interface LevelMetadata {
 
 The definition describes the structure of a level, not its generated geometry.
 
+#### 5.1.1 Visual content contracts
+
+Two optional authored arrays extend the base definition without moving any
+lifecycle ownership away from Level Runtime:
+
+```ts
+interface LevelDefinition {
+    // ...
+    decorations?: LevelDecorationDefinition[];
+    architecture?: LevelArchitecturePlacement[];
+}
+```
+
+- `decorations` — visual-only primitives (box/cylinder/plane/sign) batched into
+  instanced meshes by material and shape.
+- `architecture` — reusable procedural **Architectural Kit** modules
+  (`docs/ARCHITECTURAL_KIT.md`). Each authored variant is generated once, merged
+  to one part per material batch, and instanced across every placement.
+
+Both arrays are validated before the level is initialized, are disposed with the
+level content, and never create gameplay state, runtime objects or colliders.
+Decorative and architectural geometry is the responsibility of the physical
+layer's authoring, not of the visual content loader (`docs/04` §10).
+
 ### 5.2 LevelSectionDefinition
 
 ```ts
