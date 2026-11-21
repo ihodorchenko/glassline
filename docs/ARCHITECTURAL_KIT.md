@@ -89,7 +89,7 @@ const model: KitModuleModel = buildArchitecturalModule(
   pool,
 );
 
-model.key;        // stable authored-variant identity ("height=4.200|kind=facade-bay|...")
+model.key;        // stable authored-variant identity ("facade-bay|accent=1|height=4.200|...")
 model.parts;      // [{ geometry, material: MaterialKey, castShadow, receiveShadow }]
 model.triangles;  // diagnostic triangle count
 model.dispose();  // disposes the merged part geometries
@@ -102,13 +102,22 @@ Rules:
   placement is authored data on the level.
 - **One generated model per authored variant.** `architecturalModuleKey` is the
   cache identity; the same variant is generated once and instanced everywhere.
+  Keys canonicalize omitted/default and boolean parameters, then quantize metres
+  to 1 mm so floating-point noise does not multiply variants. The loader also
+  compares `architecturalModuleSignature` (1 µm precision) for every cached key;
+  two different full definitions with the same key fail loudly instead of
+  silently sharing the first model.
 - **Materials are semantic keys of the existing `MaterialLibrary`.** The kit does
   not create a material library or per-instance materials.
 - **Builds are deterministic.** No `Math.random`; identical input produces
   identical vertex/triangle counts and bounds (unit-tested).
-- **Invalid data fails the build.** Non-finite/non-positive dimensions and
-  non-integer counts throw; `validateArchitecturalModuleDefinition` exposes the
-  same checks to `LevelValidator` so a level fails before load.
+- **Invalid data fails before the scene changes.** Per-kind schemas reject
+  unknown parameters, wrong types (including booleans in numeric fields),
+  non-finite/non-positive dimensions, non-integer counts and incompatible
+  cross-field combinations. `LevelValidator` reports them before load; the
+  content loader validates again for direct callers and guarantees idempotent
+  cleanup of partially created scene objects, geometries, collider bodies and
+  the level atmosphere if a later load step throws.
 
 ## 4. Level contract extension
 
@@ -227,7 +236,7 @@ before/after manifests) lives in `docs/evidence/arch-kit/`.
 |---|---|
 | `npm run typecheck` | pass |
 | `npm run check` (Biome lint + format + imports) | pass |
-| `npm test` | 419/419 pass (46 files) |
+| `npm test` | 443/443 pass (49 files) |
 | `npm run build` | pass; demo level id is absent from the production JS bundle |
 | Kit unit suite | 15 modules build, deterministic, valid geometry, material resolve, triangle budget |
 | Composition runtime suite | valid definition, load/unload, geometry disposal, scene-graph return to baseline, reload stability, invalid-data rejection |

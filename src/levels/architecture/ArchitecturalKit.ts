@@ -36,6 +36,7 @@ import {
   type ArchitecturalModuleKind,
   architecturalModuleKey,
   type KitModuleModel,
+  type KitModulePart,
   validateArchitecturalModuleDefinition,
 } from "./KitTypes";
 
@@ -45,7 +46,11 @@ export type {
   KitModuleModel,
   KitModulePart,
 } from "./KitTypes";
-export { architecturalModuleKey, validateArchitecturalModuleDefinition } from "./KitTypes";
+export {
+  architecturalModuleKey,
+  architecturalModuleSignature,
+  validateArchitecturalModuleDefinition,
+} from "./KitTypes";
 export type { MaterialKey };
 
 /** Every authored module kind, in documentation order. */
@@ -85,78 +90,89 @@ export function buildArchitecturalModule(
   }
 
   const collector = new KitPartCollector(pool);
+  let parts: readonly KitModulePart[] = [];
 
-  switch (definition.kind) {
-    case "facade-bay":
-      buildFacadeBay(collector, definition);
-      break;
-    case "curtain-wall":
-      buildCurtainWall(collector, definition);
-      break;
-    case "corner":
-      buildCorner(collector, definition);
-      break;
-    case "column":
-      buildColumn(collector, definition);
-      break;
-    case "cantilever":
-      buildCantilever(collector, definition);
-      break;
-    case "canopy":
-      buildCanopy(collector, definition);
-      break;
-    case "bridge":
-      buildBridge(collector, definition);
-      break;
-    case "stair":
-      buildStair(collector, definition);
-      break;
-    case "parapet":
-      buildParapet(collector, definition);
-      break;
-    case "service-portal":
-      buildServicePortal(collector, definition);
-      break;
-    case "ventilation":
-      buildVentilation(collector, definition);
-      break;
-    case "louver":
-      buildLouver(collector, definition);
-      break;
-    case "glass-railing":
-      buildGlassRailing(collector, definition);
-      break;
-    case "facade-screen":
-      buildFacadeScreen(collector, definition);
-      break;
-    case "joint":
-      buildJoint(collector, definition);
-      break;
+  try {
+    switch (definition.kind) {
+      case "facade-bay":
+        buildFacadeBay(collector, definition);
+        break;
+      case "curtain-wall":
+        buildCurtainWall(collector, definition);
+        break;
+      case "corner":
+        buildCorner(collector, definition);
+        break;
+      case "column":
+        buildColumn(collector, definition);
+        break;
+      case "cantilever":
+        buildCantilever(collector, definition);
+        break;
+      case "canopy":
+        buildCanopy(collector, definition);
+        break;
+      case "bridge":
+        buildBridge(collector, definition);
+        break;
+      case "stair":
+        buildStair(collector, definition);
+        break;
+      case "parapet":
+        buildParapet(collector, definition);
+        break;
+      case "service-portal":
+        buildServicePortal(collector, definition);
+        break;
+      case "ventilation":
+        buildVentilation(collector, definition);
+        break;
+      case "louver":
+        buildLouver(collector, definition);
+        break;
+      case "glass-railing":
+        buildGlassRailing(collector, definition);
+        break;
+      case "facade-screen":
+        buildFacadeScreen(collector, definition);
+        break;
+      case "joint":
+        buildJoint(collector, definition);
+        break;
+    }
+
+    parts = collector.finish();
+
+    if (parts.length === 0) {
+      throw new Error(`Architectural module "${definition.kind}" produced no geometry.`);
+    }
+
+    let disposed = false;
+
+    return {
+      key: architecturalModuleKey(definition),
+      kind: definition.kind,
+      parts,
+      triangles: countPartTriangles(parts),
+      dispose(): void {
+        if (disposed) {
+          return;
+        }
+
+        disposed = true;
+
+        for (const part of parts) {
+          part.geometry.dispose();
+        }
+      },
+    };
+  } catch (error) {
+    collector.abort();
+
+    for (const part of parts) {
+      part.geometry.dispose();
+    }
+
+    throw error;
   }
-
-  const parts = collector.finish();
-
-  if (parts.length === 0) {
-    throw new Error(`Architectural module "${definition.kind}" produced no geometry.`);
-  }
-
-  let disposed = false;
-
-  return {
-    key: architecturalModuleKey(definition),
-    kind: definition.kind,
-    parts,
-    triangles: countPartTriangles(parts),
-    dispose(): void {
-      if (disposed) {
-        return;
-      }
-
-      disposed = true;
-
-      for (const part of parts) {
-        part.geometry.dispose();
-      }
-    },
-  };
 }

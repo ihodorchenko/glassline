@@ -4,7 +4,7 @@
 
 [Release notes](docs/RELEASE_NOTES.md) — как открыть, управление, ограничения, решение.
 [Пакет для решения по референсу](docs/REFERENCE_REVIEW.md) — контактный лист, нормализованное видео и варианты приёмки.
-[Итоговая верификация](docs/VERIFICATION.md) — замороженный срез (282 теста, 13/13 старта, 5/5 звука, 352 draw calls; текущий набор — 419 тестов).
+[Итоговая верификация](docs/VERIFICATION.md) — замороженный срез (282 теста, 13/13 старта, 5/5 звука, 352 draw calls; текущий набор — 443 теста).
 [Кросс-браузерный аудит](docs/CROSS_BROWSER.md) — Chromium и Safari PASS (полный забег); Firefox environment-limited.
 [Финальный отчёт](docs/FINAL_REPORT.md) — что достигнуто и что осталось.
 [Нормализованный полный забег](docs/evidence/review/full-run-review.mp4) — спавн → FINISH, 0 респавнов.

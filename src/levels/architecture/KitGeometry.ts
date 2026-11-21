@@ -233,15 +233,39 @@ export class KitGeometryPool {
     return geometry;
   }
 
+  /**
+   * Disposes every cached primitive. Failures are aggregated after all
+   * geometries have been attempted; failed geometries stay in the pool so a
+   * subsequent call can retry them without re-disposing the successful ones.
+   */
   dispose(): void {
+    const failures: unknown[] = [];
+    const retained: THREE.BufferGeometry[] = [];
+
     for (const geometry of this.geometries) {
-      geometry.dispose();
+      try {
+        geometry.dispose();
+      } catch (error) {
+        failures.push(error);
+        retained.push(geometry);
+      }
     }
 
     this.geometries.length = 0;
-    this.boxCache.clear();
-    this.roundedBoxCache.clear();
-    this.cylinderCache.clear();
+    this.geometries.push(...retained);
+
+    if (this.geometries.length === 0) {
+      this.boxCache.clear();
+      this.roundedBoxCache.clear();
+      this.cylinderCache.clear();
+    }
+
+    if (failures.length > 0) {
+      throw new Error(
+        `Failed to dispose ${failures.length} architectural kit ${failures.length === 1 ? "geometry" : "geometries"}.`,
+        { cause: failures[0] },
+      );
+    }
   }
 }
 
@@ -253,6 +277,21 @@ export class KitPartCollector {
   private readonly pending: PendingPart[] = [];
 
   constructor(private readonly pool: KitGeometryPool) {}
+
+  /**
+   * Releases every collector-owned geometry that has not been merged yet.
+   * Safe to call after a failed build and after {@link finish}; repeated calls
+   * are no-ops because the pending list is cleared.
+   */
+  abort(): void {
+    for (const part of this.pending) {
+      if (part.owned) {
+        part.geometry.dispose();
+      }
+    }
+
+    this.pending.length = 0;
+  }
 
   /** Adds a shared-pool primitive. The pool owns the geometry. */
   addShared(
@@ -278,6 +317,8 @@ export class KitPartCollector {
     material: MaterialKey,
     options: Omit<KitPartOptions, "position" | "scale"> & { readonly bevel?: number } = {},
   ): void {
+    this.assertPositive(size, "box");
+
     const geometry =
       options.bevel === undefined
         ? this.pool.box(size[0], size[1], size[2])
@@ -308,6 +349,8 @@ export class KitPartCollector {
     material: MaterialKey,
     options: Omit<KitPartOptions, "position" | "scale"> & { readonly sides?: number } = {},
   ): void {
+    this.assertPositive([radiusTop, radiusBottom, height], "cylinder");
+
     const geometry = options.sides
       ? this.pool.facetedCylinder(radiusTop, radiusBottom, height, options.sides)
       : this.pool.cylinder(radiusTop, radiusBottom, height);
@@ -331,6 +374,8 @@ export class KitPartCollector {
     material: MaterialKey,
     options: Omit<KitPartOptions, "position" | "scale"> & { readonly bevel?: number } = {},
   ): void {
+    this.assertPositive([depth], "extrusion depth");
+
     const bevel = options.bevel ?? 0.015;
     const geometry = new THREE.ExtrudeGeometry(shape, {
       depth,
@@ -365,6 +410,8 @@ export class KitPartCollector {
     material: MaterialKey,
     options: Omit<KitPartOptions, "position" | "scale"> & { readonly bevel?: number } = {},
   ): void {
+    this.assertPositive([length], "profile length");
+
     const shape = polygonShape(profile);
     const bevel = options.bevel ?? 0.012;
     const geometry = new THREE.ExtrudeGeometry(shape, {
@@ -391,7 +438,14 @@ export class KitPartCollector {
     });
   }
 
-  /** Merges every collected primitive into one part per material batch. */
+  /**
+   * Merges every collected primitive into one part per material batch.
+   *
+   * The merged parts become the caller's property. On any failure the
+   * intermediate clones, already merged parts and collector-owned geometries
+   * are released before the error is rethrown, so a failed build cannot leak
+   * GPU geometry.
+   */
   finish(): readonly KitModulePart[] {
     const groups = new Map<
       string,
@@ -402,69 +456,119 @@ export class KitPartCollector {
         readonly geometries: THREE.BufferGeometry[];
       }
     >();
-
-    for (const part of this.pending) {
-      const key = `${part.material}|${part.castShadow ? 1 : 0}|${part.receiveShadow ? 1 : 0}`;
-      let group = groups.get(key);
-
-      if (!group) {
-        group = {
-          material: part.material,
-          castShadow: part.castShadow,
-          receiveShadow: part.receiveShadow,
-          geometries: [],
-        };
-        groups.set(key, group);
-      }
-
-      const geometry = part.geometry.index ? part.geometry.toNonIndexed() : part.geometry.clone();
-
-      geometry.applyMatrix4(part.matrix);
-      geometry.clearGroups();
-      group.geometries.push(geometry);
-    }
-
-    for (const part of this.pending) {
-      if (part.owned) {
-        part.geometry.dispose();
-      }
-    }
-
+    const disposable = new Set<THREE.BufferGeometry>();
     const parts: KitModulePart[] = [];
+    let ownedDisposed = false;
 
-    for (const group of groups.values()) {
-      if (group.geometries.length === 0) {
-        continue;
+    const disposeOwned = (): void => {
+      if (ownedDisposed) {
+        return;
       }
 
-      const merged =
-        group.geometries.length === 1
-          ? group.geometries[0]
-          : mergeGeometries(group.geometries, false);
+      ownedDisposed = true;
 
-      if (!merged) {
-        throw new Error(`Failed to merge architectural kit geometry for "${group.material}".`);
-      }
-
-      merged.computeBoundingSphere();
-      merged.computeBoundingBox();
-      parts.push({
-        geometry: merged,
-        material: group.material,
-        castShadow: group.castShadow,
-        receiveShadow: group.receiveShadow,
-      });
-
-      if (group.geometries.length > 1) {
-        for (const geometry of group.geometries) {
-          geometry.dispose();
+      for (const part of this.pending) {
+        if (part.owned) {
+          part.geometry.dispose();
         }
       }
+    };
+
+    try {
+      for (const part of this.pending) {
+        const key = `${part.material}|${part.castShadow ? 1 : 0}|${part.receiveShadow ? 1 : 0}`;
+        let group = groups.get(key);
+
+        if (!group) {
+          group = {
+            material: part.material,
+            castShadow: part.castShadow,
+            receiveShadow: part.receiveShadow,
+            geometries: [],
+          };
+          groups.set(key, group);
+        }
+
+        const geometry = part.geometry.index ? part.geometry.toNonIndexed() : part.geometry.clone();
+
+        geometry.applyMatrix4(part.matrix);
+        geometry.clearGroups();
+        group.geometries.push(geometry);
+        disposable.add(geometry);
+      }
+
+      disposeOwned();
+
+      for (const group of groups.values()) {
+        if (group.geometries.length === 0) {
+          continue;
+        }
+
+        let merged: THREE.BufferGeometry;
+
+        if (group.geometries.length === 1) {
+          const single = group.geometries[0];
+
+          if (!single) {
+            continue;
+          }
+
+          merged = single;
+        } else {
+          const mergedGeometry = mergeGeometries(group.geometries, false);
+
+          if (!mergedGeometry) {
+            throw new Error(`Failed to merge architectural kit geometry for "${group.material}".`);
+          }
+
+          merged = mergedGeometry;
+          disposable.add(merged);
+        }
+
+        merged.computeBoundingSphere();
+        merged.computeBoundingBox();
+        parts.push({
+          geometry: merged,
+          material: group.material,
+          castShadow: group.castShadow,
+          receiveShadow: group.receiveShadow,
+        });
+        disposable.delete(merged);
+
+        for (const geometry of group.geometries) {
+          disposable.delete(geometry);
+
+          if (geometry !== merged) {
+            geometry.dispose();
+          }
+        }
+      }
+
+      return parts;
+    } catch (error) {
+      for (const geometry of disposable) {
+        geometry.dispose();
+      }
+
+      for (const part of parts) {
+        part.geometry.dispose();
+      }
+
+      throw error;
+    } finally {
+      disposeOwned();
+      this.pending.length = 0;
     }
+  }
 
-    this.pending.length = 0;
-
-    return parts;
+  private assertPositive(values: readonly number[], label: string): void {
+    for (const value of values) {
+      if (!Number.isFinite(value) || value <= 0) {
+        throw new Error(
+          `Architectural kit ${label} requires positive finite dimensions; received ${String(value)}.`,
+        );
+      }
+    }
   }
 
   private push(

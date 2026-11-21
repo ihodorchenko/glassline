@@ -164,7 +164,7 @@ loader, and a dev-only demonstration composition with deterministic review shots
 |---|---|
 | `npm run typecheck` | pass |
 | `npm run check` | pass (generated evidence JSON under `docs/evidence/**` was added to the existing Biome ignore set; the unrelated 15 pre-existing warnings remain report-only) |
-| `npm test` | **419/419** pass, 46 files (was 402; +17 kit/composition/capture tests) |
+| `npm test` | **443/443** pass, 49 files (419 before the Step 2.2A/2.2B hardening; +24 key/validation/cleanup tests) |
 | `npm run build` | pass; demo level id absent from `dist/assets/*.js` (only in source map) |
 | Kit unit suite | all 15 modules: finite geometry, deterministic rebuild, material resolve, triangle budget; invalid data rejected |
 | Composition runtime suite | valid definition; load/unload; >80 geometry disposals; scene graph returns to baseline; reload identical; invalid module/section rejected |
