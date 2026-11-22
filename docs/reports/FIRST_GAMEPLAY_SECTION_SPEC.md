@@ -482,9 +482,12 @@ offset and snap-to-ground at take-off». Фактически компенсац
   (центр капсулы 0.875 + 0.055 зазора, как в существующих уровнях);
 - все боксы `geometry` осевые, `size` положительный, `position` — центр;
 - **страховочная плита**: каждая секция владеет собственным `kill-volume`
-  (A5/A6) с одинаковыми размерами на весь уровень — центр `(0, −6, −35)`,
-  `halfExtents (80, 3, 100)`. Маршрут целиком лежит в `y ≥ 0`, поэтому плита
-  перехватывает любое падение и не мешает движению;
+  (A5/A6) с одинаковыми размерами на весь уровень — центр `(0, −7.5, −35)`,
+  `halfExtents (80, 4.5, 100)`; Y-границы `[−12, −3]`. Верхняя граница `−3`
+  сохранена: именно на ней реальное падение пересекает объём. Нижняя граница
+  `−12` даёт 2 м запаса под обязательной контрольной точкой `y = −10`
+  (§9.3, §11.2). Маршрут целиком лежит в `y ≥ 0`, поэтому плита перехватывает
+  любое падение и не мешает движению;
 - **тело здания**: под каждой плитой перекрытия ставится декорация-масса
   (бокс без коллайдера), верх которой совпадает с низом плиты. Это
   единственный способ дать крыше «объём», не создавая ложной проходимости;
@@ -535,7 +538,7 @@ offset and snap-to-ground at take-off». Фактически компенсац
 |---|---|---|---|---|
 | `trigger_cp_start` | `checkpoint` | (0, 1.0, 10) | (2.5, 1.5, 1.5) | `checkpointId: cp_start` |
 | `trigger_to_building_jump` | `section-entry` | (0, 1.0, −1.5) | (13, 2, 0.5) | `targetSectionId: sec_building_jump` |
-| `trigger_void_sec_start` | `generic` | (0, −6, −35) | (80, 3, 100) | `kind: kill-volume` |
+| `trigger_void_sec_start` | `generic` | (0, −7.5, −35) | (80, 4.5, 100) | `kind: kill-volume` |
 
 `cp_start` → spawn `sp_cp_start (0, 0.93, 10)`.
 
@@ -605,7 +608,7 @@ offset and snap-to-ground at take-off». Фактически компенсац
 |---|---|---|---|---|
 | `trigger_cp_building_jump` | `checkpoint` | (0, 1.0, −21.3) | (3, 1.5, 2) | `checkpointId: cp_building_jump` |
 | `trigger_to_technical` | `section-entry` | (0, 1.9, −27.0) | (5, 1.6, 0.5) | `targetSectionId: sec_technical` |
-| `trigger_void_sec_building_jump` | `generic` | (0, −6, −35) | (80, 3, 100) | `kind: kill-volume` |
+| `trigger_void_sec_building_jump` | `generic` | (0, −7.5, −35) | (80, 4.5, 100) | `kind: kill-volume` |
 
 `cp_building_jump` → spawn `sp_cp_building_jump (0, 0.93, −21.3)`.
 Spawn входа секции: `sp_entry_building_jump (0, 0.93, −5.4)`.
@@ -686,7 +689,7 @@ Spawn входа секции: `sp_entry_building_jump (0, 0.93, −5.4)`.
 | id | type | center | halfExtents | metadata |
 |---|---|---|---|---|
 | `trigger_to_slide` | `section-entry` | (0, 1.9, −41.0) | (4, 1.6, 0.5) | `targetSectionId: sec_slide` |
-| `trigger_void_sec_technical` | `generic` | (0, −6, −35) | (80, 3, 100) | `kind: kill-volume` |
+| `trigger_void_sec_technical` | `generic` | (0, −7.5, −35) | (80, 4.5, 100) | `kind: kill-volume` |
 
 Spawn входа: `sp_entry_technical (0, 1.83, −27.4)`. Чекпоинта нет: падений в
 сегменте нет, восстановление не требуется.
@@ -760,7 +763,7 @@ Spawn входа: `sp_entry_technical (0, 1.83, −27.4)`. Чекпоинта н
 |---|---|---|---|---|
 | `trigger_cp_slide` | `checkpoint` | (0, 1.9, −55.5) | (2.5, 1.5, 1.0) | `checkpointId: cp_slide` |
 | `trigger_to_vault` | `section-entry` | (0, 1.9, −57.0) | (3, 1.6, 0.5) | `targetSectionId: sec_vault` |
-| `trigger_void_sec_slide` | `generic` | (0, −6, −35) | (80, 3, 100) | `kind: kill-volume` |
+| `trigger_void_sec_slide` | `generic` | (0, −7.5, −35) | (80, 4.5, 100) | `kind: kill-volume` |
 
 `cp_slide` → spawn `sp_cp_slide (0, 1.83, −55.5)`.
 Spawn входа: `sp_entry_slide (0, 1.83, −41.0)`.
@@ -845,7 +848,7 @@ Spawn входа: `sp_entry_slide (0, 1.83, −41.0)`.
 |---|---|---|---|---|
 | `trigger_cp_vault` | `checkpoint` | (0, 1.9, −70.0) | (2.0, 1.5, 0.7) | `checkpointId: cp_vault` |
 | `trigger_to_finish` | `section-entry` | (0, 1.9, −71.0) | (2.2, 1.6, 0.5) | `targetSectionId: sec_finish` |
-| `trigger_void_sec_vault` | `generic` | (0, −6, −35) | (80, 3, 100) | `kind: kill-volume` |
+| `trigger_void_sec_vault` | `generic` | (0, −7.5, −35) | (80, 4.5, 100) | `kind: kill-volume` |
 
 `cp_vault` → spawn `sp_cp_vault (0, 1.83, −70.0)`.
 Spawn входа: `sp_entry_vault (0, 1.83, −57.0)`.
@@ -938,7 +941,7 @@ Spawn входа: `sp_entry_vault (0, 1.83, −57.0)`.
 | id | type | center | halfExtents | metadata |
 |---|---|---|---|---|
 | `trigger_finish` | `level-transition` | (0, 5.5, −84.0) | (3, 2, 0.6) | `kind: finish`, `repeatable: false` |
-| `trigger_void_sec_finish` | `generic` | (0, −6, −35) | (80, 3, 100) | `kind: kill-volume` |
+| `trigger_void_sec_finish` | `generic` | (0, −7.5, −35) | (80, 4.5, 100) | `kind: kill-volume` |
 
 Spawn входа: `sp_entry_finish (0, 1.83, −71.0)`. Чекпоинта нет: секция короче
 16.5 м и заканчивается завершением сессии.
@@ -1165,8 +1168,14 @@ Spawn входа: `sp_entry_finish (0, 1.83, −71.0)`. Чекпоинта не�
 ### 9.3. Падение без kill-volume (средний)
 
 Автоматики нет (A6); промах плиты = бесконечное падение. Митигация:
-одинаковая плита-«дно» в каждой секции (§5, общее правило) + тест: позиция
-`y = −10` в каждой секции вызывает респавн.
+одинаковая плита-«дно» в каждой секции (§5, общее правило): центр
+`(0, −7.5, −35)`, `halfExtents (80, 4.5, 100)`, Y-границы `[−12, −3]`.
+Проверяются две разные вещи: (1) реальное физическое падение пересекает
+верхнюю границу объёма на `y = −3` и вызывает `respawn.request("fall")`;
+(2) обязательная контрольная точка `y = −10` находится внутри объёма
+(запас 2 м до нижней границы) и также вызывает респавн. Физическое падение
+обнаруживается раньше, чем тело достигает `y = −10`, поэтому это отдельная
+проверка покрытия объёма, а не имитация падения.
 
 ### 9.4. Пересечение с Prologue-якорями (низкий)
 
@@ -1255,8 +1264,13 @@ seeded PRNG по образцу `PrologueCity.ts` (`createRandom(0x91135)`), н�
 13. Боковые щели канала S4 (0.20 м) непроходимы: капсула не проходит между
     препятствием и стеной.
 14. Обе лестницы S5 проходятся шагом (автостеп), без прыжков.
-15. Падение из любой точки маршрута (`y = −10`) вызывает
-    `respawn.request("fall")` и возвращает на активный чекпоинт.
+15. Падение из любой точки маршрута вызывает `respawn.request("fall")` и
+    возвращает на активный чекпоинт. Реальное физическое падение
+    обнаруживается на верхней границе kill-volume (`y = −3`). Отдельная
+    обязательная контрольная точка `y = −10` должна находиться внутри
+    authored-объёма (`Y ∈ [−12, −3]`, запас 2 м до нижней границы) и также
+    вызывать респавн; это отдельная проверка покрытия объёма, а не
+    симуляция падения.
 
 ### 11.3. Поток и завершение
 
