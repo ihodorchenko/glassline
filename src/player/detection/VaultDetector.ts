@@ -7,7 +7,19 @@ import type { MovementTuning } from "../MovementTuning";
 
 const DOWN = { x: 0, y: -1, z: 0 };
 const UP = { x: 0, y: 1, z: 0 };
+/** Execution reach: the obstacle face must be this close for `E` to vault it. */
 const FORWARD_REACH = 1.1;
+/**
+ * Presentation-only reach for the `E · VAULT` affordance.
+ *
+ * The execution reach is 1.1 m, which a sprint (8.5 m/s) crosses in ~0.13 s —
+ * too short to read. The affordance therefore probes 4.0 m ahead, giving ~2.9 m
+ * (≈0.34 s at sprint, ≈0.64 s at walk speed) of visible approach before the
+ * action range, without changing the action. It reuses the same validation
+ * probes (height, landing space, head clearance) from farther away, so it can
+ * never advertise an obstacle the action would reject at contact.
+ */
+export const VAULT_AFFORDANCE_FORWARD_REACH = 4;
 const LANDING_REACH = 0.9;
 /**
  * Rapier character-controller skin: the physical capsule bottom rests this far
@@ -48,7 +60,13 @@ export class VaultDetector {
     this.footOffset = Math.max(0, footOffset);
   }
 
-  detect(position: Vector3Like, forward: Vector3Like, feetY: number): VaultCandidate | null {
+  detect(
+    position: Vector3Like,
+    forward: Vector3Like,
+    feetY: number,
+    forwardReach = FORWARD_REACH,
+  ): VaultCandidate | null {
+    const reach = Number.isFinite(forwardReach) ? Math.max(0.1, forwardReach) : FORWARD_REACH;
     const directionLength = Math.hypot(forward.x, forward.z);
 
     if (directionLength < 1e-6) {
@@ -74,7 +92,7 @@ export class VaultDetector {
       const hit = this.castRay(
         { x: position.x, y: supportY + probeHeight, z: position.z },
         direction,
-        FORWARD_REACH,
+        reach,
       );
 
       if (!hit || hit.timeOfImpact < 0.08 || Math.abs(hit.normal.y) > 0.4) {

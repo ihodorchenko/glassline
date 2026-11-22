@@ -11,6 +11,18 @@ const MOUSE_RADIANS_PER_PIXEL = 0.0022;
 const GAMEPAD_RADIANS_PER_SECOND = 2.4;
 const PITCH_LIMIT_RADIANS = (85 * Math.PI) / 180;
 const EYE_HEIGHT_DAMPING = 12;
+/**
+ * Distance the camera eye is kept below the top of the current collider.
+ *
+ * The eye is part of the body: an unclamped posture eye can be *above* the
+ * collider when the posture is temporarily capped by the ceiling. Sliding into
+ * the 1.0 m First Section duct and stopping there leaves the collider at slide
+ * height (0.90 m) while the stance becomes `crouching`; the 1.05 m crouch eye
+ * then sits 0.07 m above the duct ceiling underside and the camera ends up
+ * inside the slab (Step 3.8 F-03). Clamping the *target* fixes that state
+ * without changing any settled height, transition speed or other level.
+ */
+const EYE_HEAD_CLEARANCE_METERS = 0.06;
 const FOV_DAMPING = 8;
 const ROLL_DAMPING = 10;
 const WALL_RUN_ROLL_RADIANS = 0.06;
@@ -275,12 +287,14 @@ export class CameraSystem implements Disposable {
 
   private updateEyeHeight(stance: PlayerStance, deltaSeconds: number, postureHeight: number): void {
     this.modelPostureHeight = postureHeight;
-    const eyeHeight =
+    const desiredEyeHeight =
       stance === "sliding"
         ? this.tuning.slidingEyeHeight
         : stance === "crouching"
           ? this.tuning.crouchingEyeHeight
           : this.tuning.standingEyeHeight;
+    const maxEyeHeight = Math.max(0, postureHeight - EYE_HEAD_CLEARANCE_METERS);
+    const eyeHeight = Math.min(desiredEyeHeight, maxEyeHeight);
     const targetOffset = eyeHeight - this.modelPostureHeight / 2;
 
     this.currentEyeHeightOffset = damp(

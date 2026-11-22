@@ -107,6 +107,7 @@ function parseArgs(argv) {
     serverTimeout: 90_000,
     walkthrough: true,
     failureModes: true,
+    polish: true,
   };
 
   for (let index = 0; index < argv.length; index += 1) {
@@ -168,6 +169,9 @@ function parseArgs(argv) {
       case "--no-failure-modes":
         options.failureModes = false;
         break;
+      case "--no-polish":
+        options.polish = false;
+        break;
       case "--help":
       case "-h":
         printHelp();
@@ -198,7 +202,8 @@ Options:
   --reuse-server           Never spawn Vite; fail unless the URL is served
   --headed                 Visible Edge window (default headless)
   --no-walkthrough         Skip the segment walkthrough session
-  --no-failure-modes       Skip the failure-mode session`);
+  --no-failure-modes       Skip the failure-mode session
+  --no-polish              Skip the Step 3.8 toast/duct-camera session`);
 }
 
 function round(value, digits = 3) {
@@ -248,6 +253,45 @@ async function readVaultPrompt(page) {
       count: document.querySelectorAll(".gl-hud__prompt").length,
       tutorialVisible:
         document.querySelector(".gl-hud__tutorial")?.classList.contains("is-visible") ?? false,
+    };
+  });
+}
+
+/** Minimal poll for the toast-ordering scenario (F-05). */
+async function readToastState(page) {
+  return await page.evaluate(() => {
+    const status = window.__glasslineDevLaunch?.status?.() ?? null;
+    const toast = document.querySelector(".gl-toast");
+
+    return {
+      z: status?.player?.position.z ?? null,
+      checkpoint: status?.activeCheckpointId ?? null,
+      text: toast?.textContent ?? "",
+      visible: toast?.classList.contains("is-visible") ?? false,
+      tutorialVisible:
+        document.querySelector(".gl-hud__tutorial")?.classList.contains("is-visible") ?? false,
+    };
+  });
+}
+
+/**
+ * Read-only vault signals for the affordance range scenario (F-04).
+ *
+ * `available` is the production execution condition (`isVaultAvailable`);
+ * `affordance` is the wider presentation signal. Reading them together proves
+ * the display range did not widen the action.
+ */
+async function readVaultSignals(page) {
+  return await page.evaluate(() => {
+    const player = window.__glassline?.player ?? null;
+    const prompt = document.querySelector(".gl-hud__prompt");
+
+    return {
+      available: player?.isVaultAvailable?.() ?? null,
+      affordance: player?.isVaultAffordanceAvailable?.() ?? null,
+      prompt: prompt?.textContent ?? null,
+      promptVisible: prompt?.classList.contains("is-visible") ?? false,
+      promptCount: document.querySelectorAll(".gl-hud__prompt").length,
     };
   });
 }
@@ -652,9 +696,9 @@ async function strafeToX(page, mouse, targetX, { tolerance = 0.12, timeoutMs = 8
 }
 
 /**
- * Precise short walk with 60–260 ms pulses, used to stop inside a specific
- * authored element (the route joint on the start roof). It only sends normal W
- * input; the position feedback closes the loop.
+ * Precise short walk with 60–260 ms pulses, used to stop at a specific
+ * authored z (for example the route-clearance views on the start roof). It only
+ * sends normal W input; the position feedback closes the loop.
  */
 async function stepToZ(
   page,
@@ -833,7 +877,7 @@ async function runWalkthrough(browser, options, viewport, outDir, report, checkl
       `drift=${segments.spawn.driftWhileLooking} m`,
     );
 
-    /* --- A2. Checkpoint and the route joint on the start roof ------------ */
+    /* --- A2. Checkpoint and the start-roof route clearance ------------- */
 
     await driveTo(page, mouse, ROUTE.checkpointStartZ + 0.55, { sprint: false });
     await delay(120);
@@ -881,25 +925,24 @@ async function runWalkthrough(browser, options, viewport, outDir, report, checkl
       checkpointToast?.dom.toast ?? firstToast.dom.toast,
     );
 
-    // The authored S0 joint stands at z = 10 on the route centreline. Walk to
-    // its centre and photograph what a player sees from inside it.
+    // Step 3.8 F-02: the two S0 joints that used to stand on the centreline at
+    // z = 10 and z = 2 are now mounted on the penthouse face. These frames
+    // document that the checkpoint marker and the Gap A approach are clear.
     await stepToZ(page, mouse, ROUTE.checkpointStartZ);
-    const jointInside = await capture("06-route-joint-inside");
+    const routeClearAtCheckpoint = await capture("06-route-clearance-checkpoint");
 
     await stepToZ(page, mouse, ROUTE.checkpointStartZ - 1.4);
-    const jointAfter = await capture("07-route-joint-after");
+    const routeClearPastCheckpoint = await capture("07-route-clearance-past-checkpoint");
 
-    segments.routeJoint = {
-      inside: jointInside,
-      after: jointAfter,
+    segments.routeClearance = {
+      checkpoint: routeClearAtCheckpoint,
+      pastCheckpoint: routeClearPastCheckpoint,
     };
 
-    // The other authored S0 joint is at z = 2, immediately before the Gap A
-    // take-off edge. Repeat there so the approach is documented.
     await stepToZ(page, mouse, 2);
-    const jointBeforeGap = await capture("08-route-joint-before-gap-a");
+    const routeClearBeforeGap = await capture("08-route-clearance-before-gap-a");
 
-    segments.routeJoint.beforeGapA = jointBeforeGap;
+    segments.routeClearance.beforeGapA = routeClearBeforeGap;
 
     /* --- A3. Gap A ------------------------------------------------------- */
 
@@ -1091,12 +1134,14 @@ async function runWalkthrough(browser, options, viewport, outDir, report, checkl
     await delay(1_000);
     await release(page, "KeyW");
 
+    // Capture while crouch is still held. Releasing Shift starts the stand-up
+    // transition, and a frame taken then (as in Step 3.6) shows the lintel
+    // filling the view — that is not the settled crouch state.
+    const ductCrouchBlocked = await capture("21-duct-crouch-blocked");
     const crouchBlocked = await readStatus(page);
 
     await release(page, "ShiftLeft");
     await delay(300);
-
-    const ductCrouchBlocked = await capture("21-duct-crouch-blocked");
 
     // Back out, then sprint-slide through.
     await backUpTo(page, -44.2);
@@ -1389,6 +1434,8 @@ async function runWalkthrough(browser, options, viewport, outDir, report, checkl
       player: restartSnapshot.status?.player?.position ?? null,
       pose: restartPose,
       pointerLock: restartSnapshot.dom.pointerLock,
+      toast: restartSnapshot.dom.toast,
+      toastVisible: restartSnapshot.dom.toastVisible,
     };
 
     checklist.check(
@@ -1413,6 +1460,13 @@ async function runWalkthrough(browser, options, viewport, outDir, report, checkl
         restartSnapshot.dom.screenCount === 0 &&
         restartSnapshot.dom.pointerLock === "game-canvas",
       `hud=${restartSnapshot.dom.hudVisible}, lock=${restartSnapshot.dom.pointerLock}`,
+    );
+    checklist.check(
+      "restart: no toast from the previous run survives into the new session",
+      restartSnapshot.dom.toastVisible !== true &&
+        (restartSnapshot.dom.toast ?? "").trim().length === 0,
+      `toast=${JSON.stringify(restartSnapshot.dom.toast ?? null)}, ` +
+        `visible=${String(restartSnapshot.dom.toastVisible)}`,
     );
 
     // Control must work immediately after the restart (no extra click).
@@ -1797,7 +1851,14 @@ async function runFailureModes(browser, options, viewport, outDir, report, check
 
     const firstCenter = ROUTE.vaultCenters[0];
 
-    // 1. Sprint charge without E: predictable block, no launch/back-bounce.
+    // 1. Sprint charge without E from outside the display reach: predictable
+    //    block, no launch/back-bounce, and a measurable prompt lead.
+    // The duct wall limits the standing back-up to ~z = -54.3; 4.5 m from the
+    // obstacle centre is the longest reachable approach outside the 4.0 m
+    // display reach.
+    await backUpTo(page, firstCenter + 4.5);
+    await strafeToX(page, mouse, 0);
+
     const unvaultedFirst = await chargeObstacle(page, mouse, {
       centerZ: firstCenter,
       sprint: true,
@@ -1837,17 +1898,34 @@ async function runFailureModes(browser, options, viewport, outDir, report, check
       `prompt=${JSON.stringify(unvaultedFirst.promptText)}, ` +
         `count=${unvaultedFirst.promptCountMax}`,
     );
+    checklist.check(
+      "vault hint: the approach shows the prompt for at least 2 m before contact",
+      unvaultedFirst.promptSeen === true && (unvaultedFirst.promptLeadMeters ?? 0) >= 2,
+      `lead=${unvaultedFirst.promptLeadMeters} m at entry, ` +
+        `entrySpeed=${unvaultedFirst.promptEntrySpeed} m/s`,
+    );
 
-    // 2. F-04: hidden outside the range, visible in range, stable while blocked.
-    await backUpTo(page, firstCenter + 3.2);
+    // 2. F-04 (Step 3.8): the display reach is 4.0 m while the vault action
+    //    keeps its original 1.1 m. Sample all three zones: outside the display
+    //    reach, inside it but outside the action, and inside the action.
+    await backUpTo(page, firstCenter + 4.5);
     await strafeToX(page, mouse, 0);
 
     const hintFar = await readVaultPrompt(page);
+    const hintFarSignals = await readVaultSignals(page);
     const hintFarPose = await capture("48-vault-hint-far");
+
+    await stepToZ(page, mouse, firstCenter + 3.0, { tolerance: 0.2 });
+
+    const hintEarly = await readVaultPrompt(page);
+    const hintEarlySignals = await readVaultSignals(page);
+    const hintEarlyStatus = await readStatus(page);
+    const hintEarlyPose = await capture("51-vault-hint-display-range");
 
     await driveTo(page, mouse, firstCenter + 1.2, { sprint: false });
 
     const hintNear = await readVaultPrompt(page);
+    const hintNearSignals = await readVaultSignals(page);
     const hintNearPose = await capture("49-vault-hint-near");
 
     await hold(page, "KeyW");
@@ -1867,24 +1945,53 @@ async function runFailureModes(browser, options, viewport, outDir, report, check
 
     failureModes.vaultHint = {
       far: hintFar,
+      farSignals: hintFarSignals,
+      early: hintEarly,
+      earlySignals: hintEarlySignals,
+      earlyDistance: round((hintEarlyStatus?.player?.position.z ?? 0) - firstCenter, 2),
+      earlySpeed: round(hintEarlyStatus?.player?.speed ?? 0, 2),
       near: hintNear,
+      nearSignals: hintNearSignals,
       holdSamples: hintHoldSamples,
       blockedZ: round(hintBlockedStatus?.player?.position.z ?? 0, 2),
-      poses: { far: hintFarPose, near: hintNearPose, blocked: hintBlockedPose },
+      poses: {
+        far: hintFarPose,
+        early: hintEarlyPose,
+        near: hintNearPose,
+        blocked: hintBlockedPose,
+      },
     };
 
     checklist.check(
-      "vault hint: hidden outside the interaction range",
-      hintFar.visible === false && hintFarPose.hud?.promptVisible === false,
-      JSON.stringify(hintFar),
+      "vault hint: hidden outside the 4.0 m display reach",
+      hintFar.visible === false &&
+        hintFarPose.hud?.promptVisible === false &&
+        hintFarSignals.affordance === false,
+      JSON.stringify({ ...hintFar, affordance: hintFarSignals.affordance }),
+    );
+    checklist.check(
+      "vault hint: shown early, before the action range, and still reports the action unavailable",
+      hintEarly.visible === true &&
+        /E\s*·\s*VAULT/i.test(hintEarly.text ?? "") &&
+        hintEarly.count === 1 &&
+        hintEarlySignals.affordance === true &&
+        hintEarlySignals.available === false &&
+        failureModes.vaultHint.earlyDistance > 1.5,
+      JSON.stringify({
+        prompt: hintEarly,
+        signals: hintEarlySignals,
+        distance: failureModes.vaultHint.earlyDistance,
+      }),
     );
     checklist.check(
       "vault hint: E · VAULT is shown inside the interaction range as a single line",
       hintNear.visible === true &&
         /E\s*·\s*VAULT/i.test(hintNear.text ?? "") &&
         hintNear.count === 1 &&
-        hintNear.tutorialVisible === false,
-      JSON.stringify(hintNear),
+        hintNear.tutorialVisible === false &&
+        hintNearSignals.affordance === true &&
+        hintNearSignals.available === true,
+      JSON.stringify({ prompt: hintNear, signals: hintNearSignals }),
     );
     checklist.check(
       "vault hint: visible and unduplicated while holding forward against the obstacle",
@@ -2023,7 +2130,9 @@ async function runFailureModes(browser, options, viewport, outDir, report, check
       `rise=${jumpRise} m, airborne=${jumpAirborne}, landed=${jumpLanded}`,
     );
 
-    // 6. Vault with E: the affordance hides after the traversal.
+    // 6. Vault with E: the affordance then advertises the *next* obstacle
+    //    (obstacle 2 is ~2.4 m ahead of the landing), and stays a display-only
+    //    signal until the execution range is reached.
     await backUpTo(page, firstCenter + 3.0);
     await strafeToX(page, mouse, 0);
 
@@ -2035,14 +2144,31 @@ async function runFailureModes(browser, options, viewport, outDir, report, check
     await delay(500);
 
     const hintAfter = await readVaultPrompt(page);
+    const hintAfterSignals = await readVaultSignals(page);
     const hintAfterPose = await capture("54-vault-hint-after");
+    const afterVaultZ = round((await readStatus(page))?.player?.position.z ?? 0, 2);
+    // The route runs towards -Z, so a target ahead is at a smaller z.
+    const nextObstacleDistance = round(afterVaultZ - ROUTE.vaultCenters[1], 2);
 
-    failureModes.vaultHintAfter = { prompt: hintAfter, vault: firstVault, pose: hintAfterPose };
+    failureModes.vaultHintAfter = {
+      prompt: hintAfter,
+      signals: hintAfterSignals,
+      nextObstacleDistance,
+      vault: firstVault,
+      pose: hintAfterPose,
+    };
 
     checklist.check(
-      "vault: E performs the vault and the prompt hides after the traversal",
-      firstVault.vaulted === true && hintAfter.visible === false && hintAfter.count === 1,
-      `vaulted=${firstVault.vaulted}, prompt=${JSON.stringify(hintAfter)}`,
+      "vault: E performs the vault and the affordance then advertises the next obstacle, not the cleared one",
+      firstVault.vaulted === true &&
+        hintAfter.count === 1 &&
+        hintAfter.visible === true &&
+        hintAfterSignals.affordance === true &&
+        hintAfterSignals.available === false &&
+        nextObstacleDistance > 1.5 &&
+        nextObstacleDistance < 4,
+      `vaulted=${firstVault.vaulted}, z=${afterVaultZ}, next=${nextObstacleDistance} m, ` +
+        `prompt=${JSON.stringify(hintAfter)}, signals=${JSON.stringify(hintAfterSignals)}`,
     );
 
     await driveTo(page, mouse, ROUTE.vaultCenters[1] + 2.9, { sprint: true });
@@ -2082,9 +2208,30 @@ async function runFailureModes(browser, options, viewport, outDir, report, check
       approachZ: ROUTE.vaultCenters[2] + 3.0,
     });
 
+    // Let the last vault finish and land before reading the prompt: a hidden
+    // line during `VAULTING` would prove nothing about the display reach.
+    await waitForStatus(
+      page,
+      (status) =>
+        status.player?.grounded === true &&
+        status.player?.state !== "VAULTING" &&
+        (status.player?.position.z ?? 0) <= -68,
+      { timeout: 8_000, interval: 25, label: "the landing after the last vault" },
+    ).catch(() => undefined);
+    await delay(400);
+
+    const hintClearedAll = await readVaultPrompt(page);
+    const hintClearedAllSignals = await readVaultSignals(page);
+    const clearedAllPose = await capture("60-vault-hint-cleared");
+
     failureModes.walkSpeedVault = {
       second: walkVaultSecond,
       third: walkVaultThird,
+      cleared: {
+        prompt: hintClearedAll,
+        signals: hintClearedAllSignals,
+        pose: clearedAllPose,
+      },
       poses: { second: vaultSecondPose, third: vault3Approach },
     };
 
@@ -2097,6 +2244,13 @@ async function runFailureModes(browser, options, viewport, outDir, report, check
       "vault: walking into the 1.10 m obstacle and pressing E vaults it",
       walkVaultThird.vaulted === true,
       JSON.stringify(walkVaultThird),
+    );
+    checklist.check(
+      "vault hint: hidden past the last obstacle when nothing is inside the display reach",
+      hintClearedAll.visible === false &&
+        hintClearedAll.count === 1 &&
+        hintClearedAllSignals.affordance === false,
+      JSON.stringify({ prompt: hintClearedAll, signals: hintClearedAllSignals }),
     );
 
     /* --- B6. Restart from the pause menu -------------------------------- */
@@ -2220,6 +2374,379 @@ async function runFailureModes(browser, options, viewport, outDir, report, check
   }
 
   return failureModes;
+}
+
+/**
+ * Step 3.8 polish checks (F-05 toast priority, F-03 duct camera clearance).
+ *
+ * A fresh context is required for F-05: the tutorial `Move` step must still be
+ * pending so the checkpoint confirmation collides with it, exactly as on a new
+ * profile. The session then reuses the same run for the duct camera checks so
+ * the evidence comes from one continuous First Section session.
+ */
+async function runPolishChecks(browser, options, viewport, outDir, report, checklist, log) {
+  const session = await bootSession(browser, options, viewport, log);
+  const { page, diagnostics, mouse } = session;
+  const poses = report.poses;
+
+  const capture = async (name) => {
+    const entry = await capturePose(page, outDir, name, log);
+
+    poses.push(entry);
+
+    return entry;
+  };
+
+  const polish = {
+    toastOrder: null,
+    ductCamera: null,
+  };
+
+  report.scenarios.polish = polish;
+
+  try {
+    /* ---- F-05: checkpoint feedback must beat the tutorial toast ---------- */
+
+    await aimYaw(page, mouse, 0);
+
+    const toastSamples = [];
+    const startedAt = Date.now();
+    let activationMs = null;
+
+    await hold(page, "KeyW");
+
+    try {
+      while (Date.now() - startedAt < 25_000) {
+        const state = await readToastState(page);
+        const sample = { ms: Date.now() - startedAt, ...state };
+
+        toastSamples.push(sample);
+
+        if (activationMs === null && state.checkpoint !== null) {
+          activationMs = sample.ms;
+        }
+
+        if (activationMs !== null) {
+          break;
+        }
+
+        await delay(35);
+      }
+    } finally {
+      await release(page, "KeyW");
+    }
+
+    // Photograph the checkpoint toast while it is on screen (the capture takes
+    // a few hundred ms, well inside the toast duration), then let the whole
+    // sequence play out without any further input.
+    await delay(150);
+    const checkpointToastPose = await capture("55-checkpoint-toast-priority");
+    const settleUntil = Date.now() + 7_000;
+
+    while (Date.now() < settleUntil) {
+      toastSamples.push({ ms: Date.now() - startedAt, ...(await readToastState(page)) });
+      await delay(70);
+    }
+
+    const afterActivation = toastSamples.filter(
+      (sample) => activationMs !== null && sample.ms >= activationMs - 50,
+    );
+    const visibleAfterActivation = afterActivation.filter((sample) => sample.visible === true);
+    const firstVisible = visibleAfterActivation[0] ?? null;
+    const checkpointToastSamples = visibleAfterActivation.filter((sample) =>
+      (sample.text ?? "").includes("Checkpoint"),
+    );
+    const firstCheckpoint = checkpointToastSamples[0] ?? null;
+    const firstCheckpointMs = firstCheckpoint?.ms ?? null;
+    // No other toast may become visible between activation and the checkpoint
+    // confirmation: that is exactly the "Move queued first" defect.
+    const betweenActivationAndCheckpoint = toastSamples
+      .filter(
+        (sample) =>
+          activationMs !== null &&
+          firstCheckpointMs !== null &&
+          sample.ms >= activationMs &&
+          sample.ms < firstCheckpointMs &&
+          sample.visible === true,
+      )
+      .map((sample) => sample.text ?? "");
+    const checkpointIntactSamples = toastSamples.filter(
+      (sample) =>
+        firstCheckpointMs !== null &&
+        sample.visible === true &&
+        sample.ms >= firstCheckpointMs &&
+        sample.ms <= firstCheckpointMs + 1_500,
+    );
+    const checkpointUninterrupted =
+      checkpointIntactSamples.length >= 5 &&
+      checkpointIntactSamples.every((sample) => (sample.text ?? "").includes("Checkpoint"));
+    const checkpointVisibleFor =
+      checkpointToastSamples.length === 0
+        ? 0
+        : (checkpointToastSamples[checkpointToastSamples.length - 1].ms -
+            checkpointToastSamples[0].ms) /
+          1000;
+    const tutorialAfterCheckpoint = visibleAfterActivation.filter(
+      (sample, index) =>
+        index > 0 &&
+        (sample.text ?? "").trim().length > 0 &&
+        !(sample.text ?? "").includes("Checkpoint") &&
+        firstCheckpoint !== null &&
+        sample.ms > firstCheckpoint.ms,
+    );
+    const firstTutorialAfter = tutorialAfterCheckpoint[0] ?? null;
+    const finalSample = toastSamples[toastSamples.length - 1] ?? null;
+    const emptyVisible = toastSamples.some(
+      (sample) => sample.visible === true && (sample.text ?? "").trim().length === 0,
+    );
+
+    polish.toastOrder = {
+      activationMs,
+      firstVisibleToast: firstVisible?.text ?? null,
+      checkpointToastMs: firstCheckpointMs,
+      checkpointDelayMs:
+        activationMs === null || firstCheckpointMs === null
+          ? null
+          : firstCheckpointMs - activationMs,
+      checkpointVisibleSeconds: round(checkpointVisibleFor, 2),
+      betweenActivationAndCheckpoint,
+      checkpointUninterrupted,
+      tutorialAfterCheckpoint: firstTutorialAfter?.text ?? null,
+      tutorialAfterCheckpointMs: firstTutorialAfter?.ms ?? null,
+      finalVisible: finalSample?.visible ?? null,
+      emptyVisible,
+      samples: toastSamples,
+    };
+
+    const checkpointDelay = polish.toastOrder.checkpointDelayMs;
+
+    polish.toastOrder.pose = checkpointToastPose;
+
+    checklist.check(
+      "toast: the checkpoint confirmation is visible immediately after activation (not queued behind the tutorial toast)",
+      activationMs !== null &&
+        checkpointDelay !== null &&
+        checkpointDelay <= 250 &&
+        checkpointUninterrupted &&
+        betweenActivationAndCheckpoint.every(
+          (text) => text.length === 0 || text.includes("Checkpoint") || text === firstVisible?.text,
+        ),
+      `activation=${activationMs} ms, checkpointDelay=${checkpointDelay} ms, ` +
+        `firstVisible=${JSON.stringify(firstVisible?.text ?? null)}, ` +
+        `between=${JSON.stringify(betweenActivationAndCheckpoint)}, ` +
+        `uninterrupted=${String(checkpointUninterrupted)}`,
+    );
+    checklist.check(
+      "toast: the interrupted tutorial toast is not lost — it plays after the checkpoint toast",
+      firstTutorialAfter !== null &&
+        firstCheckpointMs !== null &&
+        (firstTutorialAfter?.ms ?? 0) > firstCheckpointMs &&
+        (firstTutorialAfter?.text ?? "").length > 0,
+      JSON.stringify({
+        checkpointMs: firstCheckpointMs,
+        tutorial: firstTutorialAfter?.text ?? null,
+        tutorialMs: firstTutorialAfter?.ms ?? null,
+      }),
+    );
+    checklist.check(
+      "toast: the checkpoint confirmation stays readable and nothing is left stuck",
+      checkpointVisibleFor >= 1.5 && finalSample?.visible === false && emptyVisible === false,
+      `visible=${round(checkpointVisibleFor, 2)} s, finalVisible=${String(finalSample?.visible)}, ` +
+        `emptyVisible=${String(emptyVisible)}`,
+    );
+
+    /* ---- F-03: duct camera clearance ------------------------------------ */
+
+    const DUCT_CEILING_BOTTOM = 1.9;
+    const DUCT_FLOOR_TOP = 0.9;
+
+    // 1. Crouch at the lip. Capture while crouching is still held: the Step 3.6
+    //    frame was taken after releasing Shift, i.e. mid stand-up.
+    await traverseToDuctRunway(page, mouse, log);
+    await stepToZ(page, mouse, -46.2, { tolerance: 0.2 });
+    await aimYaw(page, mouse, 0);
+    await hold(page, "ShiftLeft");
+    await hold(page, "KeyW");
+    await delay(1_400);
+
+    const crouchStatus = await readStatus(page);
+    const crouchCameraY = round(crouchStatus?.camera?.position?.y ?? Number.NaN, 3);
+    const crouchPose = await capture("56-duct-crouch-lip");
+
+    await release(page, "KeyW");
+    await release(page, "ShiftLeft");
+    await delay(400);
+
+    const crouchClearance = round(DUCT_CEILING_BOTTOM - crouchCameraY, 3);
+
+    polish.ductCamera = {
+      crouch: {
+        stance: crouchStatus?.player?.stance ?? null,
+        postureHeight: round(crouchStatus?.player?.postureHeight ?? 0, 2),
+        z: round(crouchStatus?.player?.position.z ?? 0, 2),
+        cameraY: crouchCameraY,
+        clearance: crouchClearance,
+        pose: crouchPose,
+      },
+      slide: null,
+      stopInside: null,
+    };
+
+    // The crouched eye is above the authored lintel plane by design (crouch eye
+    // 1.05 m > 1.00 m slot). The camera is still in open air in front of the
+    // slab (z > -47), so this is a documented measurement, not a camera inside
+    // solid geometry. See the Step 3.8 report.
+    checklist.check(
+      "duct camera: the crouched lip view is settled, outside the ceiling slab, and documents the 0.07 m lintel overlap",
+      crouchStatus?.player?.stance === "crouching" &&
+        crouchCameraY > DUCT_FLOOR_TOP + 1.0 &&
+        crouchCameraY < DUCT_FLOOR_TOP + 1.12 &&
+        (crouchStatus?.player?.position.z ?? 0) > -47.0 &&
+        Math.abs(crouchClearance + 0.07) < 0.04,
+      `stance=${crouchStatus?.player?.stance}, z=${round(crouchStatus?.player?.position.z ?? 0, 2)}, ` +
+        `cameraY=${crouchCameraY}, clearance=${crouchClearance}`,
+    );
+
+    // 2. Sprint-slide in, then release inside the duct so the slide ends there.
+    await backUpTo(page, -43.5);
+    await aimYaw(page, mouse, 0);
+    await hold(page, "KeyX");
+    await hold(page, "KeyW");
+
+    const slideSamples = [];
+
+    try {
+      await waitForStatus(page, (status) => (status.player?.position.z ?? 0) <= -44.6, {
+        timeout: 20_000,
+        interval: 16,
+        label: "the duct slide run-up",
+      });
+      await hold(page, "ShiftLeft");
+
+      const slideDeadline = Date.now() + 20_000;
+
+      while (Date.now() < slideDeadline) {
+        const status = await readStatus(page);
+        const z = status?.player?.position.z ?? 0;
+
+        slideSamples.push({
+          z: round(z, 3),
+          y: round(status?.player?.position.y ?? 0, 3),
+          stance: status?.player?.stance ?? null,
+          posture: round(status?.player?.postureHeight ?? 0, 2),
+          speed: round(status?.player?.speed ?? 0, 2),
+          cameraY: round(status?.camera?.position?.y ?? Number.NaN, 3),
+        });
+
+        if (z <= -49.0) {
+          break;
+        }
+
+        await delay(16);
+      }
+    } finally {
+      await release(page, "KeyW");
+      await release(page, "KeyX");
+      await release(page, "ShiftLeft");
+    }
+
+    const slideInsidePose = await capture("57-duct-slide-inside");
+
+    // Let the ended slide settle; the body cannot stand, so the collider stays
+    // at slide height and the camera must remain below the ceiling.
+    await delay(2_500);
+
+    const stoppedStatus = await readStatus(page);
+    const stoppedCameraY = round(stoppedStatus?.camera?.position?.y ?? Number.NaN, 3);
+    const stoppedPose = await capture("58-duct-stopped-inside");
+
+    const movingInside = slideSamples.filter(
+      (sample) => sample.z < -47.05 && sample.z > -53.95 && sample.stance === "sliding",
+    );
+    const maxMovingCameraY =
+      movingInside.length === 0 ? null : Math.max(...movingInside.map((sample) => sample.cameraY));
+
+    polish.ductCamera.slide = {
+      samples: movingInside,
+      maxCameraY: maxMovingCameraY,
+      clearance:
+        maxMovingCameraY === null ? null : round(DUCT_CEILING_BOTTOM - maxMovingCameraY, 3),
+      pose: slideInsidePose,
+    };
+    polish.ductCamera.stopInside = {
+      z: round(stoppedStatus?.player?.position.z ?? 0, 2),
+      stance: stoppedStatus?.player?.stance ?? null,
+      postureHeight: round(stoppedStatus?.player?.postureHeight ?? 0, 2),
+      cameraY: stoppedCameraY,
+      clearance: round(DUCT_CEILING_BOTTOM - stoppedCameraY, 3),
+      pose: stoppedPose,
+    };
+
+    checklist.check(
+      "duct camera: a sprint-slide keeps the eye below the ceiling for the whole crossing",
+      movingInside.length >= 3 &&
+        maxMovingCameraY !== null &&
+        maxMovingCameraY < DUCT_CEILING_BOTTOM - 0.2,
+      `samples=${movingInside.length}, maxCameraY=${maxMovingCameraY}, ` +
+        `clearance=${polish.ductCamera.slide.clearance}`,
+    );
+    checklist.check(
+      "duct camera: a slide that ends inside the duct keeps the camera below the ceiling (no camera inside the slab)",
+      stoppedStatus?.player?.stance === "crouching" &&
+        Math.abs((stoppedStatus?.player?.postureHeight ?? 0) - 0.9) < 0.03 &&
+        (stoppedStatus?.player?.position.z ?? 0) < -47.05 &&
+        (stoppedStatus?.player?.position.z ?? 0) > -53.95 &&
+        stoppedCameraY < DUCT_CEILING_BOTTOM - 0.05,
+      `stance=${stoppedStatus?.player?.stance}, posture=${round(stoppedStatus?.player?.postureHeight ?? 0, 2)}, ` +
+        `z=${round(stoppedStatus?.player?.position.z ?? 0, 2)}, cameraY=${stoppedCameraY}, ` +
+        `clearance=${polish.ductCamera.stopInside.clearance}`,
+    );
+
+    // 3. Crouch-walk out of the duct so the session ends in a valid state.
+    await hold(page, "KeyW");
+
+    try {
+      await waitForStatus(page, (status) => (status.player?.position.z ?? 0) <= -54.6, {
+        timeout: 25_000,
+        interval: 32,
+        label: "the duct exit after the stop probe",
+      });
+    } finally {
+      await release(page, "KeyW");
+    }
+
+    const exitPose = await capture("59-duct-exit-after-stop");
+
+    polish.ductCamera.exit = {
+      z: round((await readStatus(page))?.player?.position.z ?? 0, 2),
+      pose: exitPose,
+    };
+
+    checklist.check(
+      "duct camera: crouch-walking out of the duct still works after the slide-ended stop",
+      (polish.ductCamera.exit.z ?? 0) <= -54.6,
+      `exit z=${polish.ductCamera.exit.z}`,
+    );
+
+    const diagnosticsSnapshot = diagnostics.snapshot();
+
+    polish.diagnostics = diagnosticsSnapshot;
+
+    checklist.check(
+      "runtime: the Step 3.8 polish scenario produced no console or page errors",
+      diagnosticsSnapshot.consoleErrors.length === 0 &&
+        diagnosticsSnapshot.pageErrors.length === 0 &&
+        diagnosticsSnapshot.failedRequests.length === 0,
+      JSON.stringify({
+        consoleErrors: diagnosticsSnapshot.consoleErrors.slice(0, 3),
+        pageErrors: diagnosticsSnapshot.pageErrors.slice(0, 3),
+      }),
+    );
+  } finally {
+    await closeSession(session);
+  }
+
+  return polish;
 }
 
 /**
@@ -2376,6 +2903,11 @@ async function chargeObstacle(page, mouse, { centerZ, sprint, durationMs = 1_600
   const closestZ = zs.length === 0 ? 0 : Math.min(...zs);
   const maxY = ys.length === 0 ? 0 : Math.max(...ys);
   const last = samples[samples.length - 1];
+  const firstPrompt = samples.find((sample) => sample.promptVisible === true) ?? null;
+  const promptLeadMeters =
+    firstPrompt?.z === null || firstPrompt?.z === undefined
+      ? null
+      : round(firstPrompt.z - closestZ, 2);
 
   return {
     startZ: round(start?.player?.position.z ?? 0, 2),
@@ -2391,6 +2923,8 @@ async function chargeObstacle(page, mouse, { centerZ, sprint, durationMs = 1_600
     promptSeen: promptSamples.length > 0,
     promptText: promptSamples[promptSamples.length - 1]?.prompt ?? null,
     promptCountMax: Math.max(0, ...samples.map((sample) => sample.promptCount ?? 0)),
+    promptLeadMeters,
+    promptEntrySpeed: firstPrompt?.speed ?? null,
     crossed: closestZ <= centerZ - 0.7,
     samples,
   };
@@ -2494,6 +3028,68 @@ async function vaultAtWalkSpeed(page, mouse, { centerZ, approachZ }) {
 }
 
 /** Sprint traversal from the start roof to the vault channel, no captures. */
+/**
+ * Runs the route with normal input and the authored jumps, stopping on the
+ * slide-duct runway. Same jump points as {@link traverseToVaults} but no duct
+ * slide, because the Step 3.8 camera checks control the slide themselves.
+ */
+async function traverseToDuctRunway(page, mouse, log) {
+  await aimYaw(page, mouse, 0);
+  await hold(page, "KeyX");
+  await hold(page, "KeyW");
+
+  let jumpedA = false;
+  let jumpedB = false;
+  let jumpedStep = false;
+
+  const deadline = Date.now() + 45_000;
+
+  try {
+    while (Date.now() < deadline) {
+      const status = await readStatus(page);
+      const player = status?.player;
+
+      if (!player) {
+        await delay(16);
+        continue;
+      }
+
+      if (player.position.z <= -43.2) {
+        break;
+      }
+
+      if (!jumpedA && player.grounded && player.position.z <= ROUTE.gapATakeoffZ) {
+        await tap(page, "Space", 320);
+        jumpedA = true;
+      } else if (
+        !jumpedB &&
+        jumpedA &&
+        player.grounded &&
+        player.position.z <= ROUTE.gapBTakeoffZ
+      ) {
+        await tap(page, "Space", 320);
+        jumpedB = true;
+      } else if (
+        !jumpedStep &&
+        jumpedB &&
+        player.grounded &&
+        player.position.z <= ROUTE.stepTakeoffZ
+      ) {
+        await tap(page, "Space", 320);
+        jumpedStep = true;
+      }
+
+      await delay(10);
+    }
+  } finally {
+    await release(page, "KeyW");
+    await release(page, "KeyX");
+  }
+
+  await delay(600);
+  log("traversed to the duct runway");
+}
+
 async function traverseToVaults(page, mouse, log) {
   await aimYaw(page, mouse, 0);
   await hold(page, "KeyX");
@@ -2640,6 +3236,11 @@ async function main() {
     if (options.failureModes) {
       log("session B — failure modes and control edge cases");
       await runFailureModes(browser, options, viewport, outDir, report, checklist, log);
+    }
+
+    if (options.polish) {
+      log("session C — Step 3.8 toast priority and duct camera clearance");
+      await runPolishChecks(browser, options, viewport, outDir, report, checklist, log);
     }
 
     report.passed = checklist.failed.length === 0;

@@ -89,9 +89,13 @@ interface PlayerLike {
   getMovementSnapshot(): PlayerSnapshotLike;
 }
 
+/** Read-only camera facts; `camera` is optional so simple test doubles work. */
 interface CameraSystemLike {
   readonly viewYaw: number;
   readonly viewPitch: number;
+  readonly camera?: {
+    readonly position: { readonly x: number; readonly y: number; readonly z: number };
+  } | null;
 }
 
 interface InputLike {
@@ -172,7 +176,12 @@ export interface GlasslineDevLaunchStatus {
     readonly stance: string;
     readonly postureHeight: number;
   } | null;
-  readonly camera: { readonly yaw: number; readonly pitch: number } | null;
+  readonly camera: {
+    readonly yaw: number;
+    readonly pitch: number;
+    /** World-space eye position; null when the camera double omits it. */
+    readonly position: DevLaunchVector | null;
+  } | null;
   readonly activeCheckpointId: string | null;
   readonly activatedCheckpointIds: readonly string[];
   readonly respawnState: string;
@@ -657,6 +666,7 @@ function buildStatus(
   const movement = app.player?.getMovementSnapshot() ?? null;
   const position = app.player?.getPosition() ?? null;
   const camera = app.cameraSystem;
+  const cameraPosition = camera?.camera?.position ?? null;
   const checkpoint = app.checkpointSystem;
   const respawn = app.respawnManager;
   const results = app.sessionManager?.getLastResults() ?? null;
@@ -689,7 +699,17 @@ function buildStatus(
             stance: movement.stance,
             postureHeight: movement.postureHeight,
           },
-    camera: camera === null ? null : { yaw: camera.viewYaw, pitch: camera.viewPitch },
+    camera:
+      camera === null
+        ? null
+        : {
+            yaw: camera.viewYaw,
+            pitch: camera.viewPitch,
+            position:
+              cameraPosition === null
+                ? null
+                : { x: cameraPosition.x, y: cameraPosition.y, z: cameraPosition.z },
+          },
     activeCheckpointId: checkpoint?.getActiveCheckpointId() ?? null,
     activatedCheckpointIds: checkpoint?.getSnapshot().activatedCheckpointIds ?? [],
     respawnState: respawn?.currentState ?? "unavailable",

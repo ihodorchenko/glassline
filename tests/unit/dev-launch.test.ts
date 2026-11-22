@@ -81,7 +81,11 @@ interface FakeApplication {
   activeSectionId: string | null;
   currentMode: string | null;
   player: FakePlayer | null;
-  cameraSystem: { viewYaw: number; viewPitch: number };
+  cameraSystem: {
+    viewYaw: number;
+    viewPitch: number;
+    camera: { position: { x: number; y: number; z: number } };
+  };
   input: { activeContext: string; isPointerLocked: boolean };
   checkpoint: { activeId: string | null; activated: string[] };
   respawn: { currentState: string; destination: { position: FakeVector } | null };
@@ -170,7 +174,11 @@ function createFakeApplication(options: FakeOptions = {}): FakeApplication {
     activeSectionId: null,
     currentMode: null,
     player: null,
-    cameraSystem: { viewYaw: 0.25, viewPitch: -0.125 },
+    cameraSystem: {
+      viewYaw: 0.25,
+      viewPitch: -0.125,
+      camera: { position: { x: 0, y: 1.62, z: 14 } },
+    },
     input: { activeContext: "gameplay", isPointerLocked: true },
     checkpoint: { activeId: null, activated: [] },
     respawn: { currentState: "idle", destination: null },
@@ -470,7 +478,11 @@ describe("dev launch runtime", () => {
     expect(status?.activeSectionId).toBe("sec_start");
     expect(status?.screen).toBeNull();
     expect(status?.player?.position).toEqual({ x: 0, y: 0.93, z: 14 });
-    expect(status?.camera).toEqual({ yaw: 0.25, pitch: -0.125 });
+    expect(status?.camera).toEqual({
+      yaw: 0.25,
+      pitch: -0.125,
+      position: { x: 0, y: 1.62, z: 14 },
+    });
     expect(status?.activeCheckpointId).toBe("cp_start");
     expect(status?.activatedCheckpointIds).toEqual(["cp_start"]);
     expect(status?.respawnState).toBe("idle");

@@ -89,7 +89,18 @@ export function findSpawn(id: string): LevelSpawnPointDefinition {
   return spawn;
 }
 
-export async function createHarness(spawn: LevelVector3): Promise<FirstSectionHarness> {
+export interface HarnessOptions {
+  /**
+   * Overrides the level's `vaultAffordance` opt-in for isolation tests. Defaults
+   * to the authored First Section metadata.
+   */
+  readonly vaultAffordance?: boolean;
+}
+
+export async function createHarness(
+  spawn: LevelVector3,
+  options: HarnessOptions = {},
+): Promise<FirstSectionHarness> {
   const physics = new PhysicsWorld({
     gravity: { x: 0, y: -9.81, z: 0 },
     timestepSeconds: FIXED_DT,
@@ -122,6 +133,9 @@ export async function createHarness(spawn: LevelVector3): Promise<FirstSectionHa
   const player = new PlayerSystem(physics, {
     tuning: DEFAULT_MOVEMENT_TUNING,
     spawnPoint: spawn,
+    // First Section opts into the contextual vault affordance; the harness
+    // mirrors the production wiring so availability tests see both signals.
+    vaultAffordance: options.vaultAffordance ?? LEVEL.metadata.vaultAffordance === true,
   });
 
   player.activate();

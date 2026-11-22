@@ -13,8 +13,11 @@
 export interface VaultPromptConditions {
   /** The level opts into the affordance through `LevelMetadata.vaultAffordance`. */
   readonly levelSupportsVaultAffordance: boolean;
-  /** `PlayerSystem.isVaultAvailable()` for the latest fixed step. */
-  readonly vaultAvailable: boolean;
+  /**
+   * `PlayerSystem.isVaultAffordanceAvailable()` for the latest fixed step: the
+   * wider, presentation-only reach, not the vault execution condition.
+   */
+  readonly vaultAffordanceVisible: boolean;
   /** A validated interaction target currently owns the prompt line. */
   readonly interactionPrompt: string | null;
   /** The Training tutorial panel is presenting a step hint. */
@@ -30,7 +33,7 @@ export interface VaultPromptConditions {
  * contextual instruction.
  */
 export function shouldShowVaultPrompt(conditions: VaultPromptConditions): boolean {
-  if (!conditions.levelSupportsVaultAffordance || !conditions.vaultAvailable) {
+  if (!conditions.levelSupportsVaultAffordance || !conditions.vaultAffordanceVisible) {
     return false;
   }
 

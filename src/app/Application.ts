@@ -961,6 +961,9 @@ export class Application implements Disposable {
     this.completionRequested = false;
     this.finishTriggered = false;
     this.gameplayElapsedSeconds = 0;
+    // A restart/retry starts a clean session: a toast queued for the previous
+    // run must not surface over the new one.
+    this.ui?.clearToasts();
 
     this.playerState = new PlayerStateSystem("local-player", context.sessionId);
     this.sessionDisposables.push(this.playerState);
@@ -970,6 +973,9 @@ export class Application implements Disposable {
       spawnPoint: initialSpawn.position,
       isWallRunnable: (position) =>
         this.levelRuntime?.getSurfaceContaining(position)?.definition.wallRunSurface ?? false,
+      // Level-scoped opt-in: the wider presentation reach only runs where the
+      // level advertises vaulting, and never changes the action condition.
+      vaultAffordance: level.metadata.vaultAffordance === true,
     });
     this.sessionDisposables.push(this.player);
 
@@ -1303,7 +1309,7 @@ export class Application implements Disposable {
       : null;
     const vaultPrompt = shouldShowVaultPrompt({
       levelSupportsVaultAffordance: level?.metadata.vaultAffordance === true,
-      vaultAvailable: this.player?.isVaultAvailable() ?? false,
+      vaultAffordanceVisible: this.player?.isVaultAffordanceAvailable() ?? false,
       interactionPrompt,
       tutorialHintVisible: tutorialHint !== null,
     })
@@ -1518,6 +1524,8 @@ export class Application implements Disposable {
         this.ui?.showToast(
           `${this.localize("hud.checkpointReached")}: ${displayName}`,
           performance.now(),
+          undefined,
+          "critical",
         );
         this.audioManager?.playUiCue("checkpoint");
         this.speedrunSystem?.recordCheckpoint(activation.checkpointId);
@@ -1802,6 +1810,7 @@ export class Application implements Disposable {
       this.finalizeAnalytics(false);
       this.flowManager?.navigate({ target: "main-menu", reason: "return-to-menu" });
       this.lastResults = null;
+      this.ui?.clearToasts();
       this.ui?.showMainMenu();
       this.syncInputContext();
     } finally {

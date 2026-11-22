@@ -10,6 +10,12 @@ import type { SessionResults } from "../sessions/GameplaySessionManager";
 import type { SettingsManager } from "../settings/SettingsManager";
 import type { SettingDefinition, SettingsSnapshot, SettingValue } from "../settings/SettingsTypes";
 import { formatRunTime } from "../speedrun/RunTimer";
+import {
+  DEFAULT_TOAST_DURATION_MS,
+  type ToastPriority,
+  ToastQueue,
+  type ToastTransition,
+} from "./ToastQueue";
 
 export type UIScreen =
   | "main-menu"
@@ -297,8 +303,7 @@ export class UIManager {
   private lastNavigationAtMs = 0;
   private lastDirection = 0;
   private lastHudUpdateAtMs = 0;
-  private toastExpiresAtMs = 0;
-  private toastQueue: { message: string; durationMs: number }[] = [];
+  private readonly toasts = new ToastQueue();
 
   private reducedMotion = false;
   private highContrast = false;
@@ -787,18 +792,7 @@ export class UIManager {
       return;
     }
 
-    if (this.toastExpiresAtMs > 0 && nowMs >= this.toastExpiresAtMs) {
-      this.toastExpiresAtMs = 0;
-
-      const nextToast = this.toastQueue.shift();
-
-      if (nextToast) {
-        this.displayToast(nextToast.message, nowMs, nextToast.durationMs);
-      } else {
-        this.toast.textContent = "";
-        this.toast.classList.remove("is-visible");
-      }
-    }
+    this.applyToastTransition(this.toasts.tick(nowMs));
 
     if (nowMs - this.lastHudUpdateAtMs < HUD_TIMER_THROTTLE_MS) {
       return;
@@ -875,29 +869,50 @@ export class UIManager {
     this.hudHint.textContent = this.localize("hud.pauseHint");
   }
 
-  showToast(message: string, nowMs: number, durationMs = 2200): void {
+  /**
+   * Shows a transient status message.
+   *
+   * `critical` messages (checkpoint confirmations) preempt a visible routine
+   * toast; routine messages queue behind whatever is on screen. See
+   * `ToastQueue` for the full ordering contract.
+   */
+  showToast(
+    message: string,
+    nowMs: number,
+    durationMs = DEFAULT_TOAST_DURATION_MS,
+    priority: ToastPriority = "normal",
+  ): void {
     if (this.disposed) {
       return;
     }
 
-    if (this.toastExpiresAtMs > nowMs) {
-      this.toastQueue.push({ message, durationMs });
+    this.applyToastTransition(this.toasts.push({ message, durationMs, priority }, nowMs));
+  }
 
-      if (this.toastQueue.length > 5) {
-        this.toastQueue.shift();
-      }
+  /** Drops any visible or queued toast (session restart / return to menu). */
+  clearToasts(): void {
+    if (this.disposed) {
+      return;
+    }
+
+    this.applyToastTransition(this.toasts.clear());
+  }
+
+  private applyToastTransition(transition: ToastTransition | null): void {
+    if (transition === null) {
+      return;
+    }
+
+    if (transition.kind === "hide") {
+      this.toast.textContent = "";
+      this.toast.classList.remove("is-visible");
 
       return;
     }
 
-    this.displayToast(message, nowMs, durationMs);
-  }
-
-  private displayToast(message: string, nowMs: number, durationMs: number): void {
-    this.toast.textContent = message;
+    this.toast.textContent = transition.toast.message;
     this.toast.classList.add("is-visible");
-    this.toastExpiresAtMs = nowMs + durationMs;
-    this.announce(message);
+    this.announce(transition.toast.message);
   }
 
   applySettings(snapshot: SettingsSnapshot): void {

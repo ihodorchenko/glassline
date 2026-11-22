@@ -5,7 +5,7 @@ import { EventBus, type Unsubscribe } from "../core/EventBus";
 import type { PhysicsWorld } from "../physics/PhysicsWorld";
 import type { Vector2Like, Vector3Like } from "../shared/math";
 import { clamp } from "../shared/math";
-import { VaultDetector } from "./detection/VaultDetector";
+import { VAULT_AFFORDANCE_FORWARD_REACH, VaultDetector } from "./detection/VaultDetector";
 import { WallRunDetector } from "./detection/WallRunDetector";
 import {
   type MovementEnvironment,
@@ -41,6 +41,13 @@ export interface PlayerSystemOptions {
    * uses pure geometry (unit tests).
    */
   readonly isWallRunnable?: (position: Vector3Like) => boolean;
+  /**
+   * Opt-in for the level-scoped `E · VAULT` affordance (`LevelMetadata.
+   * vaultAffordance`). When false the presentation detector never runs, so a
+   * level that does not advertise vaulting pays no raycast cost and can never
+   * surface the line.
+   */
+  readonly vaultAffordance?: boolean;
 }
 
 const DOWN_RAY = { x: 0, y: -1, z: 0 };
@@ -112,16 +119,23 @@ export class PlayerSystem implements Disposable {
 
   private vaultSnapSuspended = false;
   /**
-   * Vaultable obstacle detected ahead in the latest fixed step. Drives the
-   * contextual `E · VAULT` HUD affordance only; it never starts an action.
+   * Vaultable obstacle detected inside the execution reach in the latest fixed
+   * step. The vault action and `isVaultAvailable()` consume this signal.
    */
   private detectedVault: VaultCandidate | null = null;
+  /**
+   * Obstacle detected inside the wider presentation reach. Drives the
+   * contextual `E · VAULT` HUD affordance only; it never starts an action.
+   */
+  private detectedVaultAffordance: VaultCandidate | null = null;
+  private readonly vaultAffordanceEnabled: boolean;
 
   constructor(physics: PhysicsWorld, options: PlayerSystemOptions) {
     this.physics = physics;
     this.tuning = options.tuning ?? DEFAULT_MOVEMENT_TUNING;
     this.spawnPoint = options.spawnPoint;
     this.postureHeight = this.tuning.capsuleHeight;
+    this.vaultAffordanceEnabled = options.vaultAffordance === true;
 
     const world = physics.rapierWorld;
     const halfHeight = this.tuning.capsuleHeight / 2 - this.tuning.capsuleRadius;
@@ -182,6 +196,7 @@ export class PlayerSystem implements Disposable {
   deactivate(): void {
     this.active = false;
     this.detectedVault = null;
+    this.detectedVaultAffordance = null;
   }
 
   /**
@@ -196,6 +211,24 @@ export class PlayerSystem implements Disposable {
     return (
       this.isActive &&
       this.detectedVault !== null &&
+      this.model.getGrounded() &&
+      this.model.getState() !== "VAULTING"
+    );
+  }
+
+  /**
+   * Whether the `E · VAULT` affordance should be shown.
+   *
+   * This is the presentation signal, not the action condition: it uses the same
+   * validation as the vault but a wider approach reach, so the prompt is
+   * readable before the execution range. Enabling it never changes
+   * `isVaultAvailable()` or starts an action. `false` unless the level opts in.
+   */
+  isVaultAffordanceAvailable(): boolean {
+    return (
+      this.vaultAffordanceEnabled &&
+      this.isActive &&
+      this.detectedVaultAffordance !== null &&
       this.model.getGrounded() &&
       this.model.getState() !== "VAULTING"
     );
@@ -271,14 +304,17 @@ export class PlayerSystem implements Disposable {
       }
     }
 
-    const vaultCandidate = grounded
-      ? this.vaultDetector.detect(
-          translation,
-          this.resolveForward(input, worldDirection, viewYaw),
-          this.getFeetPosition().y,
-        )
-      : null;
+    const forward = this.resolveForward(input, worldDirection, viewYaw);
+    const feetY = this.getFeetPosition().y;
+    const vaultCandidate = grounded ? this.vaultDetector.detect(translation, forward, feetY) : null;
     this.detectedVault = vaultCandidate;
+    // Only pay for the wider presentation probe when the execution signal is
+    // absent and the level advertises vaulting: inside 1.1 m both signals agree.
+    this.detectedVaultAffordance =
+      this.vaultAffordanceEnabled && grounded
+        ? (vaultCandidate ??
+          this.vaultDetector.detect(translation, forward, feetY, VAULT_AFFORDANCE_FORWARD_REACH))
+        : null;
 
     const environment: MovementEnvironment = {
       grounded,
@@ -421,6 +457,7 @@ export class PlayerSystem implements Disposable {
     // start of this fixed step.
     if (!this.model.getGrounded() || this.model.getState() === "VAULTING") {
       this.detectedVault = null;
+      this.detectedVaultAffordance = null;
     }
 
     // Feed slope handling with the surface under the *final* pose of this step
@@ -513,6 +550,7 @@ export class PlayerSystem implements Disposable {
     this.effectiveStance = "standing";
     this.postureHeight = this.tuning.capsuleHeight;
     this.detectedVault = null;
+    this.detectedVaultAffordance = null;
 
     if (this.vaultSnapSuspended) {
       this.controller.enableSnapToGround(this.tuning.snapToGroundDistance);

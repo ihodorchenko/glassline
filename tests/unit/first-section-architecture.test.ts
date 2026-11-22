@@ -177,8 +177,8 @@ const EXPECTED_PLACEMENTS: readonly ExpectedPlacement[] = [
   expectedPlacement(SECTION.start, "column", -2.6, 0, 12),
   expectedPlacement(SECTION.start, "column", 2.6, 0, 12),
   expectedPlacement(SECTION.start, "canopy", 0, 3.6, 12),
-  expectedPlacement(SECTION.start, "jointTwoMeters", 0, 0, 2),
-  expectedPlacement(SECTION.start, "jointTwoMeters", 0, 0, 10),
+  expectedPlacement(SECTION.start, "jointTwoMeters", 3.06, 0, 4.2, -HALF_PI),
+  expectedPlacement(SECTION.start, "jointTwoMeters", 3.06, 0, 8.4, -HALF_PI),
 
   /* S1 — Building Jump (11). */
   expectedPlacement(SECTION.buildingJump, "curtainWall", 3, 0, -9.4, -HALF_PI),
@@ -202,8 +202,8 @@ const EXPECTED_PLACEMENTS: readonly ExpectedPlacement[] = [
   expectedPlacement(SECTION.technical, "facadeScreen", 3.45, 0.9, -38.5, HALF_PI),
   expectedPlacement(SECTION.technical, "parapetFourMeters", -6, 1.95, -27.575),
   expectedPlacement(SECTION.technical, "parapetFourMeters", 6, 1.95, -27.575),
-  expectedPlacement(SECTION.technical, "jointTwoMeters", 0, 0.9, -30),
-  expectedPlacement(SECTION.technical, "jointTwoMeters", 0, 0.9, -36.3),
+  expectedPlacement(SECTION.technical, "jointTwoMeters", -1.46, 0.9, -31, HALF_PI),
+  expectedPlacement(SECTION.technical, "jointTwoMeters", -1.46, 0.9, -35.35, HALF_PI),
 
   /* S3 — Slide Section (2). */
   expectedPlacement(SECTION.slide, "jointTwoMeters", -1.85, 0.9, -47),
@@ -212,9 +212,9 @@ const EXPECTED_PLACEMENTS: readonly ExpectedPlacement[] = [
   /* S4 — Vault Section (5). */
   expectedPlacement(SECTION.vault, "facadeBay", -2.65, 0.9, -61, -HALF_PI),
   expectedPlacement(SECTION.vault, "facadeBay", -2.65, 0.9, -67, -HALF_PI),
-  expectedPlacement(SECTION.vault, "jointTwoMeters", 0, 0.9, -59.5),
-  expectedPlacement(SECTION.vault, "jointTwoMeters", 0, 0.9, -63.5),
-  expectedPlacement(SECTION.vault, "jointTwoMeters", 0, 0.9, -67.5),
+  expectedPlacement(SECTION.vault, "jointTwoMeters", 2.26, 0.9, -59.5, -HALF_PI),
+  expectedPlacement(SECTION.vault, "jointTwoMeters", 2.26, 0.9, -63.5, -HALF_PI),
+  expectedPlacement(SECTION.vault, "jointTwoMeters", 2.26, 0.9, -67.5, -HALF_PI),
 
   /* S5 — Finish Point (14). */
   expectedPlacement(SECTION.finish, "curtainWall", -3, 4.5, -87.5),

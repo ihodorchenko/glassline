@@ -36,6 +36,28 @@ import { FIRST_SECTION_SECTION_IDS, type FirstSectionSectionId } from "./FirstSe
  *    yaw 0, the mirrored east corner requires -π/2; at yaw 0 its wing runs
  *    inward (x 2.8…7.075) and intersects the curtain-wall zone. The two yaw
  *    values in the spec are now 0 and -π/2.
+ *
+ * Step 3.8 (F-02) placement correction — seven `joint` modules authored on the
+ * route centreline (S0 z = 2.0/10.0, S2 z = -30.0/-36.3, S4 z = -59.5/-63.5/
+ * -67.5) stood as 2 m non-collidable columns directly in the first-person view
+ * of the starting checkpoint and of the three vault obstacles. The module is a
+ * wall/panel seam: every placement is now mounted on the vertical surface it
+ * expresses, outside the ±1 m route corridor, with its authored face (+Z)
+ * turned toward the player. No module was removed and no collision geometry
+ * changed; only these seven positions/rotations moved:
+ *
+ *   S0 → penthouse west face (module origin x = 3.06, yaw -π/2) at the bay
+ *        seam z = 4.2 and the bay-run end z = 8.4;
+ *   S2 → gallery west lining (origin x = -1.46, yaw +π/2) at z = -31.0 and
+ *        -35.35;
+ *   S4 → vault channel east wall (origin x = +2.26, yaw -π/2) at each obstacle
+ *        plane, so the seam reads as the junction between obstacle and wall.
+ *
+ * The `x` values below are module origins, not wall planes: each joint is
+ * embedded in its host wall so the red reveal and the anodised face stay proud
+ * of the wall (1.5 cm) while the 0.22 m body back stays inside it. The outer
+ * 0.295 m tip keeps ≥ 4.5 cm from the capsule's maximum wall-hugging camera
+ * position, so it cannot be clipped by the near plane.
  */
 
 /**
@@ -160,7 +182,8 @@ const HALF_PI = Math.PI / 2;
  * the two wings mirror across x = 0. That rule is not applied to other kinds.
  */
 export const FIRST_SECTION_ARCHITECTURE: readonly LevelArchitecturePlacement[] = [
-  /* S0 — Starting Roof: penthouse bays, parapet copings, canopy and columns. */
+  /* S0 — Starting Roof: penthouse bays, parapet copings, canopy, columns and
+     the two penthouse-face seams (off the route centreline). */
   place(
     "arch_start_facade_bay_1",
     FIRST_SECTION_SECTION_IDS.start,
@@ -233,17 +256,19 @@ export const FIRST_SECTION_ARCHITECTURE: readonly LevelArchitecturePlacement[] =
     "arch_start_joint_1",
     FIRST_SECTION_SECTION_IDS.start,
     FIRST_SECTION_ARCHITECTURE_VARIANTS.jointTwoMeters,
+    3.06,
     0,
-    0,
-    2,
+    4.2,
+    -HALF_PI,
   ),
   place(
     "arch_start_joint_2",
     FIRST_SECTION_SECTION_IDS.start,
     FIRST_SECTION_ARCHITECTURE_VARIANTS.jointTwoMeters,
+    3.06,
     0,
-    0,
-    10,
+    8.4,
+    -HALF_PI,
   ),
 
   /* S1 — Building Jump: penthouse glass, canyon facades, copings, joints. */
@@ -343,7 +368,8 @@ export const FIRST_SECTION_ARCHITECTURE: readonly LevelArchitecturePlacement[] =
     -13.35,
   ),
 
-  /* S2 — Technical Passage: portals, intakes, screens, north copings, joints. */
+  /* S2 — Technical Passage: portals, intakes, screens, north copings and the
+     two gallery-lining seams. */
   place(
     "arch_technical_portal_entry",
     FIRST_SECTION_SECTION_IDS.technical,
@@ -416,17 +442,19 @@ export const FIRST_SECTION_ARCHITECTURE: readonly LevelArchitecturePlacement[] =
     "arch_technical_joint_entry",
     FIRST_SECTION_SECTION_IDS.technical,
     FIRST_SECTION_ARCHITECTURE_VARIANTS.jointTwoMeters,
-    0,
+    -1.46,
     0.9,
-    -30,
+    -31,
+    HALF_PI,
   ),
   place(
     "arch_technical_joint_chamber",
     FIRST_SECTION_SECTION_IDS.technical,
     FIRST_SECTION_ARCHITECTURE_VARIANTS.jointTwoMeters,
-    0,
+    -1.46,
     0.9,
-    -36.3,
+    -35.35,
+    HALF_PI,
   ),
 
   /* S3 — Slide Section: doorway jambs at the duct entrance. */
@@ -447,7 +475,8 @@ export const FIRST_SECTION_ARCHITECTURE: readonly LevelArchitecturePlacement[] =
     -47,
   ),
 
-  /* S4 — Vault Section: west facade bays and expressed obstacle joints. */
+  /* S4 — Vault Section: west facade bays and the east-wall seams that
+     express where each obstacle meets the channel wall. */
   place(
     "arch_vault_facade_bay_1",
     FIRST_SECTION_SECTION_IDS.vault,
@@ -470,25 +499,28 @@ export const FIRST_SECTION_ARCHITECTURE: readonly LevelArchitecturePlacement[] =
     "arch_vault_joint_1",
     FIRST_SECTION_SECTION_IDS.vault,
     FIRST_SECTION_ARCHITECTURE_VARIANTS.jointTwoMeters,
-    0,
+    2.26,
     0.9,
     -59.5,
+    -HALF_PI,
   ),
   place(
     "arch_vault_joint_2",
     FIRST_SECTION_SECTION_IDS.vault,
     FIRST_SECTION_ARCHITECTURE_VARIANTS.jointTwoMeters,
-    0,
+    2.26,
     0.9,
     -63.5,
+    -HALF_PI,
   ),
   place(
     "arch_vault_joint_3",
     FIRST_SECTION_SECTION_IDS.vault,
     FIRST_SECTION_ARCHITECTURE_VARIANTS.jointTwoMeters,
-    0,
+    2.26,
     0.9,
     -67.5,
+    -HALF_PI,
   ),
 
   /* S5 — Finish Point: tower facade, corners, canopy, podium copings, joints. */

@@ -668,6 +668,68 @@ applies, extended with the vault-affordance checks in the Step 3.7 report §12.
 
 ---
 
+## 0.2.8. Step 3.8 — First Section remaining polish and manual validation (2026-11-23)
+
+Branch `feat/first-section-remaining-polish` (created from `main` @
+`b9e045731245fc006c52dab732e2d347d839d93e`; no merge performed). Scope: close the
+remaining confirmed First Section UX findings from Step 3.6/3.7 (F-02 route joints,
+F-03 duct camera clearance, F-04 vault-prompt discoverability, F-05 toast priority)
+and prepare, but not perform, the human playtest. Full report:
+[`FIRST_SECTION_REMAINING_POLISH_REPORT.md`](FIRST_SECTION_REMAINING_POLISH_REPORT.md);
+manual checklist: [`FIRST_SECTION_MANUAL_PLAYTEST.md`](FIRST_SECTION_MANUAL_PLAYTEST.md).
+No collision geometry, MovementTuning value, Rapier configuration, traversal
+obstacle, Gap A/B geometry or camera architecture was changed.
+
+| Status | Result |
+|---|---|
+| **Implementation** | Complete — F-02 seven joints relocated to their host walls; F-03 camera eye clamped to the collider envelope; F-04 display reach 4.0 m separated from the unchanged 1.1 m action reach; F-05 priority toast queue with `critical` checkpoint confirmations |
+| **Integration** | Verified — real `?dev=first_section` → Application → HUD/localization/camera; trusted browser keyboard/mouse only; Prologue menu launch unaffected; DEV entry points absent from production |
+| **Verification** | `npm run validate` green; **677/677** tests in 68 files; exploratory browser **65/65**; golden path **52/52**; Prologue smoke **2/2**; `git diff --check` clean |
+
+**F-02.** Seven `joint` modules stood at `x = 0` on the route (S0 z 2/10, S2 z −30/−36.3,
+S4 at the three obstacle planes). They are visual-only, so the camera passed through
+them and they covered the checkpoint marker and vault obstacles. They are now mounted
+on the penthouse west face (S0), the gallery west lining (S2) and the vault east wall
+at each obstacle (S4); no module was removed. A new geometric test derives each
+placement's AABB from the real Kit parts, fails if any module enters the S0/gallery/
+vault camera-travel volumes, and re-runs the same predicate on the seven historical
+coordinates as a self-check.
+
+**F-03.** The Step 3.6 "screen filled with the ceiling" frame was captured *after*
+`Shift` was released (stand-up transition); the settled crouch view at the lip is
+readable (camera 1.97 m, 0.07 m above the 1.90 m lintel plane but outside the solid).
+A real defect existed when a slide ends inside the 1.0 m duct: the collider cannot
+grow, so the `crouching` 1.05 m eye sat above the 0.90 m collider and inside the
+ceiling slab (see-through ceiling). `CameraSystem.updateEyeHeight` now clamps the eye
+to `postureHeight − 0.06`; the settled camera is 1.76 m (0.14 m clearance) and
+standing/crouch/slide heights and damping are unchanged. A ~3-frame late-slide
+transition exposure (pressing Shift at the lip) remains documented as a residual.
+
+**F-04.** `VaultDetector.detect` accepts a display `forwardReach`; `PlayerSystem`
+exposes `isVaultAffordanceAvailable()` using 4.0 m while `isVaultAvailable()` keeps
+1.1 m. The affordance shows at 2.6 m with the action still unavailable, keeps its
+priority (interaction → tutorial hint → vault), remains First-Section-only and never
+starts an action. Measured sprint lead: 3.35 m before contact.
+
+**F-05.** `UIManager`'s inline FIFO was replaced by the pure `ToastQueue`: checkpoint
+confirmations are `critical`, preempt a visible routine toast immediately, and the
+interrupted toast is restored afterwards with its remaining duration. Fresh-profile
+run: `Move` → checkpoint at activation (0 ms queue) → `Move` restored ≈2.2 s later →
+hidden; no stuck toast; the slot is cleared on restart/menu.
+
+**New finding (not fixed).** `arch_technical_ventilation_north` (mounted facing away
+from the gallery at x = 1.85) has its intake plenum penetrating the east wall and
+reaching x = 0.83 (0.57 m into the clear width). Recorded in the Step 3.8 report §9;
+the route-clearance test allowlists it explicitly and fails if the geometry changes.
+
+**Evidence.** [`docs/evidence/first-section/step-3.8/`](evidence/first-section/step-3.8/)
+(65 checks, 58 frames), [`step-3.8-golden/`](evidence/first-section/step-3.8-golden/)
+(52/52) and [`step-3.8-prologue/`](evidence/first-section/step-3.8-prologue/) (2/2).
+**No human hands-on playtest was performed**; the manual checklist in
+`FIRST_SECTION_MANUAL_PLAYTEST.md` is the required next step.
+
+---
+
 ## 1. Purpose
 
 This document is the central implementation tracking reference for Glassline.
