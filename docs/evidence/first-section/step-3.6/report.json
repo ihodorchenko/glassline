@@ -1,0 +1,3746 @@
+{
+  "tool": "tools/capture/playtest.mjs",
+  "generatedAt": "2026-11-22T19:24:18.263Z",
+  "launchUrl": "http://127.0.0.1:5322/?dev=first_section",
+  "viewport": {
+    "width": 1600,
+    "height": 900,
+    "deviceScaleFactor": 1
+  },
+  "environment": "headless-edge",
+  "browser": {
+    "name": "Microsoft Edge",
+    "channel": "msedge",
+    "version": "157.0.4341.46"
+  },
+  "host": {
+    "platform": "darwin",
+    "arch": "arm64",
+    "release": "27.2.0",
+    "cpuCount": 8,
+    "loadAvg": [
+      17.55,
+      18.55,
+      18.38
+    ]
+  },
+  "checks": [
+    {
+      "name": "startup: First Section runs in gameplay with the authored spawn",
+      "passed": true,
+      "details": "flow=gameplay, level=first_section, z=14"
+    },
+    {
+      "name": "startup: HUD is visible and no overlay covers the game",
+      "passed": true,
+      "details": "hud=true, screens=0"
+    },
+    {
+      "name": "startup: looking around does not move or rotate the body",
+      "passed": true,
+      "details": "drift=0 m"
+    },
+    {
+      "name": "checkpoint: cp_start activated by walking through the authored trigger",
+      "passed": true,
+      "details": "[\"cp_start\"]"
+    },
+    {
+      "name": "checkpoint: the checkpoint toast reaches the player",
+      "passed": true,
+      "details": "Checkpoint reached: Starting Roof Checkpoint"
+    },
+    {
+      "name": "route: Gap A (3.4 m) is cleared by a normal sprint jump",
+      "passed": true,
+      "details": "landed z=-7.71"
+    },
+    {
+      "name": "route: Gap A take-off has a visible edge and enough run-up",
+      "passed": true,
+      "details": "edge frame z=-0.76, take-off z=-1.62"
+    },
+    {
+      "name": "route: Gap B (4.2 m) is cleared by a normal sprint jump",
+      "passed": true,
+      "details": "landed z=-19.48"
+    },
+    {
+      "name": "route: the 0.90 m plant step is cleared and landed on",
+      "passed": true,
+      "details": "y=1.79"
+    },
+    {
+      "name": "route: the gallery corridor is crossed inside its authored 3.2 m width",
+      "passed": true,
+      "details": "maxLateral=0 m"
+    },
+    {
+      "name": "duct: stopping inside the 1.0 m duct does not trap or teleport the player",
+      "passed": true,
+      "details": "z -50.76 → -53.51, posture=0.9"
+    },
+    {
+      "name": "duct: holding crouch alone does not enter the 1.0 m duct",
+      "passed": true,
+      "details": "crouch stopped at z=-46.71 (IDLE)"
+    },
+    {
+      "name": "duct: a normal sprint-slide crosses the duct",
+      "passed": true,
+      "details": "exit z=-55.79, maxPosture=0.9"
+    },
+    {
+      "name": "route: all three vault obstacles are passed in normal play",
+      "passed": true,
+      "details": "[{\"centerZ\":-59.5,\"passed\":true},{\"centerZ\":-63.5,\"passed\":true},{\"centerZ\":-67.5,\"passed\":true}]"
+    },
+    {
+      "name": "route: the vault action is an observed VAULTING state, not a jump shortcut",
+      "passed": true,
+      "details": "true"
+    },
+    {
+      "name": "route: the stair flights reach the 4.50 m podium without a jump",
+      "passed": true,
+      "details": "podium y=5.39"
+    },
+    {
+      "name": "completion: the authored finish trigger ends the session with First Section results",
+      "passed": true,
+      "details": "{\"mode\":\"prologue\",\"levelId\":\"first_section\",\"status\":\"completed\",\"durationMs\":54251}"
+    },
+    {
+      "name": "completion: the Results screen names First Section",
+      "passed": true,
+      "details": "Level: First Section"
+    },
+    {
+      "name": "completion: First Section does not complete the Prologue campaign",
+      "passed": true,
+      "details": "false"
+    },
+    {
+      "name": "restart: the Results screen offers the Retry action",
+      "passed": true,
+      "details": "Retry"
+    },
+    {
+      "name": "restart: the restarted session spawns at the initial spawn",
+      "passed": true,
+      "details": "z=14"
+    },
+    {
+      "name": "restart: no checkpoint from the previous session leaks into the new one",
+      "passed": true,
+      "details": "active=null, activated=[]"
+    },
+    {
+      "name": "restart: the camera is reset to the forward view",
+      "passed": true,
+      "details": "{\"yaw\":0,\"pitch\":0}"
+    },
+    {
+      "name": "restart: HUD and pointer lock are available immediately",
+      "passed": true,
+      "details": "hud=true, lock=game-canvas"
+    },
+    {
+      "name": "restart: movement input works immediately after the restart",
+      "passed": true,
+      "details": "z 14 → 10.72"
+    },
+    {
+      "name": "respawn: three consecutive deaths produce exactly three respawns",
+      "passed": true,
+      "details": "[1,2,3]"
+    },
+    {
+      "name": "respawn: every recovery lands at the same checkpoint position",
+      "passed": true,
+      "details": "[{\"x\":0,\"y\":0.8949949145317078,\"z\":10},{\"x\":0,\"y\":0.8949949145317078,\"z\":10},{\"x\":0,\"y\":0.8949949145317078,\"z\":10}]"
+    },
+    {
+      "name": "respawn: repeated deaths do not duplicate diagnostics listeners",
+      "passed": true,
+      "details": "counts=[1,2,3]"
+    },
+    {
+      "name": "runtime: the walkthrough produced no console or page errors",
+      "passed": true,
+      "details": "{\"consoleErrors\":[],\"pageErrors\":[]}"
+    },
+    {
+      "name": "camera: pitch stays inside a finite, non-inverted range",
+      "passed": true,
+      "details": "up=1.484, down=-1.484"
+    },
+    {
+      "name": "camera: a sharp 180° turn does not drag the body and the new view steers the sprint",
+      "passed": true,
+      "details": "yaw 0 → -3.52, drift=0 m, z 9.18 → 14.19"
+    },
+    {
+      "name": "gap A: a standstill jump cannot clear the 3.4 m gap (the run-up is required)",
+      "passed": true,
+      "details": "airborne=true, minY=-0.11, fellAtZ=-2.94"
+    },
+    {
+      "name": "gap A: falling into the gap recovers at the active checkpoint",
+      "passed": true,
+      "details": "z=10, count=1"
+    },
+    {
+      "name": "gap A: the camera and input are usable immediately after the fall",
+      "passed": true,
+      "details": "{\"yaw\":0,\"pitch\":0}"
+    },
+    {
+      "name": "air control: holding a strafe key in the air bends the jump without losing the landing",
+      "passed": true,
+      "details": "lateral=0.46 m, landed z=-7.84"
+    },
+    {
+      "name": "air control: speed is preserved through the landing into the next run",
+      "passed": true,
+      "details": "8.41 m/s after landing"
+    },
+    {
+      "name": "vault: the 0.70 m obstacle blocks a sprint that does not vault",
+      "passed": true,
+      "details": "closest=-62.83, final=-62.83, maxY=1.8"
+    },
+    {
+      "name": "vault: walking into the 0.70 m obstacle and pressing E vaults it",
+      "passed": true,
+      "details": "{\"startZ\":-60.86,\"firstPress\":{\"z\":-60.91,\"speed\":1.2},\"sawVaulting\":true,\"vaulted\":true,\"retries\":0,\"endZ\":-64.3}"
+    },
+    {
+      "name": "vault: walking into the 1.10 m obstacle and pressing E vaults it",
+      "passed": true,
+      "details": "{\"startZ\":-65.41,\"firstPress\":{\"z\":-65.41,\"speed\":0},\"sawVaulting\":true,\"vaulted\":true,\"retries\":0,\"endZ\":-68.49}"
+    },
+    {
+      "name": "pause: Escape pauses the session and shows the pause screen",
+      "passed": true,
+      "details": "flow=paused, screens=1, lock=game-canvas"
+    },
+    {
+      "name": "restart: the pause-menu Restart returns to a clean First Section session",
+      "passed": true,
+      "details": "checkpoint=none"
+    },
+    {
+      "name": "restart: mouse look and movement work after re-acquiring pointer lock",
+      "passed": true,
+      "details": "yawΔ=-0.308, z 14 → 11.25"
+    },
+    {
+      "name": "runtime: failure-mode probing produced no console or page errors",
+      "passed": true,
+      "details": "{\"consoleErrors\":[],\"pageErrors\":[]}"
+    }
+  ],
+  "poses": [
+    {
+      "name": "01-spawn-forward",
+      "file": "01-spawn-forward.jpg",
+      "z": 14,
+      "x": 0,
+      "y": 0.89,
+      "speed": 0,
+      "state": "IDLE",
+      "grounded": true,
+      "postureHeight": 1.75,
+      "yaw": 0,
+      "pitch": 0,
+      "section": "sec_start",
+      "checkpoint": null,
+      "hud": {
+        "hudVisible": true,
+        "speed": "Speed 0.0 m/s",
+        "prompt": "",
+        "promptVisible": false,
+        "tutorialHint": "",
+        "toast": "",
+        "toastVisible": false,
+        "screenCount": 0,
+        "loading": false,
+        "bootLoader": false,
+        "pointerLock": "game-canvas",
+        "firstResultsRow": null,
+        "retryButton": null
+      }
+    },
+    {
+      "name": "02-spawn-look-right",
+      "file": "02-spawn-look-right.jpg",
+      "z": 14,
+      "x": 0,
+      "y": 0.89,
+      "speed": 0,
+      "state": "IDLE",
+      "grounded": true,
+      "postureHeight": 1.75,
+      "yaw": -1.57,
+      "pitch": 0,
+      "section": "sec_start",
+      "checkpoint": null,
+      "hud": {
+        "hudVisible": true,
+        "speed": "Speed 0.0 m/s",
+        "prompt": "",
+        "promptVisible": false,
+        "tutorialHint": "",
+        "toast": "",
+        "toastVisible": false,
+        "screenCount": 0,
+        "loading": false,
+        "bootLoader": false,
+        "pointerLock": "game-canvas",
+        "firstResultsRow": null,
+        "retryButton": null
+      }
+    },
+    {
+      "name": "03-spawn-look-back",
+      "file": "03-spawn-look-back.jpg",
+      "z": 14,
+      "x": 0,
+      "y": 0.89,
+      "speed": 0,
+      "state": "IDLE",
+      "grounded": true,
+      "postureHeight": 1.75,
+      "yaw": 3.14,
+      "pitch": 0,
+      "section": "sec_start",
+      "checkpoint": null,
+      "hud": {
+        "hudVisible": true,
+        "speed": "Speed 0.0 m/s",
+        "prompt": "",
+        "promptVisible": false,
+        "tutorialHint": "",
+        "toast": "",
+        "toastVisible": false,
+        "screenCount": 0,
+        "loading": false,
+        "bootLoader": false,
+        "pointerLock": "game-canvas",
+        "firstResultsRow": null,
+        "retryButton": null
+      }
+    },
+    {
+      "name": "04-spawn-look-left",
+      "file": "04-spawn-look-left.jpg",
+      "z": 14,
+      "x": 0,
+      "y": 0.89,
+      "speed": 0,
+      "state": "IDLE",
+      "grounded": true,
+      "postureHeight": 1.75,
+      "yaw": 1.57,
+      "pitch": 0,
+      "section": "sec_start",
+      "checkpoint": null,
+      "hud": {
+        "hudVisible": true,
+        "speed": "Speed 0.0 m/s",
+        "prompt": "",
+        "promptVisible": false,
+        "tutorialHint": "",
+        "toast": "",
+        "toastVisible": false,
+        "screenCount": 0,
+        "loading": false,
+        "bootLoader": false,
+        "pointerLock": "game-canvas",
+        "firstResultsRow": null,
+        "retryButton": null
+      }
+    },
+    {
+      "name": "05-checkpoint-start",
+      "file": "05-checkpoint-start.jpg",
+      "z": 9.31,
+      "x": 0,
+      "y": 0.89,
+      "speed": 0,
+      "state": "IDLE",
+      "grounded": true,
+      "postureHeight": 1.75,
+      "yaw": 0,
+      "pitch": 0,
+      "section": "sec_start",
+      "checkpoint": "cp_start",
+      "hud": {
+        "hudVisible": true,
+        "speed": "Speed 0.0 m/s",
+        "prompt": "",
+        "promptVisible": false,
+        "tutorialHint": "",
+        "toast": "Checkpoint reached: Starting Roof Checkpoint",
+        "toastVisible": true,
+        "screenCount": 0,
+        "loading": false,
+        "bootLoader": false,
+        "pointerLock": "game-canvas",
+        "firstResultsRow": null,
+        "retryButton": null
+      }
+    },
+    {
+      "name": "06-route-joint-inside",
+      "file": "06-route-joint-inside.jpg",
+      "z": 9.9,
+      "x": 0,
+      "y": 0.89,
+      "speed": 0,
+      "state": "IDLE",
+      "grounded": true,
+      "postureHeight": 1.75,
+      "yaw": 0,
+      "pitch": 0,
+      "section": "sec_start",
+      "checkpoint": "cp_start",
+      "hud": {
+        "hudVisible": true,
+        "speed": "Speed 0.0 m/s",
+        "prompt": "",
+        "promptVisible": false,
+        "tutorialHint": "",
+        "toast": "Checkpoint reached: Starting Roof Checkpoint",
+        "toastVisible": true,
+        "screenCount": 0,
+        "loading": false,
+        "bootLoader": false,
+        "pointerLock": "game-canvas",
+        "firstResultsRow": null,
+        "retryButton": null
+      }
+    },
+    {
+      "name": "07-route-joint-after",
+      "file": "07-route-joint-after.jpg",
+      "z": 8.67,
+      "x": 0,
+      "y": 0.89,
+      "speed": 0,
+      "state": "IDLE",
+      "grounded": true,
+      "postureHeight": 1.75,
+      "yaw": 0,
+      "pitch": 0,
+      "section": "sec_start",
+      "checkpoint": "cp_start",
+      "hud": {
+        "hudVisible": true,
+        "speed": "Speed 0.0 m/s",
+        "prompt": "",
+        "promptVisible": false,
+        "tutorialHint": "",
+        "toast": "",
+        "toastVisible": false,
+        "screenCount": 0,
+        "loading": false,
+        "bootLoader": false,
+        "pointerLock": "game-canvas",
+        "firstResultsRow": null,
+        "retryButton": null
+      }
+    },
+    {
+      "name": "08-route-joint-before-gap-a",
+      "file": "08-route-joint-before-gap-a.jpg",
+      "z": 1.9,
+      "x": 0,
+      "y": 0.89,
+      "speed": 0,
+      "state": "IDLE",
+      "grounded": true,
+      "postureHeight": 1.75,
+      "yaw": 0,
+      "pitch": 0,
+      "section": "sec_start",
+      "checkpoint": "cp_start",
+      "hud": {
+        "hudVisible": true,
+        "speed": "Speed 0.0 m/s",
+        "prompt": "",
+        "promptVisible": false,
+        "tutorialHint": "",
+        "toast": "",
+        "toastVisible": false,
+        "screenCount": 0,
+        "loading": false,
+        "bootLoader": false,
+        "pointerLock": "game-canvas",
+        "firstResultsRow": null,
+        "retryButton": null
+      }
+    },
+    {
+      "name": "09-gap-a-edge",
+      "file": "09-gap-a-edge.jpg",
+      "z": -0.76,
+      "x": 0,
+      "y": 0.89,
+      "speed": 0,
+      "state": "IDLE",
+      "grounded": true,
+      "postureHeight": 1.75,
+      "yaw": 0,
+      "pitch": -0.5,
+      "section": "sec_start",
+      "checkpoint": "cp_start",
+      "hud": {
+        "hudVisible": true,
+        "speed": "Speed 0.0 m/s",
+        "prompt": "",
+        "promptVisible": false,
+        "tutorialHint": "",
+        "toast": "",
+        "toastVisible": false,
+        "screenCount": 0,
+        "loading": false,
+        "bootLoader": false,
+        "pointerLock": "game-canvas",
+        "firstResultsRow": null,
+        "retryButton": null
+      }
+    },
+    {
+      "name": "09-gap-a-edge-down",
+      "file": "09-gap-a-edge-down.jpg",
+      "z": -0.76,
+      "x": 0,
+      "y": 0.89,
+      "speed": 0,
+      "state": "IDLE",
+      "grounded": true,
+      "postureHeight": 1.75,
+      "yaw": 0,
+      "pitch": -1.15,
+      "section": "sec_start",
+      "checkpoint": "cp_start",
+      "hud": {
+        "hudVisible": true,
+        "speed": "Speed 0.0 m/s",
+        "prompt": "",
+        "promptVisible": false,
+        "tutorialHint": "",
+        "toast": "",
+        "toastVisible": false,
+        "screenCount": 0,
+        "loading": false,
+        "bootLoader": false,
+        "pointerLock": "game-canvas",
+        "firstResultsRow": null,
+        "retryButton": null
+      }
+    },
+    {
+      "name": "10-gap-a-airborne",
+      "file": "10-gap-a-airborne.jpg",
+      "z": -3.04,
+      "x": 0,
+      "y": 1.96,
+      "speed": 8.5,
+      "state": "JUMPING",
+      "grounded": false,
+      "postureHeight": 1.75,
+      "yaw": 0,
+      "pitch": -0.01,
+      "section": "sec_building_jump",
+      "checkpoint": "cp_start",
+      "hud": {
+        "hudVisible": true,
+        "speed": "Speed 8.5 m/s",
+        "prompt": "",
+        "promptVisible": false,
+        "tutorialHint": "",
+        "toast": "Jump",
+        "toastVisible": true,
+        "screenCount": 0,
+        "loading": false,
+        "bootLoader": false,
+        "pointerLock": "game-canvas",
+        "firstResultsRow": null,
+        "retryButton": null
+      }
+    },
+    {
+      "name": "11-gap-a-landing",
+      "file": "11-gap-a-landing.jpg",
+      "z": -9.79,
+      "x": 0,
+      "y": 0.89,
+      "speed": 3.6,
+      "state": "RUNNING",
+      "grounded": true,
+      "postureHeight": 1.75,
+      "yaw": 0,
+      "pitch": -0.01,
+      "section": "sec_building_jump",
+      "checkpoint": "cp_start",
+      "hud": {
+        "hudVisible": true,
+        "speed": "Speed 4.1 m/s",
+        "prompt": "",
+        "promptVisible": false,
+        "tutorialHint": "",
+        "toast": "Jump",
+        "toastVisible": true,
+        "screenCount": 0,
+        "loading": false,
+        "bootLoader": false,
+        "pointerLock": "game-canvas",
+        "firstResultsRow": null,
+        "retryButton": null
+      }
+    },
+    {
+      "name": "12-gap-b-edge",
+      "file": "12-gap-b-edge.jpg",
+      "z": -13,
+      "x": 0,
+      "y": 0.89,
+      "speed": 0,
+      "state": "IDLE",
+      "grounded": true,
+      "postureHeight": 1.75,
+      "yaw": 0,
+      "pitch": -0.5,
+      "section": "sec_building_jump",
+      "checkpoint": "cp_start",
+      "hud": {
+        "hudVisible": true,
+        "speed": "Speed 0.0 m/s",
+        "prompt": "",
+        "promptVisible": false,
+        "tutorialHint": "",
+        "toast": "",
+        "toastVisible": false,
+        "screenCount": 0,
+        "loading": false,
+        "bootLoader": false,
+        "pointerLock": "game-canvas",
+        "firstResultsRow": null,
+        "retryButton": null
+      }
+    },
+    {
+      "name": "12-gap-b-edge-down",
+      "file": "12-gap-b-edge-down.jpg",
+      "z": -13,
+      "x": 0,
+      "y": 0.89,
+      "speed": 0,
+      "state": "IDLE",
+      "grounded": true,
+      "postureHeight": 1.75,
+      "yaw": 0,
+      "pitch": -1.15,
+      "section": "sec_building_jump",
+      "checkpoint": "cp_start",
+      "hud": {
+        "hudVisible": true,
+        "speed": "Speed 0.0 m/s",
+        "prompt": "",
+        "promptVisible": false,
+        "tutorialHint": "",
+        "toast": "",
+        "toastVisible": false,
+        "screenCount": 0,
+        "loading": false,
+        "bootLoader": false,
+        "pointerLock": "game-canvas",
+        "firstResultsRow": null,
+        "retryButton": null
+      }
+    },
+    {
+      "name": "13-gap-b-airborne",
+      "file": "13-gap-b-airborne.jpg",
+      "z": -14.53,
+      "x": 0,
+      "y": 1.96,
+      "speed": 8.5,
+      "state": "JUMPING",
+      "grounded": false,
+      "postureHeight": 1.75,
+      "yaw": 0,
+      "pitch": -0.01,
+      "section": "sec_building_jump",
+      "checkpoint": "cp_start",
+      "hud": {
+        "hudVisible": true,
+        "speed": "Speed 8.5 m/s",
+        "prompt": "",
+        "promptVisible": false,
+        "tutorialHint": "",
+        "toast": "",
+        "toastVisible": false,
+        "screenCount": 0,
+        "loading": false,
+        "bootLoader": false,
+        "pointerLock": "game-canvas",
+        "firstResultsRow": null,
+        "retryButton": null
+      }
+    },
+    {
+      "name": "14-gap-b-landing",
+      "file": "14-gap-b-landing.jpg",
+      "z": -21.56,
+      "x": 0,
+      "y": 0.89,
+      "speed": 3.6,
+      "state": "RUNNING",
+      "grounded": true,
+      "postureHeight": 1.75,
+      "yaw": 0,
+      "pitch": -0.01,
+      "section": "sec_building_jump",
+      "checkpoint": "cp_building_jump",
+      "hud": {
+        "hudVisible": true,
+        "speed": "Speed 3.6 m/s",
+        "prompt": "",
+        "promptVisible": false,
+        "tutorialHint": "",
+        "toast": "Checkpoint reached: Building Jump Checkpoint",
+        "toastVisible": true,
+        "screenCount": 0,
+        "loading": false,
+        "bootLoader": false,
+        "pointerLock": "game-canvas",
+        "firstResultsRow": null,
+        "retryButton": null
+      }
+    },
+    {
+      "name": "15-plant-step-approach",
+      "file": "15-plant-step-approach.jpg",
+      "z": -22.12,
+      "x": 0,
+      "y": 0.89,
+      "speed": 0,
+      "state": "IDLE",
+      "grounded": true,
+      "postureHeight": 1.75,
+      "yaw": 0,
+      "pitch": -0.15,
+      "section": "sec_building_jump",
+      "checkpoint": "cp_building_jump",
+      "hud": {
+        "hudVisible": true,
+        "speed": "Speed 0.0 m/s",
+        "prompt": "",
+        "promptVisible": false,
+        "tutorialHint": "",
+        "toast": "Checkpoint reached: Building Jump Checkpoint",
+        "toastVisible": true,
+        "screenCount": 0,
+        "loading": false,
+        "bootLoader": false,
+        "pointerLock": "game-canvas",
+        "firstResultsRow": null,
+        "retryButton": null
+      }
+    },
+    {
+      "name": "16-plant-step-landing",
+      "file": "16-plant-step-landing.jpg",
+      "z": -26.6,
+      "x": 0,
+      "y": 1.79,
+      "speed": 0.89,
+      "state": "RUNNING",
+      "grounded": true,
+      "postureHeight": 1.75,
+      "yaw": 0,
+      "pitch": 0,
+      "section": "sec_technical",
+      "checkpoint": "cp_building_jump",
+      "hud": {
+        "hudVisible": true,
+        "speed": "Speed 0.9 m/s",
+        "prompt": "",
+        "promptVisible": false,
+        "tutorialHint": "",
+        "toast": "",
+        "toastVisible": false,
+        "screenCount": 0,
+        "loading": false,
+        "bootLoader": false,
+        "pointerLock": "game-canvas",
+        "firstResultsRow": null,
+        "retryButton": null
+      }
+    },
+    {
+      "name": "17-gallery-entry",
+      "file": "17-gallery-entry.jpg",
+      "z": -29.97,
+      "x": 0,
+      "y": 1.79,
+      "speed": 0,
+      "state": "IDLE",
+      "grounded": true,
+      "postureHeight": 1.75,
+      "yaw": 0,
+      "pitch": 0,
+      "section": "sec_technical",
+      "checkpoint": "cp_building_jump",
+      "hud": {
+        "hudVisible": true,
+        "speed": "Speed 0.0 m/s",
+        "prompt": "",
+        "promptVisible": false,
+        "tutorialHint": "",
+        "toast": "",
+        "toastVisible": false,
+        "screenCount": 0,
+        "loading": false,
+        "bootLoader": false,
+        "pointerLock": "game-canvas",
+        "firstResultsRow": null,
+        "retryButton": null
+      }
+    },
+    {
+      "name": "18-gallery-mid",
+      "file": "18-gallery-mid.jpg",
+      "z": -34.26,
+      "x": 0,
+      "y": 1.79,
+      "speed": 0,
+      "state": "IDLE",
+      "grounded": true,
+      "postureHeight": 1.75,
+      "yaw": 0,
+      "pitch": 0,
+      "section": "sec_technical",
+      "checkpoint": "cp_building_jump",
+      "hud": {
+        "hudVisible": true,
+        "speed": "Speed 0.0 m/s",
+        "prompt": "",
+        "promptVisible": false,
+        "tutorialHint": "",
+        "toast": "",
+        "toastVisible": false,
+        "screenCount": 0,
+        "loading": false,
+        "bootLoader": false,
+        "pointerLock": "game-canvas",
+        "firstResultsRow": null,
+        "retryButton": null
+      }
+    },
+    {
+      "name": "19-gallery-exit",
+      "file": "19-gallery-exit.jpg",
+      "z": -40.84,
+      "x": 0,
+      "y": 1.79,
+      "speed": 0,
+      "state": "IDLE",
+      "grounded": true,
+      "postureHeight": 1.75,
+      "yaw": 0,
+      "pitch": 0,
+      "section": "sec_slide",
+      "checkpoint": "cp_building_jump",
+      "hud": {
+        "hudVisible": true,
+        "speed": "Speed 0.0 m/s",
+        "prompt": "",
+        "promptVisible": false,
+        "tutorialHint": "",
+        "toast": "",
+        "toastVisible": false,
+        "screenCount": 0,
+        "loading": false,
+        "bootLoader": false,
+        "pointerLock": "game-canvas",
+        "firstResultsRow": null,
+        "retryButton": null
+      }
+    },
+    {
+      "name": "20-duct-approach",
+      "file": "20-duct-approach.jpg",
+      "z": -44.64,
+      "x": 0,
+      "y": 1.79,
+      "speed": 0,
+      "state": "IDLE",
+      "grounded": true,
+      "postureHeight": 1.75,
+      "yaw": 0,
+      "pitch": -0.1,
+      "section": "sec_slide",
+      "checkpoint": "cp_building_jump",
+      "hud": {
+        "hudVisible": true,
+        "speed": "Speed 0.0 m/s",
+        "prompt": "",
+        "promptVisible": false,
+        "tutorialHint": "",
+        "toast": "",
+        "toastVisible": false,
+        "screenCount": 0,
+        "loading": false,
+        "bootLoader": false,
+        "pointerLock": "game-canvas",
+        "firstResultsRow": null,
+        "retryButton": null
+      }
+    },
+    {
+      "name": "21-duct-crouch-blocked",
+      "file": "21-duct-crouch-blocked.jpg",
+      "z": -46.6,
+      "x": 0,
+      "y": 1.79,
+      "speed": 0,
+      "state": "IDLE",
+      "grounded": true,
+      "postureHeight": 1.75,
+      "yaw": 0,
+      "pitch": 0,
+      "section": "sec_slide",
+      "checkpoint": "cp_building_jump",
+      "hud": {
+        "hudVisible": true,
+        "speed": "Speed 0.0 m/s",
+        "prompt": "",
+        "promptVisible": false,
+        "tutorialHint": "",
+        "toast": "",
+        "toastVisible": false,
+        "screenCount": 0,
+        "loading": false,
+        "bootLoader": false,
+        "pointerLock": "game-canvas",
+        "firstResultsRow": null,
+        "retryButton": null
+      }
+    },
+    {
+      "name": "22-duct-inside-slide",
+      "file": "22-duct-inside-slide.jpg",
+      "z": -48.91,
+      "x": 0,
+      "y": 1.37,
+      "speed": 6.69,
+      "state": "SLIDING",
+      "grounded": true,
+      "postureHeight": 0.9,
+      "yaw": 0,
+      "pitch": 0,
+      "section": "sec_slide",
+      "checkpoint": "cp_building_jump",
+      "hud": {
+        "hudVisible": true,
+        "speed": "Speed 6.8 m/s",
+        "prompt": "",
+        "promptVisible": false,
+        "tutorialHint": "",
+        "toast": "Slide",
+        "toastVisible": true,
+        "screenCount": 0,
+        "loading": false,
+        "bootLoader": false,
+        "pointerLock": "game-canvas",
+        "firstResultsRow": null,
+        "retryButton": null
+      }
+    },
+    {
+      "name": "23-duct-stopped-inside",
+      "file": "23-duct-stopped-inside.jpg",
+      "z": -50.76,
+      "x": 0,
+      "y": 1.37,
+      "speed": 0,
+      "state": "IDLE",
+      "grounded": true,
+      "postureHeight": 0.9,
+      "yaw": 0,
+      "pitch": 0,
+      "section": "sec_slide",
+      "checkpoint": "cp_building_jump",
+      "hud": {
+        "hudVisible": true,
+        "speed": "Speed 0.0 m/s",
+        "prompt": "",
+        "promptVisible": false,
+        "tutorialHint": "",
+        "toast": "Slide",
+        "toastVisible": true,
+        "screenCount": 0,
+        "loading": false,
+        "bootLoader": false,
+        "pointerLock": "game-canvas",
+        "firstResultsRow": null,
+        "retryButton": null
+      }
+    },
+    {
+      "name": "24-duct-exit",
+      "file": "24-duct-exit.jpg",
+      "z": -55.79,
+      "x": 0,
+      "y": 1.79,
+      "speed": 0,
+      "state": "IDLE",
+      "grounded": true,
+      "postureHeight": 1.75,
+      "yaw": 0,
+      "pitch": 0,
+      "section": "sec_slide",
+      "checkpoint": "cp_slide",
+      "hud": {
+        "hudVisible": true,
+        "speed": "Speed 0.0 m/s",
+        "prompt": "",
+        "promptVisible": false,
+        "tutorialHint": "",
+        "toast": "Checkpoint reached: Slide Section Checkpoint",
+        "toastVisible": true,
+        "screenCount": 0,
+        "loading": false,
+        "bootLoader": false,
+        "pointerLock": "game-canvas",
+        "firstResultsRow": null,
+        "retryButton": null
+      }
+    },
+    {
+      "name": "25-vault-1-approach",
+      "file": "25-vault-1-approach.jpg",
+      "z": -57.25,
+      "x": 0,
+      "y": 1.79,
+      "speed": 0,
+      "state": "IDLE",
+      "grounded": true,
+      "postureHeight": 1.75,
+      "yaw": 0,
+      "pitch": -0.1,
+      "section": "sec_vault",
+      "checkpoint": "cp_slide",
+      "hud": {
+        "hudVisible": true,
+        "speed": "Speed 0.0 m/s",
+        "prompt": "",
+        "promptVisible": false,
+        "tutorialHint": "",
+        "toast": "Checkpoint reached: Slide Section Checkpoint",
+        "toastVisible": true,
+        "screenCount": 0,
+        "loading": false,
+        "bootLoader": false,
+        "pointerLock": "game-canvas",
+        "firstResultsRow": null,
+        "retryButton": null
+      }
+    },
+    {
+      "name": "26-vault-moment",
+      "file": "26-vault-moment.jpg",
+      "z": -58.2,
+      "x": 0,
+      "y": 1.79,
+      "speed": 5.4,
+      "state": "VAULTING",
+      "grounded": true,
+      "postureHeight": 1.75,
+      "yaw": 0,
+      "pitch": 0,
+      "section": "sec_vault",
+      "checkpoint": "cp_slide",
+      "hud": {
+        "hudVisible": true,
+        "speed": "Speed 5.1 m/s",
+        "prompt": "",
+        "promptVisible": false,
+        "tutorialHint": "",
+        "toast": "Checkpoint reached: Slide Section Checkpoint",
+        "toastVisible": true,
+        "screenCount": 0,
+        "loading": false,
+        "bootLoader": false,
+        "pointerLock": "game-canvas",
+        "firstResultsRow": null,
+        "retryButton": null
+      }
+    },
+    {
+      "name": "26-vault-2-approach",
+      "file": "26-vault-2-approach.jpg",
+      "z": -60.96,
+      "x": 0,
+      "y": 1.79,
+      "speed": 0,
+      "state": "IDLE",
+      "grounded": true,
+      "postureHeight": 1.75,
+      "yaw": 0,
+      "pitch": 0,
+      "section": "sec_vault",
+      "checkpoint": "cp_slide",
+      "hud": {
+        "hudVisible": true,
+        "speed": "Speed 0.0 m/s",
+        "prompt": "",
+        "promptVisible": false,
+        "tutorialHint": "",
+        "toast": "Vault",
+        "toastVisible": true,
+        "screenCount": 0,
+        "loading": false,
+        "bootLoader": false,
+        "pointerLock": "game-canvas",
+        "firstResultsRow": null,
+        "retryButton": null
+      }
+    },
+    {
+      "name": "27-vaults-cleared",
+      "file": "27-vaults-cleared.jpg",
+      "z": -70.23,
+      "x": 0,
+      "y": 1.79,
+      "speed": 2.47,
+      "state": "RUNNING",
+      "grounded": true,
+      "postureHeight": 1.75,
+      "yaw": 0,
+      "pitch": 0,
+      "section": "sec_vault",
+      "checkpoint": "cp_vault",
+      "hud": {
+        "hudVisible": true,
+        "speed": "Speed 2.5 m/s",
+        "prompt": "",
+        "promptVisible": false,
+        "tutorialHint": "",
+        "toast": "Checkpoint reached: Vault Section Checkpoint",
+        "toastVisible": true,
+        "screenCount": 0,
+        "loading": false,
+        "bootLoader": false,
+        "pointerLock": "game-canvas",
+        "firstResultsRow": null,
+        "retryButton": null
+      }
+    },
+    {
+      "name": "28-stairs-approach",
+      "file": "28-stairs-approach.jpg",
+      "z": -72.06,
+      "x": 0,
+      "y": 1.79,
+      "speed": 0,
+      "state": "IDLE",
+      "grounded": true,
+      "postureHeight": 1.75,
+      "yaw": 0,
+      "pitch": 0.15,
+      "section": "sec_finish",
+      "checkpoint": "cp_vault",
+      "hud": {
+        "hudVisible": true,
+        "speed": "Speed 0.0 m/s",
+        "prompt": "",
+        "promptVisible": false,
+        "tutorialHint": "",
+        "toast": "Checkpoint reached: Vault Section Checkpoint",
+        "toastVisible": true,
+        "screenCount": 0,
+        "loading": false,
+        "bootLoader": false,
+        "pointerLock": "game-canvas",
+        "firstResultsRow": null,
+        "retryButton": null
+      }
+    },
+    {
+      "name": "29-finish-podium",
+      "file": "29-finish-podium.jpg",
+      "z": -79.67,
+      "x": 0,
+      "y": 5.39,
+      "speed": 0,
+      "state": "IDLE",
+      "grounded": true,
+      "postureHeight": 1.75,
+      "yaw": 0,
+      "pitch": 0,
+      "section": "sec_finish",
+      "checkpoint": "cp_vault",
+      "hud": {
+        "hudVisible": true,
+        "speed": "Speed 0.0 m/s",
+        "prompt": "",
+        "promptVisible": false,
+        "tutorialHint": "",
+        "toast": "",
+        "toastVisible": false,
+        "screenCount": 0,
+        "loading": false,
+        "bootLoader": false,
+        "pointerLock": "game-canvas",
+        "firstResultsRow": null,
+        "retryButton": null
+      }
+    },
+    {
+      "name": "30-finish-approach",
+      "file": "30-finish-approach.jpg",
+      "z": -82.26,
+      "x": 0,
+      "y": 5.39,
+      "speed": 0,
+      "state": "IDLE",
+      "grounded": true,
+      "postureHeight": 1.75,
+      "yaw": 0,
+      "pitch": 0,
+      "section": "sec_finish",
+      "checkpoint": "cp_vault",
+      "hud": {
+        "hudVisible": true,
+        "speed": "Speed 0.4 m/s",
+        "prompt": "",
+        "promptVisible": false,
+        "tutorialHint": "",
+        "toast": "",
+        "toastVisible": false,
+        "screenCount": 0,
+        "loading": false,
+        "bootLoader": false,
+        "pointerLock": "game-canvas",
+        "firstResultsRow": null,
+        "retryButton": null
+      }
+    },
+    {
+      "name": "31-results",
+      "file": "31-results.jpg",
+      "z": null,
+      "x": null,
+      "y": null,
+      "speed": null,
+      "state": null,
+      "grounded": null,
+      "postureHeight": null,
+      "yaw": 0.14,
+      "pitch": 0.03,
+      "section": "sec_finish",
+      "checkpoint": null,
+      "hud": {
+        "hudVisible": false,
+        "speed": "Speed 6.0 m/s",
+        "prompt": "",
+        "promptVisible": false,
+        "tutorialHint": "",
+        "toast": "",
+        "toastVisible": false,
+        "screenCount": 1,
+        "loading": false,
+        "bootLoader": false,
+        "pointerLock": "game-canvas",
+        "firstResultsRow": "Level: First Section",
+        "retryButton": "Retry"
+      }
+    },
+    {
+      "name": "32-restart-clean",
+      "file": "32-restart-clean.jpg",
+      "z": 14,
+      "x": 0,
+      "y": 0.89,
+      "speed": 0,
+      "state": "IDLE",
+      "grounded": true,
+      "postureHeight": 1.75,
+      "yaw": 0,
+      "pitch": 0,
+      "section": "sec_start",
+      "checkpoint": null,
+      "hud": {
+        "hudVisible": true,
+        "speed": "Speed 0.0 m/s",
+        "prompt": "",
+        "promptVisible": false,
+        "tutorialHint": "",
+        "toast": "",
+        "toastVisible": false,
+        "screenCount": 0,
+        "loading": false,
+        "bootLoader": false,
+        "pointerLock": "game-canvas",
+        "firstResultsRow": null,
+        "retryButton": null
+      }
+    },
+    {
+      "name": "33-respawn-after-restart",
+      "file": "33-respawn-after-restart.jpg",
+      "z": 10,
+      "x": 0,
+      "y": 0.89,
+      "speed": 0,
+      "state": "IDLE",
+      "grounded": true,
+      "postureHeight": 1.75,
+      "yaw": 0,
+      "pitch": 0,
+      "section": "sec_building_jump",
+      "checkpoint": "cp_start",
+      "hud": {
+        "hudVisible": true,
+        "speed": "Speed 0.0 m/s",
+        "prompt": "",
+        "promptVisible": false,
+        "tutorialHint": "",
+        "toast": "",
+        "toastVisible": false,
+        "screenCount": 0,
+        "loading": false,
+        "bootLoader": false,
+        "pointerLock": "game-canvas",
+        "firstResultsRow": null,
+        "retryButton": null
+      }
+    },
+    {
+      "name": "34-respawn-third",
+      "file": "34-respawn-third.jpg",
+      "z": 10,
+      "x": 0,
+      "y": 0.89,
+      "speed": 0,
+      "state": "IDLE",
+      "grounded": true,
+      "postureHeight": 1.75,
+      "yaw": 0,
+      "pitch": 0,
+      "section": "sec_building_jump",
+      "checkpoint": "cp_start",
+      "hud": {
+        "hudVisible": true,
+        "speed": "Speed 0.0 m/s",
+        "prompt": "",
+        "promptVisible": false,
+        "tutorialHint": "",
+        "toast": "",
+        "toastVisible": false,
+        "screenCount": 0,
+        "loading": false,
+        "bootLoader": false,
+        "pointerLock": "game-canvas",
+        "firstResultsRow": null,
+        "retryButton": null
+      }
+    },
+    {
+      "name": "40-look-limits",
+      "file": "40-look-limits.jpg",
+      "z": 14,
+      "x": 0,
+      "y": 0.89,
+      "speed": 0,
+      "state": "IDLE",
+      "grounded": true,
+      "postureHeight": 1.75,
+      "yaw": 0,
+      "pitch": 0,
+      "section": "sec_start",
+      "checkpoint": null,
+      "hud": {
+        "hudVisible": true,
+        "speed": "Speed 0.0 m/s",
+        "prompt": "",
+        "promptVisible": false,
+        "tutorialHint": "",
+        "toast": "",
+        "toastVisible": false,
+        "screenCount": 0,
+        "loading": false,
+        "bootLoader": false,
+        "pointerLock": "game-canvas",
+        "firstResultsRow": null,
+        "retryButton": null
+      }
+    },
+    {
+      "name": "41-sharp-turn",
+      "file": "41-sharp-turn.jpg",
+      "z": 14.19,
+      "x": -1.99,
+      "y": 0.89,
+      "speed": 2.89,
+      "state": "RUNNING",
+      "grounded": true,
+      "postureHeight": 1.75,
+      "yaw": -3.52,
+      "pitch": 0,
+      "section": "sec_start",
+      "checkpoint": "cp_start",
+      "hud": {
+        "hudVisible": true,
+        "speed": "Speed 3.6 m/s",
+        "prompt": "",
+        "promptVisible": false,
+        "tutorialHint": "",
+        "toast": "Checkpoint reached: Starting Roof Checkpoint",
+        "toastVisible": true,
+        "screenCount": 0,
+        "loading": false,
+        "bootLoader": false,
+        "pointerLock": "game-canvas",
+        "firstResultsRow": null,
+        "retryButton": null
+      }
+    },
+    {
+      "name": "42-gap-a-standstill-edge",
+      "file": "42-gap-a-standstill-edge.jpg",
+      "z": -1.13,
+      "x": -2.09,
+      "y": 0.89,
+      "speed": 0,
+      "state": "IDLE",
+      "grounded": true,
+      "postureHeight": 1.75,
+      "yaw": 0,
+      "pitch": -0.35,
+      "section": "sec_building_jump",
+      "checkpoint": "cp_start",
+      "hud": {
+        "hudVisible": true,
+        "speed": "Speed 0.0 m/s",
+        "prompt": "",
+        "promptVisible": false,
+        "tutorialHint": "",
+        "toast": "",
+        "toastVisible": false,
+        "screenCount": 0,
+        "loading": false,
+        "bootLoader": false,
+        "pointerLock": "game-canvas",
+        "firstResultsRow": null,
+        "retryButton": null
+      }
+    },
+    {
+      "name": "43-gap-a-standstill-fell",
+      "file": "43-gap-a-standstill-fell.jpg",
+      "z": 10,
+      "x": 0,
+      "y": 0.89,
+      "speed": 0,
+      "state": "IDLE",
+      "grounded": true,
+      "postureHeight": 1.75,
+      "yaw": 0,
+      "pitch": 0,
+      "section": "sec_building_jump",
+      "checkpoint": "cp_start",
+      "hud": {
+        "hudVisible": true,
+        "speed": "Speed 0.0 m/s",
+        "prompt": "",
+        "promptVisible": false,
+        "tutorialHint": "",
+        "toast": "Jump",
+        "toastVisible": true,
+        "screenCount": 0,
+        "loading": false,
+        "bootLoader": false,
+        "pointerLock": "game-canvas",
+        "firstResultsRow": null,
+        "retryButton": null
+      }
+    },
+    {
+      "name": "44-air-control-landing",
+      "file": "44-air-control-landing.jpg",
+      "z": -9.89,
+      "x": -0.52,
+      "y": 0.89,
+      "speed": 3.51,
+      "state": "RUNNING",
+      "grounded": true,
+      "postureHeight": 1.75,
+      "yaw": 0,
+      "pitch": 0,
+      "section": "sec_building_jump",
+      "checkpoint": "cp_start",
+      "hud": {
+        "hudVisible": true,
+        "speed": "Speed 4.0 m/s",
+        "prompt": "",
+        "promptVisible": false,
+        "tutorialHint": "",
+        "toast": "",
+        "toastVisible": false,
+        "screenCount": 0,
+        "loading": false,
+        "bootLoader": false,
+        "pointerLock": "game-canvas",
+        "firstResultsRow": null,
+        "retryButton": null
+      }
+    },
+    {
+      "name": "45-vault-2-vaulted",
+      "file": "45-vault-2-vaulted.jpg",
+      "z": -64.3,
+      "x": -0.56,
+      "y": 1.84,
+      "speed": 5.7,
+      "state": "FALLING",
+      "grounded": false,
+      "postureHeight": 1.75,
+      "yaw": 0,
+      "pitch": 0,
+      "section": "sec_vault",
+      "checkpoint": "cp_slide",
+      "hud": {
+        "hudVisible": true,
+        "speed": "Speed 13.7 m/s",
+        "prompt": "",
+        "promptVisible": false,
+        "tutorialHint": "",
+        "toast": "",
+        "toastVisible": false,
+        "screenCount": 0,
+        "loading": false,
+        "bootLoader": false,
+        "pointerLock": "game-canvas",
+        "firstResultsRow": null,
+        "retryButton": null
+      }
+    },
+    {
+      "name": "46-vault-3-approach",
+      "file": "46-vault-3-approach.jpg",
+      "z": -64.56,
+      "x": -0.56,
+      "y": 1.79,
+      "speed": 5,
+      "state": "LANDING",
+      "grounded": true,
+      "postureHeight": 1.75,
+      "yaw": 0,
+      "pitch": 0,
+      "section": "sec_vault",
+      "checkpoint": "cp_slide",
+      "hud": {
+        "hudVisible": true,
+        "speed": "Speed 5.2 m/s",
+        "prompt": "",
+        "promptVisible": false,
+        "tutorialHint": "",
+        "toast": "",
+        "toastVisible": false,
+        "screenCount": 0,
+        "loading": false,
+        "bootLoader": false,
+        "pointerLock": "game-canvas",
+        "firstResultsRow": null,
+        "retryButton": null
+      }
+    },
+    {
+      "name": "47-restart-from-pause",
+      "file": "47-restart-from-pause.jpg",
+      "z": 14,
+      "x": 0,
+      "y": 0.89,
+      "speed": 0,
+      "state": "IDLE",
+      "grounded": true,
+      "postureHeight": 1.75,
+      "yaw": 0,
+      "pitch": 0,
+      "section": "sec_start",
+      "checkpoint": null,
+      "hud": {
+        "hudVisible": true,
+        "speed": "Speed 0.0 m/s",
+        "prompt": "",
+        "promptVisible": false,
+        "tutorialHint": "",
+        "toast": "",
+        "toastVisible": false,
+        "screenCount": 0,
+        "loading": false,
+        "bootLoader": false,
+        "pointerLock": "game-canvas",
+        "firstResultsRow": null,
+        "retryButton": null
+      }
+    }
+  ],
+  "scenarios": {
+    "walkthrough": {
+      "startup": {
+        "status": {
+          "levelId": "first_section",
+          "levelDefinitionId": "first_section",
+          "mode": "prologue",
+          "phase": "ready",
+          "ready": true,
+          "error": null,
+          "flow": "gameplay",
+          "sessionId": "gameplay-session-1",
+          "sessionStatus": "running",
+          "sessionMode": "prologue",
+          "loadedLevelId": "first_section",
+          "levelSessionState": "active",
+          "activeSectionId": "sec_start",
+          "screen": null,
+          "inputContext": "gameplay",
+          "pointerLocked": true,
+          "player": {
+            "position": {
+              "x": 0,
+              "y": 0.894704282283783,
+              "z": 14
+            },
+            "speed": 0,
+            "state": "IDLE",
+            "grounded": true,
+            "stance": "standing",
+            "postureHeight": 1.75
+          },
+          "camera": {
+            "yaw": 0,
+            "pitch": 0
+          },
+          "activeCheckpointId": null,
+          "activatedCheckpointIds": [],
+          "respawnState": "idle",
+          "respawnCount": 0,
+          "respawnDestination": null,
+          "results": null,
+          "prologueCompleted": false
+        },
+        "dom": {
+          "hudVisible": true,
+          "speed": "Speed 0.0 m/s",
+          "prompt": "",
+          "promptVisible": false,
+          "tutorialHint": "",
+          "toast": "",
+          "toastVisible": false,
+          "screenCount": 0,
+          "loading": false,
+          "bootLoader": false,
+          "pointerLock": "game-canvas",
+          "firstResultsRow": null,
+          "retryButton": null
+        }
+      },
+      "segments": {
+        "spawn": {
+          "forward": {
+            "name": "01-spawn-forward",
+            "file": "01-spawn-forward.jpg",
+            "z": 14,
+            "x": 0,
+            "y": 0.89,
+            "speed": 0,
+            "state": "IDLE",
+            "grounded": true,
+            "postureHeight": 1.75,
+            "yaw": 0,
+            "pitch": 0,
+            "section": "sec_start",
+            "checkpoint": null,
+            "hud": {
+              "hudVisible": true,
+              "speed": "Speed 0.0 m/s",
+              "prompt": "",
+              "promptVisible": false,
+              "tutorialHint": "",
+              "toast": "",
+              "toastVisible": false,
+              "screenCount": 0,
+              "loading": false,
+              "bootLoader": false,
+              "pointerLock": "game-canvas",
+              "firstResultsRow": null,
+              "retryButton": null
+            }
+          },
+          "right": {
+            "name": "02-spawn-look-right",
+            "file": "02-spawn-look-right.jpg",
+            "z": 14,
+            "x": 0,
+            "y": 0.89,
+            "speed": 0,
+            "state": "IDLE",
+            "grounded": true,
+            "postureHeight": 1.75,
+            "yaw": -1.57,
+            "pitch": 0,
+            "section": "sec_start",
+            "checkpoint": null,
+            "hud": {
+              "hudVisible": true,
+              "speed": "Speed 0.0 m/s",
+              "prompt": "",
+              "promptVisible": false,
+              "tutorialHint": "",
+              "toast": "",
+              "toastVisible": false,
+              "screenCount": 0,
+              "loading": false,
+              "bootLoader": false,
+              "pointerLock": "game-canvas",
+              "firstResultsRow": null,
+              "retryButton": null
+            }
+          },
+          "back": {
+            "name": "03-spawn-look-back",
+            "file": "03-spawn-look-back.jpg",
+            "z": 14,
+            "x": 0,
+            "y": 0.89,
+            "speed": 0,
+            "state": "IDLE",
+            "grounded": true,
+            "postureHeight": 1.75,
+            "yaw": 3.14,
+            "pitch": 0,
+            "section": "sec_start",
+            "checkpoint": null,
+            "hud": {
+              "hudVisible": true,
+              "speed": "Speed 0.0 m/s",
+              "prompt": "",
+              "promptVisible": false,
+              "tutorialHint": "",
+              "toast": "",
+              "toastVisible": false,
+              "screenCount": 0,
+              "loading": false,
+              "bootLoader": false,
+              "pointerLock": "game-canvas",
+              "firstResultsRow": null,
+              "retryButton": null
+            }
+          },
+          "left": {
+            "name": "04-spawn-look-left",
+            "file": "04-spawn-look-left.jpg",
+            "z": 14,
+            "x": 0,
+            "y": 0.89,
+            "speed": 0,
+            "state": "IDLE",
+            "grounded": true,
+            "postureHeight": 1.75,
+            "yaw": 1.57,
+            "pitch": 0,
+            "section": "sec_start",
+            "checkpoint": null,
+            "hud": {
+              "hudVisible": true,
+              "speed": "Speed 0.0 m/s",
+              "prompt": "",
+              "promptVisible": false,
+              "tutorialHint": "",
+              "toast": "",
+              "toastVisible": false,
+              "screenCount": 0,
+              "loading": false,
+              "bootLoader": false,
+              "pointerLock": "game-canvas",
+              "firstResultsRow": null,
+              "retryButton": null
+            }
+          },
+          "driftWhileLooking": 0
+        },
+        "checkpointStart": {
+          "pose": {
+            "name": "05-checkpoint-start",
+            "file": "05-checkpoint-start.jpg",
+            "z": 9.31,
+            "x": 0,
+            "y": 0.89,
+            "speed": 0,
+            "state": "IDLE",
+            "grounded": true,
+            "postureHeight": 1.75,
+            "yaw": 0,
+            "pitch": 0,
+            "section": "sec_start",
+            "checkpoint": "cp_start",
+            "hud": {
+              "hudVisible": true,
+              "speed": "Speed 0.0 m/s",
+              "prompt": "",
+              "promptVisible": false,
+              "tutorialHint": "",
+              "toast": "Checkpoint reached: Starting Roof Checkpoint",
+              "toastVisible": true,
+              "screenCount": 0,
+              "loading": false,
+              "bootLoader": false,
+              "pointerLock": "game-canvas",
+              "firstResultsRow": null,
+              "retryButton": null
+            }
+          },
+          "activeCheckpointId": "cp_start",
+          "activated": [
+            "cp_start"
+          ],
+          "firstToast": "Move",
+          "toast": "Checkpoint reached: Starting Roof Checkpoint",
+          "toastVisible": true
+        },
+        "routeJoint": {
+          "inside": {
+            "name": "06-route-joint-inside",
+            "file": "06-route-joint-inside.jpg",
+            "z": 9.9,
+            "x": 0,
+            "y": 0.89,
+            "speed": 0,
+            "state": "IDLE",
+            "grounded": true,
+            "postureHeight": 1.75,
+            "yaw": 0,
+            "pitch": 0,
+            "section": "sec_start",
+            "checkpoint": "cp_start",
+            "hud": {
+              "hudVisible": true,
+              "speed": "Speed 0.0 m/s",
+              "prompt": "",
+              "promptVisible": false,
+              "tutorialHint": "",
+              "toast": "Checkpoint reached: Starting Roof Checkpoint",
+              "toastVisible": true,
+              "screenCount": 0,
+              "loading": false,
+              "bootLoader": false,
+              "pointerLock": "game-canvas",
+              "firstResultsRow": null,
+              "retryButton": null
+            }
+          },
+          "after": {
+            "name": "07-route-joint-after",
+            "file": "07-route-joint-after.jpg",
+            "z": 8.67,
+            "x": 0,
+            "y": 0.89,
+            "speed": 0,
+            "state": "IDLE",
+            "grounded": true,
+            "postureHeight": 1.75,
+            "yaw": 0,
+            "pitch": 0,
+            "section": "sec_start",
+            "checkpoint": "cp_start",
+            "hud": {
+              "hudVisible": true,
+              "speed": "Speed 0.0 m/s",
+              "prompt": "",
+              "promptVisible": false,
+              "tutorialHint": "",
+              "toast": "",
+              "toastVisible": false,
+              "screenCount": 0,
+              "loading": false,
+              "bootLoader": false,
+              "pointerLock": "game-canvas",
+              "firstResultsRow": null,
+              "retryButton": null
+            }
+          },
+          "beforeGapA": {
+            "name": "08-route-joint-before-gap-a",
+            "file": "08-route-joint-before-gap-a.jpg",
+            "z": 1.9,
+            "x": 0,
+            "y": 0.89,
+            "speed": 0,
+            "state": "IDLE",
+            "grounded": true,
+            "postureHeight": 1.75,
+            "yaw": 0,
+            "pitch": 0,
+            "section": "sec_start",
+            "checkpoint": "cp_start",
+            "hud": {
+              "hudVisible": true,
+              "speed": "Speed 0.0 m/s",
+              "prompt": "",
+              "promptVisible": false,
+              "tutorialHint": "",
+              "toast": "",
+              "toastVisible": false,
+              "screenCount": 0,
+              "loading": false,
+              "bootLoader": false,
+              "pointerLock": "game-canvas",
+              "firstResultsRow": null,
+              "retryButton": null
+            }
+          }
+        },
+        "gapA": {
+          "edge": {
+            "name": "09-gap-a-edge",
+            "file": "09-gap-a-edge.jpg",
+            "z": -0.76,
+            "x": 0,
+            "y": 0.89,
+            "speed": 0,
+            "state": "IDLE",
+            "grounded": true,
+            "postureHeight": 1.75,
+            "yaw": 0,
+            "pitch": -0.5,
+            "section": "sec_start",
+            "checkpoint": "cp_start",
+            "hud": {
+              "hudVisible": true,
+              "speed": "Speed 0.0 m/s",
+              "prompt": "",
+              "promptVisible": false,
+              "tutorialHint": "",
+              "toast": "",
+              "toastVisible": false,
+              "screenCount": 0,
+              "loading": false,
+              "bootLoader": false,
+              "pointerLock": "game-canvas",
+              "firstResultsRow": null,
+              "retryButton": null
+            }
+          },
+          "edgeDown": {
+            "name": "09-gap-a-edge-down",
+            "file": "09-gap-a-edge-down.jpg",
+            "z": -0.76,
+            "x": 0,
+            "y": 0.89,
+            "speed": 0,
+            "state": "IDLE",
+            "grounded": true,
+            "postureHeight": 1.75,
+            "yaw": 0,
+            "pitch": -1.15,
+            "section": "sec_start",
+            "checkpoint": "cp_start",
+            "hud": {
+              "hudVisible": true,
+              "speed": "Speed 0.0 m/s",
+              "prompt": "",
+              "promptVisible": false,
+              "tutorialHint": "",
+              "toast": "",
+              "toastVisible": false,
+              "screenCount": 0,
+              "loading": false,
+              "bootLoader": false,
+              "pointerLock": "game-canvas",
+              "firstResultsRow": null,
+              "retryButton": null
+            }
+          },
+          "airborne": {
+            "name": "10-gap-a-airborne",
+            "file": "10-gap-a-airborne.jpg",
+            "z": -3.04,
+            "x": 0,
+            "y": 1.96,
+            "speed": 8.5,
+            "state": "JUMPING",
+            "grounded": false,
+            "postureHeight": 1.75,
+            "yaw": 0,
+            "pitch": -0.01,
+            "section": "sec_building_jump",
+            "checkpoint": "cp_start",
+            "hud": {
+              "hudVisible": true,
+              "speed": "Speed 8.5 m/s",
+              "prompt": "",
+              "promptVisible": false,
+              "tutorialHint": "",
+              "toast": "Jump",
+              "toastVisible": true,
+              "screenCount": 0,
+              "loading": false,
+              "bootLoader": false,
+              "pointerLock": "game-canvas",
+              "firstResultsRow": null,
+              "retryButton": null
+            }
+          },
+          "takeoff": {
+            "z": -1.62,
+            "speed": 8.5
+          },
+          "landing": {
+            "z": -7.71,
+            "y": 0.93,
+            "state": "LANDING",
+            "speed": 8.5
+          },
+          "pose": {
+            "name": "11-gap-a-landing",
+            "file": "11-gap-a-landing.jpg",
+            "z": -9.79,
+            "x": 0,
+            "y": 0.89,
+            "speed": 3.6,
+            "state": "RUNNING",
+            "grounded": true,
+            "postureHeight": 1.75,
+            "yaw": 0,
+            "pitch": -0.01,
+            "section": "sec_building_jump",
+            "checkpoint": "cp_start",
+            "hud": {
+              "hudVisible": true,
+              "speed": "Speed 4.1 m/s",
+              "prompt": "",
+              "promptVisible": false,
+              "tutorialHint": "",
+              "toast": "Jump",
+              "toastVisible": true,
+              "screenCount": 0,
+              "loading": false,
+              "bootLoader": false,
+              "pointerLock": "game-canvas",
+              "firstResultsRow": null,
+              "retryButton": null
+            }
+          }
+        },
+        "gapB": {
+          "edge": {
+            "name": "12-gap-b-edge",
+            "file": "12-gap-b-edge.jpg",
+            "z": -13,
+            "x": 0,
+            "y": 0.89,
+            "speed": 0,
+            "state": "IDLE",
+            "grounded": true,
+            "postureHeight": 1.75,
+            "yaw": 0,
+            "pitch": -0.5,
+            "section": "sec_building_jump",
+            "checkpoint": "cp_start",
+            "hud": {
+              "hudVisible": true,
+              "speed": "Speed 0.0 m/s",
+              "prompt": "",
+              "promptVisible": false,
+              "tutorialHint": "",
+              "toast": "",
+              "toastVisible": false,
+              "screenCount": 0,
+              "loading": false,
+              "bootLoader": false,
+              "pointerLock": "game-canvas",
+              "firstResultsRow": null,
+              "retryButton": null
+            }
+          },
+          "edgeDown": {
+            "name": "12-gap-b-edge-down",
+            "file": "12-gap-b-edge-down.jpg",
+            "z": -13,
+            "x": 0,
+            "y": 0.89,
+            "speed": 0,
+            "state": "IDLE",
+            "grounded": true,
+            "postureHeight": 1.75,
+            "yaw": 0,
+            "pitch": -1.15,
+            "section": "sec_building_jump",
+            "checkpoint": "cp_start",
+            "hud": {
+              "hudVisible": true,
+              "speed": "Speed 0.0 m/s",
+              "prompt": "",
+              "promptVisible": false,
+              "tutorialHint": "",
+              "toast": "",
+              "toastVisible": false,
+              "screenCount": 0,
+              "loading": false,
+              "bootLoader": false,
+              "pointerLock": "game-canvas",
+              "firstResultsRow": null,
+              "retryButton": null
+            }
+          },
+          "airborne": {
+            "name": "13-gap-b-airborne",
+            "file": "13-gap-b-airborne.jpg",
+            "z": -14.53,
+            "x": 0,
+            "y": 1.96,
+            "speed": 8.5,
+            "state": "JUMPING",
+            "grounded": false,
+            "postureHeight": 1.75,
+            "yaw": 0,
+            "pitch": -0.01,
+            "section": "sec_building_jump",
+            "checkpoint": "cp_start",
+            "hud": {
+              "hudVisible": true,
+              "speed": "Speed 8.5 m/s",
+              "prompt": "",
+              "promptVisible": false,
+              "tutorialHint": "",
+              "toast": "",
+              "toastVisible": false,
+              "screenCount": 0,
+              "loading": false,
+              "bootLoader": false,
+              "pointerLock": "game-canvas",
+              "firstResultsRow": null,
+              "retryButton": null
+            }
+          },
+          "takeoff": {
+            "z": -13.11,
+            "speed": 8.5
+          },
+          "landing": {
+            "z": -19.48,
+            "y": 0.9,
+            "state": "LANDING"
+          },
+          "pose": {
+            "name": "14-gap-b-landing",
+            "file": "14-gap-b-landing.jpg",
+            "z": -21.56,
+            "x": 0,
+            "y": 0.89,
+            "speed": 3.6,
+            "state": "RUNNING",
+            "grounded": true,
+            "postureHeight": 1.75,
+            "yaw": 0,
+            "pitch": -0.01,
+            "section": "sec_building_jump",
+            "checkpoint": "cp_building_jump",
+            "hud": {
+              "hudVisible": true,
+              "speed": "Speed 3.6 m/s",
+              "prompt": "",
+              "promptVisible": false,
+              "tutorialHint": "",
+              "toast": "Checkpoint reached: Building Jump Checkpoint",
+              "toastVisible": true,
+              "screenCount": 0,
+              "loading": false,
+              "bootLoader": false,
+              "pointerLock": "game-canvas",
+              "firstResultsRow": null,
+              "retryButton": null
+            }
+          }
+        },
+        "plantStep": {
+          "approach": {
+            "name": "15-plant-step-approach",
+            "file": "15-plant-step-approach.jpg",
+            "z": -22.12,
+            "x": 0,
+            "y": 0.89,
+            "speed": 0,
+            "state": "IDLE",
+            "grounded": true,
+            "postureHeight": 1.75,
+            "yaw": 0,
+            "pitch": -0.15,
+            "section": "sec_building_jump",
+            "checkpoint": "cp_building_jump",
+            "hud": {
+              "hudVisible": true,
+              "speed": "Speed 0.0 m/s",
+              "prompt": "",
+              "promptVisible": false,
+              "tutorialHint": "",
+              "toast": "Checkpoint reached: Building Jump Checkpoint",
+              "toastVisible": true,
+              "screenCount": 0,
+              "loading": false,
+              "bootLoader": false,
+              "pointerLock": "game-canvas",
+              "firstResultsRow": null,
+              "retryButton": null
+            }
+          },
+          "takeoff": {
+            "z": -23.54
+          },
+          "landing": {
+            "z": -25.38,
+            "y": 1.79,
+            "state": "LANDING"
+          },
+          "pose": {
+            "name": "16-plant-step-landing",
+            "file": "16-plant-step-landing.jpg",
+            "z": -26.6,
+            "x": 0,
+            "y": 1.79,
+            "speed": 0.89,
+            "state": "RUNNING",
+            "grounded": true,
+            "postureHeight": 1.75,
+            "yaw": 0,
+            "pitch": 0,
+            "section": "sec_technical",
+            "checkpoint": "cp_building_jump",
+            "hud": {
+              "hudVisible": true,
+              "speed": "Speed 0.9 m/s",
+              "prompt": "",
+              "promptVisible": false,
+              "tutorialHint": "",
+              "toast": "",
+              "toastVisible": false,
+              "screenCount": 0,
+              "loading": false,
+              "bootLoader": false,
+              "pointerLock": "game-canvas",
+              "firstResultsRow": null,
+              "retryButton": null
+            }
+          }
+        },
+        "gallery": {
+          "entry": {
+            "name": "17-gallery-entry",
+            "file": "17-gallery-entry.jpg",
+            "z": -29.97,
+            "x": 0,
+            "y": 1.79,
+            "speed": 0,
+            "state": "IDLE",
+            "grounded": true,
+            "postureHeight": 1.75,
+            "yaw": 0,
+            "pitch": 0,
+            "section": "sec_technical",
+            "checkpoint": "cp_building_jump",
+            "hud": {
+              "hudVisible": true,
+              "speed": "Speed 0.0 m/s",
+              "prompt": "",
+              "promptVisible": false,
+              "tutorialHint": "",
+              "toast": "",
+              "toastVisible": false,
+              "screenCount": 0,
+              "loading": false,
+              "bootLoader": false,
+              "pointerLock": "game-canvas",
+              "firstResultsRow": null,
+              "retryButton": null
+            }
+          },
+          "mid": {
+            "name": "18-gallery-mid",
+            "file": "18-gallery-mid.jpg",
+            "z": -34.26,
+            "x": 0,
+            "y": 1.79,
+            "speed": 0,
+            "state": "IDLE",
+            "grounded": true,
+            "postureHeight": 1.75,
+            "yaw": 0,
+            "pitch": 0,
+            "section": "sec_technical",
+            "checkpoint": "cp_building_jump",
+            "hud": {
+              "hudVisible": true,
+              "speed": "Speed 0.0 m/s",
+              "prompt": "",
+              "promptVisible": false,
+              "tutorialHint": "",
+              "toast": "",
+              "toastVisible": false,
+              "screenCount": 0,
+              "loading": false,
+              "bootLoader": false,
+              "pointerLock": "game-canvas",
+              "firstResultsRow": null,
+              "retryButton": null
+            }
+          },
+          "exit": {
+            "name": "19-gallery-exit",
+            "file": "19-gallery-exit.jpg",
+            "z": -40.84,
+            "x": 0,
+            "y": 1.79,
+            "speed": 0,
+            "state": "IDLE",
+            "grounded": true,
+            "postureHeight": 1.75,
+            "yaw": 0,
+            "pitch": 0,
+            "section": "sec_slide",
+            "checkpoint": "cp_building_jump",
+            "hud": {
+              "hudVisible": true,
+              "speed": "Speed 0.0 m/s",
+              "prompt": "",
+              "promptVisible": false,
+              "tutorialHint": "",
+              "toast": "",
+              "toastVisible": false,
+              "screenCount": 0,
+              "loading": false,
+              "bootLoader": false,
+              "pointerLock": "game-canvas",
+              "firstResultsRow": null,
+              "retryButton": null
+            }
+          },
+          "maxLateral": 0,
+          "state": "IDLE"
+        },
+        "duct": {
+          "approach": {
+            "name": "20-duct-approach",
+            "file": "20-duct-approach.jpg",
+            "z": -44.64,
+            "x": 0,
+            "y": 1.79,
+            "speed": 0,
+            "state": "IDLE",
+            "grounded": true,
+            "postureHeight": 1.75,
+            "yaw": 0,
+            "pitch": -0.1,
+            "section": "sec_slide",
+            "checkpoint": "cp_building_jump",
+            "hud": {
+              "hudVisible": true,
+              "speed": "Speed 0.0 m/s",
+              "prompt": "",
+              "promptVisible": false,
+              "tutorialHint": "",
+              "toast": "",
+              "toastVisible": false,
+              "screenCount": 0,
+              "loading": false,
+              "bootLoader": false,
+              "pointerLock": "game-canvas",
+              "firstResultsRow": null,
+              "retryButton": null
+            }
+          },
+          "crouchBeforeZ": -46.06,
+          "crouchBlockedZ": -46.71,
+          "crouchBlockedState": "IDLE",
+          "crouchBlockedPose": {
+            "name": "21-duct-crouch-blocked",
+            "file": "21-duct-crouch-blocked.jpg",
+            "z": -46.6,
+            "x": 0,
+            "y": 1.79,
+            "speed": 0,
+            "state": "IDLE",
+            "grounded": true,
+            "postureHeight": 1.75,
+            "yaw": 0,
+            "pitch": 0,
+            "section": "sec_slide",
+            "checkpoint": "cp_building_jump",
+            "hud": {
+              "hudVisible": true,
+              "speed": "Speed 0.0 m/s",
+              "prompt": "",
+              "promptVisible": false,
+              "tutorialHint": "",
+              "toast": "",
+              "toastVisible": false,
+              "screenCount": 0,
+              "loading": false,
+              "bootLoader": false,
+              "pointerLock": "game-canvas",
+              "firstResultsRow": null,
+              "retryButton": null
+            }
+          },
+          "inside": {
+            "name": "22-duct-inside-slide",
+            "file": "22-duct-inside-slide.jpg",
+            "z": -48.91,
+            "x": 0,
+            "y": 1.37,
+            "speed": 6.69,
+            "state": "SLIDING",
+            "grounded": true,
+            "postureHeight": 0.9,
+            "yaw": 0,
+            "pitch": 0,
+            "section": "sec_slide",
+            "checkpoint": "cp_building_jump",
+            "hud": {
+              "hudVisible": true,
+              "speed": "Speed 6.8 m/s",
+              "prompt": "",
+              "promptVisible": false,
+              "tutorialHint": "",
+              "toast": "Slide",
+              "toastVisible": true,
+              "screenCount": 0,
+              "loading": false,
+              "bootLoader": false,
+              "pointerLock": "game-canvas",
+              "firstResultsRow": null,
+              "retryButton": null
+            }
+          },
+          "exit": {
+            "name": "24-duct-exit",
+            "file": "24-duct-exit.jpg",
+            "z": -55.79,
+            "x": 0,
+            "y": 1.79,
+            "speed": 0,
+            "state": "IDLE",
+            "grounded": true,
+            "postureHeight": 1.75,
+            "yaw": 0,
+            "pitch": 0,
+            "section": "sec_slide",
+            "checkpoint": "cp_slide",
+            "hud": {
+              "hudVisible": true,
+              "speed": "Speed 0.0 m/s",
+              "prompt": "",
+              "promptVisible": false,
+              "tutorialHint": "",
+              "toast": "Checkpoint reached: Slide Section Checkpoint",
+              "toastVisible": true,
+              "screenCount": 0,
+              "loading": false,
+              "bootLoader": false,
+              "pointerLock": "game-canvas",
+              "firstResultsRow": null,
+              "retryButton": null
+            }
+          },
+          "maxPostureInDuct": 0.9
+        },
+        "vaults": {
+          "results": [
+            {
+              "centerZ": -59.5,
+              "passed": true
+            },
+            {
+              "centerZ": -63.5,
+              "passed": true
+            },
+            {
+              "centerZ": -67.5,
+              "passed": true
+            }
+          ],
+          "sawVaulting": true,
+          "approach1": {
+            "name": "25-vault-1-approach",
+            "file": "25-vault-1-approach.jpg",
+            "z": -57.25,
+            "x": 0,
+            "y": 1.79,
+            "speed": 0,
+            "state": "IDLE",
+            "grounded": true,
+            "postureHeight": 1.75,
+            "yaw": 0,
+            "pitch": -0.1,
+            "section": "sec_vault",
+            "checkpoint": "cp_slide",
+            "hud": {
+              "hudVisible": true,
+              "speed": "Speed 0.0 m/s",
+              "prompt": "",
+              "promptVisible": false,
+              "tutorialHint": "",
+              "toast": "Checkpoint reached: Slide Section Checkpoint",
+              "toastVisible": true,
+              "screenCount": 0,
+              "loading": false,
+              "bootLoader": false,
+              "pointerLock": "game-canvas",
+              "firstResultsRow": null,
+              "retryButton": null
+            }
+          },
+          "approach2": {
+            "name": "26-vault-2-approach",
+            "file": "26-vault-2-approach.jpg",
+            "z": -60.96,
+            "x": 0,
+            "y": 1.79,
+            "speed": 0,
+            "state": "IDLE",
+            "grounded": true,
+            "postureHeight": 1.75,
+            "yaw": 0,
+            "pitch": 0,
+            "section": "sec_vault",
+            "checkpoint": "cp_slide",
+            "hud": {
+              "hudVisible": true,
+              "speed": "Speed 0.0 m/s",
+              "prompt": "",
+              "promptVisible": false,
+              "tutorialHint": "",
+              "toast": "Vault",
+              "toastVisible": true,
+              "screenCount": 0,
+              "loading": false,
+              "bootLoader": false,
+              "pointerLock": "game-canvas",
+              "firstResultsRow": null,
+              "retryButton": null
+            }
+          },
+          "moment": {
+            "name": "26-vault-moment",
+            "file": "26-vault-moment.jpg",
+            "z": -58.2,
+            "x": 0,
+            "y": 1.79,
+            "speed": 5.4,
+            "state": "VAULTING",
+            "grounded": true,
+            "postureHeight": 1.75,
+            "yaw": 0,
+            "pitch": 0,
+            "section": "sec_vault",
+            "checkpoint": "cp_slide",
+            "hud": {
+              "hudVisible": true,
+              "speed": "Speed 5.1 m/s",
+              "prompt": "",
+              "promptVisible": false,
+              "tutorialHint": "",
+              "toast": "Checkpoint reached: Slide Section Checkpoint",
+              "toastVisible": true,
+              "screenCount": 0,
+              "loading": false,
+              "bootLoader": false,
+              "pointerLock": "game-canvas",
+              "firstResultsRow": null,
+              "retryButton": null
+            }
+          },
+          "cleared": {
+            "name": "27-vaults-cleared",
+            "file": "27-vaults-cleared.jpg",
+            "z": -70.23,
+            "x": 0,
+            "y": 1.79,
+            "speed": 2.47,
+            "state": "RUNNING",
+            "grounded": true,
+            "postureHeight": 1.75,
+            "yaw": 0,
+            "pitch": 0,
+            "section": "sec_vault",
+            "checkpoint": "cp_vault",
+            "hud": {
+              "hudVisible": true,
+              "speed": "Speed 2.5 m/s",
+              "prompt": "",
+              "promptVisible": false,
+              "tutorialHint": "",
+              "toast": "Checkpoint reached: Vault Section Checkpoint",
+              "toastVisible": true,
+              "screenCount": 0,
+              "loading": false,
+              "bootLoader": false,
+              "pointerLock": "game-canvas",
+              "firstResultsRow": null,
+              "retryButton": null
+            }
+          },
+          "stuckRecoveries": 0
+        },
+        "stairs": {
+          "approach": {
+            "name": "28-stairs-approach",
+            "file": "28-stairs-approach.jpg",
+            "z": -72.06,
+            "x": 0,
+            "y": 1.79,
+            "speed": 0,
+            "state": "IDLE",
+            "grounded": true,
+            "postureHeight": 1.75,
+            "yaw": 0,
+            "pitch": 0.15,
+            "section": "sec_finish",
+            "checkpoint": "cp_vault",
+            "hud": {
+              "hudVisible": true,
+              "speed": "Speed 0.0 m/s",
+              "prompt": "",
+              "promptVisible": false,
+              "tutorialHint": "",
+              "toast": "Checkpoint reached: Vault Section Checkpoint",
+              "toastVisible": true,
+              "screenCount": 0,
+              "loading": false,
+              "bootLoader": false,
+              "pointerLock": "game-canvas",
+              "firstResultsRow": null,
+              "retryButton": null
+            }
+          },
+          "podium": {
+            "name": "29-finish-podium",
+            "file": "29-finish-podium.jpg",
+            "z": -79.67,
+            "x": 0,
+            "y": 5.39,
+            "speed": 0,
+            "state": "IDLE",
+            "grounded": true,
+            "postureHeight": 1.75,
+            "yaw": 0,
+            "pitch": 0,
+            "section": "sec_finish",
+            "checkpoint": "cp_vault",
+            "hud": {
+              "hudVisible": true,
+              "speed": "Speed 0.0 m/s",
+              "prompt": "",
+              "promptVisible": false,
+              "tutorialHint": "",
+              "toast": "",
+              "toastVisible": false,
+              "screenCount": 0,
+              "loading": false,
+              "bootLoader": false,
+              "pointerLock": "game-canvas",
+              "firstResultsRow": null,
+              "retryButton": null
+            }
+          }
+        },
+        "finish": {
+          "approach": {
+            "name": "30-finish-approach",
+            "file": "30-finish-approach.jpg",
+            "z": -82.26,
+            "x": 0,
+            "y": 5.39,
+            "speed": 0,
+            "state": "IDLE",
+            "grounded": true,
+            "postureHeight": 1.75,
+            "yaw": 0,
+            "pitch": 0,
+            "section": "sec_finish",
+            "checkpoint": "cp_vault",
+            "hud": {
+              "hudVisible": true,
+              "speed": "Speed 0.4 m/s",
+              "prompt": "",
+              "promptVisible": false,
+              "tutorialHint": "",
+              "toast": "",
+              "toastVisible": false,
+              "screenCount": 0,
+              "loading": false,
+              "bootLoader": false,
+              "pointerLock": "game-canvas",
+              "firstResultsRow": null,
+              "retryButton": null
+            }
+          },
+          "results": {
+            "name": "31-results",
+            "file": "31-results.jpg",
+            "z": null,
+            "x": null,
+            "y": null,
+            "speed": null,
+            "state": null,
+            "grounded": null,
+            "postureHeight": null,
+            "yaw": 0.14,
+            "pitch": 0.03,
+            "section": "sec_finish",
+            "checkpoint": null,
+            "hud": {
+              "hudVisible": false,
+              "speed": "Speed 6.0 m/s",
+              "prompt": "",
+              "promptVisible": false,
+              "tutorialHint": "",
+              "toast": "",
+              "toastVisible": false,
+              "screenCount": 1,
+              "loading": false,
+              "bootLoader": false,
+              "pointerLock": "game-canvas",
+              "firstResultsRow": "Level: First Section",
+              "retryButton": "Retry"
+            }
+          },
+          "resultsRow": "Level: First Section"
+        },
+        "deaths": {
+          "rounds": [
+            {
+              "round": 1,
+              "respawnCount": 1,
+              "position": {
+                "x": 0,
+                "y": 0.8949949145317078,
+                "z": 10
+              },
+              "grounded": true,
+              "state": "IDLE",
+              "destination": {
+                "x": 0,
+                "y": 0.93,
+                "z": 10
+              },
+              "activeCheckpointId": "cp_start"
+            },
+            {
+              "round": 2,
+              "respawnCount": 2,
+              "position": {
+                "x": 0,
+                "y": 0.8949949145317078,
+                "z": 10
+              },
+              "grounded": true,
+              "state": "IDLE",
+              "destination": {
+                "x": 0,
+                "y": 0.93,
+                "z": 10
+              },
+              "activeCheckpointId": "cp_start"
+            },
+            {
+              "round": 3,
+              "respawnCount": 3,
+              "position": {
+                "x": 0,
+                "y": 0.8949949145317078,
+                "z": 10
+              },
+              "grounded": true,
+              "state": "IDLE",
+              "destination": {
+                "x": 0,
+                "y": 0.93,
+                "z": 10
+              },
+              "activeCheckpointId": "cp_start"
+            }
+          ],
+          "expectedRespawns": 3
+        }
+      },
+      "ductStop": {
+        "stopped": {
+          "z": -49.24,
+          "y": 1.37,
+          "state": "SLIDING",
+          "postureHeight": 0.9,
+          "grounded": true,
+          "camera": {
+            "yaw": 2.7755575615628914e-16,
+            "pitch": 5.551115123125783e-17
+          }
+        },
+        "settled": {
+          "z": -50.76,
+          "y": 1.37,
+          "state": "IDLE",
+          "postureHeight": 0.9,
+          "grounded": true,
+          "camera": {
+            "yaw": 2.7755575615628914e-16,
+            "pitch": 5.551115123125783e-17
+          }
+        },
+        "afterMove": {
+          "z": -53.51,
+          "y": 1.37,
+          "state": "RUNNING",
+          "postureHeight": 0.9,
+          "grounded": true,
+          "camera": {
+            "yaw": 2.7755575615628914e-16,
+            "pitch": 5.551115123125783e-17
+          }
+        }
+      },
+      "restart": {
+        "sessionIdBefore": "gameplay-session-1",
+        "sessionIdAfter": "gameplay-session-1",
+        "checkpoint": null,
+        "activated": [],
+        "camera": {
+          "yaw": 0,
+          "pitch": 0
+        },
+        "player": {
+          "x": 0,
+          "y": 0.894981861114502,
+          "z": 14
+        },
+        "pose": {
+          "name": "32-restart-clean",
+          "file": "32-restart-clean.jpg",
+          "z": 14,
+          "x": 0,
+          "y": 0.89,
+          "speed": 0,
+          "state": "IDLE",
+          "grounded": true,
+          "postureHeight": 1.75,
+          "yaw": 0,
+          "pitch": 0,
+          "section": "sec_start",
+          "checkpoint": null,
+          "hud": {
+            "hudVisible": true,
+            "speed": "Speed 0.0 m/s",
+            "prompt": "",
+            "promptVisible": false,
+            "tutorialHint": "",
+            "toast": "",
+            "toastVisible": false,
+            "screenCount": 0,
+            "loading": false,
+            "bootLoader": false,
+            "pointerLock": "game-canvas",
+            "firstResultsRow": null,
+            "retryButton": null
+          }
+        },
+        "pointerLock": "game-canvas"
+      },
+      "console": {
+        "consoleErrors": [],
+        "consoleWarnings": [],
+        "pageErrors": [],
+        "failedRequests": []
+      }
+    },
+    "failureModes": {
+      "lookLimits": {
+        "pitchBefore": 0,
+        "pitchUp": 1.484,
+        "pitchDown": -1.484,
+        "pose": {
+          "name": "40-look-limits",
+          "file": "40-look-limits.jpg",
+          "z": 14,
+          "x": 0,
+          "y": 0.89,
+          "speed": 0,
+          "state": "IDLE",
+          "grounded": true,
+          "postureHeight": 1.75,
+          "yaw": 0,
+          "pitch": 0,
+          "section": "sec_start",
+          "checkpoint": null,
+          "hud": {
+            "hudVisible": true,
+            "speed": "Speed 0.0 m/s",
+            "prompt": "",
+            "promptVisible": false,
+            "tutorialHint": "",
+            "toast": "",
+            "toastVisible": false,
+            "screenCount": 0,
+            "loading": false,
+            "bootLoader": false,
+            "pointerLock": "game-canvas",
+            "firstResultsRow": null,
+            "retryButton": null
+          }
+        }
+      },
+      "sharpTurn": {
+        "yawBefore": 0,
+        "yawAfter": -3.52,
+        "yawDelta": -3.52,
+        "zBeforeTurn": 9.18,
+        "zBeforeSprint": 9.18,
+        "zAfterSprint": 14.19,
+        "driftDuringTurn": 0,
+        "turnedBackwards": true,
+        "state": "RUNNING",
+        "pose": {
+          "name": "41-sharp-turn",
+          "file": "41-sharp-turn.jpg",
+          "z": 14.19,
+          "x": -1.99,
+          "y": 0.89,
+          "speed": 2.89,
+          "state": "RUNNING",
+          "grounded": true,
+          "postureHeight": 1.75,
+          "yaw": -3.52,
+          "pitch": 0,
+          "section": "sec_start",
+          "checkpoint": "cp_start",
+          "hud": {
+            "hudVisible": true,
+            "speed": "Speed 3.6 m/s",
+            "prompt": "",
+            "promptVisible": false,
+            "tutorialHint": "",
+            "toast": "Checkpoint reached: Starting Roof Checkpoint",
+            "toastVisible": true,
+            "screenCount": 0,
+            "loading": false,
+            "bootLoader": false,
+            "pointerLock": "game-canvas",
+            "firstResultsRow": null,
+            "retryButton": null
+          }
+        }
+      },
+      "standstillJump": {
+        "edge": {
+          "name": "42-gap-a-standstill-edge",
+          "file": "42-gap-a-standstill-edge.jpg",
+          "z": -1.13,
+          "x": -2.09,
+          "y": 0.89,
+          "speed": 0,
+          "state": "IDLE",
+          "grounded": true,
+          "postureHeight": 1.75,
+          "yaw": 0,
+          "pitch": -0.35,
+          "section": "sec_building_jump",
+          "checkpoint": "cp_start",
+          "hud": {
+            "hudVisible": true,
+            "speed": "Speed 0.0 m/s",
+            "prompt": "",
+            "promptVisible": false,
+            "tutorialHint": "",
+            "toast": "",
+            "toastVisible": false,
+            "screenCount": 0,
+            "loading": false,
+            "bootLoader": false,
+            "pointerLock": "game-canvas",
+            "firstResultsRow": null,
+            "retryButton": null
+          }
+        },
+        "wasAirborne": true,
+        "minY": -0.11,
+        "fellAtZ": -2.94,
+        "respawnDestination": {
+          "x": 0,
+          "y": 0.93,
+          "z": 10
+        },
+        "afterRespawn": {
+          "z": 10,
+          "y": 0.89,
+          "state": "IDLE",
+          "postureHeight": 1.75,
+          "grounded": true,
+          "camera": {
+            "yaw": 0,
+            "pitch": 0
+          }
+        },
+        "pose": {
+          "name": "43-gap-a-standstill-fell",
+          "file": "43-gap-a-standstill-fell.jpg",
+          "z": 10,
+          "x": 0,
+          "y": 0.89,
+          "speed": 0,
+          "state": "IDLE",
+          "grounded": true,
+          "postureHeight": 1.75,
+          "yaw": 0,
+          "pitch": 0,
+          "section": "sec_building_jump",
+          "checkpoint": "cp_start",
+          "hud": {
+            "hudVisible": true,
+            "speed": "Speed 0.0 m/s",
+            "prompt": "",
+            "promptVisible": false,
+            "tutorialHint": "",
+            "toast": "Jump",
+            "toastVisible": true,
+            "screenCount": 0,
+            "loading": false,
+            "bootLoader": false,
+            "pointerLock": "game-canvas",
+            "firstResultsRow": null,
+            "retryButton": null
+          }
+        }
+      },
+      "airControl": {
+        "takeoff": {
+          "x": 0,
+          "z": -1.66,
+          "speed": 8.5
+        },
+        "airStart": {
+          "y": 1.96,
+          "speed": 8.5
+        },
+        "landing": {
+          "x": -0.46,
+          "z": -7.84,
+          "state": "LANDING",
+          "speed": 8.41
+        },
+        "lateral": 0.46,
+        "pose": {
+          "name": "44-air-control-landing",
+          "file": "44-air-control-landing.jpg",
+          "z": -9.89,
+          "x": -0.52,
+          "y": 0.89,
+          "speed": 3.51,
+          "state": "RUNNING",
+          "grounded": true,
+          "postureHeight": 1.75,
+          "yaw": 0,
+          "pitch": 0,
+          "section": "sec_building_jump",
+          "checkpoint": "cp_start",
+          "hud": {
+            "hudVisible": true,
+            "speed": "Speed 4.0 m/s",
+            "prompt": "",
+            "promptVisible": false,
+            "tutorialHint": "",
+            "toast": "",
+            "toastVisible": false,
+            "screenCount": 0,
+            "loading": false,
+            "bootLoader": false,
+            "pointerLock": "game-canvas",
+            "firstResultsRow": null,
+            "retryButton": null
+          }
+        }
+      },
+      "unvaultedObstacles": {
+        "first": {
+          "startZ": -58.3,
+          "sprint": true,
+          "closestZ": -58.78,
+          "maxY": 3.14,
+          "finalZ": -58.03,
+          "crossed": false,
+          "samples": [
+            {
+              "z": -58.31,
+              "y": 1.79,
+              "speed": 0.3,
+              "state": "RUNNING",
+              "grounded": true
+            },
+            {
+              "z": -58.33,
+              "y": 1.8,
+              "speed": 0.9,
+              "state": "RUNNING",
+              "grounded": true
+            },
+            {
+              "z": -58.41,
+              "y": 1.79,
+              "speed": 1.8,
+              "state": "RUNNING",
+              "grounded": true
+            },
+            {
+              "z": -58.48,
+              "y": 1.79,
+              "speed": 2.4,
+              "state": "RUNNING",
+              "grounded": true
+            },
+            {
+              "z": -58.63,
+              "y": 1.79,
+              "speed": 3.3,
+              "state": "RUNNING",
+              "grounded": true
+            },
+            {
+              "z": -58.76,
+              "y": 1.79,
+              "speed": 3.9,
+              "state": "RUNNING",
+              "grounded": true
+            },
+            {
+              "z": -58.61,
+              "y": 2.03,
+              "speed": 6.68,
+              "state": "JUMPING",
+              "grounded": false
+            },
+            {
+              "z": -58.28,
+              "y": 2.18,
+              "speed": 6.43,
+              "state": "JUMPING",
+              "grounded": false
+            },
+            {
+              "z": -57.97,
+              "y": 2.19,
+              "speed": 6.18,
+              "state": "FALLING",
+              "grounded": false
+            },
+            {
+              "z": -57.67,
+              "y": 2.12,
+              "speed": 5.93,
+              "state": "FALLING",
+              "grounded": false
+            },
+            {
+              "z": -57.38,
+              "y": 1.99,
+              "speed": 5.68,
+              "state": "FALLING",
+              "grounded": false
+            },
+            {
+              "z": -57.1,
+              "y": 1.81,
+              "speed": 5.43,
+              "state": "LANDING",
+              "grounded": true
+            },
+            {
+              "z": -56.86,
+              "y": 1.79,
+              "speed": 4.52,
+              "state": "LANDING",
+              "grounded": true
+            },
+            {
+              "z": -56.66,
+              "y": 1.8,
+              "speed": 3.62,
+              "state": "LANDING",
+              "grounded": true
+            },
+            {
+              "z": -56.56,
+              "y": 1.79,
+              "speed": 3.02,
+              "state": "LANDING",
+              "grounded": true
+            },
+            {
+              "z": -56.44,
+              "y": 1.79,
+              "speed": 2.12,
+              "state": "RUNNING",
+              "grounded": true
+            },
+            {
+              "z": -56.36,
+              "y": 1.79,
+              "speed": 1.22,
+              "state": "RUNNING",
+              "grounded": true
+            },
+            {
+              "z": -56.34,
+              "y": 1.79,
+              "speed": 0.62,
+              "state": "RUNNING",
+              "grounded": true
+            },
+            {
+              "z": -56.34,
+              "y": 1.79,
+              "speed": 0.28,
+              "state": "RUNNING",
+              "grounded": true
+            },
+            {
+              "z": -56.36,
+              "y": 1.79,
+              "speed": 0.88,
+              "state": "RUNNING",
+              "grounded": true
+            },
+            {
+              "z": -56.43,
+              "y": 1.79,
+              "speed": 1.78,
+              "state": "RUNNING",
+              "grounded": true
+            },
+            {
+              "z": -56.51,
+              "y": 1.79,
+              "speed": 2.38,
+              "state": "RUNNING",
+              "grounded": true
+            },
+            {
+              "z": -56.66,
+              "y": 1.79,
+              "speed": 3.28,
+              "state": "RUNNING",
+              "grounded": true
+            },
+            {
+              "z": -56.78,
+              "y": 1.79,
+              "speed": 3.88,
+              "state": "RUNNING",
+              "grounded": true
+            },
+            {
+              "z": -57.01,
+              "y": 1.8,
+              "speed": 4.78,
+              "state": "RUNNING",
+              "grounded": true
+            },
+            {
+              "z": -57.28,
+              "y": 1.79,
+              "speed": 5.68,
+              "state": "SPRINTING",
+              "grounded": true
+            },
+            {
+              "z": -57.59,
+              "y": 1.8,
+              "speed": 6.58,
+              "state": "SPRINTING",
+              "grounded": true
+            },
+            {
+              "z": -57.95,
+              "y": 1.8,
+              "speed": 7.48,
+              "state": "SPRINTING",
+              "grounded": true
+            },
+            {
+              "z": -58.35,
+              "y": 1.79,
+              "speed": 8.38,
+              "state": "SPRINTING",
+              "grounded": true
+            },
+            {
+              "z": -58.78,
+              "y": 1.79,
+              "speed": 8.5,
+              "state": "SPRINTING",
+              "grounded": true
+            },
+            {
+              "z": -58.6,
+              "y": 2.34,
+              "speed": 3.43,
+              "state": "JUMPING",
+              "grounded": false
+            },
+            {
+              "z": -58.44,
+              "y": 2.74,
+              "speed": 3.18,
+              "state": "JUMPING",
+              "grounded": false
+            },
+            {
+              "z": -58.29,
+              "y": 3.01,
+              "speed": 2.93,
+              "state": "JUMPING",
+              "grounded": false
+            },
+            {
+              "z": -58.15,
+              "y": 3.14,
+              "speed": 2.68,
+              "state": "JUMPING",
+              "grounded": false
+            },
+            {
+              "z": -58.03,
+              "y": 3.14,
+              "speed": 2.43,
+              "state": "FALLING",
+              "grounded": false
+            }
+          ]
+        },
+        "second": {
+          "startZ": -61.87,
+          "sprint": true,
+          "closestZ": -62.83,
+          "maxY": 1.8,
+          "finalZ": -62.83,
+          "crossed": false,
+          "samples": [
+            {
+              "z": -61.87,
+              "y": 1.79,
+              "speed": 0,
+              "state": "IDLE",
+              "grounded": true
+            },
+            {
+              "z": -61.88,
+              "y": 1.79,
+              "speed": 0.6,
+              "state": "RUNNING",
+              "grounded": true
+            },
+            {
+              "z": -61.94,
+              "y": 1.79,
+              "speed": 1.5,
+              "state": "RUNNING",
+              "grounded": true
+            },
+            {
+              "z": -62.05,
+              "y": 1.79,
+              "speed": 2.4,
+              "state": "RUNNING",
+              "grounded": true
+            },
+            {
+              "z": -62.2,
+              "y": 1.79,
+              "speed": 3.3,
+              "state": "RUNNING",
+              "grounded": true
+            },
+            {
+              "z": -62.32,
+              "y": 1.79,
+              "speed": 3.9,
+              "state": "RUNNING",
+              "grounded": true
+            },
+            {
+              "z": -62.55,
+              "y": 1.8,
+              "speed": 4.8,
+              "state": "RUNNING",
+              "grounded": true
+            },
+            {
+              "z": -62.82,
+              "y": 1.8,
+              "speed": 5.7,
+              "state": "SPRINTING",
+              "grounded": true
+            },
+            {
+              "z": -62.83,
+              "y": 1.79,
+              "speed": 0.01,
+              "state": "IDLE",
+              "grounded": true
+            },
+            {
+              "z": -62.83,
+              "y": 1.79,
+              "speed": 0,
+              "state": "IDLE",
+              "grounded": true
+            },
+            {
+              "z": -62.83,
+              "y": 1.79,
+              "speed": 0.01,
+              "state": "IDLE",
+              "grounded": true
+            },
+            {
+              "z": -62.83,
+              "y": 1.79,
+              "speed": 0,
+              "state": "IDLE",
+              "grounded": true
+            },
+            {
+              "z": -62.83,
+              "y": 1.79,
+              "speed": 0,
+              "state": "IDLE",
+              "grounded": true
+            },
+            {
+              "z": -62.83,
+              "y": 1.79,
+              "speed": 0,
+              "state": "IDLE",
+              "grounded": true
+            },
+            {
+              "z": -62.83,
+              "y": 1.8,
+              "speed": 0,
+              "state": "IDLE",
+              "grounded": true
+            },
+            {
+              "z": -62.83,
+              "y": 1.79,
+              "speed": 0,
+              "state": "IDLE",
+              "grounded": true
+            },
+            {
+              "z": -62.83,
+              "y": 1.79,
+              "speed": 0,
+              "state": "IDLE",
+              "grounded": true
+            },
+            {
+              "z": -62.83,
+              "y": 1.79,
+              "speed": 0,
+              "state": "IDLE",
+              "grounded": true
+            },
+            {
+              "z": -62.83,
+              "y": 1.79,
+              "speed": 0,
+              "state": "IDLE",
+              "grounded": true
+            },
+            {
+              "z": -62.83,
+              "y": 1.79,
+              "speed": 0,
+              "state": "IDLE",
+              "grounded": true
+            },
+            {
+              "z": -62.83,
+              "y": 1.79,
+              "speed": 0,
+              "state": "IDLE",
+              "grounded": true
+            },
+            {
+              "z": -62.83,
+              "y": 1.79,
+              "speed": 0,
+              "state": "IDLE",
+              "grounded": true
+            },
+            {
+              "z": -62.83,
+              "y": 1.79,
+              "speed": 0,
+              "state": "IDLE",
+              "grounded": true
+            },
+            {
+              "z": -62.83,
+              "y": 1.79,
+              "speed": 0,
+              "state": "IDLE",
+              "grounded": true
+            },
+            {
+              "z": -62.83,
+              "y": 1.79,
+              "speed": 0.01,
+              "state": "IDLE",
+              "grounded": true
+            },
+            {
+              "z": -62.83,
+              "y": 1.79,
+              "speed": 0,
+              "state": "IDLE",
+              "grounded": true
+            },
+            {
+              "z": -62.83,
+              "y": 1.79,
+              "speed": 0,
+              "state": "IDLE",
+              "grounded": true
+            },
+            {
+              "z": -62.83,
+              "y": 1.79,
+              "speed": 0,
+              "state": "IDLE",
+              "grounded": true
+            },
+            {
+              "z": -62.83,
+              "y": 1.79,
+              "speed": 0,
+              "state": "IDLE",
+              "grounded": true
+            },
+            {
+              "z": -62.83,
+              "y": 1.79,
+              "speed": 0,
+              "state": "IDLE",
+              "grounded": true
+            },
+            {
+              "z": -62.83,
+              "y": 1.79,
+              "speed": 0,
+              "state": "IDLE",
+              "grounded": true
+            },
+            {
+              "z": -62.83,
+              "y": 1.8,
+              "speed": 0.01,
+              "state": "IDLE",
+              "grounded": true
+            },
+            {
+              "z": -62.83,
+              "y": 1.79,
+              "speed": 0,
+              "state": "IDLE",
+              "grounded": true
+            },
+            {
+              "z": -62.83,
+              "y": 1.79,
+              "speed": 0.01,
+              "state": "IDLE",
+              "grounded": true
+            },
+            {
+              "z": -62.83,
+              "y": 1.8,
+              "speed": 0.01,
+              "state": "IDLE",
+              "grounded": true
+            },
+            {
+              "z": -62.83,
+              "y": 1.79,
+              "speed": 0,
+              "state": "IDLE",
+              "grounded": true
+            },
+            {
+              "z": -62.83,
+              "y": 1.8,
+              "speed": 0,
+              "state": "IDLE",
+              "grounded": true
+            }
+          ]
+        }
+      },
+      "walkSpeedVault": {
+        "second": {
+          "startZ": -60.86,
+          "firstPress": {
+            "z": -60.91,
+            "speed": 1.2
+          },
+          "sawVaulting": true,
+          "vaulted": true,
+          "retries": 0,
+          "endZ": -64.3
+        },
+        "third": {
+          "startZ": -65.41,
+          "firstPress": {
+            "z": -65.41,
+            "speed": 0
+          },
+          "sawVaulting": true,
+          "vaulted": true,
+          "retries": 0,
+          "endZ": -68.49
+        },
+        "poses": {
+          "second": {
+            "name": "45-vault-2-vaulted",
+            "file": "45-vault-2-vaulted.jpg",
+            "z": -64.3,
+            "x": -0.56,
+            "y": 1.84,
+            "speed": 5.7,
+            "state": "FALLING",
+            "grounded": false,
+            "postureHeight": 1.75,
+            "yaw": 0,
+            "pitch": 0,
+            "section": "sec_vault",
+            "checkpoint": "cp_slide",
+            "hud": {
+              "hudVisible": true,
+              "speed": "Speed 13.7 m/s",
+              "prompt": "",
+              "promptVisible": false,
+              "tutorialHint": "",
+              "toast": "",
+              "toastVisible": false,
+              "screenCount": 0,
+              "loading": false,
+              "bootLoader": false,
+              "pointerLock": "game-canvas",
+              "firstResultsRow": null,
+              "retryButton": null
+            }
+          },
+          "third": {
+            "name": "46-vault-3-approach",
+            "file": "46-vault-3-approach.jpg",
+            "z": -64.56,
+            "x": -0.56,
+            "y": 1.79,
+            "speed": 5,
+            "state": "LANDING",
+            "grounded": true,
+            "postureHeight": 1.75,
+            "yaw": 0,
+            "pitch": 0,
+            "section": "sec_vault",
+            "checkpoint": "cp_slide",
+            "hud": {
+              "hudVisible": true,
+              "speed": "Speed 5.2 m/s",
+              "prompt": "",
+              "promptVisible": false,
+              "tutorialHint": "",
+              "toast": "",
+              "toastVisible": false,
+              "screenCount": 0,
+              "loading": false,
+              "bootLoader": false,
+              "pointerLock": "game-canvas",
+              "firstResultsRow": null,
+              "retryButton": null
+            }
+          }
+        }
+      },
+      "pause": {
+        "flow": "paused",
+        "screen": 1,
+        "pointerLock": "game-canvas"
+      },
+      "restartFromPause": {
+        "flow": "gameplay",
+        "checkpoint": null,
+        "activated": [],
+        "pointerLock": "game-canvas",
+        "pose": {
+          "name": "47-restart-from-pause",
+          "file": "47-restart-from-pause.jpg",
+          "z": 14,
+          "x": 0,
+          "y": 0.89,
+          "speed": 0,
+          "state": "IDLE",
+          "grounded": true,
+          "postureHeight": 1.75,
+          "yaw": 0,
+          "pitch": 0,
+          "section": "sec_start",
+          "checkpoint": null,
+          "hud": {
+            "hudVisible": true,
+            "speed": "Speed 0.0 m/s",
+            "prompt": "",
+            "promptVisible": false,
+            "tutorialHint": "",
+            "toast": "",
+            "toastVisible": false,
+            "screenCount": 0,
+            "loading": false,
+            "bootLoader": false,
+            "pointerLock": "game-canvas",
+            "firstResultsRow": null,
+            "retryButton": null
+          }
+        },
+        "pointerLockAfterRestart": "game-canvas",
+        "pointerLockReacquired": "game-canvas",
+        "yawDelta": -0.308
+      },
+      "console": {
+        "consoleErrors": [],
+        "consoleWarnings": [],
+        "pageErrors": [],
+        "failedRequests": []
+      }
+    }
+  },
+  "passed": true,
+  "error": null,
+  "failedChecks": [],
+  "finishedAt": "2026-11-22T19:26:06.870Z"
+}

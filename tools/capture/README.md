@@ -152,6 +152,42 @@ Exit code is 1 if any scenario check fails. The generated evidence for Step 3.4
 lives in `docs/evidence/first-section/step-3.4/` (README + captures + video +
 report).
 
+### First Section exploratory playtest
+
+`dev-route.mjs` proves the authored golden path can be driven end to end. The
+exploratory harness answers the questions a golden path cannot: whether an obstacle
+is readable, what happens on a failed attempt, whether restart state is clean, and
+whether repeated deaths duplicate listeners.
+
+```bash
+node tools/capture/playtest.mjs \
+  --out-dir docs/evidence/first-section/step-3.6 \
+  --report  docs/evidence/first-section/step-3.6/report.json
+```
+
+Two sessions in fresh browser contexts (empty IndexedDB), driven only by trusted
+Playwright keyboard/mouse through the existing `InputManager`:
+
+1. **Walkthrough** — stops at every authored segment and captures what the player
+   sees (spawn + four orientations, checkpoint, route joint, both gap edges plus a
+   steep look-down, plant step, gallery, duct approach/inside/stop/exit, vault
+   approaches and a `VAULTING` frame, stairs, podium, finish, Results), then restarts
+   from Results and performs three consecutive deaths.
+2. **Failure modes** — pitch limits, a 180° turn while sprinting, a standstill jump
+   at the Gap A edge (must fail and recover), lateral air control, sprinting into
+   unvaulted obstacles, walk-speed vaults, and a restart from the pause menu.
+
+It writes JPEG evidence (quality 82) plus `report.json`: 43 checks, per-frame
+position/yaw/pitch/posture/HUD, console/page-error/request diagnostics and a 40 ms
+collision timeline for the unvaulted obstacles. Key flags: `--out-dir`, `--report`,
+`--server-port` (default 5322), `--headed`, `--reuse-server`, `--no-walkthrough`,
+`--no-failure-modes`. Exit code 1 if any check fails.
+
+No browser download: Playwright and system Edge are expected already. The harness is
+DEV-only tooling; it does not modify the game or run in production. Findings for the
+published run are in
+[`docs/FIRST_SECTION_PLAYTEST_REPORT.md`](../../docs/FIRST_SECTION_PLAYTEST_REPORT.md).
+
 ## 2. Metrics
 
 ```bash

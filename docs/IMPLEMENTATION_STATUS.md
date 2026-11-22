@@ -550,6 +550,66 @@ step was started.
 
 ---
 
+## 0.2.6. Step 3.6 — First Section playtest and gameplay polish (2026-11-22)
+
+Branch `feat/first-section-playtest` (created from `main` @
+`af01f1a228754d4cc6b92ac8bf72f843a29f8d4c`; no merge performed). Scope: playtest the
+First Section route end to end, probe failure/restart/respawn behavior, classify what
+is found and change production code only for confirmed local defects inside the
+allowed set. No production source, authored geometry, physics, camera, checkpoint,
+respawn or progression file was changed. Full findings and the human checklist:
+[`FIRST_SECTION_PLAYTEST_REPORT.md`](FIRST_SECTION_PLAYTEST_REPORT.md).
+
+| Status | Result |
+|---|---|
+| **Implementation** | Complete — new DEV-only exploratory harness `tools/capture/playtest.mjs`; evidence under `docs/evidence/first-section/step-3.6/`; report `docs/FIRST_SECTION_PLAYTEST_REPORT.md` |
+| **Integration** | Verified — real `?dev=first_section` → `Application.startGameplay` → Gameplay Session → Level Runtime → player/camera/checkpoint/respawn; trusted browser keyboard/mouse only; Results Retry and pause-menu Restart used as shipped |
+| **Verification** | `npm run validate` green (typecheck, Biome 208 files, **625/625** tests in 62 files, production build); baseline golden path **52/52**; exploratory playtest **43/43**; Prologue menu launch PASS; `git diff --check` clean |
+
+**Route review.** All twelve required segments were walked and measured: spawn and
+four orientations, checkpoint, approach and sprint jumps for Gap A (takeoff
+z −1.62 @ 8.5 m/s → landing −7.71) and Gap B (−13.11 → −19.48), the 0.90 m plant
+step, gallery, slide duct (crouch blocked at −46.71; sprint-slide at posture 0.90;
+a mid-duct stop is recoverable), three vaults, stairs to podium y 5.39, `cp_vault`,
+kill volume/respawn and the finish/Results flow. A standstill jump at Gap A fails and
+recovers at `cp_start`; three consecutive falls after a restart produce exactly three
+respawns at the same position with no duplicated diagnostics listener.
+
+**Findings and status.** No production defect was patched because the confirmed
+issues sit in areas the brief excludes from this step (physics/collision, authored
+visual placements, camera posture, cross-system UI/tutorial priority, production
+registration).
+
+| Finding | Severity | Status |
+|---|---|---|
+| Sprinting into the 0.50 m vault obstacle without `E` launches the player up/backward instead of stopping (0.70 m blocks cleanly) | Major (collision stability) | Open — needs a physics/level decision |
+| Non-collidable `joint` modules stand on the route centreline (S0 ×2, S2 ×2, S4 ×3); the camera passes through them and they occlude the checkpoint marker / vault views | Minor | Open — authored level-art decision |
+| Crouching at the slide-duct lip fills the view with the ceiling face (the `SHIFT · SLIDE` sign mitigates) | Minor | Open — camera/level decision |
+| No in-level `E` cue for vaults; the tutorial hint exists but is Training-only | Major (discoverability, needs human confirmation) | Open — product decision |
+| A tutorial toast (`Move`) is queued ahead of the first checkpoint toast on a fresh profile | Minor | Open — UI priority decision |
+| Gap drop is not visible from the approach (red route line + far roof are the cues) | Not confirmed | Requires human playtest |
+| Pause → Resume may leave mouse look disabled until a canvas click | Not confirmed | Not reproduced in automation; requires a real browser |
+| First Section level content remains in the production bundle as dead code while the DEV entry points are absent | Minor (build hygiene) | Open — production registration decision |
+
+**Tests added.** No test file was added: the new harness is a browser verification
+tool, and the findings that could be asserted deterministically are either
+unfixed-by-design (so a failing test would be noise) or need the physics decision
+first. Existing 625 tests remain green. The harness itself is the regression net for
+the route/restart/respawn behavior and is documented in
+`tools/capture/README.md`.
+
+**Known limitations.** No human hands-on pass (explicitly not replaced by the
+scripted run; checklist in the report). Headless Edge on a busy host
+(`loadAvg ≈ 18`); no audio/gamepad/accessibility review. The 0.50 m bounce and the
+gap-depth readability were probed, but their severity/feel needs a person.
+
+**Recommended next task:** a physics/level decision on the 0.50 m vault-obstacle
+collision response (F-01 in the report), followed by a human hands-on pass using the
+§9 checklist. Step 3.7 should not redesign the route around the findings before that
+decision.
+
+---
+
 ## 1. Purpose
 
 This document is the central implementation tracking reference for Glassline.
