@@ -45,6 +45,10 @@ import { PhysicsWorld } from "../physics/PhysicsWorld";
 import type { MovementInputSample } from "../player/MovementModel";
 import { PlayerStateSystem } from "../player/PlayerStateSystem";
 import { PlayerSystem } from "../player/PlayerSystem";
+import {
+  PROLOGUE_COMPLETION_LEVEL_ID,
+  shouldPublishPrologueCompletion,
+} from "../progression/LevelCompletionPolicy";
 import { PROGRESSION_CONTENT, PROGRESSION_MILESTONES } from "../progression/ProgressionContent";
 import { ProgressionSystem } from "../progression/ProgressionSystem";
 import { Renderer } from "../rendering/Renderer";
@@ -99,7 +103,7 @@ const MENU_CAMERA_YAW = 0.16;
 const MENU_CAMERA_PITCH = 0.03;
 const STATUS_WINDOW_MS = 500;
 const TRAINING_LEVEL_ID = "training_test";
-const PROLOGUE_LEVEL_ID = "prologue_test";
+const PROLOGUE_LEVEL_ID = PROLOGUE_COMPLETION_LEVEL_ID;
 
 function describeError(error: unknown): string {
   if (error instanceof Error) {
@@ -1586,13 +1590,19 @@ export class Application implements Disposable {
         }
       }
 
+      const completedLevelId =
+        this.sessionManager?.getActiveSession()?.levelId ?? PROLOGUE_LEVEL_ID;
+
       if (
-        this.currentMode === "prologue" ||
-        (this.currentMode === "speedrun" && speedrunValid === true)
+        shouldPublishPrologueCompletion({
+          mode: this.currentMode,
+          levelId: completedLevelId,
+          speedrunValid,
+        })
       ) {
         this.publishDomainEvent("level", "level.completed", {
           value: 1,
-          levelId: this.sessionManager?.getActiveSession()?.levelId ?? PROLOGUE_LEVEL_ID,
+          levelId: completedLevelId,
         });
       }
 
