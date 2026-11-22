@@ -226,6 +226,7 @@ export class ProgressionSystem implements Disposable {
           }
 
           this.progression.campaign.lastCompletedAt = event.timestamp;
+          changed = true;
         }
 
         break;

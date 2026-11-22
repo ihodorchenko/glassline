@@ -294,6 +294,40 @@ describe("Speedrun completion isolation", () => {
     expect(harness.progression.hasMilestone("first_prologue_completion")).toBe(true);
   });
 
+  it("records a slower valid Prologue speedrun as a progression change", () => {
+    const harness = createHarness();
+
+    expect(
+      recordSpeedrunCompletion(harness, {
+        levelId: PROLOGUE_TEST_LEVEL_ID,
+        valid: true,
+        completionTimeMs: 90000,
+        eventId: "speedrun-prologue-best",
+        timestamp: 1500,
+      }),
+    ).toBe(true);
+
+    const before = harness.progression.getSnapshot();
+
+    expect(
+      recordSpeedrunCompletion(harness, {
+        levelId: PROLOGUE_TEST_LEVEL_ID,
+        valid: true,
+        completionTimeMs: 100000,
+        eventId: "speedrun-prologue-slower",
+        timestamp: 2500,
+      }),
+    ).toBe(true);
+
+    const after = harness.progression.getSnapshot();
+    const campaign = campaignOf(harness);
+
+    expect(after.prologueBestCompletionTime).toBe(90000);
+    expect(campaign.lastCompletedAt).toBe(2500);
+    expect(after.revision).toBeGreaterThan(before.revision);
+    expect(harness.progression.getProgression().updatedAt).toBe(2500);
+  });
+
   it("does not update Prologue progression for a valid first_section speedrun", () => {
     const harness = createHarness();
 
