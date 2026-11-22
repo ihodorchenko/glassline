@@ -8,6 +8,7 @@ errors. Human hands-on playtest was NOT performed (see §11).**
 |---|---|
 | Base branch / SHA | `main` @ `b9e045731245fc006c52dab732e2d347d839d93e` (validated `origin/main` before work) |
 | Feature branch | `feat/first-section-remaining-polish` |
+| Implementation commit | `057c36451780cc0d50ccc4d839ce56c6b889ce20` (the published branch head is the docs-only follow-up commit that records this line) |
 | Date | 2026-11-23 (Europe/Minsk) |
 | Level route | DEV launch `?dev=first_section` (S0 Starting Roof → S5 Finish) |
 | Browser evidence | [`docs/evidence/first-section/step-3.8/`](evidence/first-section/step-3.8/) (65 checks, 58 frames), [`step-3.8-golden/`](evidence/first-section/step-3.8-golden/) (52 checks) and [`step-3.8-prologue/`](evidence/first-section/step-3.8-prologue/) (2 checks) |
