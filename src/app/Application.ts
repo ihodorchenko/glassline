@@ -19,6 +19,7 @@ import { InputManager } from "../input/InputManager";
 import { IDLE_INPUT_FRAME, type InputFrame } from "../input/InputState";
 import { InteractionSystem } from "../interaction/InteractionSystem";
 import { ARCHITECTURAL_KIT_DEMO_DEFINITIONS } from "../levels/demo/ArchitecturalKitDemo";
+import { FIRST_SECTION_LEVEL_DEFINITIONS } from "../levels/first-section/FirstSectionLevel";
 import { LevelRuntimeManager } from "../levels/LevelRuntimeManager";
 import type { LevelDefinition, SurfaceType } from "../levels/LevelTypes";
 import type { TriggerEvent } from "../levels/TriggerManager";
@@ -459,10 +460,12 @@ export class Application implements Disposable {
 
     const definitions = [...TRAINING_TEST_LEVEL_DEFINITIONS, ...PROLOGUE_TEST_LEVEL_DEFINITIONS];
 
-    // The Architectural Kit review composition is a development/capture-only
-    // level: production builds keep the shipped level list unchanged.
+    // The Architectural Kit review composition and the first gameplay section
+    // are development-only levels: production builds keep the shipped
+    // Training + Prologue level list unchanged.
     if (import.meta.env.DEV) {
       definitions.push(...ARCHITECTURAL_KIT_DEMO_DEFINITIONS);
+      definitions.push(...FIRST_SECTION_LEVEL_DEFINITIONS);
     }
 
     this.levelRuntime = new LevelRuntimeManager({

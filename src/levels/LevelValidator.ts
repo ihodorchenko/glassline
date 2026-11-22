@@ -1,3 +1,4 @@
+import { PROLOGUE_COMPLETION_LEVEL_ID } from "../progression/LevelCompletionPolicy";
 import { validateArchitecturalModuleDefinition } from "./architecture/KitTypes";
 import type {
   AuthoredCheckpointDefinition,
@@ -545,11 +546,29 @@ function validateInteractionTargets(
   }
 }
 
+/**
+ * Levels that must satisfy the campaign Prologue's five-section taxonomy.
+ *
+ * `mode: "prologue"` is a gameplay mode, not an identifier: until a dedicated
+ * single-section mode exists, standalone levels such as `first_section` reuse
+ * it (§10 Q1 of `FIRST_GAMEPLAY_SECTION_SPEC`). The authored campaign Prologue
+ * is therefore identified by the same explicit level id that gates progression
+ * in `LevelCompletionPolicy` — never by its `displayName` or section count.
+ *
+ * The check stays mandatory for the authored Prologue: a prologue-mode level
+ * cannot opt out because the set is keyed by the level id, and
+ * `tests/unit/first-section-level.test.ts` pins that the canonical Prologue is
+ * still rejected when its five-section structure is broken.
+ */
+const PROLOGUE_SECTION_TAXONOMY_LEVEL_IDS: ReadonlySet<string> = new Set([
+  PROLOGUE_COMPLETION_LEVEL_ID,
+]);
+
 function validatePrologueSections(
   collector: ValidationCollector,
   definition: LevelDefinition,
 ): void {
-  if (definition.mode !== "prologue") {
+  if (!PROLOGUE_SECTION_TAXONOMY_LEVEL_IDS.has(definition.id)) {
     return;
   }
 

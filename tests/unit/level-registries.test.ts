@@ -7,6 +7,7 @@ import { RuntimeObjectRegistry } from "../../src/levels/RuntimeObjectRegistry";
 import { SpawnPointManager } from "../../src/levels/SpawnPointManager";
 import { SurfaceRegistry } from "../../src/levels/SurfaceRegistry";
 import { TriggerManager } from "../../src/levels/TriggerManager";
+import { PROLOGUE_TEST_LEVEL } from "../../src/levels/test/PrologueTestLevel";
 import { TRAINING_TEST_LEVEL } from "../../src/levels/test/TrainingTestLevel";
 
 describe("validateLevelDefinition", () => {
@@ -80,15 +81,26 @@ describe("validateLevelDefinition", () => {
     expect(brokenResult.errors.some((error) => error.code === "MISSING_NEXT_SECTION")).toBe(true);
   });
 
-  it("validates Prologue section count and ordering", () => {
+  it("keeps the five-section taxonomy for the authored Prologue only", () => {
     const invalidPrologue: LevelDefinition = {
-      ...TRAINING_TEST_LEVEL,
-      mode: "prologue",
+      ...PROLOGUE_TEST_LEVEL,
+      sections: PROLOGUE_TEST_LEVEL.sections.slice(0, 4),
     };
     const result = validateLevelDefinition(invalidPrologue);
 
     expect(result.valid).toBe(false);
     expect(result.errors.some((error) => error.code === "PROLOGUE_SECTION_COUNT")).toBe(true);
+
+    // A standalone level may share the `prologue` mode without inheriting the
+    // campaign Prologue's five-section taxonomy (spec §10 Q1).
+    const standalone: LevelDefinition = {
+      ...TRAINING_TEST_LEVEL,
+      id: "standalone_prologue_mode",
+      mode: "prologue",
+    };
+    const standaloneResult = validateLevelDefinition(standalone);
+
+    expect(standaloneResult.errors.some((error) => error.code.startsWith("PROLOGUE_"))).toBe(false);
   });
 });
 
