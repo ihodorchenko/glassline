@@ -394,6 +394,9 @@ export function buildParapet(collector: KitPartCollector, definition: ParapetMod
     length,
     [0, 0, 0],
     "concrete",
+    // Local parapet-only bevel: keep the upstand top at height - 0.177 so the
+    // coping plate bottom (height - 0.175) clears it by 2 mm.
+    { bevel: 0.003 },
   );
 
   // Coping with a slight overhang and beveled top edges.

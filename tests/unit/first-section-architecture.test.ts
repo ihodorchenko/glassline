@@ -1,3 +1,4 @@
+import { createHash } from "node:crypto";
 import * as THREE from "three";
 import { afterEach, describe, expect, it } from "vitest";
 
@@ -387,6 +388,58 @@ function boundsOfParts(
 
   return bounds;
 }
+
+function partGeometryHash(part: KitModulePart): string {
+  const hash = createHash("sha256");
+
+  hash.update(part.material);
+
+  const position = part.geometry.getAttribute("position");
+
+  hash.update(
+    Buffer.from(position.array.buffer, position.array.byteOffset, position.array.byteLength),
+  );
+
+  const index = part.geometry.getIndex();
+
+  if (index) {
+    hash.update(Buffer.from(index.array.buffer, index.array.byteOffset, index.array.byteLength));
+  }
+
+  return hash.digest("hex").slice(0, 16);
+}
+
+function moduleGeometryHash(definition: ArchitecturalModuleDefinition): string {
+  const model = build(definition);
+  const hash = createHash("sha256");
+
+  for (const part of model.parts) {
+    hash.update(partGeometryHash(part));
+  }
+
+  return hash.digest("hex").slice(0, 16);
+}
+
+/** Pre-change snapshots of the 11 non-parapet variants (Step 3.2B.4 baseline). */
+const NON_PARAPET_GEOMETRY_HASHES: Readonly<Record<string, string>> = {
+  facadeBay: "63eb877f4ca718ce",
+  curtainWall: "de27ee6452cd718c",
+  corner: "185e837e2d5ad6d0",
+  column: "f7933f123caff6a6",
+  canopy: "c900c6c2befb70cd",
+  servicePortal: "12694493de004bb2",
+  ventilation: "e1788056ecff4ae1",
+  louver: "d6a423327a5e327a",
+  facadeScreen: "4a67ff31e8efb0d6",
+  jointTwoMeters: "44f217641a811a04",
+  jointFourPointFiveMeters: "72ec9666c0258c53",
+};
+
+/** Pre-change white coping plate hashes; the plate must remain untouched. */
+const COPING_PLATE_GEOMETRY_HASHES: Readonly<Record<string, string>> = {
+  parapetSixMeters: "f7053503bf3b85d6",
+  parapetFourMeters: "c8fd22f0d4ce3d54",
+};
 
 function worldBounds(placement: LevelArchitecturePlacement): THREE.Box3 {
   return boundsOfParts(placement, build(placement.module).parts);
@@ -869,6 +922,48 @@ describe("First gameplay section Architectural Kit layer", () => {
     expect(batches).toBe(55);
   });
 
+  it("keeps the 11 non-parapet module geometries unchanged", () => {
+    for (const [name, expectedHash] of Object.entries(NON_PARAPET_GEOMETRY_HASHES)) {
+      expect(moduleGeometryHash(VARIANTS[name as VariantName]), name).toBe(expectedHash);
+    }
+  });
+
+  it("creates the intended 2 mm upstand/coping clearance", () => {
+    const model = build({ kind: "parapet", length: 6, height: 0.2, accent: true });
+    const concrete = model.parts.find((part) => part.material === "concrete");
+    const coping = model.parts.find((part) => part.material === "white");
+
+    if (!concrete || !coping) {
+      throw new Error("Parapet fixture is missing its concrete or white part.");
+    }
+
+    concrete.geometry.computeBoundingBox();
+    coping.geometry.computeBoundingBox();
+
+    const concreteTop = concrete.geometry.boundingBox?.max.y ?? Number.NaN;
+    const copingBottom = coping.geometry.boundingBox?.min.y ?? Number.NaN;
+
+    // Concrete profile top is height - 0.177 after the local 3 mm bevel;
+    // the coping plate bottom remains height - 0.175.
+    expect(concreteTop).toBeCloseTo(0.023, 6);
+    expect(copingBottom).toBeCloseTo(0.025, 6);
+    expect(copingBottom - concreteTop).toBeCloseTo(0.002, 6);
+    expect(copingBottom - concreteTop).toBeGreaterThan(TRIANGLE_EPSILON);
+  });
+
+  it("keeps the white coping plate geometry unchanged", () => {
+    for (const [name, expectedHash] of Object.entries(COPING_PLATE_GEOMETRY_HASHES)) {
+      const model = build(VARIANTS[name as VariantName]);
+      const coping = model.parts.find((part) => part.material === "white");
+
+      expect(coping, name).toBeDefined();
+
+      if (coping) {
+        expect(partGeometryHash(coping), name).toBe(expectedHash);
+      }
+    }
+  });
+
   it("supports the full coping footprint with only the designed overhang", () => {
     const copings = FIRST_SECTION_ARCHITECTURE.filter(
       (placement) => placement.module.kind === "parapet",
@@ -1103,7 +1198,7 @@ describe("First gameplay section Architectural Kit layer", () => {
     expect(trianglesIntersect(base, parallelAtHalfEpsilon)).toBe(true);
   });
 
-  it("confirms triangle-level coping/concrete intersection for all 12 copings", () => {
+  it("confirms zero triangle-level coping/concrete intersections for all 12 copings", () => {
     const diagnostics = diagnoseCopingIntersections();
 
     expect(diagnostics).toHaveLength(12);
@@ -1114,16 +1209,13 @@ describe("First gameplay section Architectural Kit layer", () => {
     for (const diagnostic of diagnostics) {
       expect(diagnostic.whiteTriangles, diagnostic.id).toBeGreaterThan(0);
       expect(diagnostic.concreteTriangles, diagnostic.id).toBeGreaterThan(0);
-      expect(diagnostic.intersectingPairs, diagnostic.id).toBeGreaterThan(0);
-      expect(diagnostic.firstPair, diagnostic.id).not.toBeNull();
-
-      if (diagnostic.firstPair) {
-        expect(diagnostic.firstPair.whiteTriangle, diagnostic.id).toBeGreaterThanOrEqual(0);
-        expect(diagnostic.firstPair.concreteTriangle, diagnostic.id).toBeGreaterThanOrEqual(0);
-        expect(Number.isFinite(diagnostic.firstPair.whiteCentroid.y), diagnostic.id).toBe(true);
-        expect(Number.isFinite(diagnostic.firstPair.concreteCentroid.y), diagnostic.id).toBe(true);
-      }
+      expect(diagnostic.intersectingPairs, diagnostic.id).toBe(0);
+      expect(diagnostic.firstPair, diagnostic.id).toBeNull();
     }
+
+    expect(diagnostics.reduce((total, diagnostic) => total + diagnostic.intersectingPairs, 0)).toBe(
+      0,
+    );
   });
 
   it("builds visual-only models without creating physics colliders", async () => {
