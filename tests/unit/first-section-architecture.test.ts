@@ -426,7 +426,16 @@ function worldMaterialBounds(
   return bounds;
 }
 
+/** Single contact/intersection tolerance used by every SAT branch. */
 const TRIANGLE_EPSILON = 1e-7;
+/**
+ * Coplanarity may only be assumed when the planes are within the same contact
+ * tolerance. A separate, looser distance threshold would let the 2D projection
+ * forget a real plane gap and create false positives.
+ */
+const COPLANAR_EPSILON = TRIANGLE_EPSILON;
+/** Angular tolerance for "parallel normals"; this is not a distance. */
+const PARALLEL_NORMAL_EPSILON = 1e-10;
 
 interface MeshTriangle {
   readonly a: THREE.Vector3;
@@ -532,8 +541,15 @@ function coplanarTrianglesIntersect(
  * For non-coplanar triangles the candidate axes are the two face normals and
  * the nine edge-edge cross products. Coplanar pairs need the in-plane edge
  * normals as well, otherwise two disjoint triangles on the same plane would
- * be reported as overlapping. Touching surfaces within TRIANGLE_EPSILON count
- * as intersecting; this test only establishes the fact, not penetration depth.
+ * be reported as overlapping.
+ *
+ * The 2D branch is used only when the normals are parallel *and* every vertex
+ * of the second triangle is within COPLANAR_EPSILON of the first plane. The
+ * distance threshold is the same TRIANGLE_EPSILON used by the SAT interval
+ * checks, so a parallel plane gap larger than the contact tolerance is left
+ * to the 3D normal axis instead of being erased by projection. Contact within
+ * TRIANGLE_EPSILON is intentionally reported as intersecting; this test only
+ * establishes the fact, not penetration depth.
  */
 function trianglesIntersect(first: MeshTriangle, second: MeshTriangle): boolean {
   const firstNormal = triangleNormal(first);
@@ -546,7 +562,8 @@ function trianglesIntersect(first: MeshTriangle, second: MeshTriangle): boolean 
   }
 
   const parallel =
-    Math.abs(firstNormal.dot(secondNormal)) >= firstNormalLength * secondNormalLength * (1 - 1e-10);
+    Math.abs(firstNormal.dot(secondNormal)) >=
+    firstNormalLength * secondNormalLength * (1 - PARALLEL_NORMAL_EPSILON);
 
   if (parallel) {
     const planeOffset = -firstNormal.dot(first.a) / firstNormalLength;
@@ -556,7 +573,7 @@ function trianglesIntersect(first: MeshTriangle, second: MeshTriangle): boolean 
       ),
     );
 
-    if (maxDistance <= 1e-6) {
+    if (maxDistance <= COPLANAR_EPSILON) {
       return coplanarTrianglesIntersect(first, second, firstNormal);
     }
   }
@@ -1064,13 +1081,26 @@ describe("First gameplay section Architectural Kit layer", () => {
     const base = triangle(0, 0, 0, 1, 0, 0, 0, 1, 0);
     const coplanarOverlap = triangle(0.2, 0.2, 0, 0.8, 0.2, 0, 0.2, 0.8, 0);
     const coplanarApart = triangle(2, 2, 0, 3, 2, 0, 2, 3, 0);
-    const parallelPlane = triangle(0.2, 0.2, 1, 0.8, 0.2, 1, 0.2, 0.8, 1);
+    const parallelFar = triangle(0.2, 0.2, 1, 0.8, 0.2, 1, 0.2, 0.8, 1);
+    const parallelAtHalfEpsilon = triangle(0.2, 0.2, 5e-8, 0.8, 0.2, 5e-8, 0.2, 0.8, 5e-8);
+    const parallelAtFiveEpsilon = triangle(0.2, 0.2, 5e-7, 0.8, 0.2, 5e-7, 0.2, 0.8, 5e-7);
+    const parallelBeyondEpsilon = triangle(0.2, 0.2, 2e-6, 0.8, 0.2, 2e-6, 0.2, 0.8, 2e-6);
     const crossing = triangle(0.2, 0.2, -1, 0.2, 0.2, 1, 0.8, 0.8, 0);
 
+    // 1. Coplanar overlap.
     expect(trianglesIntersect(base, coplanarOverlap)).toBe(true);
+    // 2. Coplanar but disjoint in-plane.
     expect(trianglesIntersect(base, coplanarApart)).toBe(false);
-    expect(trianglesIntersect(base, parallelPlane)).toBe(false);
+    // 3. Parallel planes separated by 5e-7 m: not coplanar, no contact.
+    expect(trianglesIntersect(base, parallelAtFiveEpsilon)).toBe(false);
+    // 4. Parallel planes clearly beyond the contact tolerance.
+    expect(trianglesIntersect(base, parallelFar)).toBe(false);
+    expect(trianglesIntersect(base, parallelBeyondEpsilon)).toBe(false);
+    // 5. Genuinely crossing non-coplanar triangles.
     expect(trianglesIntersect(base, crossing)).toBe(true);
+    // 6. Contact within the single TRIANGLE_EPSILON tolerance is treated as
+    // intersecting by policy (gap 5e-8 m < 1e-7 m).
+    expect(trianglesIntersect(base, parallelAtHalfEpsilon)).toBe(true);
   });
 
   it("confirms triangle-level coping/concrete intersection for all 12 copings", () => {
