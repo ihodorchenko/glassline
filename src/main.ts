@@ -18,12 +18,25 @@ async function bootstrap(): Promise<void> {
       ? (await import("./diagnostics/CaptureMode")).prepareCaptureMode()
       : null;
 
+    // Dev-only playable level boot (`?dev=first_section`). It starts the normal
+    // gameplay lifecycle and is never loaded in production. The deterministic
+    // capture contract owns the page when both are requested, because capture
+    // mode deliberately freezes the camera and world for screenshots.
+    const devLaunch =
+      import.meta.env.DEV && capture === null
+        ? (await import("./diagnostics/DevLaunch")).prepareDevLaunch()
+        : null;
+
     await application.initialize();
     bootLoader.complete();
     application.start();
 
     if (capture) {
       await capture.activate(application);
+    }
+
+    if (devLaunch?.kind === "launch") {
+      await devLaunch.handle.activate(application);
     }
   } catch (error) {
     bootLoader.fail(error);

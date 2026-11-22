@@ -431,7 +431,7 @@ Running `npm run dev` boots to the Game Glassline main menu. Use the mouse, keyb
 - Checkpoints activate automatically inside their trigger volumes; falling into the pit respawns the player at the active checkpoint (or the initial spawn).
 - `Esc` releases pointer lock and opens the pause menu.
 
-Development-only diagnostics: `F3` toggles the diagnostics overlay; in dev builds `F2` completes the current session for results-flow verification, and `window.__glassline` exposes the application instance for QA. The diagnostics overlay is not player-facing UI and is disabled by default. The initial release courses use technical IDs `training_test`/`prologue_test` for save/route compatibility but are presented as `Training — Movement Yard` and `Prologue — Rooftop Run`.
+Development-only diagnostics: `F3` toggles the diagnostics overlay; in dev builds `F2` completes the current session for results-flow verification, and `window.__glassline` exposes the application instance for QA. The diagnostics overlay is not player-facing UI and is disabled by default. In dev builds, `?dev=first_section` launches the authored First Section through the normal gameplay session (`npm run dev`, open `http://127.0.0.1:5173/?dev=first_section`, click the canvas for pointer lock); it is not in the production menu or production bundle. The initial release courses use technical IDs `training_test`/`prologue_test` for save/route compatibility but are presented as `Training — Movement Yard` and `Prologue — Rooftop Run`.
 
 ---
 

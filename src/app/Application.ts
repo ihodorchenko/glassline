@@ -1631,9 +1631,9 @@ export class Application implements Disposable {
   }
 
   /**
-   * Starts a gameplay session. `levelIdOverride` is a dev-only capture hook
-   * (the Architectural Kit review composition); shipped flows keep the
-   * mode-to-level mapping below.
+   * Starts a gameplay session. `levelIdOverride` is the development-only entry
+   * used by the capture boot and the DEV level launch (see `diagnostics/`);
+   * shipped flows keep the mode-to-level mapping below.
    */
   private async startGameplay(mode: GameplayMode, levelIdOverride?: string): Promise<void> {
     if (this.busy) {

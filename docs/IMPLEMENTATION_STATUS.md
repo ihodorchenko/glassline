@@ -334,6 +334,106 @@ regression evidence.
 - **No manual browser verification.** No browser, camera, audio, gamepad, or
   live-input behavior was verified.
 
+> **Superseded for Step 3.4:** the first-class DEV launch path and the real-browser
+> verification/evidence listed above are delivered in §0.2.4. The headless
+> limitations of this Step 3.3 record remain historical.
+
+---
+
+## 0.2.4. Step 3.4 — First Section DEV playable launch and browser verification (2026-11-22)
+
+Branch `feat/first-section-dev-launch` (created from `main` @ `fdfc334`; no merge
+performed). Source of truth: the Step 3.4 brief and
+[`reports/FIRST_GAMEPLAY_SECTION_SPEC.md`](reports/FIRST_GAMEPLAY_SECTION_SPEC.md)
+§11.3.
+
+**Scope:** add a development-only, playable First Section entry point that uses
+the existing Application, Gameplay Session, Level Runtime, Input, Camera,
+Checkpoint, Respawn, physics and HUD systems; verify the authored route with real
+keyboard/mouse input in a real browser; record visual and performance evidence.
+No menu entry, no new gameplay mode, no second runtime or composition root, no
+movement/camera/checkpoint/respawn changes, no authored geometry changes, and no
+capture-mode substitution for playability.
+
+| Status | Result |
+|---|---|
+| **Implementation** | Complete — `src/diagnostics/devLaunchContract.ts` (DOM-free `?dev=first_section` contract and level table), `src/diagnostics/DevLaunch.ts` (DEV-only runtime: structural `Application.startGameplay` call, readiness gate, visible failure + session cleanup, read-only `window.__glasslineDevLaunch` status), and a guarded dynamic import in `src/main.ts`. Capture mode keeps precedence. |
+| **Integration** | Verified — the dev entry starts the normal lifecycle: real `GameplaySessionManager` → real `LevelRuntimeManager.loadLevel("first_section")` → real player/camera/checkpoint/respawn/interaction construction → `level.startSession` → input `gameplay` context, analytics, HUD. No production menu or Prologue/Training/Speedrun flow was changed. |
+| **Verification** | Automated + real browser — `npm run validate` green (**608/608** tests in 61 files, typecheck, Biome, production build) and a 54/54-check Playwright/Edge run: 12 gameplay captures, a 26.73 s continuous recording, and a same-conditions FPS/draw-call comparison. |
+| **Evidence** | [`docs/evidence/first-section/step-3.4/`](evidence/first-section/step-3.4/README.md) — README, `report.json`, 12 PNG frames, `route.mp4`. |
+
+**DEV launch contract and isolation.**
+
+| Area | Behavior |
+|---|---|
+| URL | `?dev=first_section`; enabled values are trimmed/lower-cased. Unknown values are reported visibly and start no session; absent/false values boot normally. |
+| Level selection | `first_section`, played in `prologue` mode (the only single-level mode), unranked, timer off, checkpoints on. |
+| Production | The runtime module is imported only under `import.meta.env.DEV`; the production bundle contains no `__glasslineDevLaunch`/`DevLaunch` string, the parameter is ignored, and the main menu still boots to the Prologue. |
+| Failure handling | On throw, `flow=error`, failed session or a 20 s readiness timeout, the launcher abandons the partially started session through `GameplaySessionManager.abandonSession("session-failure")` (shutdown + unload), shows a visible dev failure banner and the existing error screen, and records the error in the dev API. |
+| Read-only status | `window.__glasslineDevLaunch.status()` exposes flow/session/level/section/player/camera/pointer-lock/checkpoint/respawn/results/prologue-completion for evidence and QA; it has no gameplay authority. |
+
+**Browser verification (Microsoft Edge 157.0.4341.46, headless, 1600×900, DPR 1,
+default `medium` quality, Apple M1 Pro / ANGLE Metal).**
+
+| Scenario | Result |
+|---|---|
+| Startup | First Section loaded; section `sec_start`; player `(0, 0.895, 14)` grounded at `sp_initial`; camera yaw/pitch 0; HUD visible; zero screen children; boot loader gone |
+| Input | Pointer lock acquired; mouse yaw `0 → −0.396 rad` and pitch `0 → −0.264 rad` with real mouse moves; WASD displacements measured; jump rise **1.501 m** with airborne + `LANDING`; sprint **8.5 m/s**, **6.633 m/s** retained 120 ms after release, then rest |
+| Route | Gap A jump z `−1.657 → −8.032`; Gap B `−13.132 → −19.507`; plant step landing y `1.747`; gallery max lateral `0 m`; slide duct posture `0.90 m` from z `−45.485` to `−54.404`; **3/3** vaults via `E`; stairs to podium y `5.395`; finish reached |
+| Checkpoint | `cp_start` (and `cp_building_jump`, `cp_slide`, `cp_vault`) activated by the authored trigger volumes; checkpoint toast shown |
+| Respawn | walked into the kill volume off the start deck (z `−2.539`); exactly **1** respawn at `(0, 0.93, 10)` = `sp_cp_start`; settled grounded at `(0, 0.895, 10)`; no repeat; pointer lock/camera/keyboard/mouse still operational |
+| Completion | authored `trigger_finish` → session `completed`, results `levelId: first_section`, `mode: prologue`, duration `30.808 s`, Results screen; `prologueCompleted = false` (no Prologue campaign completion) |
+| Runtime hygiene | 0 uncaught page errors, 0 console errors, 0 failed requests |
+
+**Performance (same browser instance, same viewport/DPR/quality, 120 warmup + 300
+measured rAF frames after an identical sprint warm-up).**
+
+| Metric | First Section | Prologue (`prologue_test`, menu-launched) |
+|---|---:|---:|
+| Average / median / 1 % low FPS | 60.00 / 59.88 / 59.52 | 58.44 / 59.88 / 30.03 |
+| p95 / p99 frame time | 16.7 / 16.8 ms | 16.8 / 33.3 ms |
+| Draw calls (median) | 218 | 261 |
+| Triangles (median) | 478,071 | 4,363,995 |
+
+Median frame pacing is identical; the First Section viewpoint renders fewer
+triangles and 43 fewer draw calls than the measured Prologue viewpoint. The
+Prologue average/1 % low is pulled down by a single 33.4 ms frame. This is a
+same-conditions regression comparison at one representative gameplay state, not a
+full-level benchmark. Host load was high (`loadAvg ≈ 18`), so absolute headless
+numbers are a proxy.
+
+**Tests added** (`608` total, `+26`): `tests/unit/dev-launch.test.ts` (22 tests —
+URL contract, availability, level selection, production isolation source guards,
+success/failure/timeout/cleanup/respawn-count/idempotency against a structural
+fake) and `tests/unit/first-section-dev-startup.test.ts` (4 tests — real
+`Application` + real `GameplaySessionManager`/`LevelRuntimeManager` lifecycle for
+`?dev=first_section`, no-parameter boot, unchanged `prologue → prologue_test`
+mapping, and visible cleanup when the level is not registered). No mocks replace
+the browser verification.
+
+**Known limitations / remaining gaps:**
+
+- **Results panel mode label.** The Results screen prints `Mode: Prologue` for
+  First Section because it reuses the `prologue` mode. Campaign progression is
+  unaffected (`shouldPublishPrologueCompletion` rejects `first_section`), but a
+  dedicated mode/level label remains a presentation task.
+- **No human hands-on pass.** The run is a real browser session with trusted
+  keyboard/mouse events driven by Playwright, not a person. Gamepad and audio were
+  not verified, and no subjective feel assessment is claimed.
+- **Headless performance proxy.** Frame pacing saturates near 60 FPS and the host
+  was busy; use median/1 % low for comparisons. The harness measures one
+  representative rooftop state per level.
+- **`checkpoint.prologue_all` remains a count-based guard.** Four First Section
+  checkpoints cannot reach `>= 5`; a fifth would require a level-id gate before
+  Prologue isolation stays guaranteed.
+- **Timing-dependent automation.** Closed-loop input can require a legal back-up
+  retry on a vault under load (none were needed in the published run). Geometry and
+  tuning were never adjusted to make the run pass.
+- **Video is silent.** The continuous recording has no audio track.
+
+**Recommended next task:** independent review of Step 3.4; no next implementation
+step was started.
+
 ---
 
 ## 1. Purpose

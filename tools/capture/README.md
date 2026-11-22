@@ -124,6 +124,34 @@ npm run kit:lifecycle
 The architecture route is `/` only in development builds: production keeps the
 shipped level list unchanged and the demo definitions are not registered.
 
+### First Section DEV playable route
+
+`?capture=…` is a deterministic screenshot rig and never proves playability. The
+First Section development route is verified with a separate harness that launches
+the real game:
+
+```bash
+node tools/capture/dev-route.mjs --out-dir docs/evidence/first-section/step-3.4
+```
+
+`dev-route.mjs` opens `?dev=first_section`, waits for the DEV launch to reach a
+running gameplay session, acquires pointer lock with a real click, and then drives
+the authored route with trusted Playwright keyboard/mouse events through the
+existing `InputManager` (closed-loop position/yaw reads only — no teleports, no
+state edits). It verifies spawn/camera/HUD, WASD, mouse look, jump/landing,
+sprint momentum, Gap A/B, the plant step, gallery, slide duct, three vaults,
+stairs, checkpoints, a real kill-volume fall + respawn, and the finish/results
+flow. The script records a continuous CDP screencast via the system `ffmpeg`,
+writes PNG frames and `report.json`, and measures gameplay FPS/frame time/draw
+calls/triangles for First Section and the menu-launched Prologue under identical
+conditions.
+
+Key flags: `--headed`, `--no-record`, `--no-perf`, `--skip-scenario`,
+`--reuse-server`, `--server-port` (default 5321), `--out-dir`, `--report`.
+Exit code is 1 if any scenario check fails. The generated evidence for Step 3.4
+lives in `docs/evidence/first-section/step-3.4/` (README + captures + video +
+report).
+
 ## 2. Metrics
 
 ```bash
