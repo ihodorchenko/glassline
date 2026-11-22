@@ -333,6 +333,17 @@ const SPEEDRUN_RESULTS = {
   },
 } as unknown as SessionResults;
 
+function resultsFor(mode: SessionResults["mode"], levelId: string): SessionResults {
+  return {
+    sessionId: `session-${mode}-${levelId}`,
+    mode,
+    levelId,
+    status: "completed",
+    durationMs: 12_345,
+    completedAt: 1_760_000_000_000,
+  };
+}
+
 const LONG_TERM_DATA: UILongTermData = {
   trainingCompleted: 3,
   trainingTotal: 10,
@@ -830,5 +841,65 @@ describe("UIManager language switching", () => {
       expect(typeof RUSSIAN_RESOURCES[key], `missing Russian label ${key}`).toBe("string");
       expect(typeof ENGLISH_RESOURCES[key], `missing English label ${key}`).toBe("string");
     }
+  });
+});
+
+describe("Results level identity", () => {
+  it("uses the level id, not the prologue gameplay mode, for a prologue-mode session", async () => {
+    const { ui, container } = await createUiHarness();
+
+    ui.showResults(resultsFor("prologue", "prologue_test"));
+
+    expect(container.textContent).toContain("Level: Prologue");
+    expect(container.textContent).not.toContain("Mode: Prologue");
+
+    ui.showResults(resultsFor("prologue", "first_section"));
+
+    expect(container.textContent).toContain("Level: First Section");
+    expect(container.textContent).not.toContain("Level: Prologue");
+    expect(container.textContent).not.toContain("Mode: Prologue");
+  });
+
+  it("keeps the existing Training and Ranked Prologue markings", async () => {
+    const { ui, container } = await createUiHarness();
+
+    ui.showResults(resultsFor("training", "training_test"));
+    expect(container.textContent).toContain("Mode: Training");
+    expect(container.textContent).not.toContain("Mode: Prologue");
+
+    ui.showResults(resultsFor("speedrun", "prologue_test"));
+    expect(container.textContent).toContain("Mode: Ranked Prologue");
+    expect(container.textContent).not.toContain("Level: Prologue");
+  });
+
+  it("falls back to the mode row for an unknown level id", async () => {
+    const { ui, container } = await createUiHarness();
+
+    ui.showResults(resultsFor("prologue", "unknown_level"));
+
+    expect(container.textContent).toContain("Mode: Prologue");
+    expect(container.textContent).not.toContain("unknown_level");
+  });
+
+  it("re-renders the level identity on a language switch", async () => {
+    const { localization, ui, container } = await createUiHarness();
+
+    ui.showResults(resultsFor("prologue", "first_section"));
+    expect(container.textContent).toContain("Level: First Section");
+
+    await localization.setLanguage("ru");
+    ui.refreshLocalization();
+
+    expect(ui.getActiveScreen()).toBe("results");
+    expect(container.textContent).toContain("Уровень: Первый участок");
+    expect(container.textContent).not.toContain("First Section");
+
+    ui.showResults(resultsFor("prologue", "prologue_test"));
+    expect(container.textContent).toContain("Уровень: Пролог");
+
+    await localization.setLanguage("en");
+    ui.refreshLocalization();
+
+    expect(container.textContent).toContain("Level: Prologue");
   });
 });

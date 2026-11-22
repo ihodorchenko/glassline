@@ -48,6 +48,7 @@ import { PlayerStateSystem } from "../player/PlayerStateSystem";
 import { PlayerSystem } from "../player/PlayerSystem";
 import {
   PROLOGUE_COMPLETION_LEVEL_ID,
+  shouldPublishPrologueCheckpointSet,
   shouldPublishPrologueCompletion,
 } from "../progression/LevelCompletionPolicy";
 import { PROGRESSION_CONTENT, PROGRESSION_MILESTONES } from "../progression/ProgressionContent";
@@ -1515,9 +1516,12 @@ export class Application implements Disposable {
         this.sessionCheckpointIds.add(activation.checkpointId);
 
         if (
-          !this.sessionCheckpointsAllEmitted &&
-          this.sessionCheckpointIds.size >= 5 &&
-          this.currentMode !== "training"
+          shouldPublishPrologueCheckpointSet({
+            mode: this.currentMode,
+            levelId,
+            activatedCheckpointCount: this.sessionCheckpointIds.size,
+            alreadyEmitted: this.sessionCheckpointsAllEmitted,
+          })
         ) {
           this.sessionCheckpointsAllEmitted = true;
           this.publishDomainEvent("checkpoint", "checkpoint.prologue_all", { value: 1 });

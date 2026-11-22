@@ -436,6 +436,120 @@ step was started.
 
 ---
 
+## 0.2.5. Step 3.5 — First Section gameplay semantics and lifecycle isolation (2026-11-22)
+
+Branch `feat/first-section-gameplay-semantics` (created from `main` @
+`f5b6111`; no merge performed). Scope: separate the displayed level identity from
+the `prologue` gameplay mode, make the Prologue checkpoint achievement explicitly
+level-scoped, verify completion/progression and restart/respawn isolation, and fix
+the DEV diagnostics subscription that stayed attached to a replaced
+`RespawnManager`. No gameplay system, physics, movement, camera, authored geometry,
+checkpoint/spawn placement, kill volume, menu, or production startup was changed.
+
+| Status | Result |
+|---|---|
+| **Implementation** | Complete — Results level identity (`results.level.<levelId>` resources and a `results.level` row for prologue-mode finishes), Prologue checkpoint-set policy in `LevelCompletionPolicy` used by `Application.handleTriggerEnter`, and a re-bindable DEV diagnostics listener in `DevLaunch` |
+| **Integration** | Verified — real `Application` + `GameplaySessionManager` + `LevelRuntimeManager` for finish, restart, checkpoint/respawn and post-restart completion; real `DevLaunch` lifecycle across two restarts; real browser smoke |
+| **Verification** | `npm run validate` green (typecheck, Biome 207 files, **625/625** tests in 62 files, production build) and a **25/25** Playwright/Edge smoke on `?dev=first_section` |
+
+**Results level identity.** `UIManager.showResults()` no longer derives the
+displayed level name from `results.mode`. For `prologue`-mode sessions it resolves
+`results.level.<levelId>` (`Prologue`, `First Section`) and renders
+`Level: {level}`; Training and Ranked/Speedrun keep their existing
+`Mode: {mode}` rows. An unknown `levelId` falls back to the mode row rather than
+showing a raw key. Both RU and EN resources define the new keys, and
+`refreshLocalization()` re-renders the last results payload, so a language switch
+updates the identity.
+
+**Prologue checkpoint achievement isolation.**
+
+| Check | Evidence |
+|---|---|
+| Identity gate | `shouldPublishPrologueCheckpointSet` requires `levelId === PROLOGUE_COMPLETION_LEVEL_ID` in addition to the existing five-checkpoint and non-training condition; the count is a condition, not an identity signal |
+| First Section | Four authored checkpoints activate; no `checkpoint.prologue_all` is published |
+| Another level with five checkpoints | A test-only five-checkpoint level (not the Prologue) activates five checkpoints and publishes no `checkpoint.prologue_all`, no `level.completed`, and no Prologue progression |
+| Positive control | The authored Prologue publishes `checkpoint.prologue_all` exactly once after its fifth unique checkpoint; re-entering an activated checkpoint does not add an activation or republish the event |
+| Definitions | `InitialAchievements.checkpoint_pro` and the authored checkpoint/spawn geometry are unchanged |
+
+**Completion and progression isolation.** The existing
+`shouldPublishPrologueCompletion` policy and `ProgressionSystem` level filtering were
+kept. Existing suites still cover ordinary finish, valid/invalid speedrun,
+best-time preservation and a non-Prologue valid speedrun. The new five-checkpoint
+level test additionally proves that a non-Prologue finish publishes no
+`level.completed` through the real Application path.
+
+**Restart and session lifecycle.** `Application.restartGameplayPort` already
+creates a new `CheckpointSystem`, `RespawnManager`, player and session
+subscriptions. New regression coverage drives a running First Section session
+through checkpoint activation, kill-volume respawn, restart, checkpoint
+reactivation, a second kill-volume respawn, and completion. It asserts that the
+new systems replace the old instances, the Application's checkpoint set and
+recoveries are empty after restart, respawn uses the new session's active
+checkpoint, and the restarted completion uses the new session's results. No
+lifecycle defect was found, so no lifecycle code was changed.
+
+**DEV RespawnManager diagnostics lifecycle.**
+
+| Requirement | Implementation |
+|---|---|
+| Initial respawn | The listener is bound when the launcher becomes ready |
+| Manager replacement | `session:started` / `session:restarted` / `session:completed` / `session:abandoned` / `session:failed` trigger a reconcile against the current `app.respawnManager`; the previous listener is unsubscribed first |
+| Read-only reconcile | `status()` also reconciles once when sampled, covering a replacement observed before its lifecycle event (not a per-frame poll) |
+| No double count | One remembered manager and one unsubscribe slot; a stale manager callback is ignored by identity check |
+| Cleanup | `DevLaunchHandle.dispose()` releases the respawn and session subscriptions; `pagehide` calls it in the browser; launch failures release them too |
+| Production | The module remains dynamically imported only under `import.meta.env.DEV`; the production bundle contains no `DevLaunch` / `__glasslineDevLaunch` strings |
+
+**Tests added (+17, 608 → 625).**
+
+- `tests/unit/prologue-checkpoint-achievement.test.ts` — 7 policy tests (Prologue
+  level id, count threshold, once-only, First Section, another level, training).
+- `tests/unit/first-section-application-integration.test.ts` — running-restart
+  checkpoint/respawn/completion lifecycle and a non-Prologue five-checkpoint
+  positive isolation test; the existing Prologue control now asserts exactly one
+  `checkpoint.prologue_all` and no re-count on checkpoint re-entry.
+- `tests/unit/dev-launch.test.ts` — manager re-binding after restart, repeated
+  restart without duplicated listeners or counts, stale-manager rejection,
+  status reconcile, and dispose cleanup.
+- `tests/unit/first-section-dev-startup.test.ts` — real Application/DevLaunch
+  respawn count across two restarts and after dispose.
+- `tests/unit/localization-ru.test.ts` — Results identity in EN/RU, Training and
+  Ranked markings, unknown-level fallback, language-switch re-render.
+- `tests/unit/localization-ui.test.ts` — required-key coverage for the new
+  resources.
+
+**Browser smoke (Microsoft Edge, Playwright, headless, 1600×900, DPR 1).**
+`http://127.0.0.1:5173/?dev=first_section`, 25/25 checks: ready First Section;
+`cp_start` activated by walking; kill-volume respawn at `cp_start` counted once;
+`R` restart kept gameplay running, cleared checkpoint progress, preserved the
+respawn count and placed the player at `sp_initial`; a second walk/fall activated
+`cp_start` in the new session and respawned there, incrementing the diagnostics
+count to 2 exactly; `F2` completion produced Results with `levelId: first_section`,
+`mode: prologue`, text `Level: First Section`, no `Level: Prologue`, and
+`prologueCompleted: false`; 0 page errors, 0 console errors, 0 failed requests.
+
+**Known limitations / remaining gaps:**
+
+- **Presentation mapping is per level.** A new level needs a
+  `results.level.<levelId>` resource in both languages; until then the Results
+  screen intentionally falls back to the mode row.
+- **No First Section achievement.** `checkpoint.prologue_all` remains Prologue-only
+  by design; a First Section achievement would need a separate event id and
+  definition (out of Step 3.5 scope).
+- **Fixed Prologue threshold.** `PROLOGUE_CHECKPOINT_SET_SIZE` is 5, matching the
+  authored achievement and level. Changing the authored Prologue checkpoint count
+  is a separate content decision.
+- **DEV-only diagnostics.** The subscriber uses the existing Gameplay Session
+  event contract and read-only Application fields; it adds no production hook and
+  no production dependency.
+- **Headless, not human hands-on.** The smoke run uses trusted Playwright
+  keyboard input in a real browser. No subjective feel, gamepad, audio, or human
+  verification is claimed.
+
+**Recommended next task:** independent review of Step 3.5; no next implementation
+step was started.
+
+---
+
 ## 1. Purpose
 
 This document is the central implementation tracking reference for Glassline.

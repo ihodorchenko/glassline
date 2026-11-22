@@ -118,6 +118,18 @@ export interface UILongTermData {
 
 type ReturnContext = "main-menu" | "pause-menu";
 
+/**
+ * Player-facing level identity for the Results screen.
+ *
+ * `SessionResults.mode` is a gameplay mode, not a level: `prologue` currently
+ * runs both the campaign Prologue and the standalone First Section. The level
+ * id is therefore the only safe identity source. Unknown ids resolve to no key
+ * so the caller can keep the existing mode label as a fallback.
+ */
+function resultsLevelLabelKey(levelId: string): string {
+  return `results.level.${levelId}`;
+}
+
 export const SETTING_LABEL_KEYS: Readonly<Record<string, string>> = {
   "audio.master_volume": "settings.audio.master_volume",
   "audio.music_volume": "settings.audio.music_volume",
@@ -475,9 +487,22 @@ export class UIManager {
             ? "menu.rankedPrologue"
             : "menu.prologue",
       );
+      // Training and Speedrun keep their existing mode marking. A prologue-mode
+      // session may run any authored level, so its displayed identity comes from
+      // `levelId`; an unknown level falls back to the mode row.
+      const levelLabel =
+        results.mode === "prologue"
+          ? this.localizeWithFallback(resultsLevelLabelKey(results.levelId), "")
+          : "";
 
       body.append(
-        element("div", "gl-results__row", this.localize("results.mode", { mode: modeLabel })),
+        element(
+          "div",
+          "gl-results__row",
+          levelLabel === ""
+            ? this.localize("results.mode", { mode: modeLabel })
+            : this.localize("results.level", { level: levelLabel }),
+        ),
         element(
           "div",
           "gl-results__row",

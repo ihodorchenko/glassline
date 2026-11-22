@@ -96,6 +96,9 @@ export const RUSSIAN_RESOURCES: TranslationResources = {
 
   "results.title": "Результаты",
   "results.mode": "Режим: {mode}",
+  "results.level": "Уровень: {level}",
+  "results.level.prologue_test": "Пролог",
+  "results.level.first_section": "Первый участок",
   "results.duration": "Время: {duration}",
   "results.trainingCompleted": "Упражнений пройдено: {completed} / {total}",
   "results.speedrunTime": "Время прохождения: {time}",

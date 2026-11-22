@@ -63,6 +63,13 @@ interface FakeOptions {
   readonly keepPlayer?: boolean;
 }
 
+interface FakeRespawnManager {
+  readonly currentState: string;
+  readonly listeners: Set<() => void>;
+  getLastDestination(): { position: FakeVector } | null;
+  subscribe(listener: () => void): () => void;
+}
+
 interface FakeApplication {
   startCalls: Array<{ readonly mode: string; readonly levelId?: string }>;
   abandonReasons: string[];
@@ -79,6 +86,7 @@ interface FakeApplication {
   checkpoint: { activeId: string | null; activated: string[] };
   respawn: { currentState: string; destination: { position: FakeVector } | null };
   respawnListeners: Set<() => void>;
+  sessionListeners: Map<string, Set<() => void>>;
   ui: {
     screen: string | null;
     errors: string[];
@@ -93,6 +101,7 @@ interface FakeApplication {
     getActiveSession(): FakeSession | null;
     getLastResults(): FakeApplication["lastResults"];
     abandonSession(reason: string): Promise<{ success: boolean; error?: string }>;
+    on(event: string, listener: () => void): () => void;
   };
   levelRuntime: {
     getCurrentLevel(): { readonly id: string } | null;
@@ -104,17 +113,51 @@ interface FakeApplication {
     getActiveCheckpointId(): string | null;
     getSnapshot(): { readonly activatedCheckpointIds: readonly string[] };
   };
-  respawnManager: {
-    readonly currentState: string;
-    getLastDestination(): { position: FakeVector } | null;
-    subscribe(listener: () => void): () => void;
-  };
+  respawnManager: FakeRespawnManager;
   progressionSystem: { getSnapshot(): { readonly prologueCompleted: boolean } };
   startGameplay(mode: string, levelId?: string): Promise<void>;
+  emitSession(event: string): void;
+}
+
+function createFakeRespawnManager(
+  readState: () => FakeApplication["respawn"],
+  listeners: Set<() => void> = new Set(),
+): FakeRespawnManager {
+  return {
+    listeners,
+    get currentState(): string {
+      return readState().currentState;
+    },
+    getLastDestination: () => readState().destination,
+    subscribe: (listener: () => void) => {
+      listeners.add(listener);
+
+      return () => {
+        listeners.delete(listener);
+      };
+    },
+  };
+}
+
+function emitRespawn(manager: FakeRespawnManager): void {
+  for (const listener of [...manager.listeners]) {
+    listener();
+  }
+}
+
+function sessionListenerCount(fake: FakeApplication): number {
+  let count = 0;
+
+  for (const listeners of fake.sessionListeners.values()) {
+    count += listeners.size;
+  }
+
+  return count;
 }
 
 function createFakeApplication(options: FakeOptions = {}): FakeApplication {
   const respawnListeners = new Set<() => void>();
+  const sessionListeners = new Map<string, Set<() => void>>();
 
   const fake: FakeApplication = {
     startCalls: [],
@@ -132,6 +175,7 @@ function createFakeApplication(options: FakeOptions = {}): FakeApplication {
     checkpoint: { activeId: null, activated: [] },
     respawn: { currentState: "idle", destination: null },
     respawnListeners,
+    sessionListeners,
     ui: {
       screen: options.uiScreen ?? null,
       errors: [],
@@ -161,6 +205,20 @@ function createFakeApplication(options: FakeOptions = {}): FakeApplication {
 
         return { success: true };
       },
+      on(event: string, listener: () => void): () => void {
+        const bucket = sessionListeners.get(event) ?? new Set<() => void>();
+
+        bucket.add(listener);
+        sessionListeners.set(event, bucket);
+
+        return () => {
+          bucket.delete(listener);
+
+          if (bucket.size === 0) {
+            sessionListeners.delete(event);
+          }
+        };
+      },
     },
     levelRuntime: {
       getCurrentLevel: () => fake.level,
@@ -173,19 +231,7 @@ function createFakeApplication(options: FakeOptions = {}): FakeApplication {
       getActiveCheckpointId: () => fake.checkpoint.activeId,
       getSnapshot: () => ({ activatedCheckpointIds: fake.checkpoint.activated }),
     },
-    respawnManager: {
-      get currentState(): string {
-        return fake.respawn.currentState;
-      },
-      getLastDestination: () => fake.respawn.destination,
-      subscribe: (listener: () => void) => {
-        respawnListeners.add(listener);
-
-        return () => {
-          respawnListeners.delete(listener);
-        };
-      },
-    },
+    respawnManager: createFakeRespawnManager(() => fake.respawn, respawnListeners),
     progressionSystem: { getSnapshot: () => ({ prologueCompleted: fake.progressionCompleted }) },
     async startGameplay(mode: string, levelId?: string): Promise<void> {
       fake.startCalls.push({ mode, ...(levelId === undefined ? {} : { levelId }) });
@@ -221,6 +267,11 @@ function createFakeApplication(options: FakeOptions = {}): FakeApplication {
 
       if (options.throwOnStart) {
         throw options.throwOnStart;
+      }
+    },
+    emitSession(event: string): void {
+      for (const listener of [...(sessionListeners.get(event) ?? [])]) {
+        listener();
       }
     },
   };
@@ -448,6 +499,126 @@ describe("dev launch runtime", () => {
 
     expect(status?.respawnCount).toBe(1);
     expect(status?.respawnDestination).toEqual({ x: 0, y: 0.93, z: 10 });
+  });
+
+  it("moves respawn diagnostics to the manager created by a restart", async () => {
+    const fake = createFakeApplication();
+    const { host, exposed } = createFakeHost();
+    const preparation = createDevLaunch("?dev=first_section", host);
+
+    if (preparation.kind !== "launch") {
+      throw new Error("expected a launch preparation");
+    }
+
+    await preparation.handle.activate(fake);
+
+    const firstManager = fake.respawnManager;
+
+    expect(firstManager.listeners.size).toBe(1);
+
+    fake.respawn.destination = { position: { x: 0, y: 0.93, z: 10 } };
+    emitRespawn(firstManager);
+
+    expect(exposed[0]?.status()?.respawnCount).toBe(1);
+
+    // Application.restartGameplayPort disposes the old manager (which clears
+    // its listeners) and creates a new one before `session:restarted`.
+    const secondManager = createFakeRespawnManager(() => fake.respawn);
+
+    fake.respawnManager = secondManager;
+    fake.emitSession("session:restarted");
+
+    expect(firstManager.listeners.size).toBe(0);
+    expect(secondManager.listeners.size).toBe(1);
+
+    fake.respawn.destination = { position: { x: 0, y: 0.93, z: -21.3 } };
+    emitRespawn(secondManager);
+
+    expect(exposed[0]?.status()?.respawnCount).toBe(2);
+    expect(exposed[0]?.status()?.respawnDestination).toEqual({ x: 0, y: 0.93, z: -21.3 });
+
+    // A stale callback from the replaced manager must not increment the count.
+    emitRespawn(firstManager);
+    expect(exposed[0]?.status()?.respawnCount).toBe(2);
+
+    // Repeated restarts still keep exactly one live listener.
+    const thirdManager = createFakeRespawnManager(() => fake.respawn);
+
+    fake.respawnManager = thirdManager;
+    fake.emitSession("session:restarted");
+
+    expect(secondManager.listeners.size).toBe(0);
+    expect(thirdManager.listeners.size).toBe(1);
+
+    emitRespawn(thirdManager);
+
+    expect(exposed[0]?.status()?.respawnCount).toBe(3);
+  });
+
+  it("reconciles diagnostics on status sampling when the manager changes first", async () => {
+    const fake = createFakeApplication();
+    const { host, exposed } = createFakeHost();
+    const preparation = createDevLaunch("?dev=first_section", host);
+
+    if (preparation.kind !== "launch") {
+      throw new Error("expected a launch preparation");
+    }
+
+    await preparation.handle.activate(fake);
+
+    const firstManager = fake.respawnManager;
+    const secondManager = createFakeRespawnManager(() => fake.respawn);
+
+    fake.respawnManager = secondManager;
+
+    // No lifecycle event yet: the read-only status sample reconciles the
+    // binding with the current runtime.
+    const status = exposed[0]?.status() ?? null;
+
+    expect(status?.respawnState).toBe("idle");
+    expect(firstManager.listeners.size).toBe(0);
+    expect(secondManager.listeners.size).toBe(1);
+
+    fake.respawn.destination = { position: { x: 0, y: 0.93, z: 14 } };
+    emitRespawn(secondManager);
+
+    expect(exposed[0]?.status()?.respawnCount).toBe(1);
+  });
+
+  it("releases every diagnostics subscription on dispose", async () => {
+    const fake = createFakeApplication();
+    const { host, exposed } = createFakeHost();
+    const preparation = createDevLaunch("?dev=first_section", host);
+
+    if (preparation.kind !== "launch") {
+      throw new Error("expected a launch preparation");
+    }
+
+    await preparation.handle.activate(fake);
+
+    const manager = fake.respawnManager;
+
+    expect(manager.listeners.size).toBe(1);
+    expect(sessionListenerCount(fake)).toBeGreaterThan(0);
+
+    preparation.handle.dispose();
+
+    expect(manager.listeners.size).toBe(0);
+    expect(sessionListenerCount(fake)).toBe(0);
+
+    fake.respawn.destination = { position: { x: 0, y: 0.93, z: 10 } };
+    emitRespawn(manager);
+
+    expect(exposed[0]?.status()?.respawnCount).toBe(0);
+
+    // A manager replacement after dispose must not resurrect the listener.
+    const replacement = createFakeRespawnManager(() => fake.respawn);
+
+    fake.respawnManager = replacement;
+    fake.emitSession("session:restarted");
+    exposed[0]?.status();
+
+    expect(replacement.listeners.size).toBe(0);
   });
 
   it("fails visibly, abandons the session, and never reports ready when start throws", async () => {

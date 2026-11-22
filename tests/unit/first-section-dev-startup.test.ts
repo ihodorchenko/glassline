@@ -23,6 +23,7 @@ import {
 } from "../../src/progression/ProgressionContent";
 import { ProgressionSystem } from "../../src/progression/ProgressionSystem";
 import { RenderScene } from "../../src/rendering/RenderScene";
+import type { RespawnManager } from "../../src/respawn/RespawnManager";
 import {
   type GameplayMode,
   GameplaySessionManager,
@@ -59,7 +60,7 @@ interface ApplicationInternals {
   player: unknown;
   playerState: unknown;
   checkpointSystem: unknown;
-  respawnManager: unknown;
+  respawnManager: RespawnManager | null;
   currentMode: GameplayMode | null;
   createSessionPorts(): GameplaySessionPorts;
   shutdownGameplayPort(context: unknown): void;
@@ -186,7 +187,7 @@ async function runDevLaunch(harness: Harness, search = "?dev=first_section") {
 
   const result = await preparation.handle.activate(harness.app);
 
-  return { result, fake, api: fake.exposed[0] ?? null };
+  return { result, fake, api: fake.exposed[0] ?? null, handle: preparation.handle };
 }
 
 afterEach(async () => {
@@ -349,5 +350,69 @@ describe("DEV launch — real Application lifecycle", () => {
 
     expect(retry.result.success).toBe(false);
     expect(harness.manager.getActiveSession()?.status).toBe("abandoned");
+  });
+
+  it("keeps respawn diagnostics attached to the current manager across restarts", async () => {
+    const harness = await createHarness(FIRST_SECTION_LEVEL_DEFINITIONS);
+    const { result, api, handle } = await runDevLaunch(harness);
+
+    expect(result.success, result.error ?? "").toBe(true);
+
+    const enterKillVolumeAndRespawn = (): RespawnManager => {
+      // Leave the volume first so a repeated call can re-enter it.
+      harness.runtime.update({ x: 0, y: 0.93, z: 14 }, Date.now());
+      harness.runtime.update({ x: 0, y: -7.5, z: -35 }, Date.now() + 1);
+
+      const respawn = harness.internals.respawnManager;
+
+      if (!respawn) {
+        throw new Error("RespawnManager is unavailable.");
+      }
+
+      expect(respawn.getLastDestination()).not.toBeNull();
+
+      for (let step = 0; step < 30 && respawn.isRespawning; step += 1) {
+        respawn.update(1 / 60);
+      }
+
+      expect(respawn.currentState).toBe("idle");
+
+      return respawn;
+    };
+
+    expect(api?.status()?.respawnCount).toBe(0);
+
+    const firstManager = enterKillVolumeAndRespawn();
+
+    expect(api?.status()?.respawnCount).toBe(1);
+
+    const restart = await harness.manager.restartSession();
+
+    expect(restart.success, restart.error).toBe(true);
+
+    const secondManager = harness.internals.respawnManager;
+
+    expect(secondManager).not.toBe(firstManager);
+    expect(api?.status()?.respawnCount).toBe(1);
+
+    enterKillVolumeAndRespawn();
+    expect(api?.status()?.respawnCount).toBe(2);
+
+    const restartAgain = await harness.manager.restartSession();
+
+    expect(restartAgain.success, restartAgain.error).toBe(true);
+
+    const thirdManager = harness.internals.respawnManager;
+
+    expect(thirdManager).not.toBe(secondManager);
+    expect(api?.status()?.respawnCount).toBe(2);
+
+    enterKillVolumeAndRespawn();
+    expect(api?.status()?.respawnCount).toBe(3);
+
+    handle.dispose();
+    enterKillVolumeAndRespawn();
+
+    expect(api?.status()?.respawnCount).toBe(3);
   });
 });

@@ -89,6 +89,9 @@ export const ENGLISH_RESOURCES: TranslationResources = {
 
   "results.title": "Results",
   "results.mode": "Mode: {mode}",
+  "results.level": "Level: {level}",
+  "results.level.prologue_test": "Prologue",
+  "results.level.first_section": "First Section",
   "results.duration": "Time: {duration}",
   "results.trainingCompleted": "Exercises completed: {completed} / {total}",
   "results.speedrunTime": "Completion time: {time}",

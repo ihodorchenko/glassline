@@ -58,6 +58,11 @@ interface SessionManagerLike {
     readonly success: boolean;
     readonly error?: string;
   }>;
+  /**
+   * Lifecycle events used only to re-bind the read-only diagnostics listener
+   * when the session replaces its respawn manager (restart/reload).
+   */
+  on?(event: string, listener: () => void): () => void;
 }
 
 interface FlowManagerLike {
@@ -219,6 +224,8 @@ export interface DevLaunchHandle {
   readonly request: DevLaunchRequest;
   /** Starts the normal gameplay session and waits until it is actually playable. */
   activate(application: unknown): Promise<DevLaunchResult>;
+  /** Releases every diagnostics subscription owned by this launch. */
+  dispose(): void;
 }
 
 /**
@@ -234,8 +241,13 @@ interface DevLaunchState {
   app: DevLaunchApplication | null;
   phase: DevLaunchPhase;
   error: string | null;
+  disposed: boolean;
   respawnCount: number;
   respawnDestination: DevLaunchVector | null;
+  /** Respawn manager the diagnostics listener is currently attached to. */
+  boundRespawnManager: RespawnManagerLike | null;
+  respawnUnsubscribe: (() => void) | null;
+  sessionUnsubscribes: (() => void)[];
 }
 
 /* -------------------------------------------------------------------------- */
@@ -248,7 +260,17 @@ interface DevLaunchState {
  * immediately so tooling can distinguish "still launching" from "never loaded".
  */
 export function prepareDevLaunch(search = window.location.search): DevLaunchPreparation {
-  return createDevLaunch(search, createBrowserDevLaunchHost());
+  const preparation = createDevLaunch(search, createBrowserDevLaunchHost());
+
+  // The dev launch is a page-lifetime tool. `pagehide` is the browser's
+  // guaranteed teardown signal, so diagnostics never outlive the page.
+  if (preparation.kind === "launch" && typeof window !== "undefined") {
+    const handle = preparation.handle;
+
+    window.addEventListener("pagehide", () => handle.dispose(), { once: true });
+  }
+
+  return preparation;
 }
 
 /**
@@ -283,8 +305,12 @@ export function createDevLaunch(
     app: null,
     phase: "idle",
     error: null,
+    disposed: false,
     respawnCount: 0,
     respawnDestination: null,
+    boundRespawnManager: null,
+    respawnUnsubscribe: null,
+    sessionUnsubscribes: [],
   };
   const api = createDevLaunchApi(request, state);
   const readyTimeoutMs = options.readyTimeoutMs ?? READY_TIMEOUT_MS;
@@ -305,6 +331,9 @@ export function createDevLaunch(
           readyTimeoutMs,
           pollIntervalMs,
         );
+      },
+      dispose(): void {
+        disposeDevLaunch(state);
       },
     },
   };
@@ -437,14 +466,7 @@ function succeedDevLaunch(
   state.phase = "ready";
   state.error = null;
 
-  const respawn = app.respawnManager;
-
-  if (respawn) {
-    respawn.subscribe(() => {
-      state.respawnCount += 1;
-      state.respawnDestination = normalizeDestination(respawn.getLastDestination());
-    });
-  }
+  bindRespawnDiagnostics(state, app);
 
   const snapshot = buildStatus(request, state);
   const checkpointCount = snapshot?.activatedCheckpointIds.length ?? 0;
@@ -470,6 +492,8 @@ async function failDevLaunch(
   state.error = message;
 
   host.error("[Glassline] DEV launch failed.", message);
+
+  releaseDiagnosticsSubscriptions(state);
 
   const cleanup = await cleanupSession(app, host);
   const details = `${message}\n${cleanup}`;
@@ -526,6 +550,93 @@ async function cleanupSession(app: DevLaunchApplication, host: DevLaunchHost): P
 /* Status                                                                     */
 /* -------------------------------------------------------------------------- */
 
+/**
+ * Session events that may replace or release the session-scoped respawn
+ * manager. `restartGameplayPort` and `shutdownGameplayPort` run before these
+ * events are emitted, so re-reading `app.respawnManager` is always current.
+ */
+const DIAGNOSTICS_SESSION_EVENTS = [
+  "session:started",
+  "session:restarted",
+  "session:completed",
+  "session:abandoned",
+  "session:failed",
+] as const;
+
+function bindRespawnDiagnostics(state: DevLaunchState, app: DevLaunchApplication): void {
+  if (state.disposed) {
+    return;
+  }
+
+  const session = app.sessionManager;
+
+  for (const unsubscribe of state.sessionUnsubscribes) {
+    unsubscribe();
+  }
+
+  state.sessionUnsubscribes = [];
+
+  if (session?.on) {
+    for (const event of DIAGNOSTICS_SESSION_EVENTS) {
+      state.sessionUnsubscribes.push(session.on(event, () => syncRespawnDiagnostics(state, app)));
+    }
+  }
+
+  syncRespawnDiagnostics(state, app);
+}
+
+/**
+ * Moves the diagnostics listener from the previous respawn manager to the
+ * current one. Unsubscribing first and remembering the bound instance keeps the
+ * counter at exactly one listener, so repeated restarts can neither miss a new
+ * respawn nor double-count one.
+ */
+function syncRespawnDiagnostics(state: DevLaunchState, app: DevLaunchApplication): void {
+  if (state.disposed) {
+    return;
+  }
+
+  const manager = app.respawnManager;
+
+  if (state.boundRespawnManager === manager) {
+    return;
+  }
+
+  state.respawnUnsubscribe?.();
+  state.respawnUnsubscribe = null;
+  state.boundRespawnManager = manager;
+
+  if (!manager) {
+    return;
+  }
+
+  state.respawnUnsubscribe = manager.subscribe(() => {
+    // A disposed or replaced manager must never keep mutating diagnostics.
+    if (state.disposed || state.boundRespawnManager !== manager) {
+      return;
+    }
+
+    state.respawnCount += 1;
+    state.respawnDestination = normalizeDestination(manager.getLastDestination());
+  });
+}
+
+function releaseDiagnosticsSubscriptions(state: DevLaunchState): void {
+  for (const unsubscribe of state.sessionUnsubscribes) {
+    unsubscribe();
+  }
+
+  state.sessionUnsubscribes = [];
+  state.respawnUnsubscribe?.();
+  state.respawnUnsubscribe = null;
+  state.boundRespawnManager = null;
+}
+
+function disposeDevLaunch(state: DevLaunchState): void {
+  state.disposed = true;
+  releaseDiagnosticsSubscriptions(state);
+}
+
 function buildStatus(
   request: DevLaunchRequest,
   state: DevLaunchState,
@@ -535,6 +646,10 @@ function buildStatus(
   if (!app) {
     return null;
   }
+
+  // Read-only reconcile: diagnostics may be sampled between a manager
+  // replacement and its lifecycle event. This is not a per-frame poll.
+  syncRespawnDiagnostics(state, app);
 
   const session = app.sessionManager?.getActiveSession() ?? null;
   const level = app.levelRuntime?.getCurrentLevel() ?? null;

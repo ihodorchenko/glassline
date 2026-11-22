@@ -5,6 +5,7 @@ import { DEFAULT_APPLICATION_CONFIG } from "../../src/app/ApplicationConfig";
 import { CameraSystem } from "../../src/camera/CameraSystem";
 import type { CheckpointSystem } from "../../src/checkpoint/CheckpointSystem";
 import type { DomainEvent } from "../../src/events/DomainEvent";
+import { FIRST_SECTION_SECTION_IDS } from "../../src/levels/first-section/FirstSectionLayout";
 import {
   FIRST_SECTION_LEVEL,
   FIRST_SECTION_LEVEL_DEFINITIONS,
@@ -18,12 +19,14 @@ import {
   PROLOGUE_TEST_LEVEL_ID,
 } from "../../src/levels/test/PrologueTestLevel";
 import { PhysicsWorld } from "../../src/physics/PhysicsWorld";
+import type { PlayerSystem } from "../../src/player/PlayerSystem";
 import {
   PROGRESSION_CONTENT,
   PROGRESSION_MILESTONES,
 } from "../../src/progression/ProgressionContent";
 import { ProgressionSystem } from "../../src/progression/ProgressionSystem";
 import { RenderScene } from "../../src/rendering/RenderScene";
+import type { RespawnManager } from "../../src/respawn/RespawnManager";
 import {
   type GameplayMode,
   GameplaySessionManager,
@@ -64,11 +67,14 @@ interface ApplicationInternals {
   cameraSystem: CameraSystem;
   progressionSystem: ProgressionSystem;
   sessionManager: GameplaySessionManager;
+  player: PlayerSystem | null;
   checkpointSystem: CheckpointSystem | null;
+  respawnManager: RespawnManager | null;
   speedrunSystem: SpeedrunSystem | null;
   currentMode: GameplayMode | null;
   sessionCheckpointIds: Set<string>;
   sessionCheckpointsAllEmitted: boolean;
+  sessionRecoveries: number;
   finishTriggered: boolean;
   busy: boolean;
   lastResults: SessionResults | null;
@@ -107,6 +113,57 @@ function spawnPosition(level: LevelDefinition, spawnPointId: string): LevelVecto
   );
 
   return { ...spawn.position };
+}
+
+/**
+ * Test-only level that is *not* the authored Prologue but authors five
+ * checkpoints. It reuses the First Section collision layer and adds one
+ * checkpoint at the initial spawn, so the real trigger route activates five
+ * unique checkpoints. No authored level, geometry, or checkpoint definition is
+ * modified.
+ */
+const ORDINARY_CHECKPOINT_LEVEL_ID = "ordinary_checkpoint_test";
+
+function createOrdinaryCheckpointLevel(): LevelDefinition {
+  const initialSpawn = requireItem(
+    FIRST_SECTION_LEVEL.spawnPoints.find(
+      (candidate) => candidate.id === FIRST_SECTION_LEVEL.initialSpawnPointId,
+    ),
+    "First Section initial spawn",
+  );
+
+  return {
+    ...FIRST_SECTION_LEVEL,
+    id: ORDINARY_CHECKPOINT_LEVEL_ID,
+    displayName: "Ordinary Checkpoint Test",
+    checkpoints: [
+      ...FIRST_SECTION_LEVEL.checkpoints,
+      {
+        id: "cp_extra",
+        sectionId: FIRST_SECTION_SECTION_IDS.start,
+        triggerId: "trigger_cp_extra",
+        spawnPointId: initialSpawn.id,
+        displayName: "Extra Checkpoint",
+        activationMode: "automatic",
+        enabled: true,
+        repeatable: true,
+        respawnEnabled: true,
+        order: -1,
+      },
+    ],
+    triggers: [
+      ...FIRST_SECTION_LEVEL.triggers,
+      {
+        id: "trigger_cp_extra",
+        sectionId: FIRST_SECTION_SECTION_IDS.start,
+        type: "checkpoint",
+        center: { ...initialSpawn.position },
+        halfExtents: { x: 2, y: 2, z: 2 },
+        repeatable: true,
+        metadata: { checkpointId: "cp_extra" },
+      },
+    ],
+  };
 }
 
 /**
@@ -481,6 +538,8 @@ describe("Application orchestration — restart and reload", () => {
 
     const firstGameplaySessionId = harness.manager.getActiveSession()?.id;
     const firstLevelSessionId = harness.runtime.getCurrentSession()?.id;
+    const firstCheckpointSystem = harness.internals.checkpointSystem;
+    const firstRespawnManager = harness.internals.respawnManager;
     const loaded = sceneMetrics(harness.scene);
     const loadedBodies = harness.physics.rapierWorld.bodies.len();
     const loadedColliders = harness.physics.rapierWorld.colliders.len();
@@ -534,6 +593,13 @@ describe("Application orchestration — restart and reload", () => {
     expect(harness.runtime.getActiveSectionId()).toBe("sec_start");
     expect(harness.internals.speedrunSystem).toBeNull();
     expect(harness.internals.checkpointSystem?.getSnapshot().activatedCheckpointIds).toEqual([]);
+    // A restart creates new session-scoped systems and clears the Application's
+    // own per-session accumulator; nothing from the completed run survives.
+    expect(harness.internals.checkpointSystem).not.toBe(firstCheckpointSystem);
+    expect(harness.internals.respawnManager).not.toBe(firstRespawnManager);
+    expect(harness.internals.sessionCheckpointIds.size).toBe(0);
+    expect(harness.internals.sessionCheckpointsAllEmitted).toBe(false);
+    expect(harness.internals.sessionRecoveries).toBe(0);
     expect(harness.runtime.getSnapshot()).toMatchObject({
       triggerCount: firstSnapshot.triggerCount,
       spawnPointCount: firstSnapshot.spawnPointCount,
@@ -589,18 +655,145 @@ describe("Application orchestration — restart and reload", () => {
     expect(harness.physics.rapierWorld.bodies.len()).toBe(loadedBodies);
     expect(harness.physics.rapierWorld.colliders.len()).toBe(loadedColliders);
   });
+
+  it("keeps checkpoint and respawn progress session-scoped across a running restart", async () => {
+    const harness = await createApplicationHarness(FIRST_SECTION_LEVEL_DEFINITIONS);
+
+    await startSession(harness, FIRST_SECTION_LEVEL.id);
+
+    const route = buildAuthoredRoute(FIRST_SECTION_LEVEL);
+    const cpStartIndex = route.findIndex(
+      (step) => step.kind === "checkpoint" && step.id === "cp_start",
+    );
+    const cpBuildingJumpIndex = route.findIndex(
+      (step) => step.kind === "checkpoint" && step.id === "cp_building_jump",
+    );
+    const finishIndex = route.findIndex((step) => step.kind === "finish");
+
+    expect(cpStartIndex).toBeGreaterThan(0);
+    expect(cpBuildingJumpIndex).toBeGreaterThan(cpStartIndex);
+    expect(finishIndex).toBeGreaterThan(cpBuildingJumpIndex);
+
+    driveRoute(harness, route.slice(0, cpStartIndex + 1));
+
+    const firstCheckpointSystem = harness.internals.checkpointSystem;
+    const firstRespawnManager = harness.internals.respawnManager;
+    const firstPlayer = harness.internals.player;
+
+    expect(firstCheckpointSystem?.getSnapshot().activatedCheckpointIds).toEqual(["cp_start"]);
+    expect([...harness.internals.sessionCheckpointIds]).toEqual(["cp_start"]);
+    expect(firstRespawnManager).not.toBeNull();
+    expect(firstPlayer).not.toBeNull();
+
+    // The existing pause-menu Restart / R action calls `restartSession`.
+    const restart = await harness.manager.restartSession();
+
+    expect(restart.success, restart.error).toBe(true);
+    expect(harness.manager.getActiveSession()?.status).toBe("running");
+    expect(harness.internals.currentMode).toBe("prologue");
+    expect(harness.runtime.getCurrentLevel()?.id).toBe("first_section");
+    expect(harness.internals.checkpointSystem).not.toBe(firstCheckpointSystem);
+    expect(harness.internals.respawnManager).not.toBe(firstRespawnManager);
+    expect(harness.internals.player).not.toBe(firstPlayer);
+    expect(harness.internals.checkpointSystem?.getSnapshot().activatedCheckpointIds).toEqual([]);
+    expect([...harness.internals.sessionCheckpointIds]).toEqual([]);
+    expect(harness.internals.sessionCheckpointsAllEmitted).toBe(false);
+    expect(harness.internals.sessionRecoveries).toBe(0);
+
+    // The new session can activate checkpoints from scratch.
+    driveRoute(harness, buildAuthoredRoute(FIRST_SECTION_LEVEL).slice(0, cpBuildingJumpIndex + 1));
+
+    expect(harness.internals.checkpointSystem?.getSnapshot().activatedCheckpointIds).toEqual([
+      "cp_start",
+      "cp_building_jump",
+    ]);
+    expect([...harness.internals.sessionCheckpointIds]).toEqual(["cp_start", "cp_building_jump"]);
+    expect(harness.internals.checkpointSystem?.getActiveCheckpointId()).toBe("cp_building_jump");
+
+    // The authored kill volume drives the real Application handler and the new
+    // RespawnManager, which resolves the new session's active checkpoint.
+    harness.runtime.update({ x: 0, y: -7.5, z: -35 }, 60_000);
+
+    const respawn = harness.internals.respawnManager;
+    const respawnDestination = spawnPosition(FIRST_SECTION_LEVEL, "sp_cp_building_jump");
+
+    expect(respawn?.isRespawning).toBe(true);
+    expect(respawn?.getLastDestination()?.checkpointId).toBe("cp_building_jump");
+    expect(respawn?.getLastDestination()?.spawnPointId).toBe("sp_cp_building_jump");
+    expect(harness.internals.player?.getPosition()).toEqual(respawnDestination);
+
+    for (let step = 0; step < 30 && respawn?.isRespawning; step += 1) {
+      respawn.update(1 / 60);
+    }
+
+    expect(respawn?.currentState).toBe("idle");
+    expect(harness.internals.sessionRecoveries).toBe(1);
+    expect(harness.internals.player?.getPosition()).toEqual(respawnDestination);
+
+    // Completing the restarted session uses the new session's checkpoint state,
+    // not the pre-restart run.
+    driveRoute(harness, buildAuthoredRoute(FIRST_SECTION_LEVEL).slice(cpBuildingJumpIndex + 1));
+    await waitForApplicationCompletion(harness);
+
+    const results = harness.manager.getLastResults();
+    const eventTypes = recordedEventTypes(harness);
+
+    expect(harness.manager.getActiveSession()?.status).toBe("completed");
+    expect(results?.levelId).toBe("first_section");
+    expect(results?.mode).toBe("prologue");
+    expect(harness.internals.lastResults).toEqual(results);
+    expect(eventTypes.filter((type) => type === "checkpoint.activated")).toHaveLength(5);
+    expect(eventTypes).not.toContain("checkpoint.prologue_all");
+    expect(eventTypes).not.toContain("level.completed");
+    expect(harness.progression.getSnapshot().prologueCompleted).toBe(false);
+    expect(harness.progression.getProgression().campaign.completedLevelIds).toEqual([]);
+  });
 });
 
 describe("Application orchestration — positive control", () => {
-  it("publishes level.completed and checkpoint.prologue_all for the authored Prologue", async () => {
+  it("publishes level.completed and checkpoint.prologue_all exactly once for the authored Prologue", async () => {
     const harness = await createApplicationHarness(PROLOGUE_TEST_LEVEL_DEFINITIONS);
     const route = buildAuthoredRoute(PROLOGUE_TEST_LEVEL);
+    const finishIndex = route.findIndex((step) => step.kind === "finish");
 
     expect(PROLOGUE_TEST_LEVEL.sections).toHaveLength(5);
     expect(PROLOGUE_TEST_LEVEL.checkpoints).toHaveLength(5);
+    expect(finishIndex).toBeGreaterThan(0);
 
     await startSession(harness, PROLOGUE_TEST_LEVEL_ID);
-    driveRoute(harness, route);
+
+    const now = driveRoute(harness, route.slice(0, finishIndex));
+    const checkpointSteps = route.filter((step) => step.kind === "checkpoint");
+    const lastCheckpoint = checkpointSteps[checkpointSteps.length - 1];
+
+    expect(lastCheckpoint).toBeDefined();
+    expect(
+      recordedEventTypes(harness).filter((type) => type === "checkpoint.activated"),
+    ).toHaveLength(5);
+    expect(
+      recordedEventTypes(harness).filter((type) => type === "checkpoint.prologue_all"),
+    ).toHaveLength(1);
+    expect(harness.internals.sessionCheckpointsAllEmitted).toBe(true);
+
+    // Leaving and re-entering an already activated checkpoint must not count it
+    // twice or publish the set event again.
+    if (lastCheckpoint) {
+      harness.runtime.update({ x: 0, y: 100, z: 0 }, now + 1000);
+      harness.runtime.update(lastCheckpoint.position, now + 2000);
+    }
+
+    const afterReentry = recordedEventTypes(harness);
+
+    expect(afterReentry.filter((type) => type === "checkpoint.activated")).toHaveLength(5);
+    expect(afterReentry.filter((type) => type === "checkpoint.prologue_all")).toHaveLength(1);
+
+    const finishStep = route[finishIndex];
+
+    if (!finishStep) {
+      throw new Error("Finish step missing.");
+    }
+
+    harness.runtime.update(finishStep.position, now + 3000);
     await waitForApplicationCompletion(harness);
 
     const results = harness.manager.getLastResults();
@@ -616,7 +809,7 @@ describe("Application orchestration — positive control", () => {
     // Positive control: the same Application orchestration does publish the
     // legitimate Prologue completion and the five-checkpoint set event.
     expect(eventTypes.filter((type) => type === "checkpoint.activated")).toHaveLength(5);
-    expect(eventTypes).toContain("checkpoint.prologue_all");
+    expect(eventTypes.filter((type) => type === "checkpoint.prologue_all")).toHaveLength(1);
 
     const prologueAllIndex = eventTypes.indexOf("checkpoint.prologue_all");
 
@@ -632,5 +825,25 @@ describe("Application orchestration — positive control", () => {
       PROLOGUE_TEST_LEVEL_ID,
     );
     expect(harness.progression.hasMilestone("first_prologue_completion")).toBe(true);
+  });
+
+  it("does not publish the Prologue checkpoint set for another level with five checkpoints", async () => {
+    const ordinaryLevel = createOrdinaryCheckpointLevel();
+    const harness = await createApplicationHarness([ordinaryLevel]);
+    const route = buildAuthoredRoute(ordinaryLevel);
+
+    await startSession(harness, ordinaryLevel.id);
+    driveRoute(harness, route);
+    await waitForApplicationCompletion(harness);
+
+    const eventTypes = recordedEventTypes(harness);
+
+    expect(ordinaryLevel.id).not.toBe(PROLOGUE_TEST_LEVEL_ID);
+    expect(eventTypes.filter((type) => type === "checkpoint.activated")).toHaveLength(5);
+    expect(eventTypes).not.toContain("checkpoint.prologue_all");
+    expect(eventTypes).not.toContain("level.completed");
+    expect(harness.internals.sessionCheckpointsAllEmitted).toBe(false);
+    expect(harness.progression.getSnapshot().prologueCompleted).toBe(false);
+    expect(harness.progression.getProgression().campaign.completedLevelIds).toEqual([]);
   });
 });

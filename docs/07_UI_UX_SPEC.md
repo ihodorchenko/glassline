@@ -818,6 +818,18 @@ Display:
 
 All values are provided by authoritative result snapshots: the Speedrun System supplies timing, splits, personal-best status, and validation; the Statistics System supplies aggregated movement facts. The UI must not calculate, reconstruct, or modify these values.
 
+### 11.2.1 Level Identity
+
+The screen identifies the finished level from `SessionResults.levelId`, not from
+`SessionResults.mode`. A gameplay mode is not a level: `prologue` currently runs
+both the campaign Prologue and standalone levels such as the First Section, so a
+mode-only label would present First Section as Prologue.
+
+The localized identity resource is `results.level.<levelId>` (`Prologue`,
+`First Section`). Training and Ranked/Speedrun keep their existing mode labels.
+An unknown level id falls back to the existing mode row instead of showing a raw
+key or breaking the Results screen.
+
 ### 11.3 Example Layout
 
 ```text

@@ -45,3 +45,45 @@ export function shouldPublishPrologueCompletion(input: LevelCompletionDecision):
 
   return input.mode === "speedrun" && input.speedrunValid === true;
 }
+
+/** Authored Prologue checkpoint count used by the `checkpoint_pro` achievement. */
+export const PROLOGUE_CHECKPOINT_SET_SIZE = 5;
+
+export interface PrologueCheckpointSetDecision {
+  /** Gameplay mode of the running session. */
+  readonly mode: GameplayMode | null;
+  /** Level the running session loaded. */
+  readonly levelId: string | null;
+  /** Unique checkpoints activated in the current session. */
+  readonly activatedCheckpointCount: number;
+  /** Whether this session already published the set event. */
+  readonly alreadyEmitted: boolean;
+}
+
+/**
+ * Whether activating another checkpoint may publish `checkpoint.prologue_all`.
+ *
+ * That event feeds the `checkpoint_pro` achievement ("Activate all five
+ * Prologue checkpoints in one run"). It is Prologue-specific, so the level id
+ * is part of the condition, exactly like `shouldPublishPrologueCompletion`:
+ * the checkpoint count alone is never an identity signal. A different level
+ * (for example `first_section`) must not unlock a Prologue achievement even if
+ * it authors five or more checkpoints, and no generic per-level threshold is
+ * introduced here. A future First Section achievement needs its own event and
+ * definition.
+ */
+export function shouldPublishPrologueCheckpointSet(input: PrologueCheckpointSetDecision): boolean {
+  if (input.alreadyEmitted) {
+    return false;
+  }
+
+  if (input.levelId !== PROLOGUE_COMPLETION_LEVEL_ID) {
+    return false;
+  }
+
+  if (input.mode === "training") {
+    return false;
+  }
+
+  return input.activatedCheckpointCount >= PROLOGUE_CHECKPOINT_SET_SIZE;
+}
