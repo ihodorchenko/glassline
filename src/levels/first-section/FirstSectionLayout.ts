@@ -112,9 +112,13 @@ const SECOND_STAIR_CENTER_Z = -76.575;
 const VAULT_DECK_TOP = 0.9;
 const VAULT_OBSTACLE_HEIGHTS = [0.5, 0.7, 1.1] as const;
 
-/** §5: every section owns the same fall slab; the route never goes below y = 0. */
-const KILL_VOLUME_CENTER: LevelVector3 = { x: 0, y: -6, z: -35 };
-const KILL_VOLUME_HALF_EXTENTS: LevelVector3 = { x: 80, y: 3, z: 100 };
+/**
+ * §5: every section owns the same fall slab; the route never goes below y = 0.
+ * The top stays at -3 (fall-detection height unchanged); the bottom reaches
+ * -12 so the §9.3/§11.2 `y = -10` acceptance probe is inside with a 2 m margin.
+ */
+const KILL_VOLUME_CENTER: LevelVector3 = { x: 0, y: -7.5, z: -35 };
+const KILL_VOLUME_HALF_EXTENTS: LevelVector3 = { x: 80, y: 4.5, z: 100 };
 
 /** §7.1 C4: minimum hidden overlap between boxes on a continuous route seam. */
 const SEAM_OVERLAP = 0.02;

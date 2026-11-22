@@ -20,7 +20,7 @@ import { VaultDetector } from "../../src/player/detection/VaultDetector";
 import type { MovementInputSample } from "../../src/player/MovementModel";
 import { DEFAULT_MOVEMENT_TUNING } from "../../src/player/MovementTuning";
 import { PlayerSystem } from "../../src/player/PlayerSystem";
-import { RespawnManager } from "../../src/respawn/RespawnManager";
+import { type RespawnCompletionEvent, RespawnManager } from "../../src/respawn/RespawnManager";
 
 /**
  * Headless traversal acceptance tests for `FIRST_SECTION_LEVEL`
@@ -1307,6 +1307,52 @@ function createCheckpointSystem(): CheckpointSystem {
   return system;
 }
 
+/**
+ * Activates a checkpoint through its authored trigger, not through a direct
+ * `notifyTriggerEnter`. The setup harness is placed on the authored checkpoint
+ * spawn and evaluated by the real `TriggerManager`; the production handler
+ * (`Application.handleTriggerEnter`) then calls `CheckpointSystem`.
+ */
+async function activateCheckpointThroughTrigger(checkpointId: string): Promise<CheckpointSystem> {
+  const authored = LEVEL.checkpoints.find((checkpoint) => checkpoint.id === checkpointId);
+
+  if (!authored) {
+    throw new Error(`FIRST_SECTION_LEVEL has no checkpoint "${checkpointId}".`);
+  }
+
+  const trigger = LEVEL.triggers.find((candidate) => candidate.id === authored.triggerId);
+
+  if (!trigger) {
+    throw new Error(`Checkpoint "${checkpointId}" has no authored trigger.`);
+  }
+
+  const spawn = findSpawn(authored.spawnPointId);
+  const checkpointSystem = createCheckpointSystem();
+  const harness = await createHarness(spawn.position);
+
+  settle(harness);
+
+  const triggers = new TriggerManager();
+
+  triggers.register(trigger);
+
+  const events = triggers.update(harness.player.getPosition(), "player", 1);
+  const checkpointEvent = events.find(
+    (event) => event.eventType === "enter" && event.metadata?.checkpointId === checkpointId,
+  );
+
+  expect(checkpointEvent, `checkpoint trigger ${trigger.id}`).toBeDefined();
+
+  const activation = checkpointSystem.notifyTriggerEnter(
+    checkpointId,
+    checkpointEvent?.timestamp ?? 1,
+  );
+
+  expect(activation?.checkpointId, `checkpoint activation ${checkpointId}`).toBe(checkpointId);
+
+  return checkpointSystem;
+}
+
 function killVolumeOf(sectionId: FirstSectionSectionId): LevelTriggerDefinition {
   const trigger = LEVEL.triggers.find(
     (candidate) => candidate.sectionId === sectionId && candidate.metadata?.kind === "kill-volume",
@@ -1338,39 +1384,76 @@ function fallProbe(sectionId: FirstSectionSectionId): LevelVector3 {
   return { x: maxHalfX + 1.0, y: maxTop + 1.0, z: entry.position.z - 0.5 };
 }
 
+interface RespawnAdapters {
+  readonly camera: { resetForRespawn: (rotationY: number) => void };
+  readonly control: { setEnabled: (enabled: boolean) => void };
+  readonly cameraResets: number[];
+  readonly inputStates: boolean[];
+}
+
+function createRespawnAdapters(): RespawnAdapters {
+  const cameraResets: number[] = [];
+  const inputStates: boolean[] = [];
+
+  return {
+    camera: {
+      resetForRespawn: (rotationY) => {
+        cameraResets.push(rotationY);
+      },
+    },
+    control: {
+      setEnabled: (enabled) => {
+        inputStates.push(enabled);
+      },
+    },
+    cameraResets,
+    inputStates,
+  };
+}
+
 describe("criterion 15 — fall respawn chain", () => {
   for (const fallCase of FALL_CASES) {
     it(`catches a fall in ${fallCase.sectionId} and respawns at ${fallCase.expectedCheckpointId}`, async () => {
       const killVolume = killVolumeOf(fallCase.sectionId);
       const volume = triggerBounds(killVolume);
       const probe = fallProbe(fallCase.sectionId);
-      const harness = await createHarness(probe);
-      const checkpointSystem = createCheckpointSystem();
-      const expectedDestination = checkpointSystem.notifyTriggerEnter(
+      const checkpointSystem = await activateCheckpointThroughTrigger(
         fallCase.expectedCheckpointId,
-        1,
       );
-
-      expect(expectedDestination, "checkpoint activation").not.toBeNull();
-
+      const harness = await createHarness(probe);
       const triggers = new TriggerManager();
 
       triggers.register(killVolume);
 
-      const camera = { resetForRespawn: () => undefined };
-      const control = { setEnabled: () => undefined };
+      const adapters = createRespawnAdapters();
       const initialSpawn = findSpawn("sp_initial");
       const respawn = new RespawnManager(
-        { checkpoints: checkpointSystem, player: harness.player, camera, input: control },
+        {
+          checkpoints: checkpointSystem,
+          player: harness.player,
+          camera: adapters.camera,
+          input: adapters.control,
+        },
         {
           fallbackSpawn: initialSpawn.position,
           fallbackRotationY: initialSpawn.rotationY,
         },
       );
+      const completions: RespawnCompletionEvent[] = [];
+
+      respawn.subscribe((event) => {
+        completions.push(event);
+      });
 
       let requested = false;
+      let requestReturned = false;
       let detectedAtY = Number.NaN;
       let detectedTriggerId = "";
+      let isActiveAfterRequest = true;
+      let stateAfterRequest = "";
+      let groundedAfterRequest = true;
+      let speedAfterRequest = -1;
+      let stanceAfterRequest = "";
 
       for (let index = 0; index < 240 && !requested; index += 1) {
         harness.player.fixedUpdate(input(), 0, DT);
@@ -1383,8 +1466,18 @@ describe("criterion 15 — fall respawn chain", () => {
 
           detectedAtY = harness.player.getPosition().y;
           detectedTriggerId = event.triggerId;
+
           // Production handler in `Application.handleTriggerEnter`.
-          requested = respawn.request("fall");
+          requestReturned = respawn.request("fall");
+
+          const requestSnapshot = harness.player.getMovementSnapshot();
+
+          isActiveAfterRequest = harness.player.isActive;
+          stateAfterRequest = requestSnapshot.state;
+          groundedAfterRequest = requestSnapshot.grounded;
+          speedAfterRequest = requestSnapshot.speed;
+          stanceAfterRequest = requestSnapshot.stance;
+          requested = requestReturned;
         }
 
         harness.physics.step();
@@ -1400,8 +1493,12 @@ describe("criterion 15 — fall respawn chain", () => {
       );
       const finalContext = context(harness, `fall ${fallCase.sectionId}`);
       const destination = respawn.getLastDestination();
+      const completion = completions.at(-1);
+      const afterFinishSnapshot = harness.player.getMovementSnapshot();
+      const afterFinishPosition = { ...harness.player.getPosition() };
 
       expect(requested, `${finalContext} respawn.request("fall") was not called`).toBe(true);
+      expect(requestReturned, `${finalContext} respawn request was rejected`).toBe(true);
       expect(detectedTriggerId, finalContext).toBe(killVolume.id);
       expect(detectedAtY, `${finalContext} detection height`).toBeGreaterThanOrEqual(
         volume.center.y - volume.halfExtents.y,
@@ -1410,12 +1507,67 @@ describe("criterion 15 — fall respawn chain", () => {
         volume.center.y + volume.halfExtents.y,
       );
       expect(detectedAtY, `${finalContext} detection height`).toBeGreaterThan(-10);
+      expect(isActiveAfterRequest, `${finalContext} player still active during respawn`).toBe(
+        false,
+      );
+      expect(stateAfterRequest, finalContext).toBe("IDLE");
+      expect(groundedAfterRequest, finalContext).toBe(false);
+      expect(speedAfterRequest, finalContext).toBeCloseTo(0, 6);
+      expect(stanceAfterRequest, finalContext).toBe("standing");
       expect(destination?.checkpointId, finalContext).toBe(fallCase.expectedCheckpointId);
-      expect(destination?.position.z, finalContext).toBeCloseTo(expectedSpawn.position.z, 6);
+      expect(destination?.spawnPointId, finalContext).toBe(expectedSpawn.id);
+      expect(destination?.position, finalContext).toEqual(expectedSpawn.position);
+      expect(completions, `${finalContext} respawn completions`).toHaveLength(1);
+      expect(completion, finalContext).toBeDefined();
+      expect(completion?.reason, finalContext).toBe("fall");
+      expect(completion?.destination?.checkpointId, finalContext).toBe(
+        fallCase.expectedCheckpointId,
+      );
+      expect(completion?.usedFallback, finalContext).toBe(false);
+      expect(adapters.cameraResets, `${finalContext} camera resets`).toEqual([
+        expectedSpawn.rotationY,
+      ]);
+      expect(adapters.inputStates, `${finalContext} input state changes`).toEqual([false, true]);
       expect(harness.player.isActive, `${finalContext} player was not re-activated`).toBe(true);
-      expect(harness.player.getPosition().x, finalContext).toBeCloseTo(expectedSpawn.position.x, 5);
-      expect(harness.player.getPosition().y, finalContext).toBeCloseTo(expectedSpawn.position.y, 5);
-      expect(harness.player.getPosition().z, finalContext).toBeCloseTo(expectedSpawn.position.z, 5);
+      expect(afterFinishSnapshot.state, finalContext).toBe("IDLE");
+      expect(afterFinishSnapshot.grounded, finalContext).toBe(false);
+      expect(afterFinishSnapshot.speed, finalContext).toBeCloseTo(0, 6);
+      expect(afterFinishSnapshot.stance, finalContext).toBe("standing");
+      expect(afterFinishPosition.x, finalContext).toBeCloseTo(expectedSpawn.position.x, 5);
+      expect(afterFinishPosition.y, finalContext).toBeCloseTo(expectedSpawn.position.y, 5);
+      expect(afterFinishPosition.z, finalContext).toBeCloseTo(expectedSpawn.position.z, 5);
+
+      // Keep feeding the real trigger and physics after recovery: the player
+      // must settle on the checkpoint, stop moving, and never re-enter the
+      // kill-volume or trigger another respawn.
+      let repeatedKillEvents = 0;
+
+      for (let index = 0; index < 60; index += 1) {
+        harness.player.fixedUpdate(input(), 0, DT);
+
+        for (const event of triggers.update(harness.player.getPosition(), "player", 1000 + index)) {
+          if (event.eventType === "enter" && event.metadata?.kind === "kill-volume") {
+            repeatedKillEvents += 1;
+          }
+        }
+
+        harness.physics.step();
+      }
+
+      const settledSnapshot = harness.player.getMovementSnapshot();
+      const settledPosition = harness.player.getPosition();
+
+      expect(repeatedKillEvents, `${finalContext} repeated kill-volume entry`).toBe(0);
+      expect(respawn.currentState, `${finalContext} respawn state after settling`).toBe("idle");
+      expect(completions, `${finalContext} repeated respawn completion`).toHaveLength(1);
+      expect(adapters.cameraResets, `${finalContext} repeated camera reset`).toHaveLength(1);
+      expect(adapters.inputStates, `${finalContext} repeated input toggle`).toEqual([false, true]);
+      expect(settledSnapshot.grounded, `${finalContext} did not become grounded`).toBe(true);
+      expect(settledSnapshot.state, finalContext).toBe("IDLE");
+      expect(settledSnapshot.speed, finalContext).toBeCloseTo(0, 3);
+      expect(settledPosition.x, finalContext).toBeCloseTo(expectedSpawn.position.x, 5);
+      expect(settledPosition.z, finalContext).toBeCloseTo(expectedSpawn.position.z, 5);
+      expect(settledPosition.y, finalContext).toBeGreaterThan(expectedSpawn.position.y - 0.1);
     });
   }
 
@@ -1431,25 +1583,47 @@ describe("criterion 15 — fall respawn chain", () => {
 
     triggers.register(killVolume);
 
-    const camera = { resetForRespawn: () => undefined };
-    const control = { setEnabled: () => undefined };
+    const adapters = createRespawnAdapters();
     const initialSpawn = findSpawn("sp_initial");
     const respawn = new RespawnManager(
-      { checkpoints: checkpointSystem, player: harness.player, camera, input: control },
+      {
+        checkpoints: checkpointSystem,
+        player: harness.player,
+        camera: adapters.camera,
+        input: adapters.control,
+      },
       {
         fallbackSpawn: initialSpawn.position,
         fallbackRotationY: initialSpawn.rotationY,
       },
     );
+    const completions: RespawnCompletionEvent[] = [];
+
+    respawn.subscribe((event) => {
+      completions.push(event);
+    });
 
     let requested = false;
+    let requestReturned = false;
+    let isActiveAfterRequest = true;
+    let stateAfterRequest = "";
+    let groundedAfterRequest = true;
+    let speedAfterRequest = -1;
 
     for (let index = 0; index < 240 && !requested; index += 1) {
       harness.player.fixedUpdate(input(), 0, DT);
 
       for (const event of triggers.update(harness.player.getPosition(), "player", index + 1)) {
         if (event.eventType === "enter" && event.metadata?.kind === "kill-volume") {
-          requested = respawn.request("fall");
+          requestReturned = respawn.request("fall");
+
+          const requestSnapshot = harness.player.getMovementSnapshot();
+
+          isActiveAfterRequest = harness.player.isActive;
+          stateAfterRequest = requestSnapshot.state;
+          groundedAfterRequest = requestSnapshot.grounded;
+          speedAfterRequest = requestSnapshot.speed;
+          requested = requestReturned;
         }
       }
 
@@ -1462,33 +1636,83 @@ describe("criterion 15 — fall respawn chain", () => {
     }
 
     const destination = respawn.getLastDestination();
+    const completion = completions.at(-1);
+    const afterFinishSnapshot = harness.player.getMovementSnapshot();
+    const afterFinishPosition = { ...harness.player.getPosition() };
     const finalContext = context(harness, "fall without checkpoint");
 
     expect(requested, finalContext).toBe(true);
+    expect(requestReturned, `${finalContext} respawn request was rejected`).toBe(true);
+    expect(isActiveAfterRequest, `${finalContext} player still active during respawn`).toBe(false);
+    expect(stateAfterRequest, finalContext).toBe("IDLE");
+    expect(groundedAfterRequest, finalContext).toBe(false);
+    expect(speedAfterRequest, finalContext).toBeCloseTo(0, 6);
     expect(destination?.checkpointId, finalContext).toBe("fallback");
+    expect(destination?.spawnPointId, finalContext).toBe("fallback");
     expect(destination?.position, finalContext).toEqual(initialSpawn.position);
-    expect(harness.player.getPosition().x, finalContext).toBeCloseTo(initialSpawn.position.x, 5);
-    expect(harness.player.getPosition().y, finalContext).toBeCloseTo(initialSpawn.position.y, 5);
-    expect(harness.player.getPosition().z, finalContext).toBeCloseTo(initialSpawn.position.z, 5);
+    expect(completions, `${finalContext} respawn completions`).toHaveLength(1);
+    expect(completion?.reason, finalContext).toBe("fall");
+    expect(completion?.usedFallback, finalContext).toBe(true);
+    expect(completion?.destination?.checkpointId, finalContext).toBe("fallback");
+    expect(adapters.cameraResets, `${finalContext} camera resets`).toEqual([
+      initialSpawn.rotationY,
+    ]);
+    expect(adapters.inputStates, `${finalContext} input state changes`).toEqual([false, true]);
+    expect(afterFinishSnapshot.state, finalContext).toBe("IDLE");
+    expect(afterFinishSnapshot.grounded, finalContext).toBe(false);
+    expect(afterFinishSnapshot.speed, finalContext).toBeCloseTo(0, 6);
+    expect(afterFinishPosition.x, finalContext).toBeCloseTo(initialSpawn.position.x, 5);
+    expect(afterFinishPosition.y, finalContext).toBeCloseTo(initialSpawn.position.y, 5);
+    expect(afterFinishPosition.z, finalContext).toBeCloseTo(initialSpawn.position.z, 5);
+    expect(checkpointSystem.getActiveCheckpointId(), finalContext).toBeNull();
+
+    let repeatedKillEvents = 0;
+
+    for (let index = 0; index < 60; index += 1) {
+      harness.player.fixedUpdate(input(), 0, DT);
+
+      for (const event of triggers.update(harness.player.getPosition(), "player", 1000 + index)) {
+        if (event.eventType === "enter" && event.metadata?.kind === "kill-volume") {
+          repeatedKillEvents += 1;
+        }
+      }
+
+      harness.physics.step();
+    }
+
+    const settledSnapshot = harness.player.getMovementSnapshot();
+    const settledPosition = harness.player.getPosition();
+
+    expect(repeatedKillEvents, `${finalContext} repeated kill-volume entry`).toBe(0);
+    expect(respawn.currentState, `${finalContext} respawn state after settling`).toBe("idle");
+    expect(completions, `${finalContext} repeated respawn completion`).toHaveLength(1);
+    expect(adapters.cameraResets, `${finalContext} repeated camera reset`).toHaveLength(1);
+    expect(adapters.inputStates, `${finalContext} repeated input toggle`).toEqual([false, true]);
+    expect(settledSnapshot.grounded, `${finalContext} did not become grounded`).toBe(true);
+    expect(settledSnapshot.state, finalContext).toBe("IDLE");
+    expect(settledSnapshot.speed, finalContext).toBeCloseTo(0, 3);
+    expect(settledPosition.x, finalContext).toBeCloseTo(initialSpawn.position.x, 5);
+    expect(settledPosition.z, finalContext).toBeCloseTo(initialSpawn.position.z, 5);
+    expect(settledPosition.y, finalContext).toBeGreaterThan(initialSpawn.position.y - 0.1);
   });
 
   it("triggers the kill-volume respawn chain at the spec y=-10 probe", async () => {
     const killVolume = killVolumeOf(FIRST_SECTION_SECTION_IDS.start);
     const volume = triggerBounds(killVolume);
+    const checkpointSystem = await activateCheckpointThroughTrigger("cp_start");
     const harness = await createHarnessAtSpawn("sp_initial");
-    const checkpointSystem = createCheckpointSystem();
-
-    checkpointSystem.notifyTriggerEnter("cp_start", 1);
-
     const triggers = new TriggerManager();
 
     triggers.register(killVolume);
 
     // §11.2 / §9.3 name `y = -10` as the fall probe. The authored slab spans
-    // y ∈ [center - halfExtents.y, center + halfExtents.y]; the test records
-    // the actual coverage rather than assuming it.
+    // y ∈ [center - halfExtents.y, center + halfExtents.y]; the probe must be
+    // inside it with a real margin, not exactly on the boundary.
     const slabMinY = volume.center.y - volume.halfExtents.y;
     const slabMaxY = volume.center.y + volume.halfExtents.y;
+
+    expect(slabMinY, "kill-volume margin below y=-10").toBeLessThanOrEqual(-11);
+    expect(slabMaxY, "kill-volume top below the route").toBeLessThanOrEqual(-3);
 
     harness.player.teleportTo({ x: 0, y: -10, z: 14 });
 
@@ -1502,5 +1726,50 @@ describe("criterion 15 — fall respawn chain", () => {
         slabMaxY,
       )}]; the y=-10 probe is outside it`,
     ).toHaveLength(1);
+
+    const adapters = createRespawnAdapters();
+    const initialSpawn = findSpawn("sp_initial");
+    const respawn = new RespawnManager(
+      {
+        checkpoints: checkpointSystem,
+        player: harness.player,
+        camera: adapters.camera,
+        input: adapters.control,
+      },
+      {
+        fallbackSpawn: initialSpawn.position,
+        fallbackRotationY: initialSpawn.rotationY,
+      },
+    );
+    const completions: RespawnCompletionEvent[] = [];
+
+    respawn.subscribe((event) => {
+      completions.push(event);
+    });
+
+    const requested = respawn.request("fall");
+
+    for (let index = 0; index < 30 && respawn.isRespawning; index += 1) {
+      respawn.update(DT);
+      harness.physics.step();
+    }
+
+    const expectedSpawn = findSpawn("sp_cp_start");
+    const destination = respawn.getLastDestination();
+    const finalContext = context(harness, "spec y=-10 probe");
+
+    expect(requested, finalContext).toBe(true);
+    expect(destination?.checkpointId, finalContext).toBe("cp_start");
+    expect(destination?.position, finalContext).toEqual(expectedSpawn.position);
+    expect(completions, `${finalContext} respawn completions`).toHaveLength(1);
+    expect(completions[0]?.reason, finalContext).toBe("fall");
+    expect(completions[0]?.destination?.checkpointId, finalContext).toBe("cp_start");
+    expect(completions[0]?.usedFallback, finalContext).toBe(false);
+    expect(harness.player.isActive, finalContext).toBe(true);
+    expect(harness.player.getPosition().x, finalContext).toBeCloseTo(expectedSpawn.position.x, 5);
+    expect(harness.player.getPosition().y, finalContext).toBeCloseTo(expectedSpawn.position.y, 5);
+    expect(harness.player.getPosition().z, finalContext).toBeCloseTo(expectedSpawn.position.z, 5);
+    expect(adapters.cameraResets, finalContext).toEqual([expectedSpawn.rotationY]);
+    expect(adapters.inputStates, finalContext).toEqual([false, true]);
   });
 });
