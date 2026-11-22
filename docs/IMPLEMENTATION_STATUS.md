@@ -253,66 +253,86 @@ dedicated curtain-wall close-up is now part of the deterministic capture set
 
 ---
 
-## 0.2.3. Step 3.3 — First Section runtime integration (2026-11-22)
+## 0.2.3. Step 3.3 / 3.3.1 — First Section runtime and Application orchestration (2026-11-22)
 
 Branch `feat/first-section-runtime-integration` (created from `main` @
 `cf516da`; no merge performed). Source of truth:
 [`reports/FIRST_GAMEPLAY_SECTION_SPEC.md`](reports/FIRST_GAMEPLAY_SECTION_SPEC.md)
-§11.3 criteria 16–19 and §12 item 7.
+§11.3 criteria 16–19 and §12 item 7. The Step 3.3.1 review follow-up is included
+in the same record because it replaced the earlier completion/progression
+evidence.
 
 **Scope:** verify `FIRST_SECTION_LEVEL` against the existing Level Runtime and
-gameplay lifecycle. No change to authored geometry or physics parameters,
-movement mechanics, the Architectural Kit, Prologue, Training, the menu,
-Speedrun/medals, Renderer or PostPipeline. No new `GameplayMode` and no parallel
-Level Runtime. No production source change was required: the authored content
-and the existing public contracts pass the integration checks.
+the actual Application gameplay lifecycle. No change to authored geometry or
+physics parameters, movement mechanics, the Architectural Kit, Prologue,
+Training, the menu, Speedrun/medals, Renderer or PostPipeline. No new
+`GameplayMode` and no parallel Level Runtime. No production source change was
+required: the authored content and the existing public contracts pass the
+integration checks.
 
 | Status | Result |
 |---|---|
-| **Implementation** | Complete — nine-test suite `tests/unit/first-section-integration.test.ts`; no production code changes |
-| **Integration** | Verified — loading/session/initial spawn/initial section, six-section trigger route, four checkpoints, fall respawn, completion isolation, restart/unload/reload |
-| **Verification** | Automated headless only — `npm run validate` green (typecheck, Biome, **580/580** tests, production build); no manual browser run was performed |
+| **Implementation** | Complete — two suites: seven Level Runtime / checkpoint / respawn tests (`first-section-integration.test.ts`) and four Application orchestration tests (`first-section-application-integration.test.ts`); no production code changes |
+| **Integration** | Verified — Level Runtime loading/session/route/checkpoints/respawn; actual Application finish/completion, Prologue progression, checkpoint threshold, Speedrun selection, restart/unload/reload |
+| **Verification** | Automated headless only — `npm run validate` green (typecheck, Biome, **582/582** tests in 59 files, production build); no manual browser run was performed |
 
-**What the suite exercises.** The real `FIRST_SECTION_LEVEL`,
-`LevelRuntimeManager`, `BoxLevelContentLoader`, Rapier `PhysicsWorld`,
-`RenderScene`, `CheckpointSystem`, `RespawnManager`, `PlayerSystem`, and
-`GameplaySessionManager`. Section transitions are produced only by the authored
-`section-entry` trigger volumes through `LevelRuntimeManager.update`; the test
-never writes section state directly and never copies authored geometry.
+**Step 3.3.1 review follow-up.** The earlier completion/progression assertions
+used a custom `GameplaySessionPorts` harness. That harness was removed. The new
+`first-section-application-integration.test.ts` builds a headless `Application`
+composition root and injects only the real collaborators that `initialize()`
+would assign; the real `GameplaySessionManager` then calls the production
+`Application.createSessionPorts()` methods. The real Level Runtime delivers the
+authored `trigger_finish` event to the subscription installed by
+`Application.prepareGameplayPort`, so `Application.handleTriggerEnter` and
+`Application.completeGameplay` execute unchanged. The production
+`completeGameplay` invocation is observed with a call-through spy, and domain
+events are observed by spying on the real `ProgressionSystem.recordEvent`; no
+test publishes `level.completed` or `checkpoint.prologue_all` itself.
 
 | Check | Evidence |
 |---|---|
-| Load/session/initial spawn | Session `ready`, mode `prologue`, `sp_initial`, six sections loaded, 16 triggers / 10 spawns / 9 surfaces registered, zero runtime errors |
-| Six-section route | `sec_start → sec_building_jump → sec_technical → sec_slide → sec_vault → sec_finish`; every `section:activated` event carries the same level-session id; finish is reached once and is non-repeatable |
-| Checkpoints | `cp_start`, `cp_building_jump`, `cp_slide`, `cp_vault` activate through their authored triggers; the latest checkpoint is the recovery destination; unknown, unactivated, and foreign-session checkpoints cannot resolve |
-| Respawn | A real fall crosses the authored kill volume at `y = -3`; `RespawnManager` restores the active checkpoint position, camera yaw, and a reset movement state. Before any checkpoint the initial spawn is the fallback |
-| Completion isolation | Finish-trigger completion in `prologue` mode produces no `speedrun` result; `shouldPublishPrologueCompletion` rejects `first_section`, so `level.completed` is not published and `campaign.prologueCompleted` stays false |
-| Restart/reload | Finish → restart → new Level Session; unload returns scene children, geometries, materials, Rapier bodies/colliders, and runtime registries to baseline; a second load repeats the same counts and starts with clean checkpoint progress |
-| Stale state | Updates on an unloaded runtime are no-ops; post-reload section/checkpoint events use the new session id; no duplicate runtime registrations |
+| Actual finish orchestration | Authored `trigger_finish` → real `Application.handleTriggerEnter` → `completeGameplay` → real `GameplaySessionManager.completeSession`; session completes, results contain `levelId: first_section`, and `Application.lastResults` matches the manager results |
+| Progression isolation | Real `Application.completeGameplay` applies `shouldPublishPrologueCompletion`; no `level.completed` reaches the real `ProgressionSystem`, `campaign.prologueCompleted` stays false, and no Prologue milestone unlocks |
+| Positive control | The same Application orchestration on the authored `prologue_test` publishes `level.completed`, sets `campaign.prologueCompleted = true`, unlocks `first_prologue_completion`, and publishes `checkpoint.prologue_all` after five checkpoints |
+| Checkpoint threshold | Four First Section checkpoints activate through the real Application handler; the recorded domain events contain four `checkpoint.activated` and no `checkpoint.prologue_all` |
+| Speedrun isolation | The supported prologue-mode entry creates no `SpeedrunSystem`; session configuration is unranked with the timer disabled; no `speedrun.*` event and no `speedrun` result/medal are produced |
+| Restart/reload | Real `Application.restartGameplayPort` / `abandonSession` / `createSessionPorts` reload the level: new Level Session, clean checkpoint progress, baseline scene/Rapier counts, no stale checkpoint events, and a repeatable second load |
+| Runtime lifecycle | Seven runtime tests cover load/session/initial spawn, all six trigger-driven sections, four checkpoints, checkpoint selection, real kill-volume fall + respawn, fallback spawn, and finish non-repeatability |
 
 **Integration fixes:** none were required. The authored level, Level Runtime,
-Checkpoint/Respawn, Gameplay Session, completion policy, and DEV registration
-already satisfy the integration contracts; the new suite is the regression
-evidence.
+Checkpoint/Respawn, Gameplay Session, completion policy, progression, and DEV
+registration already satisfy the integration contracts; the suites are the
+regression evidence.
 
 **Known limitations / remaining gaps:**
 
+- **Headless Application composition root.** `Application.initialize()` itself
+  requires a canvas, WebGL renderer, UI, audio, input, and IndexedDB. Those
+  presentation/boot resources are not part of this verification. The completion,
+  progression, checkpoint-threshold, Speedrun-selection, and restart/unload paths
+  are exercised through the real `Application` instance and its real private
+  orchestration methods; full boot, rendering, UI, audio, and live input are not.
 - **No first-class launch path.** `first_section` is registered in DEV only;
   the capture route supports `prologue`/`architecture`, and the menu has no
-  First Section entry. Manual play needs a future DEV route or menu item, which
-  is explicitly outside Step 3.3.
+  First Section entry. The supported development entry is prologue mode with a
+  level-id override; manual play needs a future DEV route or menu item, which is
+  explicitly outside Step 3.3.
+- **Speedrun mode is not a supported First Section entry.** The shipped
+  `startGameplay` maps the speedrun mode to the authored Prologue, and
+  `first_section.metadata.supportsSpeedrun` is false. The verified supported path
+  therefore runs in prologue mode and creates no `SpeedrunSystem`; a direct
+  speedrun-mode session request for `first_section` is not exposed by the
+  Application and is not claimed verified.
 - **`checkpoint.prologue_all` remains a count-based guard** in `Application`
   (`>= 5` unique checkpoints, non-training). First Section authors exactly four,
-  so the event cannot fire; if a fifth checkpoint is ever authored, the guard
-  must be re-evaluated (level-id gate) before Prologue achievement isolation can
-  stay guaranteed.
-- **Speedrun is not connected.** `supportsSpeedrun` is false; no run timing,
-  route validation, medal, or fictitious result exists for this level in the
-  integration flow.
+  so the event cannot fire; the Prologue positive control demonstrates the
+  threshold publishing on the five-checkpoint campaign level. If a fifth First
+  Section checkpoint is ever authored, the guard must be re-evaluated
+  (level-id gate) before Prologue achievement isolation can stay guaranteed.
 - **No First Section capture/perf/visual evidence** was produced in this step;
   the traversal suite covers the physical route, not rendering or performance.
-- **Headless verification only.** No manual browser, input, camera, or audio
-  verification was performed.
+- **No manual browser verification.** No browser, camera, audio, gamepad, or
+  live-input behavior was verified.
 
 ---
 

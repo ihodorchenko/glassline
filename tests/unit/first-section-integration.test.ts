@@ -14,22 +14,8 @@ import { PhysicsWorld } from "../../src/physics/PhysicsWorld";
 import type { MovementInputSample } from "../../src/player/MovementModel";
 import { DEFAULT_MOVEMENT_TUNING } from "../../src/player/MovementTuning";
 import { PlayerSystem } from "../../src/player/PlayerSystem";
-import {
-  PROLOGUE_COMPLETION_LEVEL_ID,
-  shouldPublishPrologueCompletion,
-} from "../../src/progression/LevelCompletionPolicy";
-import {
-  PROGRESSION_CONTENT,
-  PROGRESSION_MILESTONES,
-} from "../../src/progression/ProgressionContent";
-import { ProgressionSystem } from "../../src/progression/ProgressionSystem";
 import { RenderScene } from "../../src/rendering/RenderScene";
 import { type RespawnCompletionEvent, RespawnManager } from "../../src/respawn/RespawnManager";
-import {
-  GameplaySessionManager,
-  type GameplaySessionPorts,
-  type SessionOperationResult,
-} from "../../src/sessions/GameplaySessionManager";
 
 /**
  * First gameplay section — Level Runtime integration (`FIRST_GAMEPLAY_SECTION_SPEC`
@@ -37,14 +23,14 @@ import {
  *
  * The suite uses the real authored `FIRST_SECTION_LEVEL`, the production
  * `LevelRuntimeManager` / `BoxLevelContentLoader` stack, a real Rapier
- * `PhysicsWorld`, `RenderScene`, `CheckpointSystem`, `RespawnManager`,
- * `PlayerSystem`, and `GameplaySessionManager`. Section transitions happen only
- * through authored `section-entry` trigger volumes evaluated by the runtime; no
- * test writes section state directly and no authored geometry is copied.
+ * `PhysicsWorld`, `RenderScene`, `CheckpointSystem`, `RespawnManager`, and
+ * `PlayerSystem`. Section transitions happen only through authored
+ * `section-entry` trigger volumes evaluated by the runtime; no test writes
+ * section state directly and no authored geometry is copied.
  *
- * The composition-root ports below deliberately mirror the existing
- * `Application` ordering; they are wiring, not substitutes for the systems that
- * are under test.
+ * Completion, progression, checkpoint-threshold, and Speedrun isolation are
+ * verified through the real `Application` composition root in the companion
+ * suite `first-section-application-integration.test.ts`.
  */
 
 const LEVEL = FIRST_SECTION_LEVEL;
@@ -102,14 +88,9 @@ interface Harness {
   player: PlayerSystem | null;
   checkpoints: CheckpointSystem | null;
   respawn: RespawnManager | null;
-  sessionManager: GameplaySessionManager | null;
-  progression: ProgressionSystem | null;
   gameplayUnsubscribe: (() => void) | null;
   levelSessionId: string | null;
   finishTriggerId: string | null;
-  completeOnFinish: boolean;
-  completion: Promise<void> | null;
-  completionResult: SessionOperationResult | null;
   nowMs: number;
 }
 
@@ -271,14 +252,9 @@ async function createHarness(): Promise<Harness> {
     player: null,
     checkpoints: null,
     respawn: null,
-    sessionManager: null,
-    progression: null,
     gameplayUnsubscribe: null,
     levelSessionId: null,
     finishTriggerId: null,
-    completeOnFinish: false,
-    completion: null,
-    completionResult: null,
     nowMs: 1000,
   };
 
@@ -356,21 +332,7 @@ function handleTriggerEnter(harness: Harness, event: TriggerEvent): void {
 
   if (event.metadata?.kind === "finish") {
     harness.finishTriggerId = event.triggerId;
-
-    if (harness.completeOnFinish && harness.sessionManager) {
-      harness.completion ??= completeFromFinish(harness);
-    }
   }
-}
-
-async function completeFromFinish(harness: Harness): Promise<void> {
-  const manager = harness.sessionManager;
-
-  if (!manager) {
-    return;
-  }
-
-  harness.completionResult = await manager.completeSession({ reason: "finish-trigger" });
 }
 
 function attachGameplaySystems(harness: Harness): void {
@@ -457,45 +419,6 @@ function detachGameplaySystems(harness: Harness): void {
   harness.player = null;
 }
 
-function sceneMetrics(scene: RenderScene): {
-  readonly children: number;
-  readonly geometries: number;
-  readonly materials: number;
-} {
-  const geometries = new Set<string>();
-  const materials = new Set<string>();
-
-  scene.scene.traverse((object) => {
-    const mesh = object as {
-      isMesh?: boolean;
-      geometry?: { uuid: string };
-      material?: { uuid: string } | { uuid: string }[];
-    };
-
-    if (!mesh.isMesh) {
-      return;
-    }
-
-    if (mesh.geometry) {
-      geometries.add(mesh.geometry.uuid);
-    }
-
-    if (Array.isArray(mesh.material)) {
-      for (const material of mesh.material) {
-        materials.add(material.uuid);
-      }
-    } else if (mesh.material) {
-      materials.add(mesh.material.uuid);
-    }
-  });
-
-  return {
-    children: scene.scene.children.length,
-    geometries: geometries.size,
-    materials: materials.size,
-  };
-}
-
 function gameplayRoute(harness: Harness, steps: readonly RouteStep[]): void {
   const player = harness.player;
 
@@ -551,95 +474,15 @@ function fallProbe(sectionId: string): LevelVector3 {
   return { x: maxHalfX + 1, y: maxTop + 1, z: entry.position.z - 0.5 };
 }
 
-async function createSessionHarness(): Promise<Harness> {
-  const harness = await createHarness();
-  const progression = new ProgressionSystem({
-    contents: PROGRESSION_CONTENT,
-    milestones: PROGRESSION_MILESTONES,
-    clock: () => 1000,
-  });
-  const ports: GameplaySessionPorts = {
-    loadLevel: async (context) => {
-      await harness.runtime.loadLevel(context.levelId);
-
-      const levelSession = harness.runtime.getCurrentSession();
-      const initialSpawn = harness.runtime.getInitialSpawnPoint();
-
-      if (!levelSession || !initialSpawn) {
-        throw new Error("Level Runtime did not expose a session and initial spawn.");
-      }
-
-      harness.levelSessionId = levelSession.id;
-
-      return {
-        levelVersion: levelSession.levelVersion,
-        initialSpawnId: initialSpawn.id,
-      };
-    },
-    startLevel: async () => {
-      await harness.runtime.startSession();
-    },
-    unloadLevel: async () => {
-      await harness.runtime.unloadLevel();
-    },
-    prepareGameplay: async () => {
-      attachGameplaySystems(harness);
-    },
-    activateGameplay: async () => {
-      harness.player?.activate();
-    },
-    suspendGameplay: async () => {
-      harness.runtime.pauseSession();
-    },
-    resumeGameplay: async () => {
-      harness.runtime.resumeSession();
-    },
-    restartGameplay: async (context) => {
-      detachGameplaySystems(harness);
-      await harness.runtime.unloadLevel();
-      await ports.loadLevel(context);
-      await ports.prepareGameplay(context);
-      await harness.runtime.startSession();
-      await ports.activateGameplay(context);
-    },
-    shutdownGameplay: async () => {
-      detachGameplaySystems(harness);
-    },
-    buildResults: (context) => ({
-      sessionId: context.sessionId,
-      mode: context.mode,
-      levelId: context.levelId,
-      status: "completed",
-      durationMs: 0,
-      completedAt: 1000,
-    }),
-  };
-
-  const manager = new GameplaySessionManager({
-    ports,
-    clock: () => 1000,
-    applicationVersion: "test",
-  });
-
-  harness.progression = progression;
-  harness.sessionManager = manager;
-
-  return harness;
-}
-
 afterEach(async () => {
   for (const harness of harnesses) {
     detachGameplaySystems(harness);
-    harness.sessionManager?.dispose();
-    harness.sessionManager = null;
 
     for (const unsubscribe of harness.unsubscribes) {
       unsubscribe();
     }
 
     harness.unsubscribes.length = 0;
-    harness.progression?.dispose();
-    harness.progression = null;
 
     await harness.runtime.unloadLevel();
     harness.runtime.dispose();
@@ -1122,281 +965,5 @@ describe("First Section checkpoint and respawn integration", () => {
     expect(harness.respawnEvents[0]?.usedFallback).toBe(true);
     expect(harness.respawnEvents[0]?.destination?.position).toEqual(initial.position);
     expect(harness.checkpoints?.getSnapshot().activatedCheckpointIds).toEqual([]);
-  });
-});
-
-describe("First Section completion isolation", () => {
-  it("keeps first_section out of Prologue completion and Speedrun results", async () => {
-    const harness = await createSessionHarness();
-    const sessionManager = harness.sessionManager;
-
-    if (!sessionManager) {
-      throw new Error("Gameplay session manager missing.");
-    }
-
-    const result = await sessionManager.startSession({
-      mode: "prologue",
-      levelId: LEVEL.id,
-      source: "level_select",
-    });
-
-    expect(result.success).toBe(true);
-
-    const session = sessionManager.getActiveSession();
-
-    expect(session).not.toBeNull();
-    expect(session?.levelId).toBe("first_section");
-    expect(session?.mode).toBe("prologue");
-    expect(session?.status).toBe("running");
-    expect(session?.configuration.isRanked).toBe(false);
-    expect(session?.configuration.enableTimer).toBe(false);
-    expect(session?.configuration.enableCheckpoints).toBe(true);
-    expect(harness.runtime.getCurrentSession()?.state).toBe("active");
-    expect(harness.runtime.getActiveSectionId()).toBe(FIRST_SECTION_SECTION_IDS.start);
-
-    harness.completeOnFinish = true;
-    runtimeRoute(harness, buildRouteSteps());
-
-    expect(harness.sectionEvents.map((event) => event.sectionId)).toEqual([...SECTION_ORDER]);
-    expect(harness.finishTriggerId).toBe("trigger_finish");
-    expect(harness.checkpointEvents.map((event) => event.checkpointId)).toEqual([
-      "cp_start",
-      "cp_building_jump",
-      "cp_slide",
-      "cp_vault",
-    ]);
-
-    // The authored four-checkpoint set stays below the Application's Prologue
-    // checkpoint-set threshold; no Prologue achievement can be unlocked.
-    expect(LEVEL.checkpoints).toHaveLength(4);
-    expect(harness.checkpointEvents).toHaveLength(4);
-
-    const publishes = shouldPublishPrologueCompletion({
-      mode: session?.mode ?? null,
-      levelId: session?.levelId ?? "",
-      speedrunValid: null,
-    });
-
-    expect(publishes).toBe(false);
-
-    if (!harness.progression) {
-      throw new Error("Progression system missing.");
-    }
-
-    const progressionBefore = harness.progression.getSnapshot();
-    const campaignBefore = harness.progression.getProgression().campaign;
-
-    expect(progressionBefore.prologueCompleted).toBe(false);
-    expect(campaignBefore.completedLevelIds).toEqual([]);
-
-    // The finish trigger starts the existing completion flow; the test awaits
-    // the same promise the composition root would not block on.
-    await harness.completion;
-
-    expect(harness.completionResult?.success).toBe(true);
-    expect(sessionManager.getActiveSession()?.status).toBe("completed");
-
-    const results = sessionManager.getLastResults();
-
-    expect(results).not.toBeNull();
-    expect(results?.sessionId).toBe(session?.id);
-    expect(results?.levelId).toBe("first_section");
-    expect(results?.mode).toBe("prologue");
-    expect(results?.status).toBe("completed");
-    expect(results).not.toHaveProperty("speedrun");
-
-    // The completion policy is the only gate that publishes `level.completed`;
-    // it rejects first_section, so progression is untouched.
-    expect(harness.progression.getSnapshot().prologueCompleted).toBe(false);
-    expect(harness.progression.getProgression().campaign.completedLevelIds).toEqual([]);
-    expect(harness.progression.hasMilestone("first_prologue_completion")).toBe(false);
-    expect(harness.levelEvents.some((event) => event.type === "completed")).toBe(false);
-    expect(PROLOGUE_COMPLETION_LEVEL_ID).not.toBe(LEVEL.id);
-  });
-});
-
-describe("First Section restart and reload lifecycle", () => {
-  it("restarts, unloads, and reloads without duplicate registrations or stale session state", async () => {
-    const harness = await createSessionHarness();
-    const sessionManager = harness.sessionManager;
-
-    if (!sessionManager) {
-      throw new Error("Gameplay session manager missing.");
-    }
-
-    const baseline = sceneMetrics(harness.scene);
-    const baselineBodies = harness.physics.rapierWorld.bodies.len();
-    const baselineColliders = harness.physics.rapierWorld.colliders.len();
-    const start = await sessionManager.startSession({
-      mode: "prologue",
-      levelId: LEVEL.id,
-      source: "level_select",
-    });
-
-    expect(start.success).toBe(true);
-
-    const firstSessionId = sessionManager.getActiveSession()?.id;
-    const firstLevelSessionId = harness.levelSessionId;
-    const firstLoad = sceneMetrics(harness.scene);
-    const firstSnapshot = harness.runtime.getSnapshot();
-    const firstBodies = harness.physics.rapierWorld.bodies.len();
-    const firstColliders = harness.physics.rapierWorld.colliders.len();
-
-    expect(firstSessionId).toBeDefined();
-    expect(firstLevelSessionId).not.toBeNull();
-    expect(firstLoad.children).toBeGreaterThan(baseline.children);
-    expect((harness.scene.scene.background as { getHex(): number }).getHex()).toBe(
-      LEVEL.environment?.skyColor,
-    );
-    expect(firstSnapshot.triggerCount).toBe(LEVEL.triggers.length);
-    expect(firstSnapshot.objectCount).toBe(
-      LEVEL.geometry.length +
-        LEVEL.spawnPoints.length +
-        LEVEL.triggers.length +
-        LEVEL.checkpoints.length,
-    );
-
-    // Lifecycle order: load -> start -> progress -> respawn -> finish/restart.
-    const player = harness.player;
-    const respawn = harness.respawn;
-
-    if (!player || !respawn) {
-      throw new Error("Gameplay systems missing for the lifecycle respawn.");
-    }
-
-    player.activate();
-    player.teleportTo(spawnPosition("sp_cp_start"));
-    harness.runtime.update(player.getPosition(), 3000);
-    expect(harness.checkpoints?.getActiveCheckpointId()).toBe("cp_start");
-
-    player.teleportTo(fallProbe(FIRST_SECTION_SECTION_IDS.start));
-    harness.physics.step();
-
-    let respawnClock = 30_000;
-
-    for (let index = 0; index < 240 && !respawn.isRespawning; index += 1) {
-      respawnClock += 1000 * DT;
-      player.fixedUpdate(IDLE_INPUT, 0, DT);
-      harness.runtime.update(player.getPosition(), respawnClock);
-      harness.physics.step();
-    }
-
-    expect(respawn.isRespawning).toBe(true);
-
-    for (let index = 0; index < 30 && respawn.isRespawning; index += 1) {
-      respawn.update(DT);
-      harness.physics.step();
-    }
-
-    expect(respawn.isRespawning).toBe(false);
-    expect(player.getPosition()).toEqual(spawnPosition("sp_cp_start"));
-    expect(harness.respawnEvents.at(-1)?.destination?.checkpointId).toBe("cp_start");
-
-    harness.completeOnFinish = true;
-    runtimeRoute(harness, buildRouteSteps().slice(2));
-
-    expect(harness.finishTriggerId).toBe("trigger_finish");
-    expect(harness.checkpointEvents).toHaveLength(4);
-
-    // Complete the authored route through the finish-trigger completion flow,
-    // then restart from the results state.
-    await harness.completion;
-
-    expect(harness.completionResult?.success).toBe(true);
-
-    const completedLevelSessionId = harness.levelSessionId;
-
-    expect(completedLevelSessionId).toBe(firstLevelSessionId);
-
-    const restart = await sessionManager.restartSession();
-
-    expect(restart.success).toBe(true);
-    expect(sessionManager.getActiveSession()?.status).toBe("running");
-    expect(sessionManager.getActiveSession()?.id).toBe(firstSessionId);
-    expect(harness.levelSessionId).not.toBe(firstLevelSessionId);
-    expect(harness.runtime.getCurrentSession()?.state).toBe("active");
-    expect(harness.runtime.getActiveSectionId()).toBe(FIRST_SECTION_SECTION_IDS.start);
-    expect(harness.checkpoints?.getSnapshot().activatedCheckpointIds).toEqual([]);
-    expect(harness.checkpoints?.getActiveCheckpointId()).toBeNull();
-    expect(harness.runtime.getSnapshot()).toMatchObject({
-      triggerCount: firstSnapshot.triggerCount,
-      spawnPointCount: firstSnapshot.spawnPointCount,
-      objectSurfaceCount: firstSnapshot.objectSurfaceCount,
-      objectCount: firstSnapshot.objectCount,
-      activeSectionId: FIRST_SECTION_SECTION_IDS.start,
-      lastError: null,
-    });
-    expect(sceneMetrics(harness.scene)).toEqual(firstLoad);
-    expect(harness.physics.rapierWorld.bodies.len()).toBe(firstBodies);
-    expect(harness.physics.rapierWorld.colliders.len()).toBe(firstColliders);
-
-    const unloadEvent = harness.levelEvents.find(
-      (event) => event.type === "unloading" && event.sessionId === completedLevelSessionId,
-    );
-
-    expect(unloadEvent).toBeDefined();
-
-    const checkpointEventsBeforeUnload = harness.checkpointEvents.length;
-
-    expect((await sessionManager.abandonSession("return-to-menu")).success).toBe(true);
-    expect(sessionManager.getActiveSession()?.status).toBe("abandoned");
-    expect(harness.runtime.getCurrentSession()).toBeNull();
-    expect(harness.runtime.getCurrentLevel()).toBeNull();
-    expect(harness.runtime.getSnapshot().objectCount).toBe(0);
-    expect(harness.runtime.getSnapshot().objectSurfaceCount).toBe(0);
-    expect(harness.runtime.getSnapshot().triggerCount).toBe(0);
-    expect(harness.runtime.getSnapshot().spawnPointCount).toBe(0);
-    expect(harness.runtime.getSurfaces()).toEqual([]);
-    expect(harness.runtime.getSpawnPoints()).toEqual([]);
-    expect((harness.scene.scene.background as { getHex(): number }).getHex()).toBe(0xa7b9c4);
-
-    const triggerEntriesAfterUnload = harness.triggerEntries.length;
-
-    // Updating an unloaded runtime cannot replay a trigger from the destroyed
-    // session; the call is a deterministic no-op.
-    harness.runtime.update({ x: 0, y: 0.93, z: 10 }, 99_000);
-    expect(harness.triggerEntries).toHaveLength(triggerEntriesAfterUnload);
-    expect(harness.checkpointEvents).toHaveLength(checkpointEventsBeforeUnload);
-    expect(sceneMetrics(harness.scene)).toEqual(baseline);
-    expect(harness.physics.rapierWorld.bodies.len()).toBe(baselineBodies);
-    expect(harness.physics.rapierWorld.colliders.len()).toBe(baselineColliders);
-    expect(harness.checkpointEvents).toHaveLength(checkpointEventsBeforeUnload);
-
-    // Load again from the same composition root: a new gameplay session and a
-    // new Level Runtime session, with the same authored registrations.
-    const second = await sessionManager.startSession({
-      mode: "prologue",
-      levelId: LEVEL.id,
-      source: "restart",
-    });
-
-    expect(second.success).toBe(true);
-    expect(sessionManager.getActiveSession()?.id).not.toBe(firstSessionId);
-    expect(harness.levelSessionId).not.toBe(completedLevelSessionId);
-    expect(harness.runtime.getCurrentSession()?.state).toBe("active");
-    expect(harness.runtime.getSnapshot().objectCount).toBe(firstSnapshot.objectCount);
-    expect(harness.runtime.getSnapshot().triggerCount).toBe(firstSnapshot.triggerCount);
-    expect(sceneMetrics(harness.scene)).toEqual(firstLoad);
-    expect(harness.physics.rapierWorld.bodies.len()).toBe(firstBodies);
-    expect(harness.physics.rapierWorld.colliders.len()).toBe(firstColliders);
-    expect(harness.checkpoints?.getSnapshot().activatedCheckpointIds).toEqual([]);
-    expect(harness.checkpointEvents).toHaveLength(checkpointEventsBeforeUnload);
-
-    expect(harness.sectionEvents.at(-1)).toEqual({
-      sessionId: harness.levelSessionId,
-      sectionId: FIRST_SECTION_SECTION_IDS.start,
-    });
-
-    // Reaching the first checkpoint after reload works with the new session id
-    // and does not replay the previous session's checkpoint history.
-    gameplayRoute(harness, buildRouteSteps().slice(0, 2));
-
-    expect(harness.checkpoints?.getSnapshot().activatedCheckpointIds).toEqual(["cp_start"]);
-    expect(harness.checkpointEvents.at(-1)?.sessionId).toBe(harness.levelSessionId);
-
-    expect((await sessionManager.abandonSession("return-to-menu")).success).toBe(true);
-    expect(sceneMetrics(harness.scene)).toEqual(baseline);
-    expect(harness.physics.rapierWorld.bodies.len()).toBe(baselineBodies);
-    expect(harness.physics.rapierWorld.colliders.len()).toBe(baselineColliders);
   });
 });
