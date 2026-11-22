@@ -2,7 +2,7 @@
 
 **Document:** `IMPLEMENTATION_STATUS.md`  
 **Project:** Glassline  
-**Last Updated:** 2026-11-21  
+**Last Updated:** 2026-11-22  
 **Project Stage:** Polished Initial Release Candidate  
 **Status:** Phases 0–8 Complete; Release Polish Pass Complete; Art/Audio/Level Pass W0–W5 Complete (G0–G5 closed); **release candidate accepted by owner (2026-11-20), pending explicit merge decision**
 
@@ -250,6 +250,69 @@ sun and ambient; recorded in `ARCHITECTURAL_KIT.md` §5.
 **Recommended next task:** review the seam scale and the panel value; the
 dedicated curtain-wall close-up is now part of the deterministic capture set
 (`kit-spandrel-closeup`).
+
+---
+
+## 0.2.3. Step 3.3 — First Section runtime integration (2026-11-22)
+
+Branch `feat/first-section-runtime-integration` (created from `main` @
+`cf516da`; no merge performed). Source of truth:
+[`reports/FIRST_GAMEPLAY_SECTION_SPEC.md`](reports/FIRST_GAMEPLAY_SECTION_SPEC.md)
+§11.3 criteria 16–19 and §12 item 7.
+
+**Scope:** verify `FIRST_SECTION_LEVEL` against the existing Level Runtime and
+gameplay lifecycle. No change to authored geometry or physics parameters,
+movement mechanics, the Architectural Kit, Prologue, Training, the menu,
+Speedrun/medals, Renderer or PostPipeline. No new `GameplayMode` and no parallel
+Level Runtime. No production source change was required: the authored content
+and the existing public contracts pass the integration checks.
+
+| Status | Result |
+|---|---|
+| **Implementation** | Complete — nine-test suite `tests/unit/first-section-integration.test.ts`; no production code changes |
+| **Integration** | Verified — loading/session/initial spawn/initial section, six-section trigger route, four checkpoints, fall respawn, completion isolation, restart/unload/reload |
+| **Verification** | Automated headless only — `npm run validate` green (typecheck, Biome, **580/580** tests, production build); no manual browser run was performed |
+
+**What the suite exercises.** The real `FIRST_SECTION_LEVEL`,
+`LevelRuntimeManager`, `BoxLevelContentLoader`, Rapier `PhysicsWorld`,
+`RenderScene`, `CheckpointSystem`, `RespawnManager`, `PlayerSystem`, and
+`GameplaySessionManager`. Section transitions are produced only by the authored
+`section-entry` trigger volumes through `LevelRuntimeManager.update`; the test
+never writes section state directly and never copies authored geometry.
+
+| Check | Evidence |
+|---|---|
+| Load/session/initial spawn | Session `ready`, mode `prologue`, `sp_initial`, six sections loaded, 16 triggers / 10 spawns / 9 surfaces registered, zero runtime errors |
+| Six-section route | `sec_start → sec_building_jump → sec_technical → sec_slide → sec_vault → sec_finish`; every `section:activated` event carries the same level-session id; finish is reached once and is non-repeatable |
+| Checkpoints | `cp_start`, `cp_building_jump`, `cp_slide`, `cp_vault` activate through their authored triggers; the latest checkpoint is the recovery destination; unknown, unactivated, and foreign-session checkpoints cannot resolve |
+| Respawn | A real fall crosses the authored kill volume at `y = -3`; `RespawnManager` restores the active checkpoint position, camera yaw, and a reset movement state. Before any checkpoint the initial spawn is the fallback |
+| Completion isolation | Finish-trigger completion in `prologue` mode produces no `speedrun` result; `shouldPublishPrologueCompletion` rejects `first_section`, so `level.completed` is not published and `campaign.prologueCompleted` stays false |
+| Restart/reload | Finish → restart → new Level Session; unload returns scene children, geometries, materials, Rapier bodies/colliders, and runtime registries to baseline; a second load repeats the same counts and starts with clean checkpoint progress |
+| Stale state | Updates on an unloaded runtime are no-ops; post-reload section/checkpoint events use the new session id; no duplicate runtime registrations |
+
+**Integration fixes:** none were required. The authored level, Level Runtime,
+Checkpoint/Respawn, Gameplay Session, completion policy, and DEV registration
+already satisfy the integration contracts; the new suite is the regression
+evidence.
+
+**Known limitations / remaining gaps:**
+
+- **No first-class launch path.** `first_section` is registered in DEV only;
+  the capture route supports `prologue`/`architecture`, and the menu has no
+  First Section entry. Manual play needs a future DEV route or menu item, which
+  is explicitly outside Step 3.3.
+- **`checkpoint.prologue_all` remains a count-based guard** in `Application`
+  (`>= 5` unique checkpoints, non-training). First Section authors exactly four,
+  so the event cannot fire; if a fifth checkpoint is ever authored, the guard
+  must be re-evaluated (level-id gate) before Prologue achievement isolation can
+  stay guaranteed.
+- **Speedrun is not connected.** `supportsSpeedrun` is false; no run timing,
+  route validation, medal, or fictitious result exists for this level in the
+  integration flow.
+- **No First Section capture/perf/visual evidence** was produced in this step;
+  the traversal suite covers the physical route, not rendering or performance.
+- **Headless verification only.** No manual browser, input, camera, or audio
+  verification was performed.
 
 ---
 
