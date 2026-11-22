@@ -34,6 +34,9 @@ const MEASURED_JUMP_APEX_METERS = 1.55;
 /** §5.4 / §7.1: required slide clearance and its tolerance. */
 const SLIDE_CLEARANCE_METERS = 1.0;
 const CLEARANCE_TOLERANCE_METERS = 0.02;
+/** §7.1 C4: minimum seam overlap, and the allowance actually authored. */
+const MIN_SEAM_OVERLAP_METERS = 0.02;
+const MAX_SEAM_OVERLAP_METERS = 0.05;
 /** §4.2: route envelope. */
 const ROUTE_Z_START = 18;
 const ROUTE_Z_END = -87.5;
@@ -81,6 +84,47 @@ function triggerBounds(trigger: LevelTriggerDefinition): Bounds {
     minZ: trigger.center.z - trigger.halfExtents.z,
     maxZ: trigger.center.z + trigger.halfExtents.z,
   };
+}
+
+function overlapLength(firstMin: number, firstMax: number, secondMin: number, secondMax: number) {
+  return Math.min(firstMax, secondMax) - Math.max(firstMin, secondMin);
+}
+
+function zOverlap(first: Bounds, second: Bounds): number {
+  return overlapLength(first.minZ, first.maxZ, second.minZ, second.maxZ);
+}
+
+function xOverlap(first: Bounds, second: Bounds): number {
+  return overlapLength(first.minX, first.maxX, second.minX, second.maxX);
+}
+
+function yOverlap(first: Bounds, second: Bounds): number {
+  return overlapLength(first.minY, first.maxY, second.minY, second.maxY);
+}
+
+function intersectsInterior(geometry: LevelGeometryDefinition, zone: Bounds): boolean {
+  const bounds = boundsOf(geometry);
+
+  return (
+    bounds.maxX > zone.minX + EPSILON &&
+    bounds.minX < zone.maxX - EPSILON &&
+    bounds.maxY > zone.minY + EPSILON &&
+    bounds.minY < zone.maxY - EPSILON &&
+    bounds.maxZ > zone.minZ + EPSILON &&
+    bounds.minZ < zone.maxZ - EPSILON
+  );
+}
+
+/** Asserts a hidden §7.1 C4 overlap on a continuous route seam. */
+function expectContinuousSeam(firstId: string, secondId: string): void {
+  const first = boundsOf(findGeometry(firstId));
+  const second = boundsOf(findGeometry(secondId));
+  const label = `${firstId} / ${secondId}`;
+
+  expect(zOverlap(first, second), label).toBeGreaterThanOrEqual(MIN_SEAM_OVERLAP_METERS - EPSILON);
+  expect(zOverlap(first, second), label).toBeLessThanOrEqual(MAX_SEAM_OVERLAP_METERS + EPSILON);
+  expect(xOverlap(first, second), label).toBeGreaterThan(EPSILON);
+  expect(yOverlap(first, second), label).toBeGreaterThan(EPSILON);
 }
 
 function findGeometry(id: string): LevelGeometryDefinition {
@@ -428,6 +472,245 @@ describe("First gameplay section collision layout", () => {
     expect(findSurface("surface_vault").vaultObstacle).toBe(true);
   });
 
+  it("seats the S2 north parapets on the deck without closing the entrance", () => {
+    const deck = boundsOf(findGeometry("geo_plant_deck"));
+    const step = boundsOf(findGeometry("geo_plant_step"));
+    const west = boundsOf(findGeometry("geo_plant_parapet_n_w"));
+    const east = boundsOf(findGeometry("geo_plant_parapet_n_e"));
+    const spawn = requireItem(
+      LAYOUT.spawnPoints.find((candidate) => candidate.id === "sp_entry_technical"),
+      "technical entry spawn",
+    );
+    const trigger = findTrigger("trigger_to_technical");
+
+    for (const [label, parapet] of [
+      ["west", west],
+      ["east", east],
+    ] as const) {
+      // The whole footprint rests on the deck plan, not beyond its edge.
+      expect(parapet.minX, label).toBeGreaterThanOrEqual(deck.minX - EPSILON);
+      expect(parapet.maxX, label).toBeLessThanOrEqual(deck.maxX + EPSILON);
+      expect(parapet.minZ, label).toBeGreaterThanOrEqual(deck.minZ - EPSILON);
+      expect(parapet.maxZ, label).toBeLessThanOrEqual(deck.maxZ + EPSILON);
+      expect(parapet.minY, label).toBeCloseTo(deck.maxY, 6);
+      expect(parapet.maxY - parapet.minY, label).toBeCloseTo(1.05, 6);
+      // Outer face is flush with the deck's north edge; the step runs 0.02 m
+      // under that edge to provide the C4 overlap.
+      expect(parapet.maxZ, label).toBeCloseTo(deck.maxZ, 6);
+      expect(step.minZ, label).toBeLessThan(deck.maxZ);
+    }
+
+    // Symmetric 8 m entrance between the two inner faces.
+    expect(east.minX - west.maxX).toBeCloseTo(8, 6);
+
+    // The entry spawn and the transition trigger stay in that opening.
+    expect(spawn.position.x).toBeGreaterThan(west.maxX);
+    expect(spawn.position.x).toBeLessThan(east.minX);
+    expect(spawn.position.z).toBeGreaterThanOrEqual(west.minZ - EPSILON);
+    expect(spawn.position.z).toBeLessThanOrEqual(west.maxZ + EPSILON);
+    expect(trigger.center.x).toBeGreaterThan(west.maxX);
+    expect(trigger.center.x).toBeLessThan(east.minX);
+
+    for (const geometry of LAYOUT.geometry) {
+      const bounds = boundsOf(geometry);
+      const containsSpawn =
+        spawn.position.x >= bounds.minX - EPSILON &&
+        spawn.position.x <= bounds.maxX + EPSILON &&
+        spawn.position.y >= bounds.minY - EPSILON &&
+        spawn.position.y <= bounds.maxY + EPSILON &&
+        spawn.position.z >= bounds.minZ - EPSILON &&
+        spawn.position.z <= bounds.maxZ + EPSILON;
+
+      expect(containsSpawn, geometry.id).toBe(false);
+    }
+
+    const entrance: Bounds = {
+      minX: west.maxX,
+      maxX: east.minX,
+      minY: deck.maxY,
+      maxY: Math.min(west.maxY, east.maxY),
+      minZ: Math.min(west.minZ, east.minZ),
+      maxZ: Math.max(west.maxZ, east.maxZ),
+    };
+    const triggerVolume = triggerBounds(trigger);
+
+    // The transition volume still covers the full entrance opening.
+    expect(xOverlap(triggerVolume, entrance)).toBeGreaterThan(0);
+    expect(zOverlap(triggerVolume, entrance)).toBeGreaterThan(0);
+
+    for (const geometry of LAYOUT.geometry) {
+      expect(intersectsInterior(geometry, entrance), geometry.id).toBe(false);
+    }
+  });
+
+  it("overlaps every continuous route seam by at least 0.02 m", () => {
+    const firstFlight = stairFlight("geo_stair1");
+    const secondFlight = stairFlight("geo_stair2");
+    const seams: Array<readonly [string, string]> = [
+      ["geo_roof_c", "geo_plant_step"],
+      ["geo_plant_step", "geo_plant_deck"],
+      ["geo_plant_deck", "geo_slide_runway"],
+      ["geo_slide_runway", "geo_slide_floor"],
+      ["geo_slide_floor", "geo_slide_exit"],
+      ["geo_slide_exit", "geo_vault_deck"],
+      ["geo_vault_deck", "geo_finish_approach"],
+      ["geo_finish_approach", "geo_stair1_1"],
+    ];
+
+    for (const [first, second] of pairsOf(firstFlight)) {
+      seams.push([first.id, second.id]);
+    }
+
+    seams.push(["geo_stair1_6", "geo_stair_landing"], ["geo_stair_landing", "geo_stair2_1"]);
+
+    for (const [first, second] of pairsOf(secondFlight)) {
+      seams.push([first.id, second.id]);
+    }
+
+    seams.push(["geo_stair2_6", "geo_finish_deck"]);
+
+    // §5.1–§5.6 continuous route: 8 floor/platform seams + 13 stair seams.
+    expect(seams).toHaveLength(21);
+
+    for (const [first, second] of seams) {
+      expectContinuousSeam(first, second);
+    }
+
+    // Same-height seams must not change either walkable top.
+    const levelSeams: Array<readonly [string, string]> = [
+      ["geo_plant_step", "geo_plant_deck"],
+      ["geo_plant_deck", "geo_slide_runway"],
+      ["geo_slide_runway", "geo_slide_floor"],
+      ["geo_slide_floor", "geo_slide_exit"],
+      ["geo_slide_exit", "geo_vault_deck"],
+      ["geo_vault_deck", "geo_finish_approach"],
+      ["geo_stair1_6", "geo_stair_landing"],
+      ["geo_stair2_6", "geo_finish_deck"],
+    ];
+
+    for (const [first, second] of levelSeams) {
+      expect(boundsOf(findGeometry(first)).maxY, `${first} / ${second}`).toBeCloseTo(
+        boundsOf(findGeometry(second)).maxY,
+        6,
+      );
+    }
+
+    // Step-up underlaps stay hidden inside the higher tread: they never poke
+    // out past its far edge and never rise above it.
+    const heightSeams: Array<readonly [string, string]> = [
+      ["geo_roof_c", "geo_plant_step"],
+      ["geo_finish_approach", "geo_stair1_1"],
+    ];
+
+    for (const [first, second] of pairsOf(firstFlight)) {
+      heightSeams.push([first.id, second.id]);
+    }
+
+    heightSeams.push(["geo_stair_landing", "geo_stair2_1"]);
+
+    for (const [first, second] of pairsOf(secondFlight)) {
+      heightSeams.push([first.id, second.id]);
+    }
+
+    for (const [lowerId, higherId] of heightSeams) {
+      const lower = boundsOf(findGeometry(lowerId));
+      const higher = boundsOf(findGeometry(higherId));
+
+      expect(lower.minZ, `${lowerId} / ${higherId}`).toBeGreaterThan(higher.minZ + EPSILON);
+      expect(lower.maxY, `${lowerId} / ${higherId}`).toBeLessThanOrEqual(higher.maxY + EPSILON);
+    }
+  });
+
+  it("keeps the two authored gaps free of artificial overlap", () => {
+    const startDeck = boundsOf(findGeometry("geo_start_deck"));
+    const roofB = boundsOf(findGeometry("geo_roof_b"));
+    const roofC = boundsOf(findGeometry("geo_roof_c"));
+    const gaps = [
+      { name: "gap A", minZ: roofB.maxZ, maxZ: startDeck.minZ, width: 3.4 },
+      { name: "gap B", minZ: roofC.maxZ, maxZ: roofB.minZ, width: 4.2 },
+    ];
+
+    for (const gap of gaps) {
+      expect(gap.maxZ - gap.minZ, gap.name).toBeCloseTo(gap.width, 6);
+
+      for (const geometry of LAYOUT.geometry) {
+        const bounds = boundsOf(geometry);
+
+        expect(
+          overlapLength(bounds.minZ, bounds.maxZ, gap.minZ, gap.maxZ),
+          `${gap.name}: ${geometry.id}`,
+        ).toBeLessThanOrEqual(EPSILON);
+      }
+    }
+  });
+
+  it("keeps the galleries, entrance, and vault aisle free of unintended geometry", () => {
+    const plantDeck = boundsOf(findGeometry("geo_plant_deck"));
+    const galleryWest = boundsOf(findGeometry("geo_gallery_wall_w"));
+    const galleryEast = boundsOf(findGeometry("geo_gallery_wall_e"));
+    const galleryCeiling = boundsOf(findGeometry("geo_gallery_ceiling"));
+    const chamberWest = boundsOf(findGeometry("geo_chamber_wall_w"));
+    const chamberEast = boundsOf(findGeometry("geo_chamber_wall_e"));
+    const chamberCeiling = boundsOf(findGeometry("geo_chamber_ceiling"));
+    const northWest = boundsOf(findGeometry("geo_plant_parapet_n_w"));
+    const northEast = boundsOf(findGeometry("geo_plant_parapet_n_e"));
+    const vaultDeck = boundsOf(findGeometry("geo_vault_deck"));
+    const vaultWest = boundsOf(findGeometry("geo_vault_wall_w"));
+    const vaultEast = boundsOf(findGeometry("geo_vault_wall_e"));
+    const slideExit = boundsOf(findGeometry("geo_slide_exit"));
+    const vaultObstacleIds = new Set(["geo_vault_1", "geo_vault_2", "geo_vault_3"]);
+
+    const galleryZone: Bounds = {
+      minX: galleryWest.maxX,
+      maxX: galleryEast.minX,
+      minY: plantDeck.maxY,
+      maxY: galleryCeiling.minY,
+      minZ: Math.max(galleryWest.minZ, galleryCeiling.minZ),
+      maxZ: Math.min(galleryWest.maxZ, galleryCeiling.maxZ),
+    };
+    // Stop at the gallery exit so the intended 0.1 m gallery/chamber lap does
+    // not count as an obstruction of the chamber opening.
+    const chamberZone: Bounds = {
+      minX: chamberWest.maxX,
+      maxX: chamberEast.minX,
+      minY: plantDeck.maxY,
+      maxY: chamberCeiling.minY,
+      minZ: chamberWest.minZ,
+      maxZ: Math.min(chamberWest.maxZ, galleryWest.minZ),
+    };
+    const entranceZone: Bounds = {
+      minX: northWest.maxX,
+      maxX: northEast.minX,
+      minY: plantDeck.maxY,
+      maxY: Math.min(northWest.maxY, northEast.maxY),
+      minZ: Math.min(northWest.minZ, northEast.minZ),
+      maxZ: Math.max(northWest.maxZ, northEast.maxZ),
+    };
+    const vaultZone: Bounds = {
+      minX: vaultWest.maxX,
+      maxX: vaultEast.minX,
+      minY: vaultDeck.maxY,
+      maxY: vaultWest.maxY,
+      minZ: vaultDeck.minZ,
+      maxZ: slideExit.minZ,
+    };
+
+    for (const [zone, label] of [
+      [galleryZone, "S2 gallery"],
+      [chamberZone, "S2 chamber"],
+      [entranceZone, "S2 entrance"],
+      [vaultZone, "S4 vault aisle"],
+    ] as const) {
+      for (const geometry of LAYOUT.geometry) {
+        if (label === "S4 vault aisle" && vaultObstacleIds.has(geometry.id)) {
+          continue;
+        }
+
+        expect(intersectsInterior(geometry, zone), `${label}: ${geometry.id}`).toBe(false);
+      }
+    }
+  });
+
   it("keeps the slide duct clearance at 1.00 m over its full length", () => {
     const floor = findGeometry("geo_slide_floor");
     const ceiling = findGeometry("geo_slide_ceiling");
@@ -564,18 +847,20 @@ describe("First gameplay section collision layout", () => {
     const roofB = boundsOf(findGeometry("geo_roof_b"));
     const roofC = boundsOf(findGeometry("geo_roof_c"));
     const plantStep = boundsOf(findGeometry("geo_plant_step"));
+    const plantDeck = boundsOf(findGeometry("geo_plant_deck"));
 
     expect(startDeck.maxZ - startDeck.minZ).toBeCloseTo(20, 5);
     expect(roofB.maxZ - roofB.minZ).toBeCloseTo(8, 5);
-    expect(roofC.maxZ - roofC.minZ).toBeCloseTo(7.4, 5);
+    // Visible roof C between the gap edge and the step face; the 0.02 m
+    // seam underlap is hidden under the step.
+    expect(roofC.maxZ - plantStep.maxZ).toBeCloseTo(7.4, 5);
     expect(startDeck.minZ - roofB.maxZ).toBeCloseTo(3.4, 5);
     expect(roofB.minZ - roofC.maxZ).toBeCloseTo(4.2, 5);
-    // §5.2: the 0.90 m ledge closes the 25.4 m section.
+    // §5.2: the 0.90 m ledge closes the 25.4 m section at the deck's north edge.
     expect(plantStep.maxY - roofC.maxY).toBeCloseTo(0.9, 5);
-    expect(Math.abs(plantStep.minZ - startDeck.minZ)).toBeCloseTo(25.4, 5);
+    expect(startDeck.minZ - plantDeck.maxZ).toBeCloseTo(25.4, 5);
 
     // §5.3: 13.6 m deck, 2.8 m wide gallery with a 2.4 m clear height.
-    const plantDeck = boundsOf(findGeometry("geo_plant_deck"));
     const galleryWest = boundsOf(findGeometry("geo_gallery_wall_w"));
     const galleryEast = boundsOf(findGeometry("geo_gallery_wall_e"));
     const galleryCeiling = boundsOf(findGeometry("geo_gallery_ceiling"));
@@ -589,17 +874,23 @@ describe("First gameplay section collision layout", () => {
     const slideFloor = boundsOf(findGeometry("geo_slide_floor"));
     const slideExit = boundsOf(findGeometry("geo_slide_exit"));
 
-    expect(runway.maxZ - runway.minZ).toBeCloseTo(6, 5);
+    // Visible spans: the runway/exit carry the hidden seam allowance, while
+    // the duct floor keeps its authored 7.0 m.
+    expect(plantDeck.minZ - slideFloor.maxZ).toBeCloseTo(6, 5);
     expect(slideFloor.maxZ - slideFloor.minZ).toBeCloseTo(7, 5);
-    expect(slideExit.maxZ - slideExit.minZ).toBeCloseTo(3, 5);
-    expect(runway.maxZ - slideExit.minZ).toBeCloseTo(16, 5);
+    expect(slideFloor.minZ - slideExit.minZ).toBeCloseTo(3, 5);
+    expect(plantDeck.minZ - slideExit.minZ).toBeCloseTo(16, 5);
+    expect(runway.maxY).toBeCloseTo(slideFloor.maxY, 6);
+    expect(slideExit.maxY).toBeCloseTo(slideFloor.maxY, 6);
 
     // §5.5: 14 m vault channel, 4.4 m clear width, 4.0 m obstacles.
     const vaultDeck = boundsOf(findGeometry("geo_vault_deck"));
     const vaultWest = boundsOf(findGeometry("geo_vault_wall_w"));
     const vaultEast = boundsOf(findGeometry("geo_vault_wall_e"));
 
-    expect(vaultDeck.maxZ - vaultDeck.minZ).toBeCloseTo(14, 5);
+    // Authored section span; the 0.02 m seam allowance is hidden under the
+    // slide exit.
+    expect(slideExit.minZ - vaultDeck.minZ).toBeCloseTo(14, 5);
     expect(vaultEast.minX - vaultWest.maxX).toBeCloseTo(4.4, 5);
 
     for (const [index, expectedHeight] of [0.5, 0.7, 1.1].entries()) {
@@ -628,26 +919,28 @@ describe("First gameplay section collision layout", () => {
     );
 
     expect(firstStep.maxY - approach.maxY).toBeCloseTo(0.3, 5);
+    // Visible approach between the vault deck and the first riser (2.0 m);
+    // its far edge carries the hidden underlap into the stair.
+    expect(vaultDeck.minZ - firstStep.maxZ).toBeCloseTo(2, 5);
 
-    for (const [current, next] of pairsOf(firstFlight)) {
-      expect(boundsOf(next).maxY - boundsOf(current).maxY).toBeCloseTo(0.3, 5);
-      expect(current.size.z).toBeCloseTo(0.35, 5);
-      expect(boundsOf(next).maxZ).toBeCloseTo(boundsOf(current).minZ, 5);
-    }
+    for (const [current, next] of [...pairsOf(firstFlight), ...pairsOf(secondFlight)] as const) {
+      const currentBounds = boundsOf(current);
+      const nextBounds = boundsOf(next);
 
-    for (const [current, next] of pairsOf(secondFlight)) {
-      expect(boundsOf(next).maxY - boundsOf(current).maxY).toBeCloseTo(0.3, 5);
-      expect(boundsOf(next).maxZ).toBeCloseTo(boundsOf(current).minZ, 5);
+      expect(nextBounds.maxY - currentBounds.maxY).toBeCloseTo(0.3, 5);
+      // Visible tread: current step front to the next step front. The hidden
+      // 0.02 m underlap lies inside the next step and does not change it.
+      expect(currentBounds.maxZ - nextBounds.maxZ).toBeCloseTo(0.35, 5);
     }
 
     expect(landing.maxY).toBeCloseTo(lastFirstStep.maxY, 5);
     expect(firstSecondStep.maxY - landing.maxY).toBeCloseTo(0.3, 5);
     expect(lastSecondStep.maxY).toBeCloseTo(podium.maxY, 5);
-    expect(landing.maxZ).toBeCloseTo(lastFirstStep.minZ, 5);
-    expect(landing.minZ).toBeCloseTo(firstSecondStep.maxZ, 5);
+    // Visible landing tread between the two flights stays 1.30 m.
+    expect(lastFirstStep.minZ - firstSecondStep.maxZ).toBeCloseTo(1.3, 5);
     expect(podium.maxX - podium.minX).toBeCloseTo(10, 5);
     expect(podium.maxZ - podium.minZ).toBeCloseTo(9, 5);
-    // The 16.5 m finish section runs from the vault-channel seam to the parapet line.
-    expect(approach.maxZ - podium.minZ).toBeCloseTo(16.5, 5);
+    // The 16.5 m finish section runs from the vault-channel seam to the podium end.
+    expect(vaultDeck.minZ - podium.minZ).toBeCloseTo(16.5, 5);
   });
 });

@@ -35,6 +35,16 @@ import type {
  * ceiling top now sits 2.00 m above the duct floor, above the measured 1.55 m
  * jump apex, so the duct cannot be bypassed over the top (§5.7, §9.8).
  *
+ * Continuous route seams satisfy §7.1 C4: neighbouring boxes overlap by
+ * `SEAM_OVERLAP` (0.02 m) along the route axis. The overlap is always hidden
+ * under or behind a walkable top: a same-height slab extends 0.02 m into its
+ * neighbour, and step-up seams extend the lower slab 0.02 m under the higher
+ * one. Every section-end edge keeps its authored z, so the §4.2 section
+ * lengths, the two real gaps (3.4 m and 4.2 m), the walkable heights, and the
+ * clear widths are unchanged. The 7.0 m duct floor and the 10 × 9 m finish
+ * podium keep their authored sizes; the seam allowance is carried by the
+ * adjacent runway / exit / approach / stair boxes instead.
+ *
  * The `mode` field is `training` for this collision-only definition. The final
  * level will run in the `prologue` mode (Q1), but `validateLevelDefinition`
  * applies the Prologue's hard-coded five-section taxonomy to every
@@ -106,6 +116,9 @@ const VAULT_OBSTACLE_HEIGHTS = [0.5, 0.7, 1.1] as const;
 const KILL_VOLUME_CENTER: LevelVector3 = { x: 0, y: -6, z: -35 };
 const KILL_VOLUME_HALF_EXTENTS: LevelVector3 = { x: 80, y: 3, z: 100 };
 
+/** §7.1 C4: minimum hidden overlap between boxes on a continuous route seam. */
+const SEAM_OVERLAP = 0.02;
+
 /* ------------------------------------------------------------------------- */
 /* §5.1 S0 — Starting Roof                                                    */
 /* ------------------------------------------------------------------------- */
@@ -161,9 +174,10 @@ const BUILDING_JUMP_BOXES: readonly AuthoredCollisionBox[] = [
     material: "roof",
   },
   {
+    // C4: roof C runs 0.02 m under the plant step; its top stays at 0.00.
     id: "geo_roof_c",
-    position: { x: 0, y: -0.1, z: -21.3 },
-    size: { x: 16, y: 0.2, z: 7.4 },
+    position: { x: 0, y: -0.1, z: -21.31 },
+    size: { x: 16, y: 0.2, z: 7.42 },
     surfaceId: "surface_roof",
     material: "roof",
   },
@@ -203,9 +217,12 @@ const BUILDING_JUMP_BOXES: readonly AuthoredCollisionBox[] = [
     material: "facade",
   },
   {
+    // C4: the vertical face stays at z = -25; the bottom sinks 0.02 m into
+    // roof C and the far edge runs 0.02 m under the plant deck. The walkable
+    // top remains 0.90 and the visible step run remains 2.4 m.
     id: "geo_plant_step",
-    position: { x: 0, y: 0.45, z: -26.2 },
-    size: { x: 10, y: 0.9, z: 2.4 },
+    position: { x: 0, y: 0.44, z: -26.21 },
+    size: { x: 10, y: 0.92, z: 2.42 },
     surfaceId: "surface_ledge",
     material: "concrete",
   },
@@ -217,6 +234,8 @@ const BUILDING_JUMP_BOXES: readonly AuthoredCollisionBox[] = [
 
 const TECHNICAL_BOXES: readonly AuthoredCollisionBox[] = [
   {
+    // Unchanged 13.6 m platform: the C4 step/deck overlap is carried by
+    // geo_plant_step, which runs 0.02 m under this deck's north edge.
     id: "geo_plant_deck",
     position: { x: 0, y: 0.45, z: -34.2 },
     size: { x: 16, y: 0.9, z: 13.6 },
@@ -266,15 +285,17 @@ const TECHNICAL_BOXES: readonly AuthoredCollisionBox[] = [
     material: "concrete",
   },
   {
+    // Sits fully on the deck: outer face flush with the deck's north edge at
+    // z = -27.4, leaving the central 8 m entrance (x = -4 … 4) open.
     id: "geo_plant_parapet_n_w",
-    position: { x: -6, y: 1.425, z: -27.225 },
+    position: { x: -6, y: 1.425, z: -27.575 },
     size: { x: 4, y: 1.05, z: 0.35 },
     surfaceId: "surface_parapet",
     material: "facade",
   },
   {
     id: "geo_plant_parapet_n_e",
-    position: { x: 6, y: 1.425, z: -27.225 },
+    position: { x: 6, y: 1.425, z: -27.575 },
     size: { x: 4, y: 1.05, z: 0.35 },
     surfaceId: "surface_parapet",
     material: "facade",
@@ -301,9 +322,11 @@ const TECHNICAL_BOXES: readonly AuthoredCollisionBox[] = [
 
 const SLIDE_BOXES: readonly AuthoredCollisionBox[] = [
   {
+    // C4: 0.02 m under the plant deck and 0.02 m under the duct floor. Its top
+    // and visible 6 m run are unchanged; the duct floor keeps its 7.0 m.
     id: "geo_slide_runway",
     position: { x: 0, y: 0.45, z: -44 },
-    size: { x: 3.6, y: 0.9, z: 6 },
+    size: { x: 3.6, y: 0.9, z: 6.04 },
     surfaceId: "surface_roof",
     material: "roof",
   },
@@ -338,9 +361,10 @@ const SLIDE_BOXES: readonly AuthoredCollisionBox[] = [
     material: "metal",
   },
   {
+    // C4: 0.02 m back under the duct floor; min-z (section edge) is unchanged.
     id: "geo_slide_exit",
-    position: { x: 0, y: 0.45, z: -55.5 },
-    size: { x: 6, y: 0.9, z: 3 },
+    position: { x: 0, y: 0.45, z: -55.49 },
+    size: { x: 6, y: 0.9, z: 3.02 },
     surfaceId: "surface_roof",
     material: "roof",
   },
@@ -380,9 +404,10 @@ const VAULT_OBSTACLE_BOXES: readonly AuthoredCollisionBox[] = VAULT_OBSTACLE_HEI
 
 const VAULT_BOXES: readonly AuthoredCollisionBox[] = [
   {
+    // C4: 0.02 m back under the slide exit; min-z (section edge) is unchanged.
     id: "geo_vault_deck",
-    position: { x: 0, y: 0.8, z: -64 },
-    size: { x: 4.4, y: 0.2, z: 14 },
+    position: { x: 0, y: 0.8, z: -63.99 },
+    size: { x: 4.4, y: 0.2, z: 14.02 },
     surfaceId: "surface_roof",
     material: "roof",
   },
@@ -411,14 +436,23 @@ function createStairFlight(
   idPrefix: "geo_stair1" | "geo_stair2",
   firstTop: number,
   firstCenterZ: number,
+  lastStepUnderlapsPodium: boolean,
 ): AuthoredCollisionBox[] {
   return Array.from({ length: STAIR_FLIGHT_STEPS }, (_, index): AuthoredCollisionBox => {
     const top = firstTop + index * STAIR_RISE;
+    const extendsDownstream = index < STAIR_FLIGHT_STEPS - 1 || lastStepUnderlapsPodium;
+    const underlap = extendsDownstream ? SEAM_OVERLAP : 0;
 
     return {
       id: `${idPrefix}_${index + 1}`,
-      position: { x: 0, y: top / 2, z: firstCenterZ - index * STAIR_TREAD },
-      size: { x: 3.6, y: top, z: STAIR_TREAD },
+      // C4: every step except flight 1's last runs 0.02 m under the next tread
+      // (or under the podium); its visible front edge is unchanged.
+      position: {
+        x: 0,
+        y: top / 2,
+        z: firstCenterZ - index * STAIR_TREAD - underlap / 2,
+      },
+      size: { x: 3.6, y: top, z: STAIR_TREAD + underlap },
       surfaceId: "surface_stair",
       material: "concrete",
     };
@@ -427,9 +461,11 @@ function createStairFlight(
 
 const FINISH_BOXES: readonly AuthoredCollisionBox[] = [
   {
+    // C4: 0.02 m under the vault deck and 0.02 m under the first stair; the
+    // walkable top (0.90) and the authored 2.0 m route edges are unchanged.
     id: "geo_finish_approach",
     position: { x: 0, y: 0.45, z: -72 },
-    size: { x: 4.4, y: 0.9, z: 2 },
+    size: { x: 4.4, y: 0.9, z: 2.04 },
     surfaceId: "surface_roof",
     material: "roof",
   },
@@ -447,15 +483,17 @@ const FINISH_BOXES: readonly AuthoredCollisionBox[] = [
     surfaceId: "surface_wall",
     material: "white",
   },
-  ...createStairFlight("geo_stair1", FIRST_STAIR_TOP, FIRST_STAIR_CENTER_Z),
+  ...createStairFlight("geo_stair1", FIRST_STAIR_TOP, FIRST_STAIR_CENTER_Z, false),
   {
+    // C4: 0.02 m back under flight 1 and 0.02 m under flight 2's first step.
+    // The landing top (2.70) and its visible 1.30 m tread are unchanged.
     id: "geo_stair_landing",
     position: { x: 0, y: 1.35, z: -75.75 },
-    size: { x: 3.6, y: 2.7, z: 1.3 },
+    size: { x: 3.6, y: 2.7, z: 1.34 },
     surfaceId: "surface_stair",
     material: "concrete",
   },
-  ...createStairFlight("geo_stair2", SECOND_STAIR_TOP, SECOND_STAIR_CENTER_Z),
+  ...createStairFlight("geo_stair2", SECOND_STAIR_TOP, SECOND_STAIR_CENTER_Z, true),
   {
     id: "geo_finish_deck",
     position: { x: 0, y: 4.4, z: -83 },
