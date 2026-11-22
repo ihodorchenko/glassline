@@ -1,6 +1,7 @@
 import type { Disposable } from "../core/Disposable";
 import type { DomainEvent } from "../events/DomainEvent";
 import { readPayloadNumber, readPayloadString } from "../events/DomainEvent";
+import { PROLOGUE_COMPLETION_LEVEL_ID } from "./LevelCompletionPolicy";
 import type {
   PersistedProgression,
   PlayerProgression,
@@ -175,7 +176,7 @@ export class ProgressionSystem implements Disposable {
         break;
       }
       case "level.completed": {
-        const levelId = readPayloadString(event, "levelId") ?? "prologue_test";
+        const levelId = readPayloadString(event, "levelId") ?? PROLOGUE_COMPLETION_LEVEL_ID;
 
         if (!this.progression.campaign.completedLevelIds.includes(levelId)) {
           this.progression.campaign.completedLevelIds.push(levelId);
@@ -195,10 +196,14 @@ export class ProgressionSystem implements Disposable {
       }
       case "speedrun.completed": {
         const valid = event.payload?.valid !== false;
-        const levelId = readPayloadString(event, "levelId") ?? "prologue_test";
+        const levelId = readPayloadString(event, "levelId") ?? PROLOGUE_COMPLETION_LEVEL_ID;
         const completionTime = readPayloadNumber(event, "completionTimeMs");
 
-        if (valid) {
+        // `speedrun.completed` is published for every authored level so that
+        // statistics can aggregate runs. Only the Prologue may advance campaign
+        // progression: another level's valid run must not complete the Prologue,
+        // join `completedLevelIds`, or overwrite `prologueBestCompletionTime`.
+        if (valid && levelId === PROLOGUE_COMPLETION_LEVEL_ID) {
           if (!this.progression.campaign.completedLevelIds.includes(levelId)) {
             this.progression.campaign.completedLevelIds.push(levelId);
             this.progression.statistics.totalCompletedLevels =
