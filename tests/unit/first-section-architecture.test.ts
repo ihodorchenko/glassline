@@ -7,6 +7,7 @@ import {
   architecturalModuleSignature,
   buildArchitecturalModule,
   type KitModuleModel,
+  type KitModulePart,
   validateArchitecturalModuleDefinition,
 } from "../../src/levels/architecture/ArchitecturalKit";
 import { KitGeometryPool } from "../../src/levels/architecture/KitGeometry";
@@ -355,15 +356,22 @@ function uniqueModules(): ReadonlyMap<string, ArchitecturalModuleDefinition> {
   return modules;
 }
 
-function worldBounds(placement: LevelArchitecturePlacement): THREE.Box3 {
-  const model = build(placement.module);
+function placementMatrix(placement: LevelArchitecturePlacement): THREE.Matrix4 {
   const matrix = new THREE.Matrix4().makeRotationY(placement.rotationY ?? 0);
 
   matrix.setPosition(placement.position.x, placement.position.y, placement.position.z);
 
+  return matrix;
+}
+
+function boundsOfParts(
+  placement: LevelArchitecturePlacement,
+  parts: readonly KitModulePart[],
+): THREE.Box3 {
+  const matrix = placementMatrix(placement);
   const bounds = new THREE.Box3();
 
-  for (const part of model.parts) {
+  for (const part of parts) {
     part.geometry.computeBoundingBox();
 
     const local = part.geometry.boundingBox;
@@ -374,6 +382,44 @@ function worldBounds(placement: LevelArchitecturePlacement): THREE.Box3 {
   }
 
   if (bounds.isEmpty()) {
+    throw new Error(`Placement "${placement.id}" produced no geometry bounds.`);
+  }
+
+  return bounds;
+}
+
+function worldBounds(placement: LevelArchitecturePlacement): THREE.Box3 {
+  return boundsOfParts(placement, build(placement.module).parts);
+}
+
+/** World bounds grouped by semantic material, so a part can be isolated. */
+function worldMaterialBounds(
+  placement: LevelArchitecturePlacement,
+): ReadonlyMap<string, THREE.Box3> {
+  const model = build(placement.module);
+  const matrix = placementMatrix(placement);
+  const bounds = new Map<string, THREE.Box3>();
+
+  for (const part of model.parts) {
+    part.geometry.computeBoundingBox();
+
+    const local = part.geometry.boundingBox;
+
+    if (!local) {
+      continue;
+    }
+
+    const world = local.clone().applyMatrix4(matrix);
+    const existing = bounds.get(part.material);
+
+    if (existing) {
+      existing.union(world);
+    } else {
+      bounds.set(part.material, world);
+    }
+  }
+
+  if (bounds.size === 0) {
     throw new Error(`Placement "${placement.id}" produced no geometry bounds.`);
   }
 
@@ -525,7 +571,8 @@ describe("First gameplay section Architectural Kit layer", () => {
     expect(findPlacement("arch_finish_parapet_east").position.x).toBeCloseTo(4.8, 6);
 
     for (const coping of copings) {
-      const footprint = worldBounds(coping);
+      const materialBounds = worldMaterialBounds(coping);
+      const footprint = materialBounds.get("white");
       const rotation = coping.rotationY ?? 0;
       const alongX = Math.abs(Math.cos(rotation)) > 0.5;
       const supports = FIRST_SECTION_LAYOUT.geometry.filter((geometry) => {
@@ -550,8 +597,8 @@ describe("First gameplay section Architectural Kit layer", () => {
 
       const support = supports[0];
 
-      if (!support || coping.module.kind !== "parapet") {
-        throw new Error(`Missing parapet support data for "${coping.id}".`);
+      if (!support || coping.module.kind !== "parapet" || !footprint) {
+        throw new Error(`Missing coping support data for "${coping.id}".`);
       }
 
       const supportMinX = support.position.x - support.size.x / 2;
@@ -572,11 +619,16 @@ describe("First gameplay section Architectural Kit layer", () => {
       const supportMinDepth = alongX ? supportMinZ : supportMinX;
       const supportMaxDepth = alongX ? supportMaxZ : supportMaxX;
 
-      // The authored coping base sits on the collision parapet top. The
-      // parapet module's red accent dips slightly below local y = 0 at the
-      // 0.20 m coping height, so the full AABB min-y is not used as the base.
-      expect(coping.position.y, coping.id).toBeCloseTo(support.position.y + support.size.y / 2, 6);
-      expect(footprint.min.y, coping.id).toBeLessThanOrEqual(coping.position.y + EPSILON);
+      const supportTop = support.position.y + support.size.y / 2;
+
+      // The white coping plate is the structural cap. Its lower face is
+      // height - 0.175 = 0.025 m above the module origin: a 0.020 m concrete
+      // upstand plus the designed 0.005 m shadow gap. The module's dark-metal
+      // strip and red accent sit at or below the origin, so the total module
+      // AABB must not be used as the support plane.
+      expect(coping.position.y, coping.id).toBeCloseTo(supportTop, 6);
+      expect(footprint.min.y - supportTop, coping.id).toBeCloseTo(0.025, 3);
+      expect(footprint.max.y - footprint.min.y, coping.id).toBeCloseTo(0.17, 3);
 
       // The 0.46 m coping fully covers the 0.35 m collision parapet depth;
       // the designed overhang is (0.46 - 0.35) / 2 = 0.055 m on each side.

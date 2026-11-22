@@ -153,9 +153,11 @@ function place(
 const HALF_PI = Math.PI / 2;
 
 /**
- * 48 authored placements in route order. Rotations follow the Kit convention:
- * the module's authored face is local +Z; `rotationY` yaws it around the
- * vertical axis, so a west-facing module uses -π/2 and an east-facing one +π/2.
+ * 52 authored placements in route order. Rotations follow the Kit convention:
+ * the module's authored face is local +Z and `rotationY` yaws it around the
+ * vertical axis. The handed `corner` module is the single special case: its
+ * S5 pair uses yaw 0 for the west instance and -π/2 for the east instance so
+ * the two wings mirror across x = 0. That rule is not applied to other kinds.
  */
 export const FIRST_SECTION_ARCHITECTURE: readonly LevelArchitecturePlacement[] = [
   /* S0 — Starting Roof: penthouse bays, parapet copings, canopy and columns. */
