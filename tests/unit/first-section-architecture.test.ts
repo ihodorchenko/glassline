@@ -426,6 +426,300 @@ function worldMaterialBounds(
   return bounds;
 }
 
+const TRIANGLE_EPSILON = 1e-7;
+
+interface MeshTriangle {
+  readonly a: THREE.Vector3;
+  readonly b: THREE.Vector3;
+  readonly c: THREE.Vector3;
+}
+
+interface WorldTriangle {
+  readonly triangle: MeshTriangle;
+  readonly min: THREE.Vector3;
+  readonly max: THREE.Vector3;
+  readonly index: number;
+}
+
+function triangleNormal(triangle: MeshTriangle): THREE.Vector3 {
+  return new THREE.Vector3()
+    .subVectors(triangle.b, triangle.a)
+    .cross(new THREE.Vector3().subVectors(triangle.c, triangle.a));
+}
+
+function triangleInterval(triangle: MeshTriangle, axis: THREE.Vector3): readonly [number, number] {
+  const values = [triangle.a, triangle.b, triangle.c].map((vertex) => vertex.dot(axis));
+
+  return [Math.min(...values), Math.max(...values)];
+}
+
+function separatedOnAxis(first: MeshTriangle, second: MeshTriangle, axis: THREE.Vector3): boolean {
+  const length = axis.length();
+
+  if (length < 1e-12) {
+    return false;
+  }
+
+  const normalized = axis.clone().divideScalar(length);
+  const [firstMin, firstMax] = triangleInterval(first, normalized);
+  const [secondMin, secondMax] = triangleInterval(second, normalized);
+
+  return firstMax < secondMin - TRIANGLE_EPSILON || secondMax < firstMin - TRIANGLE_EPSILON;
+}
+
+function coplanarTrianglesIntersect(
+  first: MeshTriangle,
+  second: MeshTriangle,
+  normal: THREE.Vector3,
+): boolean {
+  const magnitudes = [Math.abs(normal.x), Math.abs(normal.y), Math.abs(normal.z)];
+  const dropAxis = magnitudes.indexOf(Math.max(...magnitudes));
+  const project2D = (point: THREE.Vector3): readonly [number, number] => {
+    if (dropAxis === 0) {
+      return [point.y, point.z];
+    }
+
+    if (dropAxis === 1) {
+      return [point.x, point.z];
+    }
+
+    return [point.x, point.y];
+  };
+  const first2D = [first.a, first.b, first.c].map(project2D);
+  const second2D = [second.a, second.b, second.c].map(project2D);
+  const edges = (points: ReadonlyArray<readonly [number, number]>) =>
+    [
+      [points[0], points[1]],
+      [points[1], points[2]],
+      [points[2], points[0]],
+    ] as const;
+
+  for (const points of [first2D, second2D]) {
+    for (const [start, end] of edges(points)) {
+      if (!start || !end) {
+        continue;
+      }
+
+      const axisX = -(end[1] - start[1]);
+      const axisY = end[0] - start[0];
+      const axisLength = Math.hypot(axisX, axisY);
+
+      if (axisLength < 1e-12) {
+        continue;
+      }
+
+      const nx = axisX / axisLength;
+      const ny = axisY / axisLength;
+      const firstProjection = first2D.map(([x, y]) => x * nx + y * ny);
+      const secondProjection = second2D.map(([x, y]) => x * nx + y * ny);
+      const firstMin = Math.min(...firstProjection);
+      const firstMax = Math.max(...firstProjection);
+      const secondMin = Math.min(...secondProjection);
+      const secondMax = Math.max(...secondProjection);
+
+      if (firstMax < secondMin - TRIANGLE_EPSILON || secondMax < firstMin - TRIANGLE_EPSILON) {
+        return false;
+      }
+    }
+  }
+
+  return true;
+}
+
+/**
+ * Triangle-triangle intersection via the separating-axis theorem.
+ *
+ * For non-coplanar triangles the candidate axes are the two face normals and
+ * the nine edge-edge cross products. Coplanar pairs need the in-plane edge
+ * normals as well, otherwise two disjoint triangles on the same plane would
+ * be reported as overlapping. Touching surfaces within TRIANGLE_EPSILON count
+ * as intersecting; this test only establishes the fact, not penetration depth.
+ */
+function trianglesIntersect(first: MeshTriangle, second: MeshTriangle): boolean {
+  const firstNormal = triangleNormal(first);
+  const secondNormal = triangleNormal(second);
+  const firstNormalLength = firstNormal.length();
+  const secondNormalLength = secondNormal.length();
+
+  if (firstNormalLength < 1e-12 || secondNormalLength < 1e-12) {
+    return false;
+  }
+
+  const parallel =
+    Math.abs(firstNormal.dot(secondNormal)) >= firstNormalLength * secondNormalLength * (1 - 1e-10);
+
+  if (parallel) {
+    const planeOffset = -firstNormal.dot(first.a) / firstNormalLength;
+    const maxDistance = Math.max(
+      ...[second.a, second.b, second.c].map((vertex) =>
+        Math.abs(vertex.dot(firstNormal) / firstNormalLength + planeOffset),
+      ),
+    );
+
+    if (maxDistance <= 1e-6) {
+      return coplanarTrianglesIntersect(first, second, firstNormal);
+    }
+  }
+
+  const firstEdges = [
+    new THREE.Vector3().subVectors(first.b, first.a),
+    new THREE.Vector3().subVectors(first.c, first.b),
+    new THREE.Vector3().subVectors(first.a, first.c),
+  ];
+  const secondEdges = [
+    new THREE.Vector3().subVectors(second.b, second.a),
+    new THREE.Vector3().subVectors(second.c, second.b),
+    new THREE.Vector3().subVectors(second.a, second.c),
+  ];
+  const axes: THREE.Vector3[] = [firstNormal, secondNormal];
+
+  for (const firstEdge of firstEdges) {
+    for (const secondEdge of secondEdges) {
+      axes.push(new THREE.Vector3().crossVectors(firstEdge, secondEdge));
+    }
+  }
+
+  for (const axis of axes) {
+    if (separatedOnAxis(first, second, axis)) {
+      return false;
+    }
+  }
+
+  return true;
+}
+
+function partWorldTriangles(part: KitModulePart, matrix: THREE.Matrix4): WorldTriangle[] {
+  const position = part.geometry.getAttribute("position");
+  const index = part.geometry.getIndex();
+  const vertices: THREE.Vector3[] = [];
+
+  for (let vertexIndex = 0; vertexIndex < position.count; vertexIndex += 1) {
+    vertices.push(
+      new THREE.Vector3().fromBufferAttribute(position, vertexIndex).applyMatrix4(matrix),
+    );
+  }
+
+  const triangles: WorldTriangle[] = [];
+  const indexCount = index ? index.count : position.count;
+
+  for (let offset = 0; offset < indexCount; offset += 3) {
+    const firstIndex = index ? index.getX(offset) : offset;
+    const secondIndex = index ? index.getX(offset + 1) : offset + 1;
+    const thirdIndex = index ? index.getX(offset + 2) : offset + 2;
+    const a = vertices[firstIndex];
+    const b = vertices[secondIndex];
+    const c = vertices[thirdIndex];
+
+    if (!a || !b || !c) {
+      throw new Error(`Part "${part.material}" references a missing vertex.`);
+    }
+
+    triangles.push({
+      triangle: { a, b, c },
+      min: new THREE.Vector3(
+        Math.min(a.x, b.x, c.x),
+        Math.min(a.y, b.y, c.y),
+        Math.min(a.z, b.z, c.z),
+      ),
+      max: new THREE.Vector3(
+        Math.max(a.x, b.x, c.x),
+        Math.max(a.y, b.y, c.y),
+        Math.max(a.z, b.z, c.z),
+      ),
+      index: offset / 3,
+    });
+  }
+
+  return triangles;
+}
+
+function worldTrianglesOverlap(first: WorldTriangle, second: WorldTriangle): boolean {
+  return (
+    first.min.x <= second.max.x + TRIANGLE_EPSILON &&
+    first.max.x >= second.min.x - TRIANGLE_EPSILON &&
+    first.min.y <= second.max.y + TRIANGLE_EPSILON &&
+    first.max.y >= second.min.y - TRIANGLE_EPSILON &&
+    first.min.z <= second.max.z + TRIANGLE_EPSILON &&
+    first.max.z >= second.min.z - TRIANGLE_EPSILON
+  );
+}
+
+interface CopingIntersectionDiagnostic {
+  readonly id: string;
+  readonly rotationY: number;
+  readonly whiteTriangles: number;
+  readonly concreteTriangles: number;
+  readonly intersectingPairs: number;
+  readonly firstPair: {
+    readonly whiteTriangle: number;
+    readonly concreteTriangle: number;
+    readonly whiteCentroid: THREE.Vector3;
+    readonly concreteCentroid: THREE.Vector3;
+  } | null;
+}
+
+function diagnoseCopingIntersections(): CopingIntersectionDiagnostic[] {
+  const diagnostics: CopingIntersectionDiagnostic[] = [];
+
+  for (const placement of FIRST_SECTION_ARCHITECTURE) {
+    if (placement.module.kind !== "parapet") {
+      continue;
+    }
+
+    const model = build(placement.module);
+    const matrix = placementMatrix(placement);
+    const whiteParts = model.parts.filter((part) => part.material === "white");
+    const concreteParts = model.parts.filter((part) => part.material === "concrete");
+    const whiteTriangles = whiteParts.flatMap((part) => partWorldTriangles(part, matrix));
+    const concreteTriangles = concreteParts.flatMap((part) => partWorldTriangles(part, matrix));
+    let intersectingPairs = 0;
+    let firstPair: CopingIntersectionDiagnostic["firstPair"] = null;
+
+    for (const white of whiteTriangles) {
+      for (const concrete of concreteTriangles) {
+        if (!worldTrianglesOverlap(white, concrete)) {
+          continue;
+        }
+
+        if (trianglesIntersect(white.triangle, concrete.triangle)) {
+          intersectingPairs += 1;
+
+          if (!firstPair) {
+            const whiteCentroid = new THREE.Vector3()
+              .add(white.triangle.a)
+              .add(white.triangle.b)
+              .add(white.triangle.c)
+              .divideScalar(3);
+            const concreteCentroid = new THREE.Vector3()
+              .add(concrete.triangle.a)
+              .add(concrete.triangle.b)
+              .add(concrete.triangle.c)
+              .divideScalar(3);
+
+            firstPair = {
+              whiteTriangle: white.index,
+              concreteTriangle: concrete.index,
+              whiteCentroid,
+              concreteCentroid,
+            };
+          }
+        }
+      }
+    }
+
+    diagnostics.push({
+      id: placement.id,
+      rotationY: placement.rotationY ?? 0,
+      whiteTriangles: whiteTriangles.length,
+      concreteTriangles: concreteTriangles.length,
+      intersectingPairs,
+      firstPair,
+    });
+  }
+
+  return diagnostics;
+}
+
 function overlap1D(
   firstMin: number,
   firstMax: number,
@@ -748,6 +1042,57 @@ describe("First gameplay section Architectural Kit layer", () => {
       expect("collider" in placement).toBe(false);
       expect("rigidBody" in placement).toBe(false);
       expect("geometry" in placement).toBe(false);
+    }
+  });
+
+  it("separates known triangle-mesh intersection cases", () => {
+    const triangle = (
+      ax: number,
+      ay: number,
+      az: number,
+      bx: number,
+      by: number,
+      bz: number,
+      cx: number,
+      cy: number,
+      cz: number,
+    ): MeshTriangle => ({
+      a: new THREE.Vector3(ax, ay, az),
+      b: new THREE.Vector3(bx, by, bz),
+      c: new THREE.Vector3(cx, cy, cz),
+    });
+    const base = triangle(0, 0, 0, 1, 0, 0, 0, 1, 0);
+    const coplanarOverlap = triangle(0.2, 0.2, 0, 0.8, 0.2, 0, 0.2, 0.8, 0);
+    const coplanarApart = triangle(2, 2, 0, 3, 2, 0, 2, 3, 0);
+    const parallelPlane = triangle(0.2, 0.2, 1, 0.8, 0.2, 1, 0.2, 0.8, 1);
+    const crossing = triangle(0.2, 0.2, -1, 0.2, 0.2, 1, 0.8, 0.8, 0);
+
+    expect(trianglesIntersect(base, coplanarOverlap)).toBe(true);
+    expect(trianglesIntersect(base, coplanarApart)).toBe(false);
+    expect(trianglesIntersect(base, parallelPlane)).toBe(false);
+    expect(trianglesIntersect(base, crossing)).toBe(true);
+  });
+
+  it("confirms triangle-level coping/concrete intersection for all 12 copings", () => {
+    const diagnostics = diagnoseCopingIntersections();
+
+    expect(diagnostics).toHaveLength(12);
+    expect(new Set(diagnostics.map((diagnostic) => diagnostic.rotationY))).toEqual(
+      new Set([0, HALF_PI]),
+    );
+
+    for (const diagnostic of diagnostics) {
+      expect(diagnostic.whiteTriangles, diagnostic.id).toBeGreaterThan(0);
+      expect(diagnostic.concreteTriangles, diagnostic.id).toBeGreaterThan(0);
+      expect(diagnostic.intersectingPairs, diagnostic.id).toBeGreaterThan(0);
+      expect(diagnostic.firstPair, diagnostic.id).not.toBeNull();
+
+      if (diagnostic.firstPair) {
+        expect(diagnostic.firstPair.whiteTriangle, diagnostic.id).toBeGreaterThanOrEqual(0);
+        expect(diagnostic.firstPair.concreteTriangle, diagnostic.id).toBeGreaterThanOrEqual(0);
+        expect(Number.isFinite(diagnostic.firstPair.whiteCentroid.y), diagnostic.id).toBe(true);
+        expect(Number.isFinite(diagnostic.firstPair.concreteCentroid.y), diagnostic.id).toBe(true);
+      }
     }
   });
 
