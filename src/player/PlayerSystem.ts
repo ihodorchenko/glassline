@@ -43,6 +43,8 @@ export interface PlayerSystemOptions {
 }
 
 const DOWN_RAY = { x: 0, y: -1, z: 0 };
+/** Skin used by the kinematic character controller; also the physical foot offset. */
+const CHARACTER_CONTROLLER_OFFSET = 0.02;
 
 function toWorldDirection(move: Vector2Like, viewYaw: number): Vector3Like {
   const forwardX = -Math.sin(viewYaw);
@@ -125,7 +127,7 @@ export class PlayerSystem implements Disposable {
       this.body,
     );
 
-    this.controller = world.createCharacterController(0.02);
+    this.controller = world.createCharacterController(CHARACTER_CONTROLLER_OFFSET);
     this.controller.setUp({ x: 0, y: 1, z: 0 });
     // includeDowncast lets autostep ride *down* over ledges and steps as well,
     // which removes the "fall off every stair" jolt on descents.
@@ -140,7 +142,7 @@ export class PlayerSystem implements Disposable {
       minSpeed: this.tuning.wallRunMinSpeed,
       ...(options.isWallRunnable ? { isWallRunnable: options.isWallRunnable } : {}),
     });
-    this.vaultDetector = new VaultDetector(world, this.tuning);
+    this.vaultDetector = new VaultDetector(world, this.tuning, CHARACTER_CONTROLLER_OFFSET);
 
     this.model = new MovementModel(this.tuning);
     this.previousPosition = { ...options.spawnPoint };
@@ -520,6 +522,7 @@ export class PlayerSystem implements Disposable {
     );
 
     const remainingVault = this.model.getActiveVault();
+    const vaultCompleted = remainingVault === null;
     const elapsed = remainingVault ? remainingVault.elapsedSeconds : activeVault.durationSeconds;
     const progress = elapsed / activeVault.durationSeconds;
     const target = VaultDetector.samplePosition(activeVault.candidate, this.tuning, progress);
@@ -549,7 +552,15 @@ export class PlayerSystem implements Disposable {
     };
     this.currentPosition = next;
     this.body.setNextKinematicTranslation(next);
-    this.model.applyVaultMotion(movement, deltaSeconds);
+
+    // On the completion step `MovementModel.updateVault` has already set the
+    // profile's retained exit velocity. Re-applying the final arc segment's
+    // displacement would overwrite it with an arbitrary last-frame speed
+    // (observed 0–23 m/s instead of entry × retention).
+    if (!vaultCompleted) {
+      this.model.applyVaultMotion(movement, deltaSeconds);
+    }
+
     this.emitMovementEvents();
   }
 
