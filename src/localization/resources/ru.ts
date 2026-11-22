@@ -82,6 +82,7 @@ export const RUSSIAN_RESOURCES: TranslationResources = {
   "hud.speed": "Скорость",
   "hud.pauseHint": "Esc — пауза",
   "hud.interactionPrompt": "E — взаимодействие",
+  "hud.vaultPrompt": "E · ОПОРНЫЙ ПРЫЖОК",
   "hud.tutorial": "Обучение",
 
   "speedrun.medal": "{medal} медаль",

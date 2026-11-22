@@ -41,6 +41,11 @@ import { setTimeout as delay } from "node:timers/promises";
 import { fileURLToPath } from "node:url";
 
 import { attachDiagnostics, launchBrowser } from "./lib/browser-session.mjs";
+import {
+  isWithinLateralTolerance,
+  lateralToleranceSelfCheck,
+  maxLateralOffset,
+} from "./lib/route-math.mjs";
 import { createServerManager } from "./lib/vite-server.mjs";
 
 const ROOT_DIR = resolve(dirname(fileURLToPath(import.meta.url)), "..", "..");
@@ -232,6 +237,21 @@ function createChecklist(log) {
 
 const heldKeys = new Set();
 
+/** Reads only the contextual prompt line (F-04 evidence). */
+async function readVaultPrompt(page) {
+  return await page.evaluate(() => {
+    const node = document.querySelector(".gl-hud__prompt");
+
+    return {
+      text: node?.textContent ?? null,
+      visible: node?.classList.contains("is-visible") ?? false,
+      count: document.querySelectorAll(".gl-hud__prompt").length,
+      tutorialVisible:
+        document.querySelector(".gl-hud__tutorial")?.classList.contains("is-visible") ?? false,
+    };
+  });
+}
+
 async function readStatus(page) {
   return await page.evaluate(() => {
     const api = window.__glasslineDevLaunch;
@@ -260,7 +280,9 @@ async function snapshotPage(page) {
         speed: text(".gl-hud__speed"),
         prompt: text(".gl-hud__prompt"),
         promptVisible: hasClass(".gl-hud__prompt", "is-visible"),
+        promptCount: document.querySelectorAll(".gl-hud__prompt").length,
         tutorialHint: text(".gl-hud__tutorial-hint"),
+        tutorialVisible: hasClass(".gl-hud__tutorial", "is-visible"),
         toast: text(".gl-toast"),
         toastVisible: hasClass(".gl-toast", "is-visible"),
         screenCount: document.querySelector(".gl-ui__screens")?.children.length ?? -1,
@@ -587,6 +609,46 @@ async function backUpTo(page, targetZ, timeoutMs = 12_000) {
   }
 
   await delay(450);
+}
+
+/**
+ * Closed-loop lateral walk with A/D pulses; used to charge a vault obstacle from
+ * a measured lateral offset. Normal input only, no teleports.
+ */
+async function strafeToX(page, mouse, targetX, { tolerance = 0.12, timeoutMs = 8_000 } = {}) {
+  await aimYaw(page, mouse, 0);
+
+  const deadline = Date.now() + timeoutMs;
+
+  while (Date.now() < deadline) {
+    const status = await readStatus(page);
+    const x = status?.player?.position.x ?? 0;
+    const error = targetX - x;
+
+    if (Math.abs(error) <= tolerance) {
+      await delay(300);
+
+      return await readStatus(page);
+    }
+
+    const key = error > 0 ? "KeyD" : "KeyA";
+    const pulse = clamp(Math.abs(error) * 160, 40, 140);
+
+    await hold(page, key);
+    await delay(pulse);
+    await release(page, key);
+
+    // Ground deceleration (14 m/s²) needs ~0.4 s from run speed; wait for the
+    // body to settle so the next read is not a mid-slide position.
+    await waitForStatus(page, (status) => Math.abs(status.player?.speed ?? 99) < 0.25, {
+      timeout: 1_500,
+      interval: 20,
+      label: "strafe settle",
+    }).catch(() => undefined);
+    await delay(80);
+  }
+
+  throw new Error(`could not strafe to x=${targetX}`);
 }
 
 /**
@@ -989,24 +1051,25 @@ async function runWalkthrough(browser, options, viewport, outDir, report, checkl
     const galleryExit = await capture("19-gallery-exit");
 
     const galleryStatus = await readStatus(page);
+    // Step 3.7 Scope C: the Step 3.6 check used `(x ?? 9) < 1.0`, which accepted
+    // any negative offset. Judge the absolute deviation and keep missing poses
+    // failing through the sentinel.
+    const galleryMaxLateral = maxLateralOffset([galleryEntry.x, galleryMid.x, galleryExit.x]);
 
     segments.gallery = {
       entry: galleryEntry,
       mid: galleryMid,
       exit: galleryExit,
-      maxLateral:
-        Math.max(
-          Math.abs(galleryEntry.x ?? 0),
-          Math.abs(galleryMid.x ?? 0),
-          Math.abs(galleryExit.x ?? 0),
-        ) ?? null,
+      maxLateral: galleryMaxLateral,
       state: galleryStatus?.player?.state ?? null,
     };
 
     checklist.check(
       "route: the gallery corridor is crossed inside its authored 3.2 m width",
-      (galleryEntry.x ?? 9) < 1.0 && (galleryMid.x ?? 9) < 1.0 && (galleryExit.x ?? 9) < 1.0,
-      `maxLateral=${segments.gallery.maxLateral} m`,
+      [galleryEntry, galleryMid, galleryExit].every((pose) =>
+        isWithinLateralTolerance(pose.x, 1.0),
+      ),
+      `maxLateral=${galleryMaxLateral} m`,
     );
 
     /* --- A7. Slide duct: crouch attempt, then a real slide ---------------- */
@@ -1727,30 +1790,260 @@ async function runFailureModes(browser, options, viewport, outDir, report, check
       `${round(airJump.landing?.player?.speed ?? 0, 2)} m/s after landing`,
     );
 
-    /* --- B5. Vault obstacles without E, then a walk-speed vault ---------- */
+    /* --- B5. Vault stability (F-01) and discoverability (F-04) ---------- */
 
     await aimYaw(page, mouse, 0);
     await traverseToVaults(page, mouse, log);
 
-    // 1. Charge the 0.50 m obstacle at sprint speed without E. The character
-    //    controller's step handling decides what happens; record it rather than
-    //    assume the obstacle is a hard block.
+    const firstCenter = ROUTE.vaultCenters[0];
+
+    // 1. Sprint charge without E: predictable block, no launch/back-bounce.
     const unvaultedFirst = await chargeObstacle(page, mouse, {
-      centerZ: ROUTE.vaultCenters[0],
+      centerZ: firstCenter,
       sprint: true,
     });
 
-    // The charge can end on either side of the 0.50 m obstacle (see the report).
-    // Guarantee a position past it before probing the next obstacle, using the
-    // normal vault if the charge did not carry through.
-    const afterFirstCharge = await readStatus(page);
+    failureModes.unvaultedObstacles = { first: unvaultedFirst };
 
-    if ((afterFirstCharge?.player?.position.z ?? -99) > ROUTE.vaultCenters[0] - 0.7) {
-      await vaultAtWalkSpeed(page, mouse, {
-        centerZ: ROUTE.vaultCenters[0],
-        approachZ: ROUTE.vaultCenters[0] + 3.0,
+    const firstLaunchRise = round((unvaultedFirst.maxY ?? 0) - (unvaultedFirst.startY ?? 0), 2);
+    const firstBackBounce = round((unvaultedFirst.finalZ ?? 0) - (unvaultedFirst.closestZ ?? 0), 2);
+
+    failureModes.unvaultedFirstResponse = {
+      launchRise: firstLaunchRise,
+      backBounce: firstBackBounce,
+      closestZ: unvaultedFirst.closestZ,
+      finalZ: unvaultedFirst.finalZ,
+      states: unvaultedFirst.states,
+    };
+
+    checklist.check(
+      "vault: the 0.50 m obstacle blocks a sprint without E — no launch, no backward bounce, no self-vault",
+      firstLaunchRise < 0.12 &&
+        firstBackBounce < 0.08 &&
+        (unvaultedFirst.finalZ ?? 0) > firstCenter + 0.45 &&
+        unvaultedFirst.finalGrounded === true &&
+        !(unvaultedFirst.states ?? []).some((state) =>
+          ["JUMPING", "FALLING", "VAULTING"].includes(state),
+        ),
+      `rise=${firstLaunchRise} m, backBounce=${firstBackBounce} m, ` +
+        `closest=${unvaultedFirst.closestZ}, final=${unvaultedFirst.finalZ}, ` +
+        `states=${JSON.stringify(unvaultedFirst.states)}`,
+    );
+    checklist.check(
+      "vault: the E · VAULT affordance appears while charging the 0.50 m obstacle without E",
+      unvaultedFirst.promptSeen === true &&
+        /E\s*·\s*VAULT/i.test(unvaultedFirst.promptText ?? "") &&
+        unvaultedFirst.promptCountMax === 1,
+      `prompt=${JSON.stringify(unvaultedFirst.promptText)}, ` +
+        `count=${unvaultedFirst.promptCountMax}`,
+    );
+
+    // 2. F-04: hidden outside the range, visible in range, stable while blocked.
+    await backUpTo(page, firstCenter + 3.2);
+    await strafeToX(page, mouse, 0);
+
+    const hintFar = await readVaultPrompt(page);
+    const hintFarPose = await capture("48-vault-hint-far");
+
+    await driveTo(page, mouse, firstCenter + 1.2, { sprint: false });
+
+    const hintNear = await readVaultPrompt(page);
+    const hintNearPose = await capture("49-vault-hint-near");
+
+    await hold(page, "KeyW");
+
+    const hintHoldSamples = [];
+
+    for (let index = 0; index < 15; index += 1) {
+      hintHoldSamples.push(await readVaultPrompt(page));
+      await delay(60);
+    }
+
+    await release(page, "KeyW");
+    await delay(300);
+
+    const hintBlockedPose = await capture("50-vault-hint-blocked");
+    const hintBlockedStatus = await readStatus(page);
+
+    failureModes.vaultHint = {
+      far: hintFar,
+      near: hintNear,
+      holdSamples: hintHoldSamples,
+      blockedZ: round(hintBlockedStatus?.player?.position.z ?? 0, 2),
+      poses: { far: hintFarPose, near: hintNearPose, blocked: hintBlockedPose },
+    };
+
+    checklist.check(
+      "vault hint: hidden outside the interaction range",
+      hintFar.visible === false && hintFarPose.hud?.promptVisible === false,
+      JSON.stringify(hintFar),
+    );
+    checklist.check(
+      "vault hint: E · VAULT is shown inside the interaction range as a single line",
+      hintNear.visible === true &&
+        /E\s*·\s*VAULT/i.test(hintNear.text ?? "") &&
+        hintNear.count === 1 &&
+        hintNear.tutorialVisible === false,
+      JSON.stringify(hintNear),
+    );
+    checklist.check(
+      "vault hint: visible and unduplicated while holding forward against the obstacle",
+      hintHoldSamples.length === 15 &&
+        hintHoldSamples.every(
+          (sample) =>
+            sample.visible === true &&
+            sample.count === 1 &&
+            /E\s*·\s*VAULT/i.test(sample.text ?? "") &&
+            sample.tutorialVisible === false,
+        ),
+      JSON.stringify(hintHoldSamples.map((sample) => sample.visible)),
+    );
+
+    // 3. Repeated sprint charges: bounded, repeatable response.
+    const repeatedCharges = [];
+
+    for (let attempt = 0; attempt < 3; attempt += 1) {
+      await backUpTo(page, firstCenter + 3.0);
+      await strafeToX(page, mouse, 0);
+      repeatedCharges.push(
+        await chargeObstacle(page, mouse, { centerZ: firstCenter, sprint: true }),
+      );
+    }
+
+    const repeatedFinalZ = repeatedCharges.map((entry) => entry.finalZ);
+    const repeatedRise = repeatedCharges.map((entry) =>
+      round((entry.maxY ?? 0) - (entry.startY ?? 0), 2),
+    );
+    const repeatedSpread = round(Math.max(...repeatedFinalZ) - Math.min(...repeatedFinalZ), 2);
+
+    failureModes.vaultRepeats = {
+      finals: repeatedFinalZ,
+      rises: repeatedRise,
+      spread: repeatedSpread,
+    };
+
+    checklist.check(
+      "vault: three repeated charges from the same conditions stay bounded and repeatable",
+      repeatedSpread < 0.05 &&
+        repeatedRise.every((rise) => rise < 0.12) &&
+        repeatedCharges.every((entry) => (entry.finalZ ?? 0) > firstCenter + 0.45),
+      `finals=${JSON.stringify(repeatedFinalZ)}, rises=${JSON.stringify(repeatedRise)}, ` +
+        `spread=${repeatedSpread}`,
+    );
+
+    // 4. Lateral offsets across the 4 m obstacle.
+    const lateralCharges = [];
+
+    for (const lateral of [-1.8, -1.2, 1.2, 1.8]) {
+      await backUpTo(page, firstCenter + 3.0);
+      await strafeToX(page, mouse, lateral);
+
+      const charge = await chargeObstacle(page, mouse, {
+        centerZ: firstCenter,
+        sprint: true,
+      });
+      const offsetPose = lateral === -1.8 ? await capture("52-vault-offset-blocked") : null;
+      const offsetStatus = await readStatus(page);
+
+      lateralCharges.push({
+        requestedLateral: lateral,
+        startX: charge.startX,
+        finalX: round(offsetStatus?.player?.position.x ?? 0, 2),
+        finalZ: charge.finalZ,
+        rise: round((charge.maxY ?? 0) - (charge.startY ?? 0), 2),
+        backBounce: round((charge.finalZ ?? 0) - (charge.closestZ ?? 0), 2),
+        promptSeen: charge.promptSeen,
+        promptCountMax: charge.promptCountMax,
+        pose: offsetPose,
       });
     }
+
+    failureModes.vaultLateral = { charges: lateralCharges };
+
+    checklist.check(
+      "vault: sprint charges at ±1.2 m and ±1.8 m lateral offsets all block predictably",
+      lateralCharges.every(
+        (entry) =>
+          Math.abs((entry.startX ?? 0) - entry.requestedLateral) <= 0.25 &&
+          Math.abs(entry.startX ?? 0) >= 1.0 &&
+          entry.rise < 0.12 &&
+          entry.backBounce < 0.08 &&
+          entry.finalZ > firstCenter + 0.45 &&
+          entry.promptSeen === true &&
+          entry.promptCountMax === 1,
+      ),
+      JSON.stringify(lateralCharges),
+    );
+
+    // 5. An ordinary jump next to the obstacle must keep its normal apex.
+    await backUpTo(page, firstCenter + 2.0);
+    await strafeToX(page, mouse, 0);
+    await aimYaw(page, mouse, 0);
+
+    const jumpStart = await readStatus(page);
+    let jumpMaxY = jumpStart?.player?.position.y ?? 0;
+    let jumpAirborne = false;
+    let jumpLanded = false;
+
+    await tap(page, "Space", 300);
+
+    const jumpDeadline = Date.now() + 3_000;
+
+    while (Date.now() < jumpDeadline) {
+      const status = await readStatus(page);
+      const player = status?.player;
+
+      jumpMaxY = Math.max(jumpMaxY, player?.position.y ?? 0);
+
+      if (player?.grounded === false) {
+        jumpAirborne = true;
+      }
+
+      if (jumpAirborne && player?.grounded === true) {
+        jumpLanded = true;
+        break;
+      }
+
+      await delay(16);
+    }
+
+    const jumpRise = round(jumpMaxY - (jumpStart?.player?.position.y ?? 0), 2);
+    const jumpPose = await capture("53-vault-jump-near");
+
+    failureModes.vaultJump = {
+      rise: jumpRise,
+      airborne: jumpAirborne,
+      landed: jumpLanded,
+      pose: jumpPose,
+    };
+
+    checklist.check(
+      "vault: an ordinary jump next to the obstacle keeps its normal apex and landing",
+      jumpAirborne === true && jumpLanded === true && jumpRise > 1.1 && jumpRise < 1.9,
+      `rise=${jumpRise} m, airborne=${jumpAirborne}, landed=${jumpLanded}`,
+    );
+
+    // 6. Vault with E: the affordance hides after the traversal.
+    await backUpTo(page, firstCenter + 3.0);
+    await strafeToX(page, mouse, 0);
+
+    const firstVault = await vaultAtWalkSpeed(page, mouse, {
+      centerZ: firstCenter,
+      approachZ: firstCenter + 3.0,
+    });
+
+    await delay(500);
+
+    const hintAfter = await readVaultPrompt(page);
+    const hintAfterPose = await capture("54-vault-hint-after");
+
+    failureModes.vaultHintAfter = { prompt: hintAfter, vault: firstVault, pose: hintAfterPose };
+
+    checklist.check(
+      "vault: E performs the vault and the prompt hides after the traversal",
+      firstVault.vaulted === true && hintAfter.visible === false && hintAfter.count === 1,
+      `vaulted=${firstVault.vaulted}, prompt=${JSON.stringify(hintAfter)}`,
+    );
 
     await driveTo(page, mouse, ROUTE.vaultCenters[1] + 2.9, { sprint: true });
 
@@ -2039,6 +2332,7 @@ async function chargeObstacle(page, mouse, { centerZ, sprint, durationMs = 1_600
 
   const start = await readStatus(page);
   const samples = [];
+  const promptSamples = [];
 
   await hold(page, "KeyW");
 
@@ -2050,7 +2344,8 @@ async function chargeObstacle(page, mouse, { centerZ, sprint, durationMs = 1_600
 
   try {
     while (Date.now() < deadline) {
-      const status = await readStatus(page);
+      const snapshot = await snapshotPage(page);
+      const status = snapshot.status;
       const player = status?.player;
 
       samples.push({
@@ -2059,7 +2354,15 @@ async function chargeObstacle(page, mouse, { centerZ, sprint, durationMs = 1_600
         speed: player === undefined || player === null ? null : round(player.speed, 2),
         state: player?.state ?? null,
         grounded: player?.grounded ?? null,
+        prompt: snapshot.dom.prompt,
+        promptVisible: snapshot.dom.promptVisible,
+        promptCount: snapshot.dom.promptCount,
       });
+
+      if (snapshot.dom.promptVisible) {
+        promptSamples.push(snapshot.dom);
+      }
+
       await delay(40);
     }
   } finally {
@@ -2072,13 +2375,22 @@ async function chargeObstacle(page, mouse, { centerZ, sprint, durationMs = 1_600
   const ys = samples.map((sample) => sample.y).filter((value) => value !== null);
   const closestZ = zs.length === 0 ? 0 : Math.min(...zs);
   const maxY = ys.length === 0 ? 0 : Math.max(...ys);
+  const last = samples[samples.length - 1];
 
   return {
     startZ: round(start?.player?.position.z ?? 0, 2),
+    startX: round(start?.player?.position.x ?? 0, 2),
+    startY: round(start?.player?.position.y ?? 0, 2),
     sprint,
     closestZ: round(closestZ, 2),
     maxY: round(maxY, 2),
     finalZ: round(zs[zs.length - 1] ?? 0, 2),
+    finalGrounded: last?.grounded ?? null,
+    finalState: last?.state ?? null,
+    states: [...new Set(samples.map((sample) => sample.state).filter(Boolean))],
+    promptSeen: promptSamples.length > 0,
+    promptText: promptSamples[promptSamples.length - 1]?.prompt ?? null,
+    promptCountMax: Math.max(0, ...samples.map((sample) => sample.promptCount ?? 0)),
     crossed: closestZ <= centerZ - 0.7,
     samples,
   };
@@ -2280,6 +2592,18 @@ async function main() {
     passed: false,
     error: null,
   };
+
+  // Step 3.7 Scope C: prove the symmetric lateral predicate catches deviations
+  // on both sides before any route measurement is trusted.
+  report.harnessSelfChecks = {
+    lateralTolerance: lateralToleranceSelfCheck(1.0),
+  };
+
+  checklist.check(
+    "harness: lateral tolerance rejects deviations on both sides",
+    report.harnessSelfChecks.lateralTolerance.passed,
+    JSON.stringify(report.harnessSelfChecks.lateralTolerance.failures),
+  );
 
   await mkdir(outDir, { recursive: true });
 

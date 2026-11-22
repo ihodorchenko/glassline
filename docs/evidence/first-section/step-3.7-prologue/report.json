@@ -1,0 +1,172 @@
+{
+  "tool": "tools/capture/dev-route.mjs",
+  "generatedAt": "2026-11-22T20:13:32.135Z",
+  "launchUrl": "http://127.0.0.1:5321/?dev=first_section",
+  "viewport": {
+    "width": 1600,
+    "height": 900,
+    "deviceScaleFactor": 1
+  },
+  "environment": "headless-edge",
+  "browser": {
+    "name": "Microsoft Edge",
+    "channel": "msedge",
+    "version": "157.0.4341.46"
+  },
+  "host": {
+    "platform": "darwin",
+    "arch": "arm64",
+    "release": "27.2.0",
+    "cpuCount": 8,
+    "loadAvg": [
+      18.42,
+      19.07,
+      18.16
+    ]
+  },
+  "checks": [
+    {
+      "name": "performance: First Section gameplay frame metrics captured",
+      "passed": true,
+      "details": "frames=300"
+    },
+    {
+      "name": "performance: Prologue baseline frame metrics captured",
+      "passed": true,
+      "details": "frames=300"
+    }
+  ],
+  "screenshots": [],
+  "scenario": {},
+  "console": {
+    "errors": [],
+    "warnings": [],
+    "pageErrors": [],
+    "failedRequests": []
+  },
+  "performance": {
+    "method": "In-page requestAnimationFrame timestamps after a 1.2 s normal sprint and 350 ms settle; draw calls/triangles sampled per frame from threeRenderer.info.render.",
+    "frames": {
+      "warmup": 120,
+      "measured": 300
+    },
+    "firstSection": {
+      "environment": {
+        "quality": "medium",
+        "canvas": {
+          "width": 1600,
+          "height": 900
+        },
+        "pixelRatio": 1,
+        "webgl": {
+          "vendor": "WebKit",
+          "renderer": "WebKit WebGL",
+          "version": "WebGL 2.0 (OpenGL ES 3.0 Chromium)",
+          "unmaskedVendor": "Google Inc. (Apple)",
+          "unmaskedRenderer": "ANGLE (Apple, ANGLE Metal Renderer: Apple M1 Pro, Unspecified Version)"
+        },
+        "flow": "gameplay",
+        "levelId": "first_section",
+        "sessionLevelId": "first_section"
+      },
+      "metrics": {
+        "frames": 300,
+        "fps": {
+          "avg": 57.15,
+          "median": 59.88,
+          "p1Low": 59.52
+        },
+        "frameTimeMs": {
+          "mean": 17.5,
+          "median": 16.7,
+          "p95": 16.7,
+          "p99": 16.8,
+          "max": 266.7
+        },
+        "drawCalls": {
+          "median": 218,
+          "mean": 218,
+          "max": 218
+        },
+        "triangles": {
+          "median": 478071,
+          "mean": 478071,
+          "max": 478071
+        }
+      },
+      "diagnostics": {
+        "consoleErrors": [],
+        "consoleWarnings": [],
+        "pageErrors": [],
+        "failedRequests": []
+      }
+    },
+    "prologue": {
+      "environment": {
+        "quality": "medium",
+        "canvas": {
+          "width": 1600,
+          "height": 900
+        },
+        "pixelRatio": 1,
+        "webgl": {
+          "vendor": "WebKit",
+          "renderer": "WebKit WebGL",
+          "version": "WebGL 2.0 (OpenGL ES 3.0 Chromium)",
+          "unmaskedVendor": "Google Inc. (Apple)",
+          "unmaskedRenderer": "ANGLE (Apple, ANGLE Metal Renderer: Apple M1 Pro, Unspecified Version)"
+        },
+        "flow": "gameplay",
+        "levelId": "prologue_test",
+        "sessionLevelId": "prologue_test"
+      },
+      "metrics": {
+        "frames": 300,
+        "fps": {
+          "avg": 44.23,
+          "median": 59.88,
+          "p1Low": 29.94
+        },
+        "frameTimeMs": {
+          "mean": 22.61,
+          "median": 16.7,
+          "p95": 33.4,
+          "p99": 33.4,
+          "max": 33.4
+        },
+        "drawCalls": {
+          "median": 261,
+          "mean": 261,
+          "max": 261
+        },
+        "triangles": {
+          "median": 4363995,
+          "mean": 4363995,
+          "max": 4363995
+        }
+      },
+      "source": "main-menu Prologue button",
+      "sessionLevelId": "prologue_test",
+      "diagnostics": {
+        "consoleErrors": [],
+        "consoleWarnings": [],
+        "pageErrors": [],
+        "failedRequests": []
+      }
+    },
+    "comparison": {
+      "fpsAvgDelta": 12.92,
+      "fpsMedianDelta": 0,
+      "frameTimeP95DeltaMs": -16.7,
+      "drawCallsMedianDelta": -43,
+      "trianglesMedianDelta": -3885924
+    },
+    "caveats": [
+      "Headless Edge frames are paced by the headless compositor; avg fps saturates near 60.",
+      "Both samples use the same viewport, DPR, quality and measurement recipe in one browser instance.",
+      "Numbers are a same-conditions regression comparison, not a capture-mode determinism claim."
+    ]
+  },
+  "passed": true,
+  "error": null
+}

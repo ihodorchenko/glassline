@@ -72,6 +72,11 @@ export interface HudState {
   readonly training: HudTrainingState | null;
   readonly speedrun: HudSpeedrunState | null;
   readonly interactionPrompt: string | null;
+  /**
+   * Contextual `E · VAULT` affordance. Already resolved against interaction and
+   * tutorial priority by the Application; the UI renders at most one line.
+   */
+  readonly vaultPrompt: string | null;
   readonly tutorialHint: { readonly title: string; readonly hint: string } | null;
   readonly speed: number;
   readonly movementState: string;
@@ -816,9 +821,11 @@ export class UIManager {
     this.hudSpeedrunPanel.classList.toggle("is-visible", showSpeedrun);
     this.hudTrainingPanel.classList.toggle("is-visible", showTraining);
     this.hudSpeed.classList.toggle("is-visible", this.showSpeed);
+    const contextualPrompt = state.interactionPrompt ?? state.vaultPrompt;
+
     this.hudInteractionPrompt.classList.toggle(
       "is-visible",
-      this.showInteractionPrompts && state.interactionPrompt !== null,
+      this.showInteractionPrompts && contextualPrompt !== null,
     );
     this.hudTutorial.classList.toggle("is-visible", state.tutorialHint !== null);
 
@@ -863,7 +870,7 @@ export class UIManager {
       )}`;
     }
 
-    this.hudInteractionPrompt.textContent = state.interactionPrompt ?? "";
+    this.hudInteractionPrompt.textContent = contextualPrompt ?? "";
     this.hudSpeed.textContent = `${this.localize("hud.speed")} ${state.speed.toFixed(1)} m/s`;
     this.hudHint.textContent = this.localize("hud.pauseHint");
   }

@@ -185,8 +185,21 @@ collision timeline for the unvaulted obstacles. Key flags: `--out-dir`, `--repor
 
 No browser download: Playwright and system Edge are expected already. The harness is
 DEV-only tooling; it does not modify the game or run in production. Findings for the
-published run are in
+Step 3.6 run are in
 [`docs/FIRST_SECTION_PLAYTEST_REPORT.md`](../../docs/FIRST_SECTION_PLAYTEST_REPORT.md).
+
+**Step 3.7 extensions.** The failure-mode session now also asserts vault collision
+stability (no launch/back-bounce/self-vault on the 0.50 m obstacle, repeated charges
+and lateral offsets), the contextual `E · VAULT` affordance (hidden far, visible in
+range, stable while blocked, hidden after a vault, one DOM node) and an ordinary jump
+next to the obstacle. The gallery lateral check uses the symmetric
+`lib/route-math.mjs` predicate (`isWithinLateralTolerance` / `maxLateralOffset`) and
+the harness records a self-check in `report.json` under
+`harnessSelfChecks.lateralTolerance`; the old one-sided `(x ?? 9) < 1.0` comparison
+accepted negative deviations and must not return. The Step 3.7 run is in
+[`docs/evidence/first-section/step-3.7/`](../../docs/evidence/first-section/step-3.7/)
+(full report:
+[`docs/FIRST_SECTION_VAULT_STABILITY_REPORT.md`](../../docs/FIRST_SECTION_VAULT_STABILITY_REPORT.md)).
 
 ## 2. Metrics
 

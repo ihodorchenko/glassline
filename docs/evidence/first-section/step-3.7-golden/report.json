@@ -1,0 +1,887 @@
+{
+  "tool": "tools/capture/dev-route.mjs",
+  "generatedAt": "2026-11-22T20:07:27.509Z",
+  "launchUrl": "http://127.0.0.1:5321/?dev=first_section",
+  "viewport": {
+    "width": 1600,
+    "height": 900,
+    "deviceScaleFactor": 1
+  },
+  "environment": "headless-edge",
+  "browser": {
+    "name": "Microsoft Edge",
+    "channel": "msedge",
+    "version": "157.0.4341.46"
+  },
+  "host": {
+    "platform": "darwin",
+    "arch": "arm64",
+    "release": "27.2.0",
+    "cpuCount": 8,
+    "loadAvg": [
+      17.96,
+      17.63,
+      17.18
+    ]
+  },
+  "checks": [
+    {
+      "name": "launch: First Section selected by the DEV entry point",
+      "passed": true,
+      "details": "levelId=first_section, loaded=first_section"
+    },
+    {
+      "name": "startup: flow is gameplay",
+      "passed": true,
+      "details": "gameplay"
+    },
+    {
+      "name": "startup: gameplay session running",
+      "passed": true,
+      "details": "running"
+    },
+    {
+      "name": "startup: first_section loaded",
+      "passed": true,
+      "details": "first_section"
+    },
+    {
+      "name": "startup: authored initial section active",
+      "passed": true,
+      "details": "sec_start"
+    },
+    {
+      "name": "startup: player at the authored spawn",
+      "passed": true,
+      "details": "{\"x\":0,\"y\":0.894704282283783,\"z\":14}"
+    },
+    {
+      "name": "startup: camera is attached to the player",
+      "passed": true,
+      "details": "{\"yaw\":0,\"pitch\":0}"
+    },
+    {
+      "name": "startup: gameplay HUD is visible",
+      "passed": true,
+      "details": "Speed 0.0 m/s"
+    },
+    {
+      "name": "startup: no menu or loading overlay",
+      "passed": true,
+      "details": "screens=0, loading=false"
+    },
+    {
+      "name": "startup: boot loader is gone",
+      "passed": true,
+      "details": "false"
+    },
+    {
+      "name": "startup: existing InputManager context is gameplay",
+      "passed": true,
+      "details": "gameplay"
+    },
+    {
+      "name": "input: pointer lock acquired on the game canvas",
+      "passed": true,
+      "details": "game-canvas"
+    },
+    {
+      "name": "input: mouse right rotates the camera right (yaw decreases)",
+      "passed": true,
+      "details": "delta=-0.396 rad"
+    },
+    {
+      "name": "input: mouse look is restored to forward",
+      "passed": true,
+      "details": "yaw=0"
+    },
+    {
+      "name": "input: mouse down pitches the camera down",
+      "passed": true,
+      "details": "delta=-0.264 rad"
+    },
+    {
+      "name": "input: pitch is restored to level",
+      "passed": true,
+      "details": "pitch=0"
+    },
+    {
+      "name": "input: W moves forward along −Z",
+      "passed": true,
+      "details": "z 14 → 11.21"
+    },
+    {
+      "name": "input: S moves backward along +Z",
+      "passed": true,
+      "details": "z 11.21 → 14.17"
+    },
+    {
+      "name": "input: D strafes right (+X)",
+      "passed": true,
+      "details": "x 0 → 2.37"
+    },
+    {
+      "name": "input: A strafes left (−X)",
+      "passed": true,
+      "details": "x 2.37 → 1.62"
+    },
+    {
+      "name": "input: Space produces a real jump",
+      "passed": true,
+      "details": "rise=1.496 m"
+    },
+    {
+      "name": "input: landing state is observed and the player is grounded",
+      "passed": true,
+      "details": "LANDING=true, grounded=true"
+    },
+    {
+      "name": "input: sprint reaches the authored sprint speed",
+      "passed": true,
+      "details": "max=8.5 m/s"
+    },
+    {
+      "name": "input: releasing W preserves momentum before friction stops the player",
+      "passed": true,
+      "details": "speed after release=6.63 m/s"
+    },
+    {
+      "name": "input: the player comes to rest when input stops",
+      "passed": true,
+      "details": "speed=0 m/s"
+    },
+    {
+      "name": "checkpoint: cp_start activated through the authored trigger",
+      "passed": true,
+      "details": "[\"cp_start\"]"
+    },
+    {
+      "name": "checkpoint: the existing checkpoint toast is shown",
+      "passed": true,
+      "details": "Checkpoint reached: Starting Roof Checkpoint"
+    },
+    {
+      "name": "respawn: the fall reached the kill volume below the start deck",
+      "passed": true,
+      "details": "z=-2.55"
+    },
+    {
+      "name": "respawn: exactly one respawn at the active checkpoint",
+      "passed": true,
+      "details": "1"
+    },
+    {
+      "name": "respawn: destination is cp_start's authored spawn",
+      "passed": true,
+      "details": "{\"x\":0,\"y\":0.93,\"z\":10}"
+    },
+    {
+      "name": "respawn: player is back at the checkpoint and grounded",
+      "passed": true,
+      "details": "{\"x\":0,\"y\":0.8949949145317078,\"z\":10}"
+    },
+    {
+      "name": "respawn: no duplicate respawn after settling",
+      "passed": true,
+      "details": "count=1, state=idle"
+    },
+    {
+      "name": "respawn: camera and pointer lock remain operational",
+      "passed": true,
+      "details": "locked=true"
+    },
+    {
+      "name": "respawn: keyboard movement works after respawn",
+      "passed": true,
+      "details": "z 10 → 7.35"
+    },
+    {
+      "name": "respawn: mouse look works after respawn",
+      "passed": true,
+      "details": "delta=-0.132 rad"
+    },
+    {
+      "name": "route: Gap A sprint jump landed on roof B",
+      "passed": true,
+      "details": "{\"z\":-8.741,\"y\":0.895,\"state\":\"LANDING\"}"
+    },
+    {
+      "name": "route: Gap B sprint jump landed on roof C",
+      "passed": true,
+      "details": "{\"z\":-24.68,\"y\":0.895,\"state\":\"RUNNING\"}"
+    },
+    {
+      "name": "route: the 0.90 m plant step was cleared with a jump",
+      "passed": true,
+      "details": "{\"z\":-25.229,\"y\":1.735,\"state\":\"LANDING\"}"
+    },
+    {
+      "name": "route: gallery traversal stayed inside the authored corridor",
+      "passed": true,
+      "details": "maxLateral=0 m"
+    },
+    {
+      "name": "route: the slide duct was crossed in slide posture",
+      "passed": true,
+      "details": "{\"min\":0.9,\"max\":0.9}"
+    },
+    {
+      "name": "route: all three vault obstacles were vaulted",
+      "passed": true,
+      "details": "[{\"passed\":true,\"retries\":0},{\"passed\":true,\"retries\":1},{\"passed\":true,\"retries\":0}]"
+    },
+    {
+      "name": "route: VAULTING state observed",
+      "passed": true,
+      "details": "true"
+    },
+    {
+      "name": "route: the stair flights were climbed to the 4.50 m podium",
+      "passed": true,
+      "details": "{\"z\":-78.626,\"y\":5.395}"
+    },
+    {
+      "name": "checkpoint: all authored route checkpoints activated",
+      "passed": true,
+      "details": "[{\"id\":\"cp_building_jump\",\"z\":-24.68},{\"id\":\"cp_slide\",\"z\":-54.539},{\"id\":\"cp_vault\",\"z\":-69.302}]"
+    },
+    {
+      "name": "completion: the authored finish trigger completed the session",
+      "passed": true,
+      "details": "{\"mode\":\"prologue\",\"levelId\":\"first_section\",\"status\":\"completed\",\"durationMs\":35912}"
+    },
+    {
+      "name": "completion: the results screen is shown",
+      "passed": true,
+      "details": "flow=results, screen=results"
+    },
+    {
+      "name": "completion: First Section did not complete the Prologue campaign",
+      "passed": true,
+      "details": "false"
+    },
+    {
+      "name": "runtime: no uncaught page errors",
+      "passed": true,
+      "details": "0 page error(s)"
+    },
+    {
+      "name": "runtime: no console errors",
+      "passed": true,
+      "details": "0 console error(s)"
+    },
+    {
+      "name": "evidence: Gap A inspection frame captured from the authored edge",
+      "passed": true,
+      "details": "z=0.02"
+    },
+    {
+      "name": "evidence: Gap A inspection jump landed on roof B",
+      "passed": true,
+      "details": "{\"z\":-7.804,\"y\":0.895}"
+    },
+    {
+      "name": "evidence: Gap B inspection frame captured from roof B",
+      "passed": true,
+      "details": "z=-10.31"
+    }
+  ],
+  "screenshots": [
+    {
+      "file": "docs/evidence/first-section/step-3.7-golden/01-spawn.png",
+      "bytes": 1226757,
+      "sha256": "a11c65b687a46738848915d1b1eef80cc545942b3b60b5ac8726f6c7998e851f"
+    },
+    {
+      "file": "docs/evidence/first-section/step-3.7-golden/02-movement.png",
+      "bytes": 1209637,
+      "sha256": "15542ba64c903d9a3f7700e002c261a2d30ce23e0ec7711610a0f92c2cdaa9c9"
+    },
+    {
+      "file": "docs/evidence/first-section/step-3.7-golden/03-gap-a.png",
+      "bytes": 1273947,
+      "sha256": "1e20b123663da615e892419f8225c7fd349244f4a9347b7028e14e2981ae033f"
+    },
+    {
+      "file": "docs/evidence/first-section/step-3.7-golden/04-gap-b.png",
+      "bytes": 1244414,
+      "sha256": "557d8778bbc8b42f4e97b13e30961ff3b3a3ceae8293ff74313dfff2e308ca5f"
+    },
+    {
+      "file": "docs/evidence/first-section/step-3.7-golden/05-checkpoint.png",
+      "bytes": 1255668,
+      "sha256": "9c7251105d0f3dcf82d385dba7eb14b363d0d4655354eb1c89841e98e5e58eeb"
+    },
+    {
+      "file": "docs/evidence/first-section/step-3.7-golden/06-respawn.png",
+      "bytes": 1272507,
+      "sha256": "faabce42a6dff9d58e1660a0dd9d6294351ba0dd9a73ddec0abfc1053ecdd596"
+    },
+    {
+      "file": "docs/evidence/first-section/step-3.7-golden/07-slide-duct.png",
+      "bytes": 1726524,
+      "sha256": "83ec28dc9abe4e940cc7c9ad7004c37ce9d06bbecb5a43caeee2fcc89a9f3aa0"
+    },
+    {
+      "file": "docs/evidence/first-section/step-3.7-golden/08-vault.png",
+      "bytes": 1185122,
+      "sha256": "846de9b7c62b8ab857e85d2023573a21e832ce148a422392360c5b64f624f5d0"
+    },
+    {
+      "file": "docs/evidence/first-section/step-3.7-golden/09-finish-approach.png",
+      "bytes": 1281032,
+      "sha256": "51c2cf564799f5c55ec06d30253c9a654488e7043b82d0e6dbc8da0e67b4c620"
+    },
+    {
+      "file": "docs/evidence/first-section/step-3.7-golden/10-results.png",
+      "bytes": 1019357,
+      "sha256": "0f7e9e79a695a5e8ddae03dc8d6d112540bf152a58d19b82935383f480fe4d40"
+    },
+    {
+      "file": "docs/evidence/first-section/step-3.7-golden/11-gap-a-inspection.png",
+      "bytes": 1280802,
+      "sha256": "714c2faafc8def13e050b6b08c72e18c1069d57c30203d84caa8ce5c2143825d"
+    },
+    {
+      "file": "docs/evidence/first-section/step-3.7-golden/12-gap-b-inspection.png",
+      "bytes": 1298745,
+      "sha256": "842ea2f518e58156c11de75b92f7035d353e73c0b9926d1eb197d339a7e94465"
+    }
+  ],
+  "scenario": {
+    "launch": {
+      "levelId": "first_section",
+      "levelDefinitionId": "first_section",
+      "mode": "prologue",
+      "phase": "ready",
+      "ready": true,
+      "error": null,
+      "flow": "gameplay",
+      "sessionId": "gameplay-session-1",
+      "sessionStatus": "running",
+      "sessionMode": "prologue",
+      "loadedLevelId": "first_section",
+      "levelSessionState": "active",
+      "activeSectionId": "sec_start",
+      "screen": null,
+      "inputContext": "gameplay",
+      "pointerLocked": false,
+      "player": {
+        "position": {
+          "x": 0,
+          "y": 0.894704282283783,
+          "z": 14
+        },
+        "speed": 0,
+        "state": "IDLE",
+        "grounded": true,
+        "stance": "standing",
+        "postureHeight": 1.75
+      },
+      "camera": {
+        "yaw": 0,
+        "pitch": 0
+      },
+      "activeCheckpointId": null,
+      "activatedCheckpointIds": [],
+      "respawnState": "idle",
+      "respawnCount": 0,
+      "respawnDestination": null,
+      "results": null,
+      "prologueCompleted": false
+    },
+    "movement": {
+      "checkpoint": {
+        "activeCheckpointId": "cp_start",
+        "activated": [
+          "cp_start"
+        ],
+        "toast": "Checkpoint reached: Starting Roof Checkpoint",
+        "toastVisible": true,
+        "playerZ": 14.343
+      },
+      "respawnCount": 1
+    },
+    "traversal": {
+      "gapA": {
+        "takeoff": {
+          "x": 0,
+          "y": 0.895,
+          "z": -1.657,
+          "speed": 8.5
+        },
+        "airborne": {
+          "z": -2.082,
+          "y": 1.278,
+          "speed": 8.5
+        },
+        "landing": {
+          "z": -8.741,
+          "y": 0.895,
+          "state": "LANDING"
+        }
+      },
+      "gapB": {
+        "takeoff": {
+          "x": 0,
+          "y": 0.895,
+          "z": -13.132,
+          "speed": 8.5
+        },
+        "airborne": {
+          "z": -14.407,
+          "y": 1.878,
+          "speed": 8.5
+        },
+        "landing": {
+          "z": -24.68,
+          "y": 0.895,
+          "state": "RUNNING"
+        }
+      },
+      "plantStep": {
+        "takeoff": {
+          "z": -24.68,
+          "y": 0.895
+        },
+        "landing": {
+          "z": -25.229,
+          "y": 1.735,
+          "state": "LANDING"
+        }
+      },
+      "gallery": {
+        "maxLateral": 0
+      },
+      "slideDuct": {
+        "entry": {
+          "z": -45.547,
+          "speed": 8.5
+        },
+        "screenshot": {
+          "z": -48.639,
+          "postureHeight": 0.9
+        },
+        "exit": {
+          "z": -54.424,
+          "speed": 3
+        },
+        "posture": {
+          "min": 0.9,
+          "max": 0.9
+        }
+      },
+      "vaults": [
+        {
+          "centerZ": -59.5,
+          "vaulting": true,
+          "passed": true
+        },
+        {
+          "centerZ": -63.5,
+          "retries": 1,
+          "vaulting": true,
+          "passed": true
+        },
+        {
+          "centerZ": -67.5,
+          "vaulting": true,
+          "passed": true
+        }
+      ],
+      "stairs": {
+        "sprintReleasedAt": -71.568,
+        "podiumReached": {
+          "z": -78.626,
+          "y": 5.395
+        }
+      },
+      "checkpoints": [
+        {
+          "id": "cp_building_jump",
+          "z": -24.68
+        },
+        {
+          "id": "cp_slide",
+          "z": -54.539
+        },
+        {
+          "id": "cp_vault",
+          "z": -69.302
+        }
+      ],
+      "finish": {
+        "flow": "results",
+        "results": {
+          "mode": "prologue",
+          "levelId": "first_section",
+          "status": "completed",
+          "durationMs": 35912
+        },
+        "screen": "results",
+        "prologueCompleted": false,
+        "sessionStatus": "completed",
+        "elapsedMs": 15095
+      }
+    }
+  },
+  "console": {
+    "consoleErrors": [],
+    "consoleWarnings": [],
+    "pageErrors": [],
+    "failedRequests": []
+  },
+  "performance": null,
+  "passed": true,
+  "error": null,
+  "startup": {
+    "status": {
+      "levelId": "first_section",
+      "levelDefinitionId": "first_section",
+      "mode": "prologue",
+      "phase": "ready",
+      "ready": true,
+      "error": null,
+      "flow": "gameplay",
+      "sessionId": "gameplay-session-1",
+      "sessionStatus": "running",
+      "sessionMode": "prologue",
+      "loadedLevelId": "first_section",
+      "levelSessionState": "active",
+      "activeSectionId": "sec_start",
+      "screen": null,
+      "inputContext": "gameplay",
+      "pointerLocked": false,
+      "player": {
+        "position": {
+          "x": 0,
+          "y": 0.894704282283783,
+          "z": 14
+        },
+        "speed": 0,
+        "state": "IDLE",
+        "grounded": true,
+        "stance": "standing",
+        "postureHeight": 1.75
+      },
+      "camera": {
+        "yaw": 0,
+        "pitch": 0
+      },
+      "activeCheckpointId": null,
+      "activatedCheckpointIds": [],
+      "respawnState": "idle",
+      "respawnCount": 0,
+      "respawnDestination": null,
+      "results": null,
+      "prologueCompleted": false
+    },
+    "dom": {
+      "hudVisible": true,
+      "hudSpeedText": "Speed 0.0 m/s",
+      "screenChildren": 0,
+      "loadingVisible": false,
+      "bootLoaderPresent": false,
+      "canvas": {
+        "width": 1600,
+        "height": 900
+      },
+      "pointerLocked": null
+    },
+    "cameraAttached": true
+  },
+  "mouseLook": {
+    "yawBefore": 0,
+    "yawAfterRight": -0.396,
+    "yawDelta": -0.396,
+    "yawRestored": 0,
+    "pitchBefore": 0,
+    "pitchAfterDown": -0.264,
+    "pitchDelta": -0.264,
+    "pitchRestored": 0,
+    "pointerLocked": "game-canvas"
+  },
+  "wasd": {
+    "spawn": {
+      "x": 0,
+      "z": 14
+    },
+    "afterW": {
+      "x": 0,
+      "z": 11.214
+    },
+    "afterS": {
+      "x": 0,
+      "z": 14.166
+    },
+    "afterD": {
+      "x": 2.367,
+      "z": 14.343
+    },
+    "afterA": {
+      "x": 1.618,
+      "z": 14.343
+    }
+  },
+  "jump": {
+    "startY": 0.895,
+    "apexY": 2.391,
+    "rise": 1.496,
+    "sawAirborne": true,
+    "sawLanding": true,
+    "groundedAfter": true,
+    "stateAfter": "LANDING"
+  },
+  "sprint": {
+    "maxSpeed": 8.5,
+    "speedAfterRelease": 6.632,
+    "stoppedSpeed": 0,
+    "stateAtSpeed": "SPRINTING"
+  },
+  "checkpoint": {
+    "activeCheckpointId": "cp_start",
+    "activated": [
+      "cp_start"
+    ],
+    "toast": "Checkpoint reached: Starting Roof Checkpoint",
+    "toastVisible": true,
+    "playerZ": 14.343
+  },
+  "respawn": {
+    "zBeforeFall": -2.555,
+    "respawnCount": 1,
+    "respawnCountAfterSettling": 1,
+    "respawnState": "idle",
+    "destination": {
+      "x": 0,
+      "y": 0.93,
+      "z": 10
+    },
+    "positionAfter": {
+      "x": 0,
+      "y": 0.895,
+      "z": 10
+    },
+    "activeCheckpointId": "cp_start",
+    "grounded": true,
+    "pointerLocked": true
+  },
+  "postRespawnInput": {
+    "zBefore": 10,
+    "zAfter": 7.349,
+    "yawChange": -0.132
+  },
+  "traversal": {
+    "start": {
+      "levelId": "first_section",
+      "levelDefinitionId": "first_section",
+      "mode": "prologue",
+      "phase": "ready",
+      "ready": true,
+      "error": null,
+      "flow": "gameplay",
+      "sessionId": "gameplay-session-1",
+      "sessionStatus": "running",
+      "sessionMode": "prologue",
+      "loadedLevelId": "first_section",
+      "levelSessionState": "active",
+      "activeSectionId": "sec_building_jump",
+      "screen": null,
+      "inputContext": "gameplay",
+      "pointerLocked": true,
+      "player": {
+        "position": {
+          "x": 0.000058678204368334264,
+          "y": 0.8940415978431702,
+          "z": 7.314148902893066
+        },
+        "speed": 0,
+        "state": "IDLE",
+        "grounded": true,
+        "stance": "standing",
+        "postureHeight": 1.75
+      },
+      "camera": {
+        "yaw": 0,
+        "pitch": 0
+      },
+      "activeCheckpointId": "cp_start",
+      "activatedCheckpointIds": [
+        "cp_start"
+      ],
+      "respawnState": "idle",
+      "respawnCount": 1,
+      "respawnDestination": {
+        "x": 0,
+        "y": 0.93,
+        "z": 10
+      },
+      "results": null,
+      "prologueCompleted": false
+    },
+    "gapA": {
+      "takeoff": {
+        "x": 0,
+        "y": 0.895,
+        "z": -1.657,
+        "speed": 8.5
+      },
+      "airborne": {
+        "z": -2.082,
+        "y": 1.278,
+        "speed": 8.5
+      },
+      "landing": {
+        "z": -8.741,
+        "y": 0.895,
+        "state": "LANDING"
+      }
+    },
+    "gapB": {
+      "takeoff": {
+        "x": 0,
+        "y": 0.895,
+        "z": -13.132,
+        "speed": 8.5
+      },
+      "airborne": {
+        "z": -14.407,
+        "y": 1.878,
+        "speed": 8.5
+      },
+      "landing": {
+        "z": -24.68,
+        "y": 0.895,
+        "state": "RUNNING"
+      }
+    },
+    "plantStep": {
+      "takeoff": {
+        "z": -24.68,
+        "y": 0.895
+      },
+      "landing": {
+        "z": -25.229,
+        "y": 1.735,
+        "state": "LANDING"
+      }
+    },
+    "gallery": {
+      "maxLateral": 0
+    },
+    "slideDuct": {
+      "entry": {
+        "z": -45.547,
+        "speed": 8.5
+      },
+      "screenshot": {
+        "z": -48.639,
+        "postureHeight": 0.9
+      },
+      "exit": {
+        "z": -54.424,
+        "speed": 3
+      },
+      "posture": {
+        "min": 0.9,
+        "max": 0.9
+      }
+    },
+    "vaults": [
+      {
+        "centerZ": -59.5,
+        "vaulting": true,
+        "passed": true
+      },
+      {
+        "centerZ": -63.5,
+        "retries": 1,
+        "vaulting": true,
+        "passed": true
+      },
+      {
+        "centerZ": -67.5,
+        "vaulting": true,
+        "passed": true
+      }
+    ],
+    "stairs": {
+      "sprintReleasedAt": -71.568,
+      "podiumReached": {
+        "z": -78.626,
+        "y": 5.395
+      }
+    },
+    "checkpoints": [
+      {
+        "id": "cp_building_jump",
+        "z": -24.68
+      },
+      {
+        "id": "cp_slide",
+        "z": -54.539
+      },
+      {
+        "id": "cp_vault",
+        "z": -69.302
+      }
+    ],
+    "finish": {
+      "flow": "results",
+      "results": {
+        "mode": "prologue",
+        "levelId": "first_section",
+        "status": "completed",
+        "durationMs": 35912
+      },
+      "screen": "results",
+      "prologueCompleted": false,
+      "sessionStatus": "completed",
+      "elapsedMs": 15095
+    },
+    "screenshots": [
+      "/Users/igorhodorchenko/Project/glassline/docs/evidence/first-section/step-3.7-golden/03-gap-a.png",
+      "/Users/igorhodorchenko/Project/glassline/docs/evidence/first-section/step-3.7-golden/04-gap-b.png",
+      "/Users/igorhodorchenko/Project/glassline/docs/evidence/first-section/step-3.7-golden/07-slide-duct.png",
+      "/Users/igorhodorchenko/Project/glassline/docs/evidence/first-section/step-3.7-golden/08-vault.png",
+      "/Users/igorhodorchenko/Project/glassline/docs/evidence/first-section/step-3.7-golden/09-finish-approach.png",
+      "/Users/igorhodorchenko/Project/glassline/docs/evidence/first-section/step-3.7-golden/10-results.png"
+    ]
+  },
+  "completion": {
+    "flow": "results",
+    "screen": "results",
+    "results": {
+      "mode": "prologue",
+      "levelId": "first_section",
+      "status": "completed",
+      "durationMs": 35912
+    },
+    "sessionStatus": "completed",
+    "prologueCompleted": false
+  },
+  "gapInspection": {
+    "gapA": {
+      "z": 0.015,
+      "pitch": -0.449
+    },
+    "gapB": {
+      "z": -10.313,
+      "pitch": -0.299
+    },
+    "takeoff": {
+      "z": -1.57,
+      "speed": 8.5
+    },
+    "landed": {
+      "z": -7.804,
+      "y": 0.895
+    },
+    "diagnostics": {
+      "consoleErrors": [],
+      "consoleWarnings": [],
+      "pageErrors": [],
+      "failedRequests": []
+    }
+  }
+}

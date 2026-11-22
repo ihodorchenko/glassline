@@ -399,7 +399,16 @@ export class MovementModel {
 
     this.velocity.x = actualMovement.x / deltaSeconds;
     this.velocity.z = actualMovement.z / deltaSeconds;
-    this.velocity.y = groundedAfter ? 0 : actualMovement.y / deltaSeconds;
+    // An upward displacement the model did not request (its vertical intent was
+    // zero or downward) is a support/collision correction from the character
+    // controller, never ballistic motion. Converting it to `y / dt` turns a
+    // one-frame step-up or contact correction into a large launch velocity
+    // (observed 0.09 m -> 5.2 m/s at the 0.50 m vault obstacle). Keep only
+    // commanded upward motion (jumps, wall jumps, rising vault arcs).
+    const unrequestedUpwardCorrection = verticalBefore <= 0 && actualMovement.y > 0;
+
+    this.velocity.y =
+      groundedAfter || unrequestedUpwardCorrection ? 0 : actualMovement.y / deltaSeconds;
 
     // Airborne status must be judged against the state at the START of this
     // step: `step()` may already have flipped `grounded` from the environment

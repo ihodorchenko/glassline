@@ -610,6 +610,64 @@ decision.
 
 ---
 
+## 0.2.7. Step 3.7 — Vault collision stability and traversal discoverability (2026-11-22)
+
+Branch `feat/first-section-vault-stability` (created from `main` @
+`0ba0f0eea4bbea01642df586cbd225008dad3f6f`; no merge performed). Scope: resolve the
+two confirmed First Section findings from Step 3.6 (F-01 collision launch on the
+0.50 m vault obstacle; F-04 missing `E · VAULT` discoverability) and fix the Step 3.6
+gallery lateral assertion (Scope C). Full report:
+[`FIRST_SECTION_VAULT_STABILITY_REPORT.md`](FIRST_SECTION_VAULT_STABILITY_REPORT.md).
+No authored geometry, obstacle height, movement tuning or global physics constant was
+changed.
+
+| Status | Result |
+|---|---|
+| **Implementation** | Complete — F-01 collision-response fix in `PlayerSystem`/`MovementModel`; F-04 contextual HUD affordance with level opt-in and EN/RU localization; Scope C symmetric gallery predicate |
+| **Integration** | Verified — real `?dev=first_section` → Application → HUD/localization; trusted browser keyboard/mouse only; PROLOGUE menu launch and Training policy paths covered |
+| **Verification** | `npm run validate` green; **650/650** tests in 65 files; golden path **52/52**; exploratory browser **53/53**; `git diff --check` clean |
+
+**F-01 root cause.** Rapier autostep returned a *partial* climb for the 0.50 m
+obstacle even though `maxStepHeight` is 0.40 m (up to ~0.23 m lift and a backward
+shove, with `computedGrounded() === false`), and `MovementModel.applyCollisionResult`
+converted that one-frame support correction into `y / dt` vertical velocity
+(0.086 m → +5.16 m/s). The 0.70 m obstacle never triggered the partial step, which is
+why only the 0.50 m obstacle bounced.
+
+**F-01 fix.** `PlayerSystem.resolveControllerMovement()` re-resolves the same command
+with autostep disabled when the controller returns an unrequested upward correction
+that cannot land or is paired with backward motion; genuine steps stay on the
+deterministic `computeStepGlide()` path. `applyCollisionResult()` no longer treats an
+unrequested upward displacement as ballistic velocity. After the fix the sprint charge
+stops at z −58.83 with 0.01 m maximum support lift, zero vertical speed, no penetration
+and no `JUMPING`/`VAULTING` state; three repeats and four lateral offsets are
+identical. Vault with `E`, ordinary jumps, stairs, ramps, slides and air control remain
+green.
+
+**F-04 implementation.** Reused the existing single bottom-centre HUD prompt line.
+`PlayerSystem.isVaultAvailable()` exposes the same detection the vault action uses;
+`LevelMetadata.vaultAffordance` is an explicit opt-in set only by First Section;
+`src/ui/ContextualPrompt.ts` enforces interaction → Training hint → vault priority;
+`hud.vaultPrompt` is localized (`E · VAULT` / `E · ОПОРНЫЙ ПРЫЖОК`). The affordance is
+hidden outside the range, while airborne/during a vault and after clearing it; it
+never publishes a movement event, so it cannot advance tutorial milestones, and it is
+not shown in the Prologue or Training (no opt-in).
+
+**Scope C.** The Step 3.6 `(x ?? 9) < 1.0` gallery check accepted negative deviations.
+Replaced with `isWithinLateralTolerance` / `maxLateralOffset` in
+`tools/capture/lib/route-math.mjs`; the harness runs a self-check (including x = −1.4)
+and the predicate is unit-tested. The Step 3.6 report/evidence were not modified.
+
+**Evidence.** [`docs/evidence/first-section/step-3.7/`](evidence/first-section/step-3.7/)
+(53 checks, 51 frames) and
+[`docs/evidence/first-section/step-3.7-golden/`](evidence/first-section/step-3.7-golden/)
+(52 checks) and
+[`docs/evidence/first-section/step-3.7-prologue/`](evidence/first-section/step-3.7-prologue/)
+(Prologue menu/gameplay smoke, 2/2). No human hands-on pass was performed; the Step 3.6 human checklist still
+applies, extended with the vault-affordance checks in the Step 3.7 report §12.
+
+---
+
 ## 1. Purpose
 
 This document is the central implementation tracking reference for Glassline.

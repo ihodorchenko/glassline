@@ -14,6 +14,7 @@ import {
   type MovementModelSnapshot,
   type MovementState,
   type PlayerStance,
+  type VaultCandidate,
 } from "./MovementModel";
 import { DEFAULT_MOVEMENT_TUNING, type MovementTuning } from "./MovementTuning";
 
@@ -45,6 +46,11 @@ export interface PlayerSystemOptions {
 const DOWN_RAY = { x: 0, y: -1, z: 0 };
 /** Skin used by the kinematic character controller; also the physical foot offset. */
 const CHARACTER_CONTROLLER_OFFSET = 0.02;
+/**
+ * Smallest upward controller correction treated as a step-up candidate. Values
+ * below this are float noise from the controller's contact resolution.
+ */
+const PARTIAL_STEP_EPSILON = 1e-4;
 
 function toWorldDirection(move: Vector2Like, viewYaw: number): Vector3Like {
   const forwardX = -Math.sin(viewYaw);
@@ -105,6 +111,11 @@ export class PlayerSystem implements Disposable {
   private lastSlopeNormal: Vector3Like | null = null;
 
   private vaultSnapSuspended = false;
+  /**
+   * Vaultable obstacle detected ahead in the latest fixed step. Drives the
+   * contextual `E · VAULT` HUD affordance only; it never starts an action.
+   */
+  private detectedVault: VaultCandidate | null = null;
 
   constructor(physics: PhysicsWorld, options: PlayerSystemOptions) {
     this.physics = physics;
@@ -129,8 +140,10 @@ export class PlayerSystem implements Disposable {
 
     this.controller = world.createCharacterController(CHARACTER_CONTROLLER_OFFSET);
     this.controller.setUp({ x: 0, y: 1, z: 0 });
-    // includeDowncast lets autostep ride *down* over ledges and steps as well,
-    // which removes the "fall off every stair" jolt on descents.
+    // Autostep remains enabled for small ledges, but the deterministic
+    // `computeStepGlide()` below is the authoritative step mechanism. The
+    // third argument is Rapier's `includeDynamicBodies`, not a downcast flag:
+    // this player is kinematic and the levels contain no dynamic bodies.
     this.controller.enableAutostep(this.tuning.maxStepHeight, this.tuning.stepMinWidth, true);
     this.controller.enableSnapToGround(this.tuning.snapToGroundDistance);
     this.controller.setMaxSlopeClimbAngle((50 * Math.PI) / 180);
@@ -168,6 +181,24 @@ export class PlayerSystem implements Disposable {
 
   deactivate(): void {
     this.active = false;
+    this.detectedVault = null;
+  }
+
+  /**
+   * Whether a vaultable obstacle is currently detected in front of the player.
+   *
+   * This is a read-only presentation signal for the contextual `E · VAULT`
+   * affordance. It mirrors the exact detection the vault action uses, but
+   * availability alone never starts a vault and never publishes a movement
+   * event, so it cannot advance tutorial progression.
+   */
+  isVaultAvailable(): boolean {
+    return (
+      this.isActive &&
+      this.detectedVault !== null &&
+      this.model.getGrounded() &&
+      this.model.getState() !== "VAULTING"
+    );
   }
 
   onMovementEvent<K extends keyof MovementEventMap>(
@@ -185,6 +216,11 @@ export class PlayerSystem implements Disposable {
 
     const worldDirection = toWorldDirection(input.move, viewYaw);
     const activeVault = this.model.getActiveVault();
+
+    if (activeVault) {
+      // The body is inside the scripted traversal: there is nothing to vault.
+      this.detectedVault = null;
+    }
 
     this.lastFilterDeltaSeconds = deltaSeconds;
 
@@ -235,16 +271,19 @@ export class PlayerSystem implements Disposable {
       }
     }
 
+    const vaultCandidate = grounded
+      ? this.vaultDetector.detect(
+          translation,
+          this.resolveForward(input, worldDirection, viewYaw),
+          this.getFeetPosition().y,
+        )
+      : null;
+    this.detectedVault = vaultCandidate;
+
     const environment: MovementEnvironment = {
       grounded,
       wallRun: grounded ? null : this.wallRunDetector.detect(translation, this.model.getVelocity()),
-      vault: grounded
-        ? this.vaultDetector.detect(
-            translation,
-            this.resolveForward(input, worldDirection, viewYaw),
-            this.getFeetPosition().y,
-          )
-        : null,
+      vault: vaultCandidate,
     };
 
     this.model.step(input, worldDirection, environment, deltaSeconds);
@@ -286,10 +325,8 @@ export class PlayerSystem implements Disposable {
     // at any speed, no one-frame hop, no walking stall at low risers.
     const glideTarget = this.computeStepGlide(translationBefore, deltaSeconds);
 
-    this.controller.computeColliderMovement(this.collider, this.desiredTranslation);
-
-    const computed = this.controller.computedMovement(this.actualMovement);
-    const movement = { x: computed.x, y: computed.y, z: computed.z };
+    const resolved = this.resolveControllerMovement(glideTarget !== null);
+    const movement = resolved.movement;
     let glideActive = false;
 
     if (glideTarget) {
@@ -377,15 +414,18 @@ export class PlayerSystem implements Disposable {
       ? { x: this.desiredTranslation.x, y: movement.y, z: this.desiredTranslation.z }
       : { x: movement.x, y: movement.y, z: movement.z };
 
-    this.model.applyCollisionResult(
-      resultMovement,
-      deltaSeconds,
-      this.controller.computedGrounded(),
-    );
+    this.model.applyCollisionResult(resultMovement, deltaSeconds, resolved.grounded);
+
+    // Presentation consistency: never advertise a vault while the body is
+    // airborne or committed to a jump/vault, even though detection ran at the
+    // start of this fixed step.
+    if (!this.model.getGrounded() || this.model.getState() === "VAULTING") {
+      this.detectedVault = null;
+    }
 
     // Feed slope handling with the surface under the *final* pose of this step
     // (post glide/collision), so incline easing matches where we actually are.
-    const groundedNow = this.controller.computedGrounded();
+    const groundedNow = resolved.grounded;
 
     this.lastSlopeNormal = groundedNow ? this.probeSupportNormal(this.currentPosition) : null;
     this.model.setSlopeNormal(this.lastSlopeNormal);
@@ -472,6 +512,7 @@ export class PlayerSystem implements Disposable {
     this.model = new MovementModel(this.tuning);
     this.effectiveStance = "standing";
     this.postureHeight = this.tuning.capsuleHeight;
+    this.detectedVault = null;
 
     if (this.vaultSnapSuspended) {
       this.controller.enableSnapToGround(this.tuning.snapToGroundDistance);
@@ -562,6 +603,65 @@ export class PlayerSystem implements Disposable {
     }
 
     this.emitMovementEvents();
+  }
+
+  /**
+   * Resolves the character-controller movement for this step.
+   *
+   * Rapier's autostep can return a *partial* climb for an obstacle taller than
+   * `maxStepHeight`: the authored 0.50 m vault obstacle against the 0.40 m
+   * limit produced up to ~0.23 m of lift plus a backward shove in one frame,
+   * with `computedGrounded() === false`. That is an unresolved correction, not
+   * a step landing. Applying it both moves the body towards the obstacle top
+   * and lets the collision response read the lift as ballistic velocity.
+   *
+   * Genuine step-ups are owned by `computeStepGlide()`. When the controller
+   * returns an upward correction the movement model did not ask for and could
+   * not land, the exact same command is re-resolved with autostep disabled for
+   * this step, so a too-high obstacle blocks like a wall instead of launching
+   * or self-vaulting the player.
+   */
+  private resolveControllerMovement(skipAutostepGuard: boolean): {
+    readonly movement: { x: number; y: number; z: number };
+    readonly grounded: boolean;
+  } {
+    this.controller.computeColliderMovement(this.collider, this.desiredTranslation);
+    let computed = this.controller.computedMovement(this.actualMovement);
+    let grounded = this.controller.computedGrounded();
+
+    // A failed autostep shows up as an unrequested upward correction that
+    // either never lands (grounded false) or is paired with horizontal motion
+    // *against* the commanded direction (the controller backs the capsule off
+    // the obstacle after the climb attempt). Both are rejected; a real step-up
+    // lands grounded and keeps moving along the command.
+    const commandedHorizontal = Math.hypot(this.desiredTranslation.x, this.desiredTranslation.z);
+    const horizontalAlongCommand =
+      commandedHorizontal > 1e-6
+        ? (computed.x * this.desiredTranslation.x + computed.z * this.desiredTranslation.z) /
+          commandedHorizontal
+        : 0;
+    const unresolvedStepUp =
+      !skipAutostepGuard &&
+      this.desiredTranslation.y <= 0 &&
+      computed.y > PARTIAL_STEP_EPSILON &&
+      (!grounded || horizontalAlongCommand < -PARTIAL_STEP_EPSILON);
+
+    if (unresolvedStepUp) {
+      this.controller.disableAutostep();
+
+      try {
+        this.controller.computeColliderMovement(this.collider, this.desiredTranslation);
+        computed = this.controller.computedMovement(this.actualMovement);
+        grounded = this.controller.computedGrounded();
+      } finally {
+        this.controller.enableAutostep(this.tuning.maxStepHeight, this.tuning.stepMinWidth, true);
+      }
+    }
+
+    return {
+      movement: { x: computed.x, y: computed.y, z: computed.z },
+      grounded,
+    };
   }
 
   /** Unit normal of the surface directly under the feet, or null. */

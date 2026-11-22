@@ -95,6 +95,7 @@ import { TRAINING_EXERCISES } from "../training/TrainingExercises";
 import { TrainingSystem } from "../training/TrainingSystem";
 import { INITIAL_TUTORIAL_STEPS } from "../tutorial/InitialTutorial";
 import { TutorialSystem } from "../tutorial/TutorialSystem";
+import { shouldShowVaultPrompt } from "../ui/ContextualPrompt";
 import { type HudState, type UIActions, type UILongTermData, UIManager } from "../ui/UIManager";
 import { type ApplicationConfig, DEFAULT_APPLICATION_CONFIG } from "./ApplicationConfig";
 
@@ -1293,18 +1294,29 @@ export class Application implements Disposable {
           medal: speedrunSnapshot.result?.medal ?? null,
         }
       : null;
+    const interactionPrompt = this.localizeInteractionPrompt(level);
+    const tutorialHint = nextTutorialStep
+      ? {
+          title: this.localize(nextTutorialStep.titleKey),
+          hint: this.localize(nextTutorialStep.hintKey),
+        }
+      : null;
+    const vaultPrompt = shouldShowVaultPrompt({
+      levelSupportsVaultAffordance: level?.metadata.vaultAffordance === true,
+      vaultAvailable: this.player?.isVaultAvailable() ?? false,
+      interactionPrompt,
+      tutorialHintVisible: tutorialHint !== null,
+    })
+      ? this.localize("hud.vaultPrompt")
+      : null;
 
     return {
       mode: this.currentMode,
       training,
       speedrun,
-      interactionPrompt: this.localizeInteractionPrompt(level),
-      tutorialHint: nextTutorialStep
-        ? {
-            title: this.localize(nextTutorialStep.titleKey),
-            hint: this.localize(nextTutorialStep.hintKey),
-          }
-        : null,
+      interactionPrompt,
+      vaultPrompt,
+      tutorialHint,
       speed: movement?.speed ?? 0,
       movementState: movement?.state ?? "IDLE",
       paused: this.flowManager?.getState() === "paused",

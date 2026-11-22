@@ -999,6 +999,9 @@ export const FIRST_SECTION_LAYOUT: LevelDefinition = {
       "First standalone gameplay section: roof start, two roof gaps, technical gallery, slide duct, vault channel, and finish podium.",
     supportsSpeedrun: false,
     supportsRespawn: true,
+    // Step 3.7 F-04: First Section owns the contextual `E · VAULT` affordance
+    // for its authored vault channel.
+    vaultAffordance: true,
   },
   sections: SECTIONS,
   spawnPoints: SPAWN_POINTS,

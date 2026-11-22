@@ -35,6 +35,13 @@ export interface LevelMetadata {
   readonly estimatedDurationSeconds?: number;
   readonly supportsSpeedrun: boolean;
   readonly supportsRespawn: boolean;
+  /**
+   * Opt-in for the contextual `E · VAULT` HUD affordance
+   * (`docs/23_HUD_SYSTEM_SPEC.md`, Step 3.7 F-04). Levels that do not declare
+   * it keep their existing HUD behaviour even if their collision geometry
+   * happens to look vaultable to the detector.
+   */
+  readonly vaultAffordance?: boolean;
 }
 
 /** Semantic surface metadata for traversal (see `docs/02` §9.6 and `docs/06` §3.4). */
