@@ -15,23 +15,27 @@ import { FIRST_SECTION_SECTION_IDS, type FirstSectionSectionId } from "./FirstSe
  * stays entirely owned by `FirstSectionLayout.ts`; no placement here writes
  * to, replaces, or re-registers collision geometry.
  *
- * Totals per §6: 11 module kinds, 13 unique variants, 48 placements, and
- * 55 instanced material batches (the sum of the 13 variants' parts).
+ * Totals: 11 module kinds, 13 unique variants, 52 placements, and 55 instanced
+ * material batches (the sum of the 13 variants' parts). §6 and §12 now state
+ * the same 52 placements.
  *
- * Two specification inconsistencies are handled explicitly:
+ * Placement corrections against earlier spec text:
  *
- * 1. §6's 48-placement total excludes four entries that appear in the segment
- *    tables: two `joint` (h 2.0) placements on S0 at (0, 0, 2.0) and
- *    (0, 0, 10.0), and two `facade-bay` placements on S4 at
- *    (-2.65, 0.90, -61.0) and (-2.65, 0.90, -67.0). Including them would make
- *    52 placements, contradicting the mandated 48. They are intentionally not
- *    part of this array; see the Step 3.2B.2 report. The Summary table §6 is
- *    treated as authoritative for counts.
- * 2. §5.3 places the S2 north parapet copings at z = -27.225, but the physical
- *    north parapets were moved to z = -27.575 in Step 3.2B.1 so they sit on
- *    the deck. A coping at the old coordinate would float off the collision
- *    parapet, so the copings follow the corrected collision position
- *    (z = -27.575). Everything else on those variants is unchanged.
+ * 1. The four entries that the old §6 total of 48 omitted are included: two
+ *    `joint` (h 2.0) placements on S0 at (0, 0, 2.0) and (0, 0, 10.0), and two
+ *    `facade-bay` placements on S4 at (-2.65, 0.90, -61.0) and
+ *    (-2.65, 0.90, -67.0).
+ * 2. The S2 north parapet copings use z = -27.575, following the physical
+ *    parapets corrected in Step 3.2B.1. The old z = -27.225 would leave both
+ *    copings completely outside the collision parapet.
+ * 3. The S5 side parapet copings use x = ±4.80, centered on the collision
+ *    parapets (x = ±4.80, depth 0.35). The old x = ±4.62 shifted the 0.46 m
+ *    coping inward so most of its upstand was unsupported over the deck.
+ * 4. The S5 east corner uses rotationY = -π/2. The Kit `corner` is handed:
+ *    local wings run -X/-Z and the facades face +X/+Z. With the west corner at
+ *    yaw 0, the mirrored east corner requires -π/2; at yaw 0 its wing runs
+ *    inward (x 2.8…7.075) and intersects the curtain-wall zone. The two yaw
+ *    values in the spec are now 0 and -π/2.
  */
 
 /**
@@ -222,6 +226,22 @@ export const FIRST_SECTION_ARCHITECTURE: readonly LevelArchitecturePlacement[] =
     0,
     3.6,
     12,
+  ),
+  place(
+    "arch_start_joint_1",
+    FIRST_SECTION_SECTION_IDS.start,
+    FIRST_SECTION_ARCHITECTURE_VARIANTS.jointTwoMeters,
+    0,
+    0,
+    2,
+  ),
+  place(
+    "arch_start_joint_2",
+    FIRST_SECTION_SECTION_IDS.start,
+    FIRST_SECTION_ARCHITECTURE_VARIANTS.jointTwoMeters,
+    0,
+    0,
+    10,
   ),
 
   /* S1 — Building Jump: penthouse glass, canyon facades, copings, joints. */
@@ -425,7 +445,25 @@ export const FIRST_SECTION_ARCHITECTURE: readonly LevelArchitecturePlacement[] =
     -47,
   ),
 
-  /* S4 — Vault Section: expressed joints on the obstacle faces. */
+  /* S4 — Vault Section: west facade bays and expressed obstacle joints. */
+  place(
+    "arch_vault_facade_bay_1",
+    FIRST_SECTION_SECTION_IDS.vault,
+    FIRST_SECTION_ARCHITECTURE_VARIANTS.facadeBay,
+    -2.65,
+    0.9,
+    -61,
+    -HALF_PI,
+  ),
+  place(
+    "arch_vault_facade_bay_2",
+    FIRST_SECTION_SECTION_IDS.vault,
+    FIRST_SECTION_ARCHITECTURE_VARIANTS.facadeBay,
+    -2.65,
+    0.9,
+    -67,
+    -HALF_PI,
+  ),
   place(
     "arch_vault_joint_1",
     FIRST_SECTION_SECTION_IDS.vault,
@@ -499,6 +537,7 @@ export const FIRST_SECTION_ARCHITECTURE: readonly LevelArchitecturePlacement[] =
     7,
     4.5,
     -87.5,
+    -HALF_PI,
   ),
   place(
     "arch_finish_column_west",
@@ -528,7 +567,7 @@ export const FIRST_SECTION_ARCHITECTURE: readonly LevelArchitecturePlacement[] =
     "arch_finish_parapet_west",
     FIRST_SECTION_SECTION_IDS.finish,
     FIRST_SECTION_ARCHITECTURE_VARIANTS.parapetSixMeters,
-    -4.62,
+    -4.8,
     5.55,
     -83,
     HALF_PI,
@@ -537,7 +576,7 @@ export const FIRST_SECTION_ARCHITECTURE: readonly LevelArchitecturePlacement[] =
     "arch_finish_parapet_east",
     FIRST_SECTION_SECTION_IDS.finish,
     FIRST_SECTION_ARCHITECTURE_VARIANTS.parapetSixMeters,
-    4.62,
+    4.8,
     5.55,
     -83,
     HALF_PI,
