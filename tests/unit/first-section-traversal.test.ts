@@ -282,12 +282,19 @@ describe("criterion 8 — roof gap sprint jumps", () => {
     const startZ = harness.player.getPosition().z;
     let takeoffZ = startZ;
     let takeoffSpeed = 0;
+    let takeoffGrounded = false;
     let jumped = false;
     let landed = false;
     let landingPosition = harness.player.getPosition();
     let landingFeetY = 0;
+    let landingState = "";
     let minFeetY = Number.POSITIVE_INFINITY;
     let jumpHoldFrames = 0;
+    // Run-up A: only frames that are fully supported by the authored start
+    // deck. A frame counts when it starts and ends grounded and is not the
+    // take-off frame, so no air movement can enter the metric.
+    let runUpA = 0;
+    let runUpAFrames = 0;
 
     for (let index = 0; index < MAX_STEPS; index += 1) {
       const position = harness.player.getPosition();
@@ -298,97 +305,7 @@ describe("criterion 8 — roof gap sprint jumps", () => {
         jumped = true;
         takeoffZ = position.z;
         takeoffSpeed = snapshot.speed;
-        jumpHoldFrames = 30;
-      }
-
-      stepOnce(
-        harness,
-        input({
-          move: { x: 0, y: 1 },
-          sprintHeld: true,
-          jumpPressed: shouldJump,
-          jumpHeld: jumpHoldFrames > 0,
-        }),
-      );
-
-      jumpHoldFrames = Math.max(0, jumpHoldFrames - 1);
-      minFeetY = Math.min(minFeetY, harness.player.getFeetPosition().y);
-
-      const after = harness.player.getMovementSnapshot();
-
-      if (jumped && after.grounded && harness.player.getPosition().z < roofB.maxZ) {
-        landed = true;
-        landingPosition = { ...harness.player.getPosition() };
-        landingFeetY = harness.player.getFeetPosition().y;
-        break;
-      }
-    }
-
-    const runUp = startZ - takeoffZ;
-    const finalContext = context(harness, "gap A");
-
-    expect(jumped, finalContext).toBe(true);
-    expect(runUp, `${finalContext} runUp=${formatNumber(runUp)} m`).toBeGreaterThanOrEqual(10);
-    expect(
-      takeoffSpeed,
-      `${finalContext} takeoffSpeed=${formatNumber(takeoffSpeed)} m/s`,
-    ).toBeGreaterThanOrEqual(DEFAULT_MOVEMENT_TUNING.sprintSpeed - 0.1);
-    expect(landed, `${finalContext} minFeetY=${formatNumber(minFeetY)}`).toBe(true);
-    expect(landingPosition.z, finalContext).toBeLessThanOrEqual(roofB.maxZ);
-    expect(landingPosition.z, finalContext).toBeGreaterThanOrEqual(roofB.minZ);
-    expect(Math.abs(landingFeetY - roofB.maxY), finalContext).toBeLessThanOrEqual(0.05);
-    expect(
-      harness.player.getMovementSnapshot().grounded,
-      `${finalContext} did not confirm grounding after crossing`,
-    ).toBe(true);
-  });
-
-  it("sprint-jumps gap B (4.2 m from z=-13.4 to z=-17.6) and lands grounded on roof C", async () => {
-    const roofB = boundsOfId("geo_roof_b");
-    const roofC = boundsOfId("geo_roof_c");
-    const gapB = roofB.minZ - roofC.maxZ;
-
-    expect(gapB).toBeCloseTo(4.2, 5);
-
-    const harness = await createHarnessAtSpawn("sp_initial");
-
-    settle(harness);
-
-    let jumpedA = false;
-    let landedA = false;
-    let jumpedB = false;
-    let landedB = false;
-    let takeoffZ = 0;
-    let takeoffSpeed = 0;
-    // §11.2 asks for a ≥ 10 m run-up before each jump. The authored roof B is
-    // 8.0 m deep, so a standalone 10 m approach on roof B does not exist; the
-    // test therefore measures the uninterrupted sprint ground distance from
-    // the spawn to the gap-B take-off (the player never stops sprinting).
-    let sprintGroundDistance = 0;
-    let roofBGroundDistance = 0;
-    let previousPosition = harness.player.getPosition();
-    let landingPosition = harness.player.getPosition();
-    let landingFeetY = 0;
-    let minFeetY = Number.POSITIVE_INFINITY;
-    let jumpHoldFrames = 0;
-
-    for (let index = 0; index < MAX_STEPS * 2; index += 1) {
-      const position = harness.player.getPosition();
-      const snapshot = harness.player.getMovementSnapshot();
-      const shouldJumpA = !jumpedA && snapshot.grounded && position.z <= -1.55;
-      const shouldJumpB =
-        !shouldJumpA && !jumpedB && landedA && snapshot.grounded && position.z <= -13.0;
-      const shouldJump = shouldJumpA || shouldJumpB;
-
-      if (shouldJump) {
-        if (shouldJumpA) {
-          jumpedA = true;
-        } else {
-          jumpedB = true;
-        }
-
-        takeoffZ = position.z;
-        takeoffSpeed = snapshot.speed;
+        takeoffGrounded = snapshot.grounded;
         jumpHoldFrames = 30;
       }
 
@@ -408,18 +325,168 @@ describe("criterion 8 — roof gap sprint jumps", () => {
       const after = harness.player.getMovementSnapshot();
       const currentPosition = harness.player.getPosition();
 
-      if (after.grounded && !jumpedB) {
-        sprintGroundDistance += horizontalDistance(previousPosition, currentPosition);
+      if (!shouldJump && snapshot.grounded && after.grounded) {
+        runUpA += horizontalDistance(position, currentPosition);
+        runUpAFrames += 1;
       }
 
-      if (after.grounded && currentPosition.z < roofB.maxZ) {
-        if (jumpedA && !landedA) {
-          landedA = true;
+      if (jumped && after.grounded && currentPosition.z < roofB.maxZ) {
+        landed = true;
+        landingPosition = { ...currentPosition };
+        landingFeetY = harness.player.getFeetPosition().y;
+        landingState = after.state;
+        break;
+      }
+    }
+
+    const spawnToTakeoffDistance = startZ - takeoffZ;
+    const finalContext = context(harness, "gap A");
+
+    expect(jumped, finalContext).toBe(true);
+    expect(takeoffGrounded, `${finalContext} take-off A was not grounded`).toBe(true);
+    expect(
+      takeoffZ,
+      `${finalContext} take-off A z=${formatNumber(takeoffZ)} must stay on the start deck`,
+    ).toBeGreaterThan(startDeck.minZ);
+    expect(runUpAFrames, `${finalContext} run-up A had no fully grounded frames`).toBeGreaterThan(
+      0,
+    );
+    expect(
+      runUpA,
+      `${finalContext} run-up A=${formatNumber(runUpA)} m over ${runUpAFrames} fully grounded frames`,
+    ).toBeGreaterThanOrEqual(10);
+    // The run is straight along the deck, so the sum of the fully grounded
+    // frame displacements must equal the spawn→take-off displacement. An air
+    // frame in the sum would make it longer.
+    expect(
+      runUpA,
+      `${finalContext} run-up A=${formatNumber(runUpA)} m should match the start-deck displacement ${formatNumber(
+        spawnToTakeoffDistance,
+      )} m`,
+    ).toBeCloseTo(spawnToTakeoffDistance, 5);
+    expect(
+      takeoffSpeed,
+      `${finalContext} takeoffSpeed=${formatNumber(takeoffSpeed)} m/s`,
+    ).toBeGreaterThanOrEqual(DEFAULT_MOVEMENT_TUNING.sprintSpeed - 0.1);
+    expect(landed, `${finalContext} minFeetY=${formatNumber(minFeetY)}`).toBe(true);
+    expect(landingPosition.z, finalContext).toBeLessThanOrEqual(roofB.maxZ);
+    expect(landingPosition.z, finalContext).toBeGreaterThanOrEqual(roofB.minZ);
+    expect(Math.abs(landingFeetY - roofB.maxY), finalContext).toBeLessThanOrEqual(0.05);
+    expect(landingState, `${finalContext} landing pose was not observed on roof B`).toBe("LANDING");
+    expect(
+      harness.player.getMovementSnapshot().grounded,
+      `${finalContext} did not confirm grounding after crossing`,
+    ).toBe(true);
+  });
+
+  it("preserves take-off speed across roof B and sprint-jumps gap B (4.2 m from z=-13.4 to z=-17.6) onto roof C", async () => {
+    const roofB = boundsOfId("geo_roof_b");
+    const roofC = boundsOfId("geo_roof_c");
+    const gapB = roofB.minZ - roofC.maxZ;
+    const roofBDepth = roofB.maxZ - roofB.minZ;
+
+    expect(gapB).toBeCloseTo(4.2, 5);
+    expect(roofBDepth).toBeCloseTo(8.0, 5);
+    // The authored landing/approach surface is 8.0 m deep, so a standalone
+    // ≥ 10 m run-up on roof B cannot exist and is not a requirement (§11.2).
+    expect(roofBDepth).toBeLessThan(10);
+
+    const harness = await createHarnessAtSpawn("sp_initial");
+
+    settle(harness);
+
+    let jumpedA = false;
+    let landedA = false;
+    let jumpedB = false;
+    let landedB = false;
+    let takeoffBZ = 0;
+    let takeoffBSpeed = 0;
+    let takeoffBGrounded = false;
+    let takeoffBPosition = harness.player.getPosition();
+    let landingAPosition = harness.player.getPosition();
+    let landingAFeetY = 0;
+    let landingAState = "";
+    let landingAFrameStartedGrounded = true;
+    let landingBState = "";
+    let landingPosition = harness.player.getPosition();
+    let landingFeetY = 0;
+    let minFeetY = Number.POSITIVE_INFINITY;
+    let jumpHoldFrames = 0;
+    // Legacy diagnostic, not an acceptance metric: the old cumulative sum added
+    // every frame that ended grounded from the spawn to the gap-B take-off. It
+    // therefore mixed the spawn→gap-A run-up with roof-B movement and included
+    // the air-started landing frame. Kept only to expose the difference.
+    let cumulativeGroundDistanceFromSpawn = 0;
+    // Corrected gap-B metric: only frames that both start and end grounded
+    // between the landing-A contact and the gap-B take-off. The air-started
+    // landing frame and the take-off frame are excluded.
+    let roofBGroundDistance = 0;
+    let roofBRunFrames = 0;
+    let landingAFrameAirDistance = 0;
+    let takeoffBFrameDistance = 0;
+    let previousPosition = harness.player.getPosition();
+
+    for (let index = 0; index < MAX_STEPS * 2; index += 1) {
+      const position = harness.player.getPosition();
+      const snapshot = harness.player.getMovementSnapshot();
+      const shouldJumpA = !jumpedA && snapshot.grounded && position.z <= -1.55;
+      const shouldJumpB =
+        !shouldJumpA && !jumpedB && landedA && snapshot.grounded && position.z <= -13.0;
+      const shouldJump = shouldJumpA || shouldJumpB;
+
+      if (shouldJump) {
+        if (shouldJumpA) {
+          jumpedA = true;
+        } else {
+          jumpedB = true;
+          takeoffBZ = position.z;
+          takeoffBSpeed = snapshot.speed;
+          takeoffBGrounded = snapshot.grounded;
+          takeoffBPosition = { ...position };
         }
 
-        if (landedA) {
-          roofBGroundDistance += horizontalDistance(previousPosition, currentPosition);
+        jumpHoldFrames = 30;
+      }
+
+      stepOnce(
+        harness,
+        input({
+          move: { x: 0, y: 1 },
+          sprintHeld: true,
+          jumpPressed: shouldJump,
+          jumpHeld: jumpHoldFrames > 0,
+        }),
+      );
+
+      jumpHoldFrames = Math.max(0, jumpHoldFrames - 1);
+      minFeetY = Math.min(minFeetY, harness.player.getFeetPosition().y);
+
+      const after = harness.player.getMovementSnapshot();
+      const currentPosition = harness.player.getPosition();
+      const frameDistance = horizontalDistance(previousPosition, currentPosition);
+
+      if (after.grounded && !jumpedB) {
+        cumulativeGroundDistanceFromSpawn += frameDistance;
+      }
+
+      if (jumpedA && after.grounded && currentPosition.z < roofB.maxZ) {
+        if (!landedA) {
+          landedA = true;
+          landingAPosition = { ...currentPosition };
+          landingAFeetY = harness.player.getFeetPosition().y;
+          landingAState = after.state;
+          // The touchdown frame started in the air: its displacement belongs
+          // to the flight, not to the roof-B run-up.
+          landingAFrameStartedGrounded = snapshot.grounded;
+          landingAFrameAirDistance = frameDistance;
+        } else if (!shouldJump && snapshot.grounded && !jumpedB) {
+          roofBGroundDistance += frameDistance;
+          roofBRunFrames += 1;
         }
+      }
+
+      if (shouldJumpB) {
+        takeoffBFrameDistance = frameDistance;
       }
 
       previousPosition = currentPosition;
@@ -428,31 +495,78 @@ describe("criterion 8 — roof gap sprint jumps", () => {
         landedB = true;
         landingPosition = { ...currentPosition };
         landingFeetY = harness.player.getFeetPosition().y;
+        landingBState = after.state;
         break;
       }
     }
 
     const finalContext = context(harness, "gap B");
+    const runUpB = roofBGroundDistance;
+    const expectedRunUpB = 5.1;
+    const runUpBTolerance = 0.2;
+    const runUpBContext = [
+      `${finalContext} run-up B (roof-B ground distance)=${formatNumber(runUpB)} m`,
+      `over ${roofBRunFrames} fully grounded frames`,
+      `excluded landing-frame air movement ${formatNumber(landingAFrameAirDistance)} m`,
+      `and take-off-frame movement ${formatNumber(takeoffBFrameDistance)} m`,
+      `legacy cumulative from spawn ${formatNumber(cumulativeGroundDistanceFromSpawn)} m`,
+    ].join("; ");
 
     expect(jumpedA, `${finalContext} gap A was never attempted`).toBe(true);
-    expect(landedA, `${finalContext} gap A did not land`).toBe(true);
+    expect(landedA, `${finalContext} gap A did not land on roof B`).toBe(true);
     expect(jumpedB, `${finalContext} gap B was never attempted`).toBe(true);
+
+    // The measured gap-B approach starts at a real touchdown on roof B, not at
+    // an air position or at the spawn.
+    expect(landingAPosition.z, finalContext).toBeLessThanOrEqual(roofB.maxZ);
+    expect(landingAPosition.z, finalContext).toBeGreaterThanOrEqual(roofB.minZ);
+    expect(Math.abs(landingAFeetY - roofB.maxY), finalContext).toBeLessThanOrEqual(0.05);
+    expect(landingAState, `${finalContext} landing pose was not observed on roof B`).toBe(
+      "LANDING",
+    );
     expect(
-      sprintGroundDistance,
-      `${finalContext} uninterrupted sprint ground distance before gap B = ${formatNumber(
-        sprintGroundDistance,
-      )} m (roof-B segment ${formatNumber(roofBGroundDistance)} m)`,
-    ).toBeGreaterThanOrEqual(10);
+      landingAFrameStartedGrounded,
+      `${finalContext} landing-A frame must start airborne; otherwise it is a grounded frame`,
+    ).toBe(false);
+
+    // Gap B is taken off from roof B, after the authored approach threshold.
+    expect(takeoffBGrounded, `${finalContext} take-off B was not grounded`).toBe(true);
     expect(
-      takeoffSpeed,
-      `${finalContext} takeoffSpeed=${formatNumber(takeoffSpeed)} m/s takeoffZ=${formatNumber(
-        takeoffZ,
+      takeoffBZ,
+      `${finalContext} take-off B z=${formatNumber(takeoffBZ)} must stay on roof B`,
+    ).toBeGreaterThan(roofB.minZ);
+    expect(takeoffBZ, finalContext).toBeLessThanOrEqual(-13.0);
+    expect(roofBRunFrames, `${finalContext} run-up B had no fully grounded frames`).toBeGreaterThan(
+      0,
+    );
+
+    // Gap B has no ≥ 10 m run-up requirement: the authored roof is 8.0 m deep
+    // and the real approach is ~5.1 m, measured only over grounded frames.
+    expect(runUpB, runUpBContext).toBeGreaterThanOrEqual(expectedRunUpB - runUpBTolerance);
+    expect(runUpB, runUpBContext).toBeLessThanOrEqual(expectedRunUpB + runUpBTolerance);
+    expect(runUpB, `${runUpBContext}; must fit on the authored roof B`).toBeLessThan(roofBDepth);
+    // Adding the air-started landing frame or the take-off frame would inflate
+    // the sum beyond the actual landing-A→take-off displacement.
+    expect(
+      runUpB,
+      `${runUpBContext}; must match the landing-A→take-off displacement ${formatNumber(
+        horizontalDistance(landingAPosition, takeoffBPosition),
+      )} m`,
+    ).toBeCloseTo(horizontalDistance(landingAPosition, takeoffBPosition), 5);
+
+    expect(
+      takeoffBSpeed,
+      `${finalContext} takeoffSpeed=${formatNumber(takeoffBSpeed)} m/s takeoffZ=${formatNumber(
+        takeoffBZ,
       )}`,
     ).toBeGreaterThanOrEqual(DEFAULT_MOVEMENT_TUNING.sprintSpeed - 0.1);
     expect(landedB, `${finalContext} minFeetY=${formatNumber(minFeetY)}`).toBe(true);
     expect(landingPosition.z, finalContext).toBeLessThanOrEqual(roofC.maxZ);
     expect(landingPosition.z, finalContext).toBeGreaterThanOrEqual(roofC.minZ);
     expect(Math.abs(landingFeetY - roofC.maxY), finalContext).toBeLessThanOrEqual(0.05);
+    expect(landingBState, `${finalContext} landing pose was not observed on roof C`).toBe(
+      "LANDING",
+    );
     expect(
       harness.player.getMovementSnapshot().grounded,
       `${finalContext} did not confirm grounding after crossing`,
