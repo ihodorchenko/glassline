@@ -17,8 +17,15 @@ const WARMUP_STEPS = 90;
 /** Current behaviour, fixed by this test (`FIRST_GAMEPLAY_SECTION_SPEC` §12.1). */
 const FULL_APEX_METERS = 1.55;
 const FULL_APEX_TOLERANCE = 0.01;
-const EARLY_APEX_METERS = 0.446;
-const EARLY_APEX_TOLERANCE = 0.02;
+/**
+ * Early release has two distinct reference points: the feet apex above the
+ * floor surface and the rise measured from the resting feet. The controller
+ * keeps the resting feet ~0.0198 m above the surface, so these differ by that
+ * offset; each is asserted against its own expected value.
+ */
+const EARLY_APEX_ABOVE_FLOOR_METERS = 0.465;
+const EARLY_APEX_RISE_METERS = 0.446;
+const EARLY_APEX_TOLERANCE = 0.01;
 const AIRTIME_TOLERANCE_SECONDS = 0.02;
 
 interface JumpHarness {
@@ -176,15 +183,16 @@ describe("Jump apex (real PlayerSystem + Rapier character controller)", () => {
     const trace = measureJump(harness, 1);
     const riseAboveRest = trace.apexFeetAboveFloor - rest;
 
-    // The documented 0.446 m figure is the rise from the resting feet, which
-    // the controller holds 0.0198 m above the floor; the floor-relative height
-    // is therefore ~0.465 m. Both stay inside the documented band.
+    // Floor-relative apex and rise from the resting feet are separate
+    // quantities. Never compare the absolute height to the relative rise.
     expect(trace.apexFeetAboveFloor).toBeGreaterThanOrEqual(
-      EARLY_APEX_METERS - EARLY_APEX_TOLERANCE,
+      EARLY_APEX_ABOVE_FLOOR_METERS - EARLY_APEX_TOLERANCE,
     );
-    expect(trace.apexFeetAboveFloor).toBeLessThanOrEqual(EARLY_APEX_METERS + EARLY_APEX_TOLERANCE);
-    expect(riseAboveRest).toBeGreaterThanOrEqual(EARLY_APEX_METERS - EARLY_APEX_TOLERANCE);
-    expect(riseAboveRest).toBeLessThanOrEqual(EARLY_APEX_METERS + EARLY_APEX_TOLERANCE);
+    expect(trace.apexFeetAboveFloor).toBeLessThanOrEqual(
+      EARLY_APEX_ABOVE_FLOOR_METERS + EARLY_APEX_TOLERANCE,
+    );
+    expect(riseAboveRest).toBeGreaterThanOrEqual(EARLY_APEX_RISE_METERS - EARLY_APEX_TOLERANCE);
+    expect(riseAboveRest).toBeLessThanOrEqual(EARLY_APEX_RISE_METERS + EARLY_APEX_TOLERANCE);
     expect(trace.apexStep).toBe(6);
     expect(trace.landingStep).toBe(17);
     expect(trace.airtimeSeconds).toBeGreaterThanOrEqual(0.283 - AIRTIME_TOLERANCE_SECONDS);
