@@ -145,7 +145,10 @@ async function readDom(page) {
       return {
         text: (node.textContent ?? "").trim().slice(0, 200),
         visible:
-          style.display !== "none" && Number(style.opacity) > 0.01 && rect.width > 0 && rect.height > 0,
+          style.display !== "none" &&
+          Number(style.opacity) > 0.01 &&
+          rect.width > 0 &&
+          rect.height > 0,
         display: style.display,
         opacity: Number(Number(style.opacity).toFixed(2)),
         rect: {
@@ -210,7 +213,9 @@ async function mark(page, name, note) {
   };
 
   report.marks.push(entry);
-  log(`mark ${name} z=${status?.player?.position?.z?.toFixed?.(2) ?? "?"} toast="${dom.toast?.text ?? ""}"`);
+  log(
+    `mark ${name} z=${status?.player?.position?.z?.toFixed?.(2) ?? "?"} toast="${dom.toast?.text ?? ""}"`,
+  );
 
   return entry;
 }
@@ -253,7 +258,10 @@ async function installSampler(page) {
         w: Math.round(rect.width),
         h: Math.round(rect.height),
         visible:
-          style.display !== "none" && Number(style.opacity) > 0.01 && rect.width > 0 && rect.height > 0,
+          style.display !== "none" &&
+          Number(style.opacity) > 0.01 &&
+          rect.width > 0 &&
+          rect.height > 0,
         opacity: Number(Number(style.opacity).toFixed(2)),
         display: style.display,
         text: (node.textContent ?? "").trim().slice(0, 200),
@@ -641,11 +649,13 @@ async function sprintJump(page, { takeoffZ, landZ, label, onAirborne = null, onL
     while (!jumped && attempts < 3) {
       attempts += 1;
       await hold(page, "Space");
-      jumped = await waitForStatus(
-        page,
-        (status) => status.player?.state === "JUMPING",
-        { timeout: 350, interval: 8, label: `${label} jump input` },
-      ).then(() => true).catch(() => false);
+      jumped = await waitForStatus(page, (status) => status.player?.state === "JUMPING", {
+        timeout: 350,
+        interval: 8,
+        label: `${label} jump input`,
+      })
+        .then(() => true)
+        .catch(() => false);
 
       if (!jumped) {
         await release(page, "Space");
@@ -757,7 +767,10 @@ async function startScreencast(context, page) {
       timestamp: params.metadata?.timestamp ?? Date.now() / 1000,
     });
     writeChain = writeChain.then(() =>
-      writeFile(join(FRAME_DIR, `frame-${String(number + 1).padStart(5, "0")}.jpg`), Buffer.from(params.data, "base64")),
+      writeFile(
+        join(FRAME_DIR, `frame-${String(number + 1).padStart(5, "0")}.jpg`),
+        Buffer.from(params.data, "base64"),
+      ),
     );
     cdp.send("Page.screencastFrameAck", { sessionId: params.sessionId }).catch(() => undefined);
   });
@@ -802,7 +815,10 @@ async function encodeVideo(frames, outputPath) {
   const lines = ["ffconcat version 1.0"];
 
   for (let i = 0; i < frames.length; i += 1) {
-    lines.push(`file '${frames[i].file}'`, `duration ${Math.max(0.001, rawDurations[i]).toFixed(4)}`);
+    lines.push(
+      `file '${frames[i].file}'`,
+      `duration ${Math.max(0.001, rawDurations[i]).toFixed(4)}`,
+    );
   }
 
   lines.push(`file '${frames[frames.length - 1].file}'`);
@@ -1025,13 +1041,19 @@ await phase("C-gap-a", async () => {
     before: slimStatus(start),
     takeoff: slimStatus(result.takeoff),
     crossing: slimStatus(after),
-    crossed: (after?.player?.position.z ?? 0) <= ROUTE.gapALandZ && after?.respawnCount === start?.respawnCount,
+    crossed:
+      (after?.player?.position.z ?? 0) <= ROUTE.gapALandZ &&
+      after?.respawnCount === start?.respawnCount,
   };
 
   report.checklist.push({
     name: "C — Gap A crossed with one normal sprint jump",
     passed: report.raw.gapA.crossed === true,
-    details: JSON.stringify({ takeoff: result.takeoff?.player?.position, landing: result.landing?.player?.position, respawns: after?.respawnCount }),
+    details: JSON.stringify({
+      takeoff: result.takeoff?.player?.position,
+      landing: result.landing?.player?.position,
+      respawns: after?.respawnCount,
+    }),
   });
 });
 
@@ -1064,13 +1086,19 @@ await phase("C-gap-b-cp2", async () => {
     before: slimStatus(start),
     takeoff: slimStatus(result.takeoff),
     crossing: slimStatus(after),
-    crossed: (after?.player?.position.z ?? 0) <= ROUTE.gapBLandZ && after?.respawnCount === start?.respawnCount,
+    crossed:
+      (after?.player?.position.z ?? 0) <= ROUTE.gapBLandZ &&
+      after?.respawnCount === start?.respawnCount,
   };
 
   report.checklist.push({
     name: "C — Gap B crossed with one normal sprint jump",
     passed: report.raw.gapB.crossed === true,
-    details: JSON.stringify({ takeoff: result.takeoff?.player?.position, landing: result.landing?.player?.position, respawns: after?.respawnCount }),
+    details: JSON.stringify({
+      takeoff: result.takeoff?.player?.position,
+      landing: result.landing?.player?.position,
+      respawns: after?.respawnCount,
+    }),
   });
 
   // CP2 sits just past the Gap B landing; walk into it naturally.
@@ -1135,11 +1163,15 @@ await phase("C-rest-of-route", async () => {
   );
 
   await hold(page, "ShiftLeft");
-  await waitForStatus(page, (status) => (status.player?.position.z ?? 0) <= ROUTE.ductEntryZ - 2.2, {
-    timeout: 4_000,
-    interval: 10,
-    label: "inside the duct",
-  });
+  await waitForStatus(
+    page,
+    (status) => (status.player?.position.z ?? 0) <= ROUTE.ductEntryZ - 2.2,
+    {
+      timeout: 4_000,
+      interval: 10,
+      label: "inside the duct",
+    },
+  );
   await shot(page, "S7-C-11-duct-slide", "inside the slide duct");
 
   await waitForStatus(page, (status) => (status.player?.position.z ?? 0) <= ROUTE.ductExitZ + 0.8, {
@@ -1269,9 +1301,7 @@ await phase("C-rest-of-route", async () => {
 
   report.checklist.push({
     name: "E — the HUD is hidden and the toast slot is empty on the Results screen",
-    passed:
-      report.raw.results.dom.hud === false &&
-      report.raw.results.dom.toast?.visible !== true,
+    passed: report.raw.results.dom.hud === false && report.raw.results.dom.toast?.visible !== true,
     details: JSON.stringify({
       hud: report.raw.results.dom.hud,
       toast: report.raw.results.dom.toast,

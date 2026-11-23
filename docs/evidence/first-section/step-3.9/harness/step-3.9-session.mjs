@@ -139,7 +139,10 @@ async function readDom(page) {
       return {
         text: (node.textContent ?? "").trim().slice(0, 200),
         visible:
-          style.display !== "none" && Number(style.opacity) > 0.01 && rect.width > 0 && rect.height > 0,
+          style.display !== "none" &&
+          Number(style.opacity) > 0.01 &&
+          rect.width > 0 &&
+          rect.height > 0,
         display: style.display,
         opacity: Number(Number(style.opacity).toFixed(2)),
         rect: {
@@ -204,7 +207,9 @@ async function mark(page, name, note) {
   };
 
   report.marks.push(entry);
-  log(`mark ${name} z=${status?.player?.position?.z?.toFixed?.(2) ?? "?"} toast="${dom.toast?.text ?? ""}"`);
+  log(
+    `mark ${name} z=${status?.player?.position?.z?.toFixed?.(2) ?? "?"} toast="${dom.toast?.text ?? ""}"`,
+  );
 
   return entry;
 }
@@ -247,7 +252,10 @@ async function installSampler(page) {
         w: Math.round(rect.width),
         h: Math.round(rect.height),
         visible:
-          style.display !== "none" && Number(style.opacity) > 0.01 && rect.width > 0 && rect.height > 0,
+          style.display !== "none" &&
+          Number(style.opacity) > 0.01 &&
+          rect.width > 0 &&
+          rect.height > 0,
         opacity: Number(Number(style.opacity).toFixed(2)),
         display: style.display,
         text: (node.textContent ?? "").trim().slice(0, 200),
@@ -710,7 +718,10 @@ async function startScreencast(context, page) {
       timestamp: params.metadata?.timestamp ?? Date.now() / 1000,
     });
     writeChain = writeChain.then(() =>
-      writeFile(join(FRAME_DIR, `frame-${String(number + 1).padStart(5, "0")}.jpg`), Buffer.from(params.data, "base64")),
+      writeFile(
+        join(FRAME_DIR, `frame-${String(number + 1).padStart(5, "0")}.jpg`),
+        Buffer.from(params.data, "base64"),
+      ),
     );
     cdp.send("Page.screencastFrameAck", { sessionId: params.sessionId }).catch(() => undefined);
   });
@@ -755,7 +766,10 @@ async function encodeVideo(frames, outputPath) {
   const lines = ["ffconcat version 1.0"];
 
   for (let i = 0; i < frames.length; i += 1) {
-    lines.push(`file '${frames[i].file}'`, `duration ${Math.max(0.001, rawDurations[i]).toFixed(4)}`);
+    lines.push(
+      `file '${frames[i].file}'`,
+      `duration ${Math.max(0.001, rawDurations[i]).toFixed(4)}`,
+    );
   }
 
   lines.push(`file '${frames[frames.length - 1].file}'`);
@@ -1140,7 +1154,9 @@ await phase("C-gap-a", async () => {
     takeoff: slimStatus(result.takeoff),
     landing: slimStatus(result.landing),
     after: slimStatus(after),
-    crossed: (after?.player?.position.z ?? 0) <= ROUTE.gapALandZ && after?.respawnCount === start?.respawnCount,
+    crossed:
+      (after?.player?.position.z ?? 0) <= ROUTE.gapALandZ &&
+      after?.respawnCount === start?.respawnCount,
   };
 
   await mark(page, "C-gap-a", "Gap A crossed");
@@ -1182,7 +1198,9 @@ await phase("C-gap-b", async () => {
     before: slimStatus(start),
     takeoff: slimStatus(result.takeoff),
     landing: slimStatus(result.landing),
-    crossed: (after?.player?.position.z ?? 0) <= ROUTE.gapBLandZ && after?.respawnCount === start?.respawnCount,
+    crossed:
+      (after?.player?.position.z ?? 0) <= ROUTE.gapBLandZ &&
+      after?.respawnCount === start?.respawnCount,
   };
 
   // Walk on into CP2. The Jump toast may still be on screen — natural overlap.
@@ -1244,11 +1262,15 @@ await phase("C-rest-of-route", async () => {
   );
 
   await hold(page, "ShiftLeft");
-  await waitForStatus(page, (status) => (status.player?.position.z ?? 0) <= ROUTE.ductEntryZ - 2.2, {
-    timeout: 4_000,
-    interval: 10,
-    label: "inside the duct",
-  });
+  await waitForStatus(
+    page,
+    (status) => (status.player?.position.z ?? 0) <= ROUTE.ductEntryZ - 2.2,
+    {
+      timeout: 4_000,
+      interval: 10,
+      label: "inside the duct",
+    },
+  );
   await shot(page, "C-10-duct-slide", "inside the slide duct");
 
   // Keep W held through the exit: a slide that ends inside leaves the body in
@@ -1355,7 +1377,9 @@ const recorder = await readRecorder(page);
 /* E — returning player: no unexpected tutorial re-appearance ---------------- */
 
 await phase("E-returning-player", async () => {
-  const before = await page.evaluate(() => window.__glasslineDevLaunch?.status?.()?.activatedCheckpointIds ?? []);
+  const before = await page.evaluate(
+    () => window.__glasslineDevLaunch?.status?.()?.activatedCheckpointIds ?? [],
+  );
 
   await page.reload({ waitUntil: "domcontentloaded", timeout: 60_000 });
   await waitHud(page, 30_000);
