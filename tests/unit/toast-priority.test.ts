@@ -196,3 +196,197 @@ describe("ToastQueue — priority ordering", () => {
     expect(messageOf(queue.tick(2_200))).toBe("step 1");
   });
 });
+
+/**
+ * Step 3.8.1 — several critical confirmations in one notification sequence.
+ *
+ * Corrective defect: when a second critical toast arrived while the first was
+ * visible, `tick()` promoted the *interrupted routine* toast before the queued
+ * critical one. On screen: `Move → CP1 → Move` (restored remainder) `→ CP2`,
+ * i.e. a checkpoint confirmation was delayed behind a routine tutorial
+ * reminder and two critical confirmations were not shown back to back.
+ *
+ * The driver below only uses the public transitions returned by `push`/`tick`
+ * (what the HUD renders), not internal fields.
+ */
+
+interface TimelineEvent {
+  readonly atMs: number;
+  readonly message: string;
+  readonly durationMs: number;
+  readonly priority: "critical" | "normal";
+}
+
+interface VisibleSegment {
+  readonly message: string;
+  readonly startMs: number;
+  readonly endMs: number;
+}
+
+interface OpenSegment {
+  readonly message: string;
+  readonly startMs: number;
+}
+
+function runToastTimeline(
+  events: readonly TimelineEvent[],
+  untilMs: number,
+  stepMs = 1,
+): VisibleSegment[] {
+  const queue = new ToastQueue();
+  const segments: VisibleSegment[] = [];
+  const ordered = [...events].sort((left, right) => left.atMs - right.atMs);
+  let open: OpenSegment | null = null;
+  let eventIndex = 0;
+
+  const closeOpen = (endMs: number): void => {
+    const segment = open;
+
+    if (segment === null) {
+      return;
+    }
+
+    segments.push({ message: segment.message, startMs: segment.startMs, endMs });
+    open = null;
+  };
+
+  const apply = (transition: ToastTransition | null, atMs: number): void => {
+    if (transition === null) {
+      return;
+    }
+
+    closeOpen(atMs);
+
+    if (transition.kind === "show") {
+      open = { message: transition.toast.message, startMs: atMs };
+    }
+  };
+
+  for (let now = 0; now <= untilMs; now += stepMs) {
+    while (eventIndex < ordered.length) {
+      const event = ordered[eventIndex];
+
+      if (event === undefined || event.atMs > now) {
+        break;
+      }
+
+      eventIndex += 1;
+      apply(
+        queue.push(
+          {
+            message: event.message,
+            durationMs: event.durationMs,
+            priority: event.priority,
+          },
+          now,
+        ),
+        now,
+      );
+    }
+
+    apply(queue.tick(now), now);
+  }
+
+  closeOpen(untilMs + stepMs);
+
+  return segments;
+}
+
+function messagesOf(segments: readonly VisibleSegment[]): string[] {
+  return segments.map((segment) => segment.message);
+}
+
+function segmentOf(
+  segments: readonly VisibleSegment[],
+  message: string,
+  occurrence = 0,
+): VisibleSegment {
+  const matches = segments.filter((segment) => segment.message === message);
+  const match = matches[occurrence];
+
+  if (match === undefined) {
+    throw new Error(`Missing toast segment "${message}" (#${occurrence})`);
+  }
+
+  return match;
+}
+
+describe("ToastQueue — several critical confirmations (Move → CP1 → CP2)", () => {
+  const sequence: readonly TimelineEvent[] = [
+    { atMs: 0, message: "Move", durationMs: 1_800, priority: "normal" },
+    { atMs: 100, message: "CP1", durationMs: 2_200, priority: "critical" },
+    { atMs: 200, message: "CP2", durationMs: 2_200, priority: "critical" },
+  ];
+
+  it("plays CP1 and CP2 back to back and restores the interrupted Move afterwards", () => {
+    const segments = runToastTimeline(sequence, 7_000);
+
+    expect(messagesOf(segments)).toEqual(["Move", "CP1", "CP2", "Move"]);
+    expect(segments[0]).toEqual({ message: "Move", startMs: 0, endMs: 100 });
+    // CP1 is shown at its event (Step 3.8 preemption) and is not replaced early.
+    expect(segmentOf(segments, "CP1")).toEqual({ message: "CP1", startMs: 100, endMs: 2_300 });
+    // CP2 follows CP1 immediately; Move must not slot in between.
+    expect(segmentOf(segments, "CP2")).toEqual({ message: "CP2", startMs: 2_300, endMs: 4_500 });
+    // Nothing is lost: the interrupted Move keeps the time it had left (1 700 ms).
+    expect(segmentOf(segments, "Move", 1)).toEqual({
+      message: "Move",
+      startMs: 4_500,
+      endMs: 6_200,
+    });
+  });
+
+  it("never leaves a gap, duplicate or out-of-order critical between the messages", () => {
+    const segments = runToastTimeline(sequence, 7_000);
+
+    // Contiguous display: every segment ends exactly where the next begins.
+    let previous: VisibleSegment | null = null;
+
+    for (const segment of segments) {
+      if (previous !== null) {
+        expect(segment.startMs, `gap before ${segment.message}`).toBe(previous.endMs);
+      }
+
+      previous = segment;
+    }
+
+    const criticals = segments.filter((segment) => segment.message.startsWith("CP"));
+
+    expect(criticals.map((segment) => segment.message)).toEqual(["CP1", "CP2"]);
+    expect(segmentOf(segments, "CP2").startMs).toBe(segmentOf(segments, "CP1").endMs);
+    expect(criticals.every((segment) => segment.endMs - segment.startMs === 2_200)).toBe(true);
+  });
+
+  it("keeps criticals contiguous when a routine toast is queued between them", () => {
+    const segments = runToastTimeline(
+      [
+        { atMs: 0, message: "Move", durationMs: 1_800, priority: "normal" },
+        { atMs: 100, message: "CP1", durationMs: 2_200, priority: "critical" },
+        { atMs: 150, message: "Jump", durationMs: 1_800, priority: "normal" },
+        { atMs: 200, message: "CP2", durationMs: 2_200, priority: "critical" },
+      ],
+      9_000,
+    );
+
+    expect(messagesOf(segments)).toEqual(["Move", "CP1", "CP2", "Move", "Jump"]);
+    expect(segmentOf(segments, "CP2")).toEqual({ message: "CP2", startMs: 2_300, endMs: 4_500 });
+    expect(segmentOf(segments, "Jump").startMs).toBe(segmentOf(segments, "Move", 1).endMs);
+  });
+
+  it("shows a single critical toast normally when no second one competes", () => {
+    const segments = runToastTimeline(
+      [
+        { atMs: 0, message: "Move", durationMs: 1_800, priority: "normal" },
+        { atMs: 100, message: "CP1", durationMs: 2_200, priority: "critical" },
+      ],
+      5_000,
+    );
+
+    expect(messagesOf(segments)).toEqual(["Move", "CP1", "Move"]);
+    expect(segmentOf(segments, "CP1")).toEqual({ message: "CP1", startMs: 100, endMs: 2_300 });
+    expect(segmentOf(segments, "Move", 1)).toEqual({
+      message: "Move",
+      startMs: 2_300,
+      endMs: 4_000,
+    });
+  });
+});

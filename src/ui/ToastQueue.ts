@@ -11,8 +11,12 @@
  * fixed durations, a bounded backlog) and adds exactly one rule:
  *
  *   - a `critical` message preempts a visible `normal` message immediately; the
- *     preempted message is shown next with its remaining duration, so routine
- *     feedback is delayed rather than lost;
+ *     preempted message keeps its remaining duration and is shown once the
+ *     queued critical confirmations are done, so routine feedback is delayed
+ *     rather than lost;
+ *   - queued `critical` messages are shown back to back, in arrival order,
+ *     before any routine message (including the preempted one): a second
+ *     checkpoint confirmation must not wait behind a tutorial reminder;
  *   - `normal` messages never preempt anything and queue behind the active one;
  *   - among equal priorities the order stays FIFO;
  *   - the backlog cap drops the oldest `normal` message first, and never drops a
@@ -44,9 +48,15 @@ export type ToastTransition =
 
 export interface ToastQueueSnapshot {
   readonly visible: VisibleToast | null;
-  /** The routine message that was interrupted and will be shown next. */
+  /**
+   * The routine message that was interrupted by a critical one. It is shown
+   * after every queued critical message.
+   */
   readonly interrupted: VisibleToast | null;
-  /** Pending messages in display order, after the interrupted one. */
+  /**
+   * Pending messages in arrival order. Queued critical messages are consumed
+   * first, in order; routine messages keep their relative order after them.
+   */
   readonly pending: readonly VisibleToast[];
 }
 
@@ -76,7 +86,10 @@ function visibleOf(toast: ToastRequest): VisibleToast {
 export class ToastQueue {
   private readonly limit: number;
   private active: ActiveToast | null = null;
-  /** A single routine message displaced by a critical one; always shown next. */
+  /**
+   * A single routine message displaced by a critical one. It is shown after any
+   * queued critical confirmation, never before one.
+   */
   private interrupted: ToastRequest | null = null;
   private pending: ToastRequest[] = [];
 
@@ -120,10 +133,15 @@ export class ToastQueue {
   }
 
   /**
-   * Advances time: expires the visible toast and promotes the next message
-   * (the interrupted routine toast first, then the backlog). Returns the
-   * transition to render, or null while the current toast is still within its
-   * duration and when nothing is visible.
+   * Advances time: expires the visible toast and promotes the next message.
+   *
+   * Order of promotion: queued `critical` messages first (arrival order), then
+   * the interrupted routine toast, then the remaining backlog. This keeps a
+   * sequence of checkpoint confirmations contiguous even when the first one
+   * displaced a tutorial toast (Step 3.8.1).
+   *
+   * Returns the transition to render, or null while the current toast is still
+   * within its duration and when nothing is visible.
    */
   tick(nowMs: number): ToastTransition | null {
     if (this.active === null || !Number.isFinite(nowMs)) {
@@ -136,15 +154,28 @@ export class ToastQueue {
 
     this.active = null;
 
-    const next = this.interrupted ?? this.pending.shift() ?? null;
+    // A queued confirmation must not wait behind the routine toast that an
+    // earlier confirmation displaced: that produced `Move → CP1 → Move → CP2`.
+    const criticalIndex = this.pending.findIndex((toast) => toast.priority === "critical");
+    const critical = criticalIndex === -1 ? undefined : this.pending[criticalIndex];
 
-    this.interrupted = null;
+    if (critical !== undefined) {
+      this.pending.splice(criticalIndex, 1);
 
-    if (next === null) {
-      return { kind: "hide" };
+      return this.display(critical, nowMs);
     }
 
-    return this.display(next, nowMs);
+    if (this.interrupted !== null) {
+      const next = this.interrupted;
+
+      this.interrupted = null;
+
+      return this.display(next, nowMs);
+    }
+
+    const next = this.pending.shift();
+
+    return next === undefined ? { kind: "hide" } : this.display(next, nowMs);
   }
 
   /** Drops the visible toast and every pending message (restart/menu). */

@@ -274,6 +274,63 @@ async function readToastState(page) {
   });
 }
 
+/** Injects a toast through the production UI manager (toast-ordering check). */
+async function injectToast(page, request) {
+  return await page.evaluate(
+    ({ message, durationMs, priority }) => {
+      const ui = window.__glassline?.ui;
+
+      if (typeof ui?.showToast !== "function") {
+        return false;
+      }
+
+      ui.showToast(message, performance.now(), durationMs, priority);
+
+      return true;
+    },
+    { message: request.message, durationMs: request.durationMs, priority: request.priority },
+  );
+}
+
+/**
+ * Collapses toast samples into visible segments. A segment ends when the text
+ * changes or the toast hides; boundary times are within one sampling interval.
+ */
+function toastSegments(samples) {
+  const segments = [];
+  let current = null;
+
+  for (const sample of samples) {
+    const text = (sample.text ?? "").trim();
+    const visible = sample.visible === true && text.length > 0;
+
+    if (!visible) {
+      if (current !== null) {
+        segments.push({ ...current, endMs: sample.ms });
+        current = null;
+      }
+
+      continue;
+    }
+
+    if (current === null) {
+      current = { message: text, startMs: sample.ms };
+      continue;
+    }
+
+    if (current.message !== text) {
+      segments.push({ ...current, endMs: sample.ms });
+      current = { message: text, startMs: sample.ms };
+    }
+  }
+
+  if (current !== null) {
+    segments.push({ ...current, endMs: samples[samples.length - 1]?.ms ?? current.startMs });
+  }
+
+  return segments;
+}
+
 /**
  * Read-only vault signals for the affordance range scenario (F-04).
  *
@@ -2554,6 +2611,188 @@ async function runPolishChecks(browser, options, viewport, outDir, report, check
       `visible=${round(checkpointVisibleFor, 2)} s, finalVisible=${String(finalSample?.visible)}, ` +
         `emptyVisible=${String(emptyVisible)}`,
     );
+
+    /* ---- F-05 (Step 3.8.1): Move → CP1 → CP2 ordering -------------------- */
+
+    // The authored checkpoints are 31 m apart (>3.7 s at sprint) while a toast
+    // lasts 2.2 s, so two checkpoint confirmations cannot overlap through normal
+    // play. The sequence is therefore injected at the UIManager boundary on the
+    // same fresh profile, through the production queue and renderer, and
+    // observed in the real DOM.
+    const waitForToastHidden = async (timeoutMs) => {
+      const deadline = Date.now() + timeoutMs;
+
+      while (Date.now() < deadline) {
+        const state = await readToastState(page);
+
+        if (state.visible !== true) {
+          return true;
+        }
+
+        await delay(40);
+      }
+
+      return false;
+    };
+
+    await waitForToastHidden(4_000);
+
+    const criticalSequence = {
+      method: "ui.showToast injection on a fresh profile (queue empty)",
+      move: { message: "Move", durationMs: 1_800 },
+      cp1: { message: "Checkpoint reached: CP1", durationMs: 2_200 },
+      cp2: { message: "Checkpoint reached: CP2", durationMs: 2_200 },
+      injected: { move: false, cp1: false, cp2: false },
+      samples: [],
+      segments: [],
+    };
+
+    const sequenceStart = Date.now();
+
+    criticalSequence.injected.move = await injectToast(page, {
+      ...criticalSequence.move,
+      priority: "normal",
+    });
+
+    while (Date.now() - sequenceStart < 7_600) {
+      const elapsed = Date.now() - sequenceStart;
+
+      if (!criticalSequence.injected.cp1 && elapsed >= 120) {
+        criticalSequence.injected.cp1 = await injectToast(page, {
+          ...criticalSequence.cp1,
+          priority: "critical",
+        });
+      }
+
+      if (!criticalSequence.injected.cp2 && elapsed >= 240) {
+        criticalSequence.injected.cp2 = await injectToast(page, {
+          ...criticalSequence.cp2,
+          priority: "critical",
+        });
+      }
+
+      criticalSequence.samples.push({
+        ms: Date.now() - sequenceStart,
+        ...(await readToastState(page)),
+      });
+
+      await delay(24);
+    }
+
+    criticalSequence.segments = toastSegments(criticalSequence.samples);
+
+    const sequenceMessages = criticalSequence.segments.map((segment) => segment.message);
+    const cp1Segment = criticalSequence.segments.find(
+      (segment) => segment.message === criticalSequence.cp1.message,
+    );
+    const cp2Segment = criticalSequence.segments.find(
+      (segment) => segment.message === criticalSequence.cp2.message,
+    );
+    const restoredMove = criticalSequence.segments.filter(
+      (segment) => segment.message === criticalSequence.move.message,
+    );
+    const segmentGapMs =
+      cp1Segment === undefined || cp2Segment === undefined
+        ? null
+        : cp2Segment.startMs - cp1Segment.endMs;
+    const cp1DurationMs = cp1Segment === undefined ? null : cp1Segment.endMs - cp1Segment.startMs;
+    const cp2DurationMs = cp2Segment === undefined ? null : cp2Segment.endMs - cp2Segment.startMs;
+    const restoredMoveDurationMs =
+      restoredMove.length < 2 ? null : restoredMove[1].endMs - restoredMove[1].startMs;
+    const sequenceFinalVisible =
+      criticalSequence.samples[criticalSequence.samples.length - 1]?.visible === true;
+    const sequenceEmptyVisible = criticalSequence.samples.some(
+      (sample) => sample.visible === true && (sample.text ?? "").trim().length === 0,
+    );
+
+    criticalSequence.order = sequenceMessages;
+    criticalSequence.cp1DurationMs = cp1DurationMs;
+    criticalSequence.cp2DurationMs = cp2DurationMs;
+    criticalSequence.cp1ToCp2GapMs = segmentGapMs;
+    criticalSequence.restoredMoveDurationMs = restoredMoveDurationMs;
+    criticalSequence.finalVisible = sequenceFinalVisible;
+
+    polish.toastCriticalSequence = criticalSequence;
+
+    checklist.check(
+      "toast sequence: Move → CP1 → CP2 plays the two critical confirmations back to back",
+      criticalSequence.injected.move === true &&
+        criticalSequence.injected.cp1 === true &&
+        criticalSequence.injected.cp2 === true &&
+        JSON.stringify(sequenceMessages) ===
+          JSON.stringify([
+            criticalSequence.move.message,
+            criticalSequence.cp1.message,
+            criticalSequence.cp2.message,
+            criticalSequence.move.message,
+          ]),
+      `order=${JSON.stringify(sequenceMessages)}, injected=${JSON.stringify(
+        criticalSequence.injected,
+      )}`,
+    );
+    checklist.check(
+      "toast sequence: CP1 is not replaced before its duration ends and CP2 follows immediately",
+      cp1DurationMs !== null &&
+        cp1DurationMs >= 2_100 &&
+        cp1DurationMs <= 2_350 &&
+        cp2Segment !== undefined &&
+        cp1Segment !== undefined &&
+        segmentGapMs !== null &&
+        segmentGapMs <= 80,
+      `cp1=${cp1DurationMs} ms, cp2=${cp2DurationMs} ms, gap=${segmentGapMs} ms`,
+    );
+    checklist.check(
+      "toast sequence: nothing is lost or stuck — CP2 plays fully, the interrupted Move is restored, then the slot hides",
+      cp2DurationMs !== null &&
+        cp2DurationMs >= 2_100 &&
+        cp2DurationMs <= 2_350 &&
+        restoredMoveDurationMs !== null &&
+        restoredMoveDurationMs >= 1_400 &&
+        restoredMoveDurationMs <= 1_850 &&
+        sequenceFinalVisible === false &&
+        sequenceEmptyVisible === false,
+      `cp2=${cp2DurationMs} ms, restoredMove=${restoredMoveDurationMs} ms, ` +
+        `finalVisible=${String(sequenceFinalVisible)}, emptyVisible=${String(sequenceEmptyVisible)}`,
+    );
+
+    // Visual evidence for the corrected order: replay the sequence and capture
+    // the frame while CP2 is on screen, after CP1 finished.
+    await waitForToastHidden(5_000);
+    await injectToast(page, { ...criticalSequence.move, priority: "normal" });
+    await delay(120);
+    await injectToast(page, { ...criticalSequence.cp1, priority: "critical" });
+    await delay(120);
+    await injectToast(page, { ...criticalSequence.cp2, priority: "critical" });
+
+    const cp2FrameDeadline = Date.now() + 5_000;
+    let cp2FrameState = null;
+
+    while (Date.now() < cp2FrameDeadline) {
+      const state = await readToastState(page);
+
+      if ((state.text ?? "").includes("CP2")) {
+        cp2FrameState = state;
+        break;
+      }
+
+      await delay(30);
+    }
+
+    const cp2Pose = await capture("61-toast-critical-sequence");
+
+    polish.toastCriticalSequence.cp2Frame = {
+      seen: cp2FrameState !== null,
+      text: cp2FrameState?.text ?? null,
+      pose: cp2Pose,
+    };
+
+    checklist.check(
+      "toast sequence: the browser frame shows CP2 on screen after CP1 (no premature replacement)",
+      cp2FrameState !== null && (cp2FrameState.text ?? "").includes("CP2"),
+      `text=${JSON.stringify(cp2FrameState?.text ?? null)}`,
+    );
+
+    await waitForToastHidden(5_000);
 
     /* ---- F-03: duct camera clearance ------------------------------------ */
 

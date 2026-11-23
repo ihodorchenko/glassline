@@ -1,0 +1,3932 @@
+{
+  "tool": "tools/capture/playtest.mjs",
+  "generatedAt": "2026-11-23T06:03:21.887Z",
+  "launchUrl": "http://127.0.0.1:5322/?dev=first_section",
+  "viewport": {
+    "width": 1600,
+    "height": 900,
+    "deviceScaleFactor": 1
+  },
+  "environment": "headless-edge",
+  "browser": {
+    "name": "Microsoft Edge",
+    "channel": "msedge",
+    "version": "157.0.4341.46"
+  },
+  "host": {
+    "platform": "darwin",
+    "arch": "arm64",
+    "release": "27.2.0",
+    "cpuCount": 8,
+    "loadAvg": [
+      5.81,
+      8.15,
+      6.96
+    ]
+  },
+  "checks": [
+    {
+      "name": "harness: lateral tolerance rejects deviations on both sides",
+      "passed": true,
+      "details": "[]"
+    },
+    {
+      "name": "toast: the checkpoint confirmation is visible immediately after activation (not queued behind the tutorial toast)",
+      "passed": true,
+      "details": "activation=807 ms, checkpointDelay=0 ms, firstVisible=\"Move\", between=[], uninterrupted=true"
+    },
+    {
+      "name": "toast: the interrupted tutorial toast is not lost — it plays after the checkpoint toast",
+      "passed": true,
+      "details": "{\"checkpointMs\":807,\"tutorial\":\"Move\",\"tutorialMs\":2996}"
+    },
+    {
+      "name": "toast: the checkpoint confirmation stays readable and nothing is left stuck",
+      "passed": true,
+      "details": "visible=2.11 s, finalVisible=false, emptyVisible=false"
+    },
+    {
+      "name": "toast sequence: Move → CP1 → CP2 plays the two critical confirmations back to back",
+      "passed": true,
+      "details": "order=[\"Move\",\"Checkpoint reached: CP1\",\"Checkpoint reached: CP2\",\"Move\"], injected={\"move\":true,\"cp1\":true,\"cp2\":true}"
+    },
+    {
+      "name": "toast sequence: CP1 is not replaced before its duration ends and CP2 follows immediately",
+      "passed": true,
+      "details": "cp1=2234 ms, cp2=2179 ms, gap=0 ms"
+    },
+    {
+      "name": "toast sequence: nothing is lost or stuck — CP2 plays fully, the interrupted Move is restored, then the slot hides",
+      "passed": true,
+      "details": "cp2=2179 ms, restoredMove=1695 ms, finalVisible=false, emptyVisible=false"
+    },
+    {
+      "name": "toast sequence: the browser frame shows CP2 on screen after CP1 (no premature replacement)",
+      "passed": true,
+      "details": "text=\"Checkpoint reached: CP2\""
+    },
+    {
+      "name": "duct camera: the crouched lip view is settled, outside the ceiling slab, and documents the 0.07 m lintel overlap",
+      "passed": true,
+      "details": "stance=crouching, z=-46.71, cameraY=1.97, clearance=-0.07"
+    },
+    {
+      "name": "duct camera: a sprint-slide keeps the eye below the ceiling for the whole crossing",
+      "passed": true,
+      "details": "samples=14, maxCameraY=1.581, clearance=0.319"
+    },
+    {
+      "name": "duct camera: a slide that ends inside the duct keeps the camera below the ceiling (no camera inside the slab)",
+      "passed": true,
+      "details": "stance=crouching, posture=0.9, z=-50.36, cameraY=1.76, clearance=0.14"
+    },
+    {
+      "name": "duct camera: crouch-walking out of the duct still works after the slide-ended stop",
+      "passed": true,
+      "details": "exit z=-54.99"
+    },
+    {
+      "name": "runtime: the Step 3.8 polish scenario produced no console or page errors",
+      "passed": true,
+      "details": "{\"consoleErrors\":[],\"pageErrors\":[]}"
+    }
+  ],
+  "poses": [
+    {
+      "name": "55-checkpoint-toast-priority",
+      "file": "55-checkpoint-toast-priority.jpg",
+      "z": 10.61,
+      "x": 0,
+      "y": 0.89,
+      "speed": 3.43,
+      "state": "RUNNING",
+      "grounded": true,
+      "postureHeight": 1.75,
+      "yaw": 0,
+      "pitch": 0,
+      "section": "sec_start",
+      "checkpoint": "cp_start",
+      "hud": {
+        "hudVisible": true,
+        "speed": "Speed 3.9 m/s",
+        "prompt": "",
+        "promptVisible": false,
+        "promptCount": 1,
+        "tutorialHint": "",
+        "tutorialVisible": false,
+        "toast": "Checkpoint reached: Starting Roof Checkpoint",
+        "toastVisible": true,
+        "screenCount": 0,
+        "loading": false,
+        "bootLoader": false,
+        "pointerLock": "game-canvas",
+        "firstResultsRow": null,
+        "retryButton": null
+      }
+    },
+    {
+      "name": "61-toast-critical-sequence",
+      "file": "61-toast-critical-sequence.jpg",
+      "z": 10.21,
+      "x": 0,
+      "y": 0.89,
+      "speed": 0,
+      "state": "IDLE",
+      "grounded": true,
+      "postureHeight": 1.75,
+      "yaw": 0,
+      "pitch": 0,
+      "section": "sec_start",
+      "checkpoint": "cp_start",
+      "hud": {
+        "hudVisible": true,
+        "speed": "Speed 0.0 m/s",
+        "prompt": "",
+        "promptVisible": false,
+        "promptCount": 1,
+        "tutorialHint": "",
+        "tutorialVisible": false,
+        "toast": "Checkpoint reached: CP2",
+        "toastVisible": true,
+        "screenCount": 0,
+        "loading": false,
+        "bootLoader": false,
+        "pointerLock": "game-canvas",
+        "firstResultsRow": null,
+        "retryButton": null
+      }
+    },
+    {
+      "name": "56-duct-crouch-lip",
+      "file": "56-duct-crouch-lip.jpg",
+      "z": -46.71,
+      "x": 0,
+      "y": 1.49,
+      "speed": 0,
+      "state": "IDLE",
+      "grounded": true,
+      "postureHeight": 1.15,
+      "yaw": 0,
+      "pitch": 0,
+      "section": "sec_slide",
+      "checkpoint": "cp_building_jump",
+      "hud": {
+        "hudVisible": true,
+        "speed": "Speed 0.0 m/s",
+        "prompt": "",
+        "promptVisible": false,
+        "promptCount": 1,
+        "tutorialHint": "",
+        "tutorialVisible": false,
+        "toast": "",
+        "toastVisible": false,
+        "screenCount": 0,
+        "loading": false,
+        "bootLoader": false,
+        "pointerLock": "game-canvas",
+        "firstResultsRow": null,
+        "retryButton": null
+      }
+    },
+    {
+      "name": "57-duct-slide-inside",
+      "file": "57-duct-slide-inside.jpg",
+      "z": -49.12,
+      "x": 0,
+      "y": 1.37,
+      "speed": 6.02,
+      "state": "SPRINTING",
+      "grounded": true,
+      "postureHeight": 0.9,
+      "yaw": 0,
+      "pitch": 0,
+      "section": "sec_slide",
+      "checkpoint": "cp_building_jump",
+      "hud": {
+        "hudVisible": true,
+        "speed": "Speed 6.2 m/s",
+        "prompt": "",
+        "promptVisible": false,
+        "promptCount": 1,
+        "tutorialHint": "",
+        "tutorialVisible": false,
+        "toast": "Slide",
+        "toastVisible": true,
+        "screenCount": 0,
+        "loading": false,
+        "bootLoader": false,
+        "pointerLock": "game-canvas",
+        "firstResultsRow": null,
+        "retryButton": null
+      }
+    },
+    {
+      "name": "58-duct-stopped-inside",
+      "file": "58-duct-stopped-inside.jpg",
+      "z": -50.36,
+      "x": 0,
+      "y": 1.37,
+      "speed": 0,
+      "state": "IDLE",
+      "grounded": true,
+      "postureHeight": 0.9,
+      "yaw": 0,
+      "pitch": 0,
+      "section": "sec_slide",
+      "checkpoint": "cp_building_jump",
+      "hud": {
+        "hudVisible": true,
+        "speed": "Speed 0.0 m/s",
+        "prompt": "",
+        "promptVisible": false,
+        "promptCount": 1,
+        "tutorialHint": "",
+        "tutorialVisible": false,
+        "toast": "",
+        "toastVisible": false,
+        "screenCount": 0,
+        "loading": false,
+        "bootLoader": false,
+        "pointerLock": "game-canvas",
+        "firstResultsRow": null,
+        "retryButton": null
+      }
+    },
+    {
+      "name": "59-duct-exit-after-stop",
+      "file": "59-duct-exit-after-stop.jpg",
+      "z": -54.71,
+      "x": 0,
+      "y": 1.79,
+      "speed": 6,
+      "state": "RUNNING",
+      "grounded": true,
+      "postureHeight": 1.75,
+      "yaw": 0,
+      "pitch": 0,
+      "section": "sec_slide",
+      "checkpoint": "cp_slide",
+      "hud": {
+        "hudVisible": true,
+        "speed": "Speed 6.0 m/s",
+        "prompt": "",
+        "promptVisible": false,
+        "promptCount": 1,
+        "tutorialHint": "",
+        "tutorialVisible": false,
+        "toast": "Checkpoint reached: Slide Section Checkpoint",
+        "toastVisible": true,
+        "screenCount": 0,
+        "loading": false,
+        "bootLoader": false,
+        "pointerLock": "game-canvas",
+        "firstResultsRow": null,
+        "retryButton": null
+      }
+    }
+  ],
+  "scenarios": {
+    "polish": {
+      "toastOrder": {
+        "activationMs": 807,
+        "firstVisibleToast": "Move",
+        "checkpointToastMs": 807,
+        "checkpointDelayMs": 0,
+        "checkpointVisibleSeconds": 2.11,
+        "betweenActivationAndCheckpoint": [],
+        "checkpointUninterrupted": true,
+        "tutorialAfterCheckpoint": "Move",
+        "tutorialAfterCheckpointMs": 2996,
+        "finalVisible": false,
+        "emptyVisible": false,
+        "samples": [
+          {
+            "ms": 4,
+            "z": 14,
+            "checkpoint": null,
+            "text": "",
+            "visible": false,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 42,
+            "z": 13.9849998857826,
+            "checkpoint": null,
+            "text": "",
+            "visible": false,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 79,
+            "z": 13.924998855218291,
+            "checkpoint": null,
+            "text": "Move",
+            "visible": true,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 118,
+            "z": 13.859999503940344,
+            "checkpoint": null,
+            "text": "Move",
+            "visible": true,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 156,
+            "z": 13.859999503940344,
+            "checkpoint": null,
+            "text": "Move",
+            "visible": true,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 193,
+            "z": 13.859999503940344,
+            "checkpoint": null,
+            "text": "Move",
+            "visible": true,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 231,
+            "z": 13.859999503940344,
+            "checkpoint": null,
+            "text": "Move",
+            "visible": true,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 268,
+            "z": 13.859999503940344,
+            "checkpoint": null,
+            "text": "Move",
+            "visible": true,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 308,
+            "z": 13.609999127686024,
+            "checkpoint": null,
+            "text": "Move",
+            "visible": true,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 345,
+            "z": 13.474999122321606,
+            "checkpoint": null,
+            "text": "Move",
+            "visible": true,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 382,
+            "z": 13.474999122321606,
+            "checkpoint": null,
+            "text": "Move",
+            "visible": true,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 419,
+            "z": 13.474999122321606,
+            "checkpoint": null,
+            "text": "Move",
+            "visible": true,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 455,
+            "z": 13.474999122321606,
+            "checkpoint": null,
+            "text": "Move",
+            "visible": true,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 491,
+            "z": 13.474999122321606,
+            "checkpoint": null,
+            "text": "Move",
+            "visible": true,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 529,
+            "z": 13.474999122321606,
+            "checkpoint": null,
+            "text": "Move",
+            "visible": true,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 572,
+            "z": 12.749998472630978,
+            "checkpoint": null,
+            "text": "Move",
+            "visible": true,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 617,
+            "z": 12.449997328221798,
+            "checkpoint": null,
+            "text": "Move",
+            "visible": true,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 653,
+            "z": 12.24999688565731,
+            "checkpoint": null,
+            "text": "Move",
+            "visible": true,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 691,
+            "z": 12.149998284876347,
+            "checkpoint": null,
+            "text": "Move",
+            "visible": true,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 733,
+            "z": 11.849997900426388,
+            "checkpoint": null,
+            "text": "Move",
+            "visible": true,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 769,
+            "z": 11.550078772008419,
+            "checkpoint": null,
+            "text": "Move",
+            "visible": true,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 807,
+            "z": 11.450078390538692,
+            "checkpoint": "cp_start",
+            "text": "Checkpoint reached: Starting Roof Checkpoint",
+            "visible": true,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 1023,
+            "z": 10.458411745727062,
+            "checkpoint": "cp_start",
+            "text": "Checkpoint reached: Starting Roof Checkpoint",
+            "visible": true,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 1095,
+            "z": 10.315078491345048,
+            "checkpoint": "cp_start",
+            "text": "Checkpoint reached: Starting Roof Checkpoint",
+            "visible": true,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 1171,
+            "z": 10.233970585279167,
+            "checkpoint": "cp_start",
+            "text": "Checkpoint reached: Starting Roof Checkpoint",
+            "visible": true,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 1243,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "Checkpoint reached: Starting Roof Checkpoint",
+            "visible": true,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 1315,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "Checkpoint reached: Starting Roof Checkpoint",
+            "visible": true,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 1388,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "Checkpoint reached: Starting Roof Checkpoint",
+            "visible": true,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 1460,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "Checkpoint reached: Starting Roof Checkpoint",
+            "visible": true,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 1533,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "Checkpoint reached: Starting Roof Checkpoint",
+            "visible": true,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 1606,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "Checkpoint reached: Starting Roof Checkpoint",
+            "visible": true,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 1678,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "Checkpoint reached: Starting Roof Checkpoint",
+            "visible": true,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 1751,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "Checkpoint reached: Starting Roof Checkpoint",
+            "visible": true,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 1822,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "Checkpoint reached: Starting Roof Checkpoint",
+            "visible": true,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 1897,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "Checkpoint reached: Starting Roof Checkpoint",
+            "visible": true,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 1970,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "Checkpoint reached: Starting Roof Checkpoint",
+            "visible": true,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 2042,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "Checkpoint reached: Starting Roof Checkpoint",
+            "visible": true,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 2117,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "Checkpoint reached: Starting Roof Checkpoint",
+            "visible": true,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 2190,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "Checkpoint reached: Starting Roof Checkpoint",
+            "visible": true,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 2265,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "Checkpoint reached: Starting Roof Checkpoint",
+            "visible": true,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 2337,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "Checkpoint reached: Starting Roof Checkpoint",
+            "visible": true,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 2409,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "Checkpoint reached: Starting Roof Checkpoint",
+            "visible": true,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 2484,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "Checkpoint reached: Starting Roof Checkpoint",
+            "visible": true,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 2557,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "Checkpoint reached: Starting Roof Checkpoint",
+            "visible": true,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 2629,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "Checkpoint reached: Starting Roof Checkpoint",
+            "visible": true,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 2701,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "Checkpoint reached: Starting Roof Checkpoint",
+            "visible": true,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 2773,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "Checkpoint reached: Starting Roof Checkpoint",
+            "visible": true,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 2846,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "Checkpoint reached: Starting Roof Checkpoint",
+            "visible": true,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 2920,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "Checkpoint reached: Starting Roof Checkpoint",
+            "visible": true,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 2996,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "Move",
+            "visible": true,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 3068,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "Move",
+            "visible": true,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 3141,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "Move",
+            "visible": true,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 3217,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "Move",
+            "visible": true,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 3290,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "Move",
+            "visible": true,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 3363,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "Move",
+            "visible": true,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 3435,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "Move",
+            "visible": true,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 3509,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "Move",
+            "visible": true,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 3585,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "Move",
+            "visible": true,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 3657,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "Move",
+            "visible": true,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 3733,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "Move",
+            "visible": true,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 3805,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "Move",
+            "visible": true,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 3880,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "Move",
+            "visible": true,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 3953,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "Move",
+            "visible": true,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 4026,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "Move",
+            "visible": true,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 4099,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "",
+            "visible": false,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 4171,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "",
+            "visible": false,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 4245,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "",
+            "visible": false,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 4318,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "",
+            "visible": false,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 4390,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "",
+            "visible": false,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 4462,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "",
+            "visible": false,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 4534,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "",
+            "visible": false,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 4607,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "",
+            "visible": false,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 4679,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "",
+            "visible": false,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 4751,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "",
+            "visible": false,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 4823,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "",
+            "visible": false,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 4897,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "",
+            "visible": false,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 4969,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "",
+            "visible": false,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 5042,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "",
+            "visible": false,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 5119,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "",
+            "visible": false,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 5191,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "",
+            "visible": false,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 5266,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "",
+            "visible": false,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 5338,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "",
+            "visible": false,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 5412,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "",
+            "visible": false,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 5486,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "",
+            "visible": false,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 5559,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "",
+            "visible": false,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 5632,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "",
+            "visible": false,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 5705,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "",
+            "visible": false,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 5779,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "",
+            "visible": false,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 5852,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "",
+            "visible": false,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 5928,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "",
+            "visible": false,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 6002,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "",
+            "visible": false,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 6075,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "",
+            "visible": false,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 6147,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "",
+            "visible": false,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 6217,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "",
+            "visible": false,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 6290,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "",
+            "visible": false,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 6364,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "",
+            "visible": false,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 6437,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "",
+            "visible": false,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 6509,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "",
+            "visible": false,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 6582,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "",
+            "visible": false,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 6655,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "",
+            "visible": false,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 6728,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "",
+            "visible": false,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 6802,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "",
+            "visible": false,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 6874,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "",
+            "visible": false,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 6946,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "",
+            "visible": false,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 7018,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "",
+            "visible": false,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 7090,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "",
+            "visible": false,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 7164,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "",
+            "visible": false,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 7235,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "",
+            "visible": false,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 7308,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "",
+            "visible": false,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 7384,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "",
+            "visible": false,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 7457,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "",
+            "visible": false,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 7529,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "",
+            "visible": false,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 7603,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "",
+            "visible": false,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 7675,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "",
+            "visible": false,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 7752,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "",
+            "visible": false,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 7824,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "",
+            "visible": false,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 7899,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "",
+            "visible": false,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 7971,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "",
+            "visible": false,
+            "tutorialVisible": false
+          }
+        ],
+        "pose": {
+          "name": "55-checkpoint-toast-priority",
+          "file": "55-checkpoint-toast-priority.jpg",
+          "z": 10.61,
+          "x": 0,
+          "y": 0.89,
+          "speed": 3.43,
+          "state": "RUNNING",
+          "grounded": true,
+          "postureHeight": 1.75,
+          "yaw": 0,
+          "pitch": 0,
+          "section": "sec_start",
+          "checkpoint": "cp_start",
+          "hud": {
+            "hudVisible": true,
+            "speed": "Speed 3.9 m/s",
+            "prompt": "",
+            "promptVisible": false,
+            "promptCount": 1,
+            "tutorialHint": "",
+            "tutorialVisible": false,
+            "toast": "Checkpoint reached: Starting Roof Checkpoint",
+            "toastVisible": true,
+            "screenCount": 0,
+            "loading": false,
+            "bootLoader": false,
+            "pointerLock": "game-canvas",
+            "firstResultsRow": null,
+            "retryButton": null
+          }
+        }
+      },
+      "ductCamera": {
+        "crouch": {
+          "stance": "crouching",
+          "postureHeight": 1.15,
+          "z": -46.71,
+          "cameraY": 1.97,
+          "clearance": -0.07,
+          "pose": {
+            "name": "56-duct-crouch-lip",
+            "file": "56-duct-crouch-lip.jpg",
+            "z": -46.71,
+            "x": 0,
+            "y": 1.49,
+            "speed": 0,
+            "state": "IDLE",
+            "grounded": true,
+            "postureHeight": 1.15,
+            "yaw": 0,
+            "pitch": 0,
+            "section": "sec_slide",
+            "checkpoint": "cp_building_jump",
+            "hud": {
+              "hudVisible": true,
+              "speed": "Speed 0.0 m/s",
+              "prompt": "",
+              "promptVisible": false,
+              "promptCount": 1,
+              "tutorialHint": "",
+              "tutorialVisible": false,
+              "toast": "",
+              "toastVisible": false,
+              "screenCount": 0,
+              "loading": false,
+              "bootLoader": false,
+              "pointerLock": "game-canvas",
+              "firstResultsRow": null,
+              "retryButton": null
+            }
+          }
+        },
+        "slide": {
+          "samples": [
+            {
+              "z": -47.144,
+              "y": 1.37,
+              "stance": "sliding",
+              "posture": 0.9,
+              "speed": 7.22,
+              "cameraY": 1.572
+            },
+            {
+              "z": -47.263,
+              "y": 1.37,
+              "stance": "sliding",
+              "posture": 0.9,
+              "speed": 7.15,
+              "cameraY": 1.569
+            },
+            {
+              "z": -47.381,
+              "y": 1.37,
+              "stance": "sliding",
+              "posture": 0.9,
+              "speed": 7.09,
+              "cameraY": 1.566
+            },
+            {
+              "z": -47.614,
+              "y": 1.37,
+              "stance": "sliding",
+              "posture": 0.9,
+              "speed": 6.95,
+              "cameraY": 1.564
+            },
+            {
+              "z": -47.729,
+              "y": 1.37,
+              "stance": "sliding",
+              "posture": 0.9,
+              "speed": 6.89,
+              "cameraY": 1.564
+            },
+            {
+              "z": -47.843,
+              "y": 1.37,
+              "stance": "sliding",
+              "posture": 0.9,
+              "speed": 6.82,
+              "cameraY": 1.565
+            },
+            {
+              "z": -48.067,
+              "y": 1.37,
+              "stance": "sliding",
+              "posture": 0.9,
+              "speed": 6.69,
+              "cameraY": 1.567
+            },
+            {
+              "z": -48.177,
+              "y": 1.37,
+              "stance": "sliding",
+              "posture": 0.9,
+              "speed": 6.62,
+              "cameraY": 1.568
+            },
+            {
+              "z": -48.286,
+              "y": 1.37,
+              "stance": "sliding",
+              "posture": 0.9,
+              "speed": 6.55,
+              "cameraY": 1.57
+            },
+            {
+              "z": -48.501,
+              "y": 1.37,
+              "stance": "sliding",
+              "posture": 0.9,
+              "speed": 6.42,
+              "cameraY": 1.573
+            },
+            {
+              "z": -48.607,
+              "y": 1.37,
+              "stance": "sliding",
+              "posture": 0.9,
+              "speed": 6.35,
+              "cameraY": 1.575
+            },
+            {
+              "z": -48.712,
+              "y": 1.37,
+              "stance": "sliding",
+              "posture": 0.9,
+              "speed": 6.29,
+              "cameraY": 1.577
+            },
+            {
+              "z": -48.918,
+              "y": 1.37,
+              "stance": "sliding",
+              "posture": 0.9,
+              "speed": 6.15,
+              "cameraY": 1.58
+            },
+            {
+              "z": -49.019,
+              "y": 1.37,
+              "stance": "sliding",
+              "posture": 0.9,
+              "speed": 6.09,
+              "cameraY": 1.581
+            }
+          ],
+          "maxCameraY": 1.581,
+          "clearance": 0.319,
+          "pose": {
+            "name": "57-duct-slide-inside",
+            "file": "57-duct-slide-inside.jpg",
+            "z": -49.12,
+            "x": 0,
+            "y": 1.37,
+            "speed": 6.02,
+            "state": "SPRINTING",
+            "grounded": true,
+            "postureHeight": 0.9,
+            "yaw": 0,
+            "pitch": 0,
+            "section": "sec_slide",
+            "checkpoint": "cp_building_jump",
+            "hud": {
+              "hudVisible": true,
+              "speed": "Speed 6.2 m/s",
+              "prompt": "",
+              "promptVisible": false,
+              "promptCount": 1,
+              "tutorialHint": "",
+              "tutorialVisible": false,
+              "toast": "Slide",
+              "toastVisible": true,
+              "screenCount": 0,
+              "loading": false,
+              "bootLoader": false,
+              "pointerLock": "game-canvas",
+              "firstResultsRow": null,
+              "retryButton": null
+            }
+          }
+        },
+        "stopInside": {
+          "z": -50.36,
+          "stance": "crouching",
+          "postureHeight": 0.9,
+          "cameraY": 1.76,
+          "clearance": 0.14,
+          "pose": {
+            "name": "58-duct-stopped-inside",
+            "file": "58-duct-stopped-inside.jpg",
+            "z": -50.36,
+            "x": 0,
+            "y": 1.37,
+            "speed": 0,
+            "state": "IDLE",
+            "grounded": true,
+            "postureHeight": 0.9,
+            "yaw": 0,
+            "pitch": 0,
+            "section": "sec_slide",
+            "checkpoint": "cp_building_jump",
+            "hud": {
+              "hudVisible": true,
+              "speed": "Speed 0.0 m/s",
+              "prompt": "",
+              "promptVisible": false,
+              "promptCount": 1,
+              "tutorialHint": "",
+              "tutorialVisible": false,
+              "toast": "",
+              "toastVisible": false,
+              "screenCount": 0,
+              "loading": false,
+              "bootLoader": false,
+              "pointerLock": "game-canvas",
+              "firstResultsRow": null,
+              "retryButton": null
+            }
+          }
+        },
+        "exit": {
+          "z": -54.99,
+          "pose": {
+            "name": "59-duct-exit-after-stop",
+            "file": "59-duct-exit-after-stop.jpg",
+            "z": -54.71,
+            "x": 0,
+            "y": 1.79,
+            "speed": 6,
+            "state": "RUNNING",
+            "grounded": true,
+            "postureHeight": 1.75,
+            "yaw": 0,
+            "pitch": 0,
+            "section": "sec_slide",
+            "checkpoint": "cp_slide",
+            "hud": {
+              "hudVisible": true,
+              "speed": "Speed 6.0 m/s",
+              "prompt": "",
+              "promptVisible": false,
+              "promptCount": 1,
+              "tutorialHint": "",
+              "tutorialVisible": false,
+              "toast": "Checkpoint reached: Slide Section Checkpoint",
+              "toastVisible": true,
+              "screenCount": 0,
+              "loading": false,
+              "bootLoader": false,
+              "pointerLock": "game-canvas",
+              "firstResultsRow": null,
+              "retryButton": null
+            }
+          }
+        }
+      },
+      "toastCriticalSequence": {
+        "method": "ui.showToast injection on a fresh profile (queue empty)",
+        "move": {
+          "message": "Move",
+          "durationMs": 1800
+        },
+        "cp1": {
+          "message": "Checkpoint reached: CP1",
+          "durationMs": 2200
+        },
+        "cp2": {
+          "message": "Checkpoint reached: CP2",
+          "durationMs": 2200
+        },
+        "injected": {
+          "move": true,
+          "cp1": true,
+          "cp2": true
+        },
+        "samples": [
+          {
+            "ms": 1,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "Move",
+            "visible": true,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 26,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "Move",
+            "visible": true,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 52,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "Move",
+            "visible": true,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 78,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "Move",
+            "visible": true,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 105,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "Move",
+            "visible": true,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 135,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "Checkpoint reached: CP1",
+            "visible": true,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 161,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "Checkpoint reached: CP1",
+            "visible": true,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 191,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "Checkpoint reached: CP1",
+            "visible": true,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 217,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "Checkpoint reached: CP1",
+            "visible": true,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 250,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "Checkpoint reached: CP1",
+            "visible": true,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 275,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "Checkpoint reached: CP1",
+            "visible": true,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 302,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "Checkpoint reached: CP1",
+            "visible": true,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 333,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "Checkpoint reached: CP1",
+            "visible": true,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 359,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "Checkpoint reached: CP1",
+            "visible": true,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 385,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "Checkpoint reached: CP1",
+            "visible": true,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 415,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "Checkpoint reached: CP1",
+            "visible": true,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 442,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "Checkpoint reached: CP1",
+            "visible": true,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 468,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "Checkpoint reached: CP1",
+            "visible": true,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 500,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "Checkpoint reached: CP1",
+            "visible": true,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 526,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "Checkpoint reached: CP1",
+            "visible": true,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 558,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "Checkpoint reached: CP1",
+            "visible": true,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 585,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "Checkpoint reached: CP1",
+            "visible": true,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 616,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "Checkpoint reached: CP1",
+            "visible": true,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 642,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "Checkpoint reached: CP1",
+            "visible": true,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 668,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "Checkpoint reached: CP1",
+            "visible": true,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 697,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "Checkpoint reached: CP1",
+            "visible": true,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 724,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "Checkpoint reached: CP1",
+            "visible": true,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 751,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "Checkpoint reached: CP1",
+            "visible": true,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 780,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "Checkpoint reached: CP1",
+            "visible": true,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 808,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "Checkpoint reached: CP1",
+            "visible": true,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 835,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "Checkpoint reached: CP1",
+            "visible": true,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 861,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "Checkpoint reached: CP1",
+            "visible": true,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 889,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "Checkpoint reached: CP1",
+            "visible": true,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 916,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "Checkpoint reached: CP1",
+            "visible": true,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 943,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "Checkpoint reached: CP1",
+            "visible": true,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 973,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "Checkpoint reached: CP1",
+            "visible": true,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 1000,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "Checkpoint reached: CP1",
+            "visible": true,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 1025,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "Checkpoint reached: CP1",
+            "visible": true,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 1052,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "Checkpoint reached: CP1",
+            "visible": true,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 1080,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "Checkpoint reached: CP1",
+            "visible": true,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 1107,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "Checkpoint reached: CP1",
+            "visible": true,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 1134,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "Checkpoint reached: CP1",
+            "visible": true,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 1161,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "Checkpoint reached: CP1",
+            "visible": true,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 1191,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "Checkpoint reached: CP1",
+            "visible": true,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 1219,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "Checkpoint reached: CP1",
+            "visible": true,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 1247,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "Checkpoint reached: CP1",
+            "visible": true,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 1273,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "Checkpoint reached: CP1",
+            "visible": true,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 1299,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "Checkpoint reached: CP1",
+            "visible": true,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 1325,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "Checkpoint reached: CP1",
+            "visible": true,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 1355,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "Checkpoint reached: CP1",
+            "visible": true,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 1380,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "Checkpoint reached: CP1",
+            "visible": true,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 1407,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "Checkpoint reached: CP1",
+            "visible": true,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 1434,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "Checkpoint reached: CP1",
+            "visible": true,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 1465,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "Checkpoint reached: CP1",
+            "visible": true,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 1491,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "Checkpoint reached: CP1",
+            "visible": true,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 1517,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "Checkpoint reached: CP1",
+            "visible": true,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 1543,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "Checkpoint reached: CP1",
+            "visible": true,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 1573,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "Checkpoint reached: CP1",
+            "visible": true,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 1600,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "Checkpoint reached: CP1",
+            "visible": true,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 1626,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "Checkpoint reached: CP1",
+            "visible": true,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 1652,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "Checkpoint reached: CP1",
+            "visible": true,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 1680,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "Checkpoint reached: CP1",
+            "visible": true,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 1707,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "Checkpoint reached: CP1",
+            "visible": true,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 1735,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "Checkpoint reached: CP1",
+            "visible": true,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 1760,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "Checkpoint reached: CP1",
+            "visible": true,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 1791,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "Checkpoint reached: CP1",
+            "visible": true,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 1819,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "Checkpoint reached: CP1",
+            "visible": true,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 1849,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "Checkpoint reached: CP1",
+            "visible": true,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 1874,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "Checkpoint reached: CP1",
+            "visible": true,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 1901,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "Checkpoint reached: CP1",
+            "visible": true,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 1930,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "Checkpoint reached: CP1",
+            "visible": true,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 1957,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "Checkpoint reached: CP1",
+            "visible": true,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 1984,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "Checkpoint reached: CP1",
+            "visible": true,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 2011,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "Checkpoint reached: CP1",
+            "visible": true,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 2038,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "Checkpoint reached: CP1",
+            "visible": true,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 2063,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "Checkpoint reached: CP1",
+            "visible": true,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 2090,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "Checkpoint reached: CP1",
+            "visible": true,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 2117,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "Checkpoint reached: CP1",
+            "visible": true,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 2147,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "Checkpoint reached: CP1",
+            "visible": true,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 2175,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "Checkpoint reached: CP1",
+            "visible": true,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 2202,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "Checkpoint reached: CP1",
+            "visible": true,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 2232,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "Checkpoint reached: CP1",
+            "visible": true,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 2258,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "Checkpoint reached: CP1",
+            "visible": true,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 2287,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "Checkpoint reached: CP1",
+            "visible": true,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 2314,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "Checkpoint reached: CP1",
+            "visible": true,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 2342,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "Checkpoint reached: CP1",
+            "visible": true,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 2369,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "Checkpoint reached: CP2",
+            "visible": true,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 2397,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "Checkpoint reached: CP2",
+            "visible": true,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 2423,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "Checkpoint reached: CP2",
+            "visible": true,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 2450,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "Checkpoint reached: CP2",
+            "visible": true,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 2476,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "Checkpoint reached: CP2",
+            "visible": true,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 2504,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "Checkpoint reached: CP2",
+            "visible": true,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 2530,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "Checkpoint reached: CP2",
+            "visible": true,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 2557,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "Checkpoint reached: CP2",
+            "visible": true,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 2583,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "Checkpoint reached: CP2",
+            "visible": true,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 2609,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "Checkpoint reached: CP2",
+            "visible": true,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 2641,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "Checkpoint reached: CP2",
+            "visible": true,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 2667,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "Checkpoint reached: CP2",
+            "visible": true,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 2696,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "Checkpoint reached: CP2",
+            "visible": true,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 2724,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "Checkpoint reached: CP2",
+            "visible": true,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 2751,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "Checkpoint reached: CP2",
+            "visible": true,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 2782,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "Checkpoint reached: CP2",
+            "visible": true,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 2808,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "Checkpoint reached: CP2",
+            "visible": true,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 2835,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "Checkpoint reached: CP2",
+            "visible": true,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 2862,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "Checkpoint reached: CP2",
+            "visible": true,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 2889,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "Checkpoint reached: CP2",
+            "visible": true,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 2917,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "Checkpoint reached: CP2",
+            "visible": true,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 2948,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "Checkpoint reached: CP2",
+            "visible": true,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 2975,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "Checkpoint reached: CP2",
+            "visible": true,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 3002,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "Checkpoint reached: CP2",
+            "visible": true,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 3031,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "Checkpoint reached: CP2",
+            "visible": true,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 3058,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "Checkpoint reached: CP2",
+            "visible": true,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 3088,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "Checkpoint reached: CP2",
+            "visible": true,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 3116,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "Checkpoint reached: CP2",
+            "visible": true,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 3141,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "Checkpoint reached: CP2",
+            "visible": true,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 3168,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "Checkpoint reached: CP2",
+            "visible": true,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 3198,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "Checkpoint reached: CP2",
+            "visible": true,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 3225,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "Checkpoint reached: CP2",
+            "visible": true,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 3252,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "Checkpoint reached: CP2",
+            "visible": true,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 3279,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "Checkpoint reached: CP2",
+            "visible": true,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 3307,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "Checkpoint reached: CP2",
+            "visible": true,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 3335,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "Checkpoint reached: CP2",
+            "visible": true,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 3365,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "Checkpoint reached: CP2",
+            "visible": true,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 3392,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "Checkpoint reached: CP2",
+            "visible": true,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 3419,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "Checkpoint reached: CP2",
+            "visible": true,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 3447,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "Checkpoint reached: CP2",
+            "visible": true,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 3475,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "Checkpoint reached: CP2",
+            "visible": true,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 3505,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "Checkpoint reached: CP2",
+            "visible": true,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 3533,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "Checkpoint reached: CP2",
+            "visible": true,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 3559,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "Checkpoint reached: CP2",
+            "visible": true,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 3587,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "Checkpoint reached: CP2",
+            "visible": true,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 3613,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "Checkpoint reached: CP2",
+            "visible": true,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 3639,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "Checkpoint reached: CP2",
+            "visible": true,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 3668,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "Checkpoint reached: CP2",
+            "visible": true,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 3695,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "Checkpoint reached: CP2",
+            "visible": true,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 3722,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "Checkpoint reached: CP2",
+            "visible": true,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 3748,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "Checkpoint reached: CP2",
+            "visible": true,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 3774,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "Checkpoint reached: CP2",
+            "visible": true,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 3800,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "Checkpoint reached: CP2",
+            "visible": true,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 3827,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "Checkpoint reached: CP2",
+            "visible": true,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 3858,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "Checkpoint reached: CP2",
+            "visible": true,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 3884,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "Checkpoint reached: CP2",
+            "visible": true,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 3911,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "Checkpoint reached: CP2",
+            "visible": true,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 3941,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "Checkpoint reached: CP2",
+            "visible": true,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 3971,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "Checkpoint reached: CP2",
+            "visible": true,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 3997,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "Checkpoint reached: CP2",
+            "visible": true,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 4023,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "Checkpoint reached: CP2",
+            "visible": true,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 4050,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "Checkpoint reached: CP2",
+            "visible": true,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 4076,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "Checkpoint reached: CP2",
+            "visible": true,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 4108,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "Checkpoint reached: CP2",
+            "visible": true,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 4134,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "Checkpoint reached: CP2",
+            "visible": true,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 4160,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "Checkpoint reached: CP2",
+            "visible": true,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 4191,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "Checkpoint reached: CP2",
+            "visible": true,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 4221,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "Checkpoint reached: CP2",
+            "visible": true,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 4247,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "Checkpoint reached: CP2",
+            "visible": true,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 4275,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "Checkpoint reached: CP2",
+            "visible": true,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 4302,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "Checkpoint reached: CP2",
+            "visible": true,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 4332,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "Checkpoint reached: CP2",
+            "visible": true,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 4359,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "Checkpoint reached: CP2",
+            "visible": true,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 4388,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "Checkpoint reached: CP2",
+            "visible": true,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 4415,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "Checkpoint reached: CP2",
+            "visible": true,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 4442,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "Checkpoint reached: CP2",
+            "visible": true,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 4468,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "Checkpoint reached: CP2",
+            "visible": true,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 4494,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "Checkpoint reached: CP2",
+            "visible": true,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 4521,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "Checkpoint reached: CP2",
+            "visible": true,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 4548,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "Move",
+            "visible": true,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 4574,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "Move",
+            "visible": true,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 4600,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "Move",
+            "visible": true,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 4626,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "Move",
+            "visible": true,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 4653,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "Move",
+            "visible": true,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 4678,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "Move",
+            "visible": true,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 4704,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "Move",
+            "visible": true,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 4732,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "Move",
+            "visible": true,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 4758,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "Move",
+            "visible": true,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 4785,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "Move",
+            "visible": true,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 4813,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "Move",
+            "visible": true,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 4840,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "Move",
+            "visible": true,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 4868,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "Move",
+            "visible": true,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 4893,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "Move",
+            "visible": true,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 4923,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "Move",
+            "visible": true,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 4951,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "Move",
+            "visible": true,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 4977,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "Move",
+            "visible": true,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 5009,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "Move",
+            "visible": true,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 5035,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "Move",
+            "visible": true,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 5065,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "Move",
+            "visible": true,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 5090,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "Move",
+            "visible": true,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 5118,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "Move",
+            "visible": true,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 5147,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "Move",
+            "visible": true,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 5175,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "Move",
+            "visible": true,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 5202,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "Move",
+            "visible": true,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 5228,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "Move",
+            "visible": true,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 5255,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "Move",
+            "visible": true,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 5283,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "Move",
+            "visible": true,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 5310,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "Move",
+            "visible": true,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 5339,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "Move",
+            "visible": true,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 5366,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "Move",
+            "visible": true,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 5393,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "Move",
+            "visible": true,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 5421,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "Move",
+            "visible": true,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 5448,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "Move",
+            "visible": true,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 5474,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "Move",
+            "visible": true,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 5502,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "Move",
+            "visible": true,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 5527,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "Move",
+            "visible": true,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 5558,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "Move",
+            "visible": true,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 5587,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "Move",
+            "visible": true,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 5615,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "Move",
+            "visible": true,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 5643,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "Move",
+            "visible": true,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 5671,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "Move",
+            "visible": true,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 5699,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "Move",
+            "visible": true,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 5725,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "Move",
+            "visible": true,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 5754,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "Move",
+            "visible": true,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 5779,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "Move",
+            "visible": true,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 5806,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "Move",
+            "visible": true,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 5834,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "Move",
+            "visible": true,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 5860,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "Move",
+            "visible": true,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 5891,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "Move",
+            "visible": true,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 5918,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "Move",
+            "visible": true,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 5946,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "Move",
+            "visible": true,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 5974,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "Move",
+            "visible": true,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 6002,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "Move",
+            "visible": true,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 6030,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "Move",
+            "visible": true,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 6057,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "Move",
+            "visible": true,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 6083,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "Move",
+            "visible": true,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 6109,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "Move",
+            "visible": true,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 6139,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "Move",
+            "visible": true,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 6166,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "Move",
+            "visible": true,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 6191,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "Move",
+            "visible": true,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 6217,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "Move",
+            "visible": true,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 6243,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "",
+            "visible": false,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 6272,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "",
+            "visible": false,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 6301,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "",
+            "visible": false,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 6327,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "",
+            "visible": false,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 6358,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "",
+            "visible": false,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 6386,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "",
+            "visible": false,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 6416,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "",
+            "visible": false,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 6442,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "",
+            "visible": false,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 6471,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "",
+            "visible": false,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 6498,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "",
+            "visible": false,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 6524,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "",
+            "visible": false,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 6551,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "",
+            "visible": false,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 6577,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "",
+            "visible": false,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 6608,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "",
+            "visible": false,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 6635,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "",
+            "visible": false,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 6664,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "",
+            "visible": false,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 6691,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "",
+            "visible": false,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 6719,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "",
+            "visible": false,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 6747,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "",
+            "visible": false,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 6775,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "",
+            "visible": false,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 6805,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "",
+            "visible": false,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 6832,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "",
+            "visible": false,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 6858,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "",
+            "visible": false,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 6886,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "",
+            "visible": false,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 6915,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "",
+            "visible": false,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 6941,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "",
+            "visible": false,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 6968,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "",
+            "visible": false,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 6998,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "",
+            "visible": false,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 7024,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "",
+            "visible": false,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 7054,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "",
+            "visible": false,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 7080,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "",
+            "visible": false,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 7107,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "",
+            "visible": false,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 7134,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "",
+            "visible": false,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 7164,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "",
+            "visible": false,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 7191,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "",
+            "visible": false,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 7217,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "",
+            "visible": false,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 7243,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "",
+            "visible": false,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 7273,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "",
+            "visible": false,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 7301,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "",
+            "visible": false,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 7326,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "",
+            "visible": false,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 7353,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "",
+            "visible": false,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 7381,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "",
+            "visible": false,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 7407,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "",
+            "visible": false,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 7435,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "",
+            "visible": false,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 7464,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "",
+            "visible": false,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 7491,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "",
+            "visible": false,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 7517,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "",
+            "visible": false,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 7546,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "",
+            "visible": false,
+            "tutorialVisible": false
+          },
+          {
+            "ms": 7573,
+            "z": 10.213973999023438,
+            "checkpoint": "cp_start",
+            "text": "",
+            "visible": false,
+            "tutorialVisible": false
+          }
+        ],
+        "segments": [
+          {
+            "message": "Move",
+            "startMs": 1,
+            "endMs": 135
+          },
+          {
+            "message": "Checkpoint reached: CP1",
+            "startMs": 135,
+            "endMs": 2369
+          },
+          {
+            "message": "Checkpoint reached: CP2",
+            "startMs": 2369,
+            "endMs": 4548
+          },
+          {
+            "message": "Move",
+            "startMs": 4548,
+            "endMs": 6243
+          }
+        ],
+        "order": [
+          "Move",
+          "Checkpoint reached: CP1",
+          "Checkpoint reached: CP2",
+          "Move"
+        ],
+        "cp1DurationMs": 2234,
+        "cp2DurationMs": 2179,
+        "cp1ToCp2GapMs": 0,
+        "restoredMoveDurationMs": 1695,
+        "finalVisible": false,
+        "cp2Frame": {
+          "seen": true,
+          "text": "Checkpoint reached: CP2",
+          "pose": {
+            "name": "61-toast-critical-sequence",
+            "file": "61-toast-critical-sequence.jpg",
+            "z": 10.21,
+            "x": 0,
+            "y": 0.89,
+            "speed": 0,
+            "state": "IDLE",
+            "grounded": true,
+            "postureHeight": 1.75,
+            "yaw": 0,
+            "pitch": 0,
+            "section": "sec_start",
+            "checkpoint": "cp_start",
+            "hud": {
+              "hudVisible": true,
+              "speed": "Speed 0.0 m/s",
+              "prompt": "",
+              "promptVisible": false,
+              "promptCount": 1,
+              "tutorialHint": "",
+              "tutorialVisible": false,
+              "toast": "Checkpoint reached: CP2",
+              "toastVisible": true,
+              "screenCount": 0,
+              "loading": false,
+              "bootLoader": false,
+              "pointerLock": "game-canvas",
+              "firstResultsRow": null,
+              "retryButton": null
+            }
+          }
+        }
+      },
+      "diagnostics": {
+        "consoleErrors": [],
+        "consoleWarnings": [],
+        "pageErrors": [],
+        "failedRequests": []
+      }
+    }
+  },
+  "passed": true,
+  "error": null,
+  "harnessSelfChecks": {
+    "lateralTolerance": {
+      "passed": true,
+      "tolerance": 1,
+      "cases": [
+        {
+          "label": "centre",
+          "x": 0,
+          "expected": true,
+          "actual": true
+        },
+        {
+          "label": "positive inside",
+          "x": 0.6,
+          "expected": true,
+          "actual": true
+        },
+        {
+          "label": "negative inside",
+          "x": -0.6,
+          "expected": true,
+          "actual": true
+        },
+        {
+          "label": "positive near edge",
+          "x": 0.99,
+          "expected": true,
+          "actual": true
+        },
+        {
+          "label": "negative near edge",
+          "x": -0.99,
+          "expected": true,
+          "actual": true
+        },
+        {
+          "label": "positive at edge",
+          "x": 1,
+          "expected": false,
+          "actual": false
+        },
+        {
+          "label": "negative at edge",
+          "x": -1,
+          "expected": false,
+          "actual": false
+        },
+        {
+          "label": "positive outside",
+          "x": 1.4,
+          "expected": false,
+          "actual": false
+        },
+        {
+          "label": "negative outside (Step 3.6 bug)",
+          "x": -1.4,
+          "expected": false,
+          "actual": false
+        },
+        {
+          "label": "negative far outside",
+          "x": -3.2,
+          "expected": false,
+          "actual": false
+        },
+        {
+          "label": "missing sample",
+          "x": null,
+          "expected": false,
+          "actual": false
+        }
+      ],
+      "failures": []
+    }
+  },
+  "failedChecks": [],
+  "finishedAt": "2026-11-23T06:04:09.986Z"
+}
