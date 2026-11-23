@@ -1,0 +1,30 @@
+Step 3.9 — First Section UX acceptance session 6
+Generated: 2026-11-23T06:38:28.262Z
+Browser: Microsoft Edge 157.0.4341.46 (headed-edge)
+Frames: 12, video frames: 0
+
+Phases:
+  COMPLETED A-boot (10239 ms)
+  COMPLETED C-gap-a (10352 ms)
+  COMPLETED C-gap-b-cp2 (8106 ms)
+  FAILED    C-rest-of-route (2833 ms)
+            Error: plant step: Space did not produce a jump (take-off z=-23.60, grounded=true)
+
+Toast segments (visible message windows):
+     1203 →    2356 ms   1153 ms  "Move"
+     2356 →    4576 ms   2220 ms  "Checkpoint reached: Starting Roof Checkpoint"
+     4576 →    5176 ms    600 ms  "Move"
+    10104 →   11877 ms   1773 ms  "Jump"
+    16902 →   19077 ms   2175 ms  "Checkpoint reached: Building Jump Checkpoint"
+
+Empty visible toast samples: 18
+Duplicate toast DOM nodes: 0
+Overlaps: 0
+
+Console errors: 0
+Page errors: 0
+Failed requests: 0
+
+Checks:
+  PASS C — Gap A crossed with one normal sprint jump — {"takeoff":{"x":-0.0007328129722736776,"y":0.8949442428929615,"z":-1.223026767373085},"landing":{"x":-0.0007328129722736776,"y":0.895105816423893,"z":-7.59803107380867},"respawns":0}
+  PASS C — Gap B crossed with one normal sprint jump — {"takeoff":{"x":-0.0006827557226642966,"y":0.8948987424373627,"z":-12.445236459374428},"landing":{"x":-0.0006827557226642966,"y":0.8952007666230202,"z":-18.82022000849247},"respawns":0}

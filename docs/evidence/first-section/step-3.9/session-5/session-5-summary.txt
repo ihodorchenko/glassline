@@ -1,0 +1,34 @@
+Step 3.9 — First Section UX acceptance session 5
+Generated: 2026-11-23T06:37:06.280Z
+Browser: Microsoft Edge 157.0.4341.46 (headed-edge)
+Frames: 14, video frames: 0
+
+Phases:
+  COMPLETED A-spawn-pointer-lock (10919 ms)
+  COMPLETED E-pause-resume (4059 ms)
+  COMPLETED C-gap-a (9101 ms)
+  FAILED    C-gap-b-cp2 (5992 ms)
+            Error: gap B: Space did not produce a jump (take-off z=-13.62, grounded=true)
+  FAILED    C-rest-of-route (12769 ms)
+            Error: Timed out waiting for plant step take-off; last={"flow":"gameplay","sessionStatus":"running","section":"sec_building_jump","player":{"position":{"x":0,"y":0.8949949145317078,"z":10},"speed":0,"state":"IDLE","grounded":true,"stance":"standing","postureHeight":1.75},"camera":{"yaw":0,"pitch":0,"position":{"x":0,"y":1.619994914531708,"z":10}},"activeCheckpointId":"cp_start","activatedCheckpointIds":["cp_start"],"respawnCount":2,"screen":null,"pointerLocked":true}
+
+Toast segments (visible message windows):
+     6427 →    7556 ms   1129 ms  "Move"
+     7556 →    9754 ms   2198 ms  "Checkpoint reached: Starting Roof Checkpoint"
+     9754 →   10427 ms    673 ms  "Move"
+    14032 →   15802 ms   1770 ms  "Jump"
+
+Empty visible toast samples: 11
+Duplicate toast DOM nodes: 0
+Overlaps: 0
+
+Console errors: 0
+Page errors: 0
+Failed requests: 0
+
+Checks:
+  PASS A — before the first click the mouse does not look around and the HUD offers no mouse-capture hint (confirmed gap) — {"pointerLockBeforeClick":null,"hudText":"Speed 0.0 m/sEsc pause","hudMentionsMouseCapture":false,"noLock":{"before":0,"after":0,"changed":false},"pointerLockAfterClick":"game-canvas","withLock":{"before":0,"after":-0.44,"changed":true}}
+  PASS A — clicking the game canvas captures the pointer and mouse look works — {"lock":"game-canvas","withLock":{"before":0,"after":-0.44,"changed":true}}
+  PASS E — after Resume the mouse look stays dead until the player clicks the game again (F-07 confirmed) — {"clicked":true,"flow":"gameplay","pointerLock":null,"hudVisible":true,"screenCount":0,"yawBeforeMouse":0,"yawAfterMouse":0,"mouseLookWorks":false}
+  PASS E — clicking the game after Resume restores pointer lock and mouse look — {"pointerLock":"game-canvas","mouseLookWorks":true}
+  PASS C — Gap A crossed with one normal sprint jump — {"takeoff":{"x":0.001432011675206013,"y":0.8981013509910554,"z":-1.2617722749710083},"landing":{"x":0.0014322930090031605,"y":0.8951657488942146,"z":-7.636777028441429},"respawns":0}

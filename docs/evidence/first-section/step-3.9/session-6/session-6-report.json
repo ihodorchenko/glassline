@@ -1,0 +1,3304 @@
+{
+  "tool": "docs/evidence/first-section/step-3.9/harness/step-3.9-session.mjs",
+  "generatedAt": "2026-11-23T06:38:28.262Z",
+  "launchUrl": "http://127.0.0.1:5325/?dev=first_section",
+  "viewport": {
+    "width": 1600,
+    "height": 900
+  },
+  "environment": "headed-edge",
+  "browser": {
+    "name": "Microsoft Edge",
+    "channel": "msedge",
+    "version": "157.0.4341.46",
+    "engine": "Chromium (playwright)",
+    "window": "headed"
+  },
+  "host": {
+    "platform": "darwin",
+    "arch": "arm64",
+    "cpuCount": 8,
+    "loadAvg": [
+      3.673828125,
+      5.12939453125,
+      5.6416015625
+    ]
+  },
+  "checklist": [
+    {
+      "name": "C — Gap A crossed with one normal sprint jump",
+      "passed": true,
+      "details": "{\"takeoff\":{\"x\":-0.0007328129722736776,\"y\":0.8949442428929615,\"z\":-1.223026767373085},\"landing\":{\"x\":-0.0007328129722736776,\"y\":0.895105816423893,\"z\":-7.59803107380867},\"respawns\":0}"
+    },
+    {
+      "name": "C — Gap B crossed with one normal sprint jump",
+      "passed": true,
+      "details": "{\"takeoff\":{\"x\":-0.0006827557226642966,\"y\":0.8948987424373627,\"z\":-12.445236459374428},\"landing\":{\"x\":-0.0006827557226642966,\"y\":0.8952007666230202,\"z\":-18.82022000849247},\"respawns\":0}"
+    }
+  ],
+  "marks": [],
+  "screenshots": [
+    {
+      "name": "S6-A-01-spawn-locked",
+      "note": "spawn with the mouse captured",
+      "atMs": 10874,
+      "status": {
+        "flow": "gameplay",
+        "sessionStatus": "running",
+        "section": "sec_start",
+        "player": {
+          "position": {
+            "x": 0,
+            "y": 0.894704282283783,
+            "z": 14
+          },
+          "speed": 0,
+          "state": "IDLE",
+          "grounded": true,
+          "stance": "standing",
+          "postureHeight": 1.75
+        },
+        "camera": {
+          "yaw": 0,
+          "pitch": 0,
+          "position": {
+            "x": 0,
+            "y": 1.6197042823049765,
+            "z": 14
+          }
+        },
+        "activeCheckpointId": null,
+        "activatedCheckpointIds": [],
+        "respawnCount": 0,
+        "screen": null,
+        "pointerLocked": true
+      },
+      "dom": {
+        "hud": true,
+        "toast": {
+          "text": "",
+          "visible": false,
+          "display": "block",
+          "opacity": 0,
+          "rect": {
+            "x": 784,
+            "y": 16,
+            "w": 32,
+            "h": 20
+          }
+        },
+        "toastCount": 1,
+        "tutorial": {
+          "text": "",
+          "visible": false,
+          "display": "none",
+          "opacity": 1,
+          "rect": {
+            "x": 0,
+            "y": 0,
+            "w": 0,
+            "h": 0
+          }
+        },
+        "timer": {
+          "text": "",
+          "visible": false,
+          "display": "none",
+          "opacity": 1,
+          "rect": {
+            "x": 0,
+            "y": 0,
+            "w": 0,
+            "h": 0
+          }
+        },
+        "speed": {
+          "text": "Speed 0.0 m/s",
+          "visible": true,
+          "display": "block",
+          "opacity": 1,
+          "rect": {
+            "x": 24,
+            "y": 849,
+            "w": 132,
+            "h": 27
+          }
+        },
+        "prompt": {
+          "text": "",
+          "visible": false,
+          "display": "block",
+          "opacity": 0,
+          "rect": {
+            "x": 782,
+            "y": 788,
+            "w": 36,
+            "h": 20
+          }
+        },
+        "hint": {
+          "text": "Esc pause",
+          "visible": true,
+          "display": "block",
+          "opacity": 1,
+          "rect": {
+            "x": 1509,
+            "y": 864,
+            "w": 69,
+            "h": 14
+          }
+        },
+        "screenCount": 0,
+        "screenTitle": "",
+        "buttons": [],
+        "pointerLock": "game-canvas",
+        "loading": false,
+        "bootLoader": false
+      }
+    },
+    {
+      "name": "S6-C-01-gap-a-edge",
+      "note": "Gap A edge, level view",
+      "atMs": 16717,
+      "status": {
+        "flow": "gameplay",
+        "sessionStatus": "running",
+        "section": "sec_building_jump",
+        "player": {
+          "position": {
+            "x": -0.0002817833737935871,
+            "y": 0.8949450254440308,
+            "z": -1.2459129095077515
+          },
+          "speed": 0,
+          "state": "IDLE",
+          "grounded": true,
+          "stance": "standing",
+          "postureHeight": 1.75
+        },
+        "camera": {
+          "yaw": 0,
+          "pitch": 0,
+          "position": {
+            "x": -0.0002817833737935871,
+            "y": 1.6199450261371977,
+            "z": -1.2459129095077515
+          }
+        },
+        "activeCheckpointId": "cp_start",
+        "activatedCheckpointIds": [
+          "cp_start"
+        ],
+        "respawnCount": 0,
+        "screen": null,
+        "pointerLocked": true
+      },
+      "dom": {
+        "hud": true,
+        "toast": {
+          "text": "",
+          "visible": false,
+          "display": "block",
+          "opacity": 0,
+          "rect": {
+            "x": 784,
+            "y": 16,
+            "w": 32,
+            "h": 20
+          }
+        },
+        "toastCount": 1,
+        "tutorial": {
+          "text": "",
+          "visible": false,
+          "display": "none",
+          "opacity": 1,
+          "rect": {
+            "x": 0,
+            "y": 0,
+            "w": 0,
+            "h": 0
+          }
+        },
+        "timer": {
+          "text": "",
+          "visible": false,
+          "display": "none",
+          "opacity": 1,
+          "rect": {
+            "x": 0,
+            "y": 0,
+            "w": 0,
+            "h": 0
+          }
+        },
+        "speed": {
+          "text": "Speed 0.0 m/s",
+          "visible": true,
+          "display": "block",
+          "opacity": 1,
+          "rect": {
+            "x": 24,
+            "y": 849,
+            "w": 132,
+            "h": 27
+          }
+        },
+        "prompt": {
+          "text": "",
+          "visible": false,
+          "display": "block",
+          "opacity": 0,
+          "rect": {
+            "x": 782,
+            "y": 788,
+            "w": 36,
+            "h": 20
+          }
+        },
+        "hint": {
+          "text": "Esc pause",
+          "visible": true,
+          "display": "block",
+          "opacity": 1,
+          "rect": {
+            "x": 1509,
+            "y": 864,
+            "w": 69,
+            "h": 14
+          }
+        },
+        "screenCount": 0,
+        "screenTitle": "",
+        "buttons": [],
+        "pointerLock": "game-canvas",
+        "loading": false,
+        "bootLoader": false
+      }
+    },
+    {
+      "name": "S6-C-02-gap-a-look-down",
+      "note": "Gap A edge, looking down",
+      "atMs": 17203,
+      "status": {
+        "flow": "gameplay",
+        "sessionStatus": "running",
+        "section": "sec_building_jump",
+        "player": {
+          "position": {
+            "x": -0.0002817833737935871,
+            "y": 0.8949450254440308,
+            "z": -1.2459129095077515
+          },
+          "speed": 0,
+          "state": "IDLE",
+          "grounded": true,
+          "stance": "standing",
+          "postureHeight": 1.75
+        },
+        "camera": {
+          "yaw": 0,
+          "pitch": -0.6204000000000001,
+          "position": {
+            "x": -0.0002817833737935871,
+            "y": 1.6199450254441083,
+            "z": -1.2459129095077515
+          }
+        },
+        "activeCheckpointId": "cp_start",
+        "activatedCheckpointIds": [
+          "cp_start"
+        ],
+        "respawnCount": 0,
+        "screen": null,
+        "pointerLocked": true
+      },
+      "dom": {
+        "hud": true,
+        "toast": {
+          "text": "",
+          "visible": false,
+          "display": "block",
+          "opacity": 0,
+          "rect": {
+            "x": 784,
+            "y": 16,
+            "w": 32,
+            "h": 20
+          }
+        },
+        "toastCount": 1,
+        "tutorial": {
+          "text": "",
+          "visible": false,
+          "display": "none",
+          "opacity": 1,
+          "rect": {
+            "x": 0,
+            "y": 0,
+            "w": 0,
+            "h": 0
+          }
+        },
+        "timer": {
+          "text": "",
+          "visible": false,
+          "display": "none",
+          "opacity": 1,
+          "rect": {
+            "x": 0,
+            "y": 0,
+            "w": 0,
+            "h": 0
+          }
+        },
+        "speed": {
+          "text": "Speed 0.0 m/s",
+          "visible": true,
+          "display": "block",
+          "opacity": 1,
+          "rect": {
+            "x": 24,
+            "y": 849,
+            "w": 132,
+            "h": 27
+          }
+        },
+        "prompt": {
+          "text": "",
+          "visible": false,
+          "display": "block",
+          "opacity": 0,
+          "rect": {
+            "x": 782,
+            "y": 788,
+            "w": 36,
+            "h": 20
+          }
+        },
+        "hint": {
+          "text": "Esc pause",
+          "visible": true,
+          "display": "block",
+          "opacity": 1,
+          "rect": {
+            "x": 1509,
+            "y": 864,
+            "w": 69,
+            "h": 14
+          }
+        },
+        "screenCount": 0,
+        "screenTitle": "",
+        "buttons": [],
+        "pointerLock": "game-canvas",
+        "loading": false,
+        "bootLoader": false
+      }
+    },
+    {
+      "name": "S6-C-03-gap-a-airborne",
+      "note": "mid-air over Gap A, Jump toast due",
+      "atMs": 19960,
+      "status": {
+        "flow": "gameplay",
+        "sessionStatus": "running",
+        "section": "sec_building_jump",
+        "player": {
+          "position": {
+            "x": -0.0007328129722736776,
+            "y": 1.7936737835407257,
+            "z": -2.356359973549843
+          },
+          "speed": 8.499999940395355,
+          "state": "JUMPING",
+          "grounded": false,
+          "stance": "standing",
+          "postureHeight": 1.75
+        },
+        "camera": {
+          "yaw": 0,
+          "pitch": 6.938893903907228e-18,
+          "position": {
+            "x": -0.0007328129722736776,
+            "y": 2.1445359501543506,
+            "z": -2.2781599740982275
+          }
+        },
+        "activeCheckpointId": "cp_start",
+        "activatedCheckpointIds": [
+          "cp_start"
+        ],
+        "respawnCount": 0,
+        "screen": null,
+        "pointerLocked": true
+      },
+      "dom": {
+        "hud": true,
+        "toast": {
+          "text": "Jump",
+          "visible": true,
+          "display": "block",
+          "opacity": 0.93,
+          "rect": {
+            "x": 765,
+            "y": 22,
+            "w": 70,
+            "h": 37
+          }
+        },
+        "toastCount": 1,
+        "tutorial": {
+          "text": "",
+          "visible": false,
+          "display": "none",
+          "opacity": 1,
+          "rect": {
+            "x": 0,
+            "y": 0,
+            "w": 0,
+            "h": 0
+          }
+        },
+        "timer": {
+          "text": "",
+          "visible": false,
+          "display": "none",
+          "opacity": 1,
+          "rect": {
+            "x": 0,
+            "y": 0,
+            "w": 0,
+            "h": 0
+          }
+        },
+        "speed": {
+          "text": "Speed 8.5 m/s",
+          "visible": true,
+          "display": "block",
+          "opacity": 1,
+          "rect": {
+            "x": 24,
+            "y": 849,
+            "w": 132,
+            "h": 27
+          }
+        },
+        "prompt": {
+          "text": "",
+          "visible": false,
+          "display": "block",
+          "opacity": 0,
+          "rect": {
+            "x": 782,
+            "y": 788,
+            "w": 36,
+            "h": 20
+          }
+        },
+        "hint": {
+          "text": "Esc pause",
+          "visible": true,
+          "display": "block",
+          "opacity": 1,
+          "rect": {
+            "x": 1509,
+            "y": 864,
+            "w": 69,
+            "h": 14
+          }
+        },
+        "screenCount": 0,
+        "screenTitle": "",
+        "buttons": [],
+        "pointerLock": "game-canvas",
+        "loading": false,
+        "bootLoader": false
+      }
+    },
+    {
+      "name": "S6-C-04-gap-a-landing",
+      "note": "the frame the player lands on roof B",
+      "atMs": 20674,
+      "status": {
+        "flow": "gameplay",
+        "sessionStatus": "running",
+        "section": "sec_building_jump",
+        "player": {
+          "position": {
+            "x": -0.0007328201305483173,
+            "y": 0.8945765212120023,
+            "z": -8.26747615635395
+          },
+          "speed": 7.566666305065157,
+          "state": "LANDING",
+          "grounded": true,
+          "stance": "standing",
+          "postureHeight": 1.75
+        },
+        "camera": {
+          "yaw": 0,
+          "pitch": 6.938893903907228e-18,
+          "position": {
+            "x": -0.0007328199909259902,
+            "y": 1.642529834140253,
+            "z": -8.259909490048884
+          }
+        },
+        "activeCheckpointId": "cp_start",
+        "activatedCheckpointIds": [
+          "cp_start"
+        ],
+        "respawnCount": 0,
+        "screen": null,
+        "pointerLocked": true
+      },
+      "dom": {
+        "hud": true,
+        "toast": {
+          "text": "Jump",
+          "visible": true,
+          "display": "block",
+          "opacity": 1,
+          "rect": {
+            "x": 765,
+            "y": 22,
+            "w": 70,
+            "h": 37
+          }
+        },
+        "toastCount": 1,
+        "tutorial": {
+          "text": "",
+          "visible": false,
+          "display": "none",
+          "opacity": 1,
+          "rect": {
+            "x": 0,
+            "y": 0,
+            "w": 0,
+            "h": 0
+          }
+        },
+        "timer": {
+          "text": "",
+          "visible": false,
+          "display": "none",
+          "opacity": 1,
+          "rect": {
+            "x": 0,
+            "y": 0,
+            "w": 0,
+            "h": 0
+          }
+        },
+        "speed": {
+          "text": "Speed 7.8 m/s",
+          "visible": true,
+          "display": "block",
+          "opacity": 1,
+          "rect": {
+            "x": 24,
+            "y": 849,
+            "w": 132,
+            "h": 27
+          }
+        },
+        "prompt": {
+          "text": "",
+          "visible": false,
+          "display": "block",
+          "opacity": 0,
+          "rect": {
+            "x": 782,
+            "y": 788,
+            "w": 36,
+            "h": 20
+          }
+        },
+        "hint": {
+          "text": "Esc pause",
+          "visible": true,
+          "display": "block",
+          "opacity": 1,
+          "rect": {
+            "x": 1509,
+            "y": 864,
+            "w": 69,
+            "h": 14
+          }
+        },
+        "screenCount": 0,
+        "screenTitle": "",
+        "buttons": [],
+        "pointerLock": "game-canvas",
+        "loading": false,
+        "bootLoader": false
+      }
+    },
+    {
+      "name": "S6-C-05-gap-b-edge",
+      "note": "Gap B edge, level view",
+      "atMs": 23100,
+      "status": {
+        "flow": "gameplay",
+        "sessionStatus": "running",
+        "section": "sec_building_jump",
+        "player": {
+          "position": {
+            "x": -0.0007300798315554857,
+            "y": 0.8949669003486633,
+            "z": -11.618024826049805
+          },
+          "speed": 0,
+          "state": "IDLE",
+          "grounded": true,
+          "stance": "standing",
+          "postureHeight": 1.75
+        },
+        "camera": {
+          "yaw": 0,
+          "pitch": 6.938893903907228e-18,
+          "position": {
+            "x": -0.0007300798315554857,
+            "y": 1.6199668996558112,
+            "z": -11.618024826049805
+          }
+        },
+        "activeCheckpointId": "cp_start",
+        "activatedCheckpointIds": [
+          "cp_start"
+        ],
+        "respawnCount": 0,
+        "screen": null,
+        "pointerLocked": true
+      },
+      "dom": {
+        "hud": true,
+        "toast": {
+          "text": "",
+          "visible": false,
+          "display": "block",
+          "opacity": 0,
+          "rect": {
+            "x": 784,
+            "y": 16,
+            "w": 32,
+            "h": 20
+          }
+        },
+        "toastCount": 1,
+        "tutorial": {
+          "text": "",
+          "visible": false,
+          "display": "none",
+          "opacity": 1,
+          "rect": {
+            "x": 0,
+            "y": 0,
+            "w": 0,
+            "h": 0
+          }
+        },
+        "timer": {
+          "text": "",
+          "visible": false,
+          "display": "none",
+          "opacity": 1,
+          "rect": {
+            "x": 0,
+            "y": 0,
+            "w": 0,
+            "h": 0
+          }
+        },
+        "speed": {
+          "text": "Speed 0.0 m/s",
+          "visible": true,
+          "display": "block",
+          "opacity": 1,
+          "rect": {
+            "x": 24,
+            "y": 849,
+            "w": 132,
+            "h": 27
+          }
+        },
+        "prompt": {
+          "text": "",
+          "visible": false,
+          "display": "block",
+          "opacity": 0,
+          "rect": {
+            "x": 782,
+            "y": 788,
+            "w": 36,
+            "h": 20
+          }
+        },
+        "hint": {
+          "text": "Esc pause",
+          "visible": true,
+          "display": "block",
+          "opacity": 1,
+          "rect": {
+            "x": 1509,
+            "y": 864,
+            "w": 69,
+            "h": 14
+          }
+        },
+        "screenCount": 0,
+        "screenTitle": "",
+        "buttons": [],
+        "pointerLock": "game-canvas",
+        "loading": false,
+        "bootLoader": false
+      }
+    },
+    {
+      "name": "S6-C-06-gap-b-look-down",
+      "note": "Gap B edge, looking down",
+      "atMs": 23594,
+      "status": {
+        "flow": "gameplay",
+        "sessionStatus": "running",
+        "section": "sec_building_jump",
+        "player": {
+          "position": {
+            "x": -0.0007300798315554857,
+            "y": 0.8949669003486633,
+            "z": -11.618024826049805
+          },
+          "speed": 0,
+          "state": "IDLE",
+          "grounded": true,
+          "stance": "standing",
+          "postureHeight": 1.75
+        },
+        "camera": {
+          "yaw": 0,
+          "pitch": -0.6204000000000001,
+          "position": {
+            "x": -0.0007300798315554857,
+            "y": 1.6199669003485657,
+            "z": -11.618024826049805
+          }
+        },
+        "activeCheckpointId": "cp_start",
+        "activatedCheckpointIds": [
+          "cp_start"
+        ],
+        "respawnCount": 0,
+        "screen": null,
+        "pointerLocked": true
+      },
+      "dom": {
+        "hud": true,
+        "toast": {
+          "text": "",
+          "visible": false,
+          "display": "block",
+          "opacity": 0,
+          "rect": {
+            "x": 784,
+            "y": 16,
+            "w": 32,
+            "h": 20
+          }
+        },
+        "toastCount": 1,
+        "tutorial": {
+          "text": "",
+          "visible": false,
+          "display": "none",
+          "opacity": 1,
+          "rect": {
+            "x": 0,
+            "y": 0,
+            "w": 0,
+            "h": 0
+          }
+        },
+        "timer": {
+          "text": "",
+          "visible": false,
+          "display": "none",
+          "opacity": 1,
+          "rect": {
+            "x": 0,
+            "y": 0,
+            "w": 0,
+            "h": 0
+          }
+        },
+        "speed": {
+          "text": "Speed 0.0 m/s",
+          "visible": true,
+          "display": "block",
+          "opacity": 1,
+          "rect": {
+            "x": 24,
+            "y": 849,
+            "w": 132,
+            "h": 27
+          }
+        },
+        "prompt": {
+          "text": "",
+          "visible": false,
+          "display": "block",
+          "opacity": 0,
+          "rect": {
+            "x": 782,
+            "y": 788,
+            "w": 36,
+            "h": 20
+          }
+        },
+        "hint": {
+          "text": "Esc pause",
+          "visible": true,
+          "display": "block",
+          "opacity": 1,
+          "rect": {
+            "x": 1509,
+            "y": 864,
+            "w": 69,
+            "h": 14
+          }
+        },
+        "screenCount": 0,
+        "screenTitle": "",
+        "buttons": [],
+        "pointerLock": "game-canvas",
+        "loading": false,
+        "bootLoader": false
+      }
+    },
+    {
+      "name": "S6-C-07-gap-b-airborne",
+      "note": "mid-air over Gap B",
+      "atMs": 25956,
+      "status": {
+        "flow": "gameplay",
+        "sessionStatus": "running",
+        "section": "sec_building_jump",
+        "player": {
+          "position": {
+            "x": -0.0006827557226642966,
+            "y": 1.7026759311556816,
+            "z": -13.436901345849037
+          },
+          "speed": 8.499999940395355,
+          "state": "JUMPING",
+          "grounded": false,
+          "stance": "standing",
+          "postureHeight": 1.75
+        },
+        "camera": {
+          "yaw": 0,
+          "pitch": 6.938893903907228e-18,
+          "position": {
+            "x": -0.0006827557226642966,
+            "y": 2.134662640687588,
+            "z": -13.428118012577318
+          }
+        },
+        "activeCheckpointId": "cp_start",
+        "activatedCheckpointIds": [
+          "cp_start"
+        ],
+        "respawnCount": 0,
+        "screen": null,
+        "pointerLocked": true
+      },
+      "dom": {
+        "hud": true,
+        "toast": {
+          "text": "",
+          "visible": false,
+          "display": "block",
+          "opacity": 0,
+          "rect": {
+            "x": 784,
+            "y": 16,
+            "w": 32,
+            "h": 20
+          }
+        },
+        "toastCount": 1,
+        "tutorial": {
+          "text": "",
+          "visible": false,
+          "display": "none",
+          "opacity": 1,
+          "rect": {
+            "x": 0,
+            "y": 0,
+            "w": 0,
+            "h": 0
+          }
+        },
+        "timer": {
+          "text": "",
+          "visible": false,
+          "display": "none",
+          "opacity": 1,
+          "rect": {
+            "x": 0,
+            "y": 0,
+            "w": 0,
+            "h": 0
+          }
+        },
+        "speed": {
+          "text": "Speed 8.5 m/s",
+          "visible": true,
+          "display": "block",
+          "opacity": 1,
+          "rect": {
+            "x": 24,
+            "y": 849,
+            "w": 132,
+            "h": 27
+          }
+        },
+        "prompt": {
+          "text": "",
+          "visible": false,
+          "display": "block",
+          "opacity": 0,
+          "rect": {
+            "x": 782,
+            "y": 788,
+            "w": 36,
+            "h": 20
+          }
+        },
+        "hint": {
+          "text": "Esc pause",
+          "visible": true,
+          "display": "block",
+          "opacity": 1,
+          "rect": {
+            "x": 1509,
+            "y": 864,
+            "w": 69,
+            "h": 14
+          }
+        },
+        "screenCount": 0,
+        "screenTitle": "",
+        "buttons": [],
+        "pointerLock": "game-canvas",
+        "loading": false,
+        "bootLoader": false
+      }
+    },
+    {
+      "name": "S6-C-08-gap-b-landing",
+      "note": "the frame the player lands past Gap B",
+      "atMs": 26682,
+      "status": {
+        "flow": "gameplay",
+        "sessionStatus": "running",
+        "section": "sec_building_jump",
+        "player": {
+          "position": {
+            "x": -0.0006827626842840218,
+            "y": 0.8949346020817757,
+            "z": -19.47015930712223
+          },
+          "speed": 7.331872880458834,
+          "state": "LANDING",
+          "grounded": true,
+          "stance": "standing",
+          "postureHeight": 1.75
+        },
+        "camera": {
+          "yaw": 0,
+          "pitch": 6.938893903907228e-18,
+          "position": {
+            "x": -0.0006827625494760703,
+            "y": 1.6163837196790645,
+            "z": -19.46282743424177
+          }
+        },
+        "activeCheckpointId": "cp_building_jump",
+        "activatedCheckpointIds": [
+          "cp_start",
+          "cp_building_jump"
+        ],
+        "respawnCount": 0,
+        "screen": null,
+        "pointerLocked": true
+      },
+      "dom": {
+        "hud": true,
+        "toast": {
+          "text": "Checkpoint reached: Building Jump Checkpoint",
+          "visible": true,
+          "display": "block",
+          "opacity": 0.11,
+          "rect": {
+            "x": 620,
+            "y": 17,
+            "w": 359,
+            "h": 37
+          }
+        },
+        "toastCount": 1,
+        "tutorial": {
+          "text": "",
+          "visible": false,
+          "display": "none",
+          "opacity": 1,
+          "rect": {
+            "x": 0,
+            "y": 0,
+            "w": 0,
+            "h": 0
+          }
+        },
+        "timer": {
+          "text": "",
+          "visible": false,
+          "display": "none",
+          "opacity": 1,
+          "rect": {
+            "x": 0,
+            "y": 0,
+            "w": 0,
+            "h": 0
+          }
+        },
+        "speed": {
+          "text": "Speed 7.3 m/s",
+          "visible": true,
+          "display": "block",
+          "opacity": 1,
+          "rect": {
+            "x": 24,
+            "y": 849,
+            "w": 132,
+            "h": 27
+          }
+        },
+        "prompt": {
+          "text": "",
+          "visible": false,
+          "display": "block",
+          "opacity": 0,
+          "rect": {
+            "x": 782,
+            "y": 788,
+            "w": 36,
+            "h": 20
+          }
+        },
+        "hint": {
+          "text": "Esc pause",
+          "visible": true,
+          "display": "block",
+          "opacity": 1,
+          "rect": {
+            "x": 1509,
+            "y": 864,
+            "w": 69,
+            "h": 14
+          }
+        },
+        "screenCount": 0,
+        "screenTitle": "",
+        "buttons": [],
+        "pointerLock": "game-canvas",
+        "loading": false,
+        "bootLoader": false
+      }
+    },
+    {
+      "name": "S6-D-05-cp2-activation",
+      "note": "CP2 activation after Gap B",
+      "atMs": 27319,
+      "status": {
+        "flow": "gameplay",
+        "sessionStatus": "running",
+        "section": "sec_building_jump",
+        "player": {
+          "position": {
+            "x": -0.000677094329148531,
+            "y": 0.8948548436164856,
+            "z": -21.329395294189453
+          },
+          "speed": 0,
+          "state": "IDLE",
+          "grounded": true,
+          "stance": "standing",
+          "postureHeight": 1.75
+        },
+        "camera": {
+          "yaw": 0,
+          "pitch": 6.938893903907228e-18,
+          "position": {
+            "x": -0.000677094329148531,
+            "y": 1.6198652259288808,
+            "z": -21.329395294189453
+          }
+        },
+        "activeCheckpointId": "cp_building_jump",
+        "activatedCheckpointIds": [
+          "cp_start",
+          "cp_building_jump"
+        ],
+        "respawnCount": 0,
+        "screen": null,
+        "pointerLocked": true
+      },
+      "dom": {
+        "hud": true,
+        "toast": {
+          "text": "Checkpoint reached: Building Jump Checkpoint",
+          "visible": true,
+          "display": "block",
+          "opacity": 1,
+          "rect": {
+            "x": 620,
+            "y": 22,
+            "w": 359,
+            "h": 37
+          }
+        },
+        "toastCount": 1,
+        "tutorial": {
+          "text": "",
+          "visible": false,
+          "display": "none",
+          "opacity": 1,
+          "rect": {
+            "x": 0,
+            "y": 0,
+            "w": 0,
+            "h": 0
+          }
+        },
+        "timer": {
+          "text": "",
+          "visible": false,
+          "display": "none",
+          "opacity": 1,
+          "rect": {
+            "x": 0,
+            "y": 0,
+            "w": 0,
+            "h": 0
+          }
+        },
+        "speed": {
+          "text": "Speed 0.0 m/s",
+          "visible": true,
+          "display": "block",
+          "opacity": 1,
+          "rect": {
+            "x": 24,
+            "y": 849,
+            "w": 132,
+            "h": 27
+          }
+        },
+        "prompt": {
+          "text": "E · VAULT",
+          "visible": true,
+          "display": "block",
+          "opacity": 1,
+          "rect": {
+            "x": 748,
+            "y": 771,
+            "w": 104,
+            "h": 38
+          }
+        },
+        "hint": {
+          "text": "Esc pause",
+          "visible": true,
+          "display": "block",
+          "opacity": 1,
+          "rect": {
+            "x": 1509,
+            "y": 864,
+            "w": 69,
+            "h": 14
+          }
+        },
+        "screenCount": 0,
+        "screenTitle": "",
+        "buttons": [],
+        "pointerLock": "game-canvas",
+        "loading": false,
+        "bootLoader": false
+      }
+    },
+    {
+      "name": "S6-D-06-cp2-toast",
+      "note": "CP2 confirmation on screen",
+      "atMs": 27866,
+      "status": {
+        "flow": "gameplay",
+        "sessionStatus": "running",
+        "section": "sec_building_jump",
+        "player": {
+          "position": {
+            "x": -0.000677094329148531,
+            "y": 0.8948548436164856,
+            "z": -21.329395294189453
+          },
+          "speed": 0,
+          "state": "IDLE",
+          "grounded": true,
+          "stance": "standing",
+          "postureHeight": 1.75
+        },
+        "camera": {
+          "yaw": 0,
+          "pitch": 6.938893903907228e-18,
+          "position": {
+            "x": -0.000677094329148531,
+            "y": 1.6198548439023777,
+            "z": -21.329395294189453
+          }
+        },
+        "activeCheckpointId": "cp_building_jump",
+        "activatedCheckpointIds": [
+          "cp_start",
+          "cp_building_jump"
+        ],
+        "respawnCount": 0,
+        "screen": null,
+        "pointerLocked": true
+      },
+      "dom": {
+        "hud": true,
+        "toast": {
+          "text": "Checkpoint reached: Building Jump Checkpoint",
+          "visible": true,
+          "display": "block",
+          "opacity": 1,
+          "rect": {
+            "x": 620,
+            "y": 22,
+            "w": 359,
+            "h": 37
+          }
+        },
+        "toastCount": 1,
+        "tutorial": {
+          "text": "",
+          "visible": false,
+          "display": "none",
+          "opacity": 1,
+          "rect": {
+            "x": 0,
+            "y": 0,
+            "w": 0,
+            "h": 0
+          }
+        },
+        "timer": {
+          "text": "",
+          "visible": false,
+          "display": "none",
+          "opacity": 1,
+          "rect": {
+            "x": 0,
+            "y": 0,
+            "w": 0,
+            "h": 0
+          }
+        },
+        "speed": {
+          "text": "Speed 0.0 m/s",
+          "visible": true,
+          "display": "block",
+          "opacity": 1,
+          "rect": {
+            "x": 24,
+            "y": 849,
+            "w": 132,
+            "h": 27
+          }
+        },
+        "prompt": {
+          "text": "E · VAULT",
+          "visible": true,
+          "display": "block",
+          "opacity": 1,
+          "rect": {
+            "x": 748,
+            "y": 771,
+            "w": 104,
+            "h": 38
+          }
+        },
+        "hint": {
+          "text": "Esc pause",
+          "visible": true,
+          "display": "block",
+          "opacity": 1,
+          "rect": {
+            "x": 1509,
+            "y": 864,
+            "w": 69,
+            "h": 14
+          }
+        },
+        "screenCount": 0,
+        "screenTitle": "",
+        "buttons": [],
+        "pointerLock": "game-canvas",
+        "loading": false,
+        "bootLoader": false
+      }
+    },
+    {
+      "name": "S6-D-07-cp2-hidden",
+      "note": "toast slot empty after CP2",
+      "atMs": 29327,
+      "status": {
+        "flow": "gameplay",
+        "sessionStatus": "running",
+        "section": "sec_building_jump",
+        "player": {
+          "position": {
+            "x": -0.000677094329148531,
+            "y": 0.8948548436164856,
+            "z": -21.329395294189453
+          },
+          "speed": 0,
+          "state": "IDLE",
+          "grounded": true,
+          "stance": "standing",
+          "postureHeight": 1.75
+        },
+        "camera": {
+          "yaw": 0,
+          "pitch": 6.938893903907228e-18,
+          "position": {
+            "x": -0.000677094329148531,
+            "y": 1.619854843616486,
+            "z": -21.329395294189453
+          }
+        },
+        "activeCheckpointId": "cp_building_jump",
+        "activatedCheckpointIds": [
+          "cp_start",
+          "cp_building_jump"
+        ],
+        "respawnCount": 0,
+        "screen": null,
+        "pointerLocked": true
+      },
+      "dom": {
+        "hud": true,
+        "toast": {
+          "text": "",
+          "visible": false,
+          "display": "block",
+          "opacity": 0,
+          "rect": {
+            "x": 784,
+            "y": 16,
+            "w": 32,
+            "h": 20
+          }
+        },
+        "toastCount": 1,
+        "tutorial": {
+          "text": "",
+          "visible": false,
+          "display": "none",
+          "opacity": 1,
+          "rect": {
+            "x": 0,
+            "y": 0,
+            "w": 0,
+            "h": 0
+          }
+        },
+        "timer": {
+          "text": "",
+          "visible": false,
+          "display": "none",
+          "opacity": 1,
+          "rect": {
+            "x": 0,
+            "y": 0,
+            "w": 0,
+            "h": 0
+          }
+        },
+        "speed": {
+          "text": "Speed 0.0 m/s",
+          "visible": true,
+          "display": "block",
+          "opacity": 1,
+          "rect": {
+            "x": 24,
+            "y": 849,
+            "w": 132,
+            "h": 27
+          }
+        },
+        "prompt": {
+          "text": "E · VAULT",
+          "visible": true,
+          "display": "block",
+          "opacity": 1,
+          "rect": {
+            "x": 748,
+            "y": 771,
+            "w": 104,
+            "h": 38
+          }
+        },
+        "hint": {
+          "text": "Esc pause",
+          "visible": true,
+          "display": "block",
+          "opacity": 1,
+          "rect": {
+            "x": 1509,
+            "y": 864,
+            "w": 69,
+            "h": 14
+          }
+        },
+        "screenCount": 0,
+        "screenTitle": "",
+        "buttons": [],
+        "pointerLock": "game-canvas",
+        "loading": false,
+        "bootLoader": false
+      }
+    }
+  ],
+  "phases": [
+    {
+      "name": "A-boot",
+      "startedAtMs": 636,
+      "status": "completed",
+      "error": null,
+      "durationMs": 10239
+    },
+    {
+      "name": "C-gap-a",
+      "startedAtMs": 10875,
+      "status": "completed",
+      "error": null,
+      "durationMs": 10352
+    },
+    {
+      "name": "C-gap-b-cp2",
+      "startedAtMs": 21227,
+      "status": "completed",
+      "error": null,
+      "durationMs": 8106
+    },
+    {
+      "name": "C-rest-of-route",
+      "startedAtMs": 29333,
+      "status": "failed",
+      "error": "Error: plant step: Space did not produce a jump (take-off z=-23.60, grounded=true)\n    at sprintJump (file:///Users/igorhodorchenko/Project/glassline/docs/evidence/first-section/step-3.9/harness/step-3.9-session-6.mjs:644:13)\n    at async file:///Users/igorhodorchenko/Project/glassline/docs/evidence/first-section/step-3.9/harness/step-3.9-session-6.mjs:1111:16\n    at async phase (file:///Users/igorhodorchenko/Project/glassline/docs/evidence/first-section/step-3.9/harness/step-3.9-session-6.mjs:854:5)\n    at async file:///Users/igorhodorchenko/Project/glassline/docs/evidence/first-section/step-3.9/harness/step-3.9-session-6.mjs:1104:1",
+      "durationMs": 2833
+    }
+  ],
+  "toast": {
+    "transitions": [
+      {
+        "ms": 1,
+        "toast": {
+          "x": 784,
+          "y": 16,
+          "w": 32,
+          "h": 20,
+          "visible": false,
+          "opacity": 0,
+          "display": "block",
+          "text": ""
+        },
+        "toastCount": 1,
+        "tutorial": {
+          "x": 0,
+          "y": 0,
+          "w": 0,
+          "h": 0,
+          "visible": false,
+          "opacity": 1,
+          "display": "none",
+          "text": ""
+        },
+        "timer": {
+          "x": 0,
+          "y": 0,
+          "w": 0,
+          "h": 0,
+          "visible": false,
+          "opacity": 1,
+          "display": "none",
+          "text": ""
+        },
+        "speed": {
+          "x": 24,
+          "y": 849,
+          "w": 132,
+          "h": 27,
+          "visible": true,
+          "opacity": 1,
+          "display": "block",
+          "text": "Speed 0.0 m/s"
+        },
+        "prompt": {
+          "x": 782,
+          "y": 788,
+          "w": 36,
+          "h": 20,
+          "visible": false,
+          "opacity": 0,
+          "display": "block",
+          "text": ""
+        },
+        "hint": {
+          "x": 1509,
+          "y": 864,
+          "w": 69,
+          "h": 14,
+          "visible": true,
+          "opacity": 1,
+          "display": "block",
+          "text": "Esc pause"
+        },
+        "hud": true,
+        "screens": 0,
+        "pointerLock": null,
+        "paused": false
+      },
+      {
+        "ms": 234,
+        "toast": {
+          "x": 784,
+          "y": 16,
+          "w": 32,
+          "h": 20,
+          "visible": false,
+          "opacity": 0,
+          "display": "block",
+          "text": ""
+        },
+        "toastCount": 1,
+        "tutorial": {
+          "x": 0,
+          "y": 0,
+          "w": 0,
+          "h": 0,
+          "visible": false,
+          "opacity": 1,
+          "display": "none",
+          "text": ""
+        },
+        "timer": {
+          "x": 0,
+          "y": 0,
+          "w": 0,
+          "h": 0,
+          "visible": false,
+          "opacity": 1,
+          "display": "none",
+          "text": ""
+        },
+        "speed": {
+          "x": 24,
+          "y": 849,
+          "w": 132,
+          "h": 27,
+          "visible": true,
+          "opacity": 1,
+          "display": "block",
+          "text": "Speed 0.0 m/s"
+        },
+        "prompt": {
+          "x": 782,
+          "y": 788,
+          "w": 36,
+          "h": 20,
+          "visible": false,
+          "opacity": 0,
+          "display": "block",
+          "text": ""
+        },
+        "hint": {
+          "x": 1509,
+          "y": 864,
+          "w": 69,
+          "h": 14,
+          "visible": true,
+          "opacity": 1,
+          "display": "block",
+          "text": "Esc pause"
+        },
+        "hud": true,
+        "screens": 0,
+        "pointerLock": "game-canvas",
+        "paused": false
+      },
+      {
+        "ms": 1177,
+        "toast": {
+          "x": 765,
+          "y": 16,
+          "w": 69,
+          "h": 37,
+          "visible": false,
+          "opacity": 0,
+          "display": "block",
+          "text": "Move"
+        },
+        "toastCount": 1,
+        "tutorial": {
+          "x": 0,
+          "y": 0,
+          "w": 0,
+          "h": 0,
+          "visible": false,
+          "opacity": 1,
+          "display": "none",
+          "text": ""
+        },
+        "timer": {
+          "x": 0,
+          "y": 0,
+          "w": 0,
+          "h": 0,
+          "visible": false,
+          "opacity": 1,
+          "display": "none",
+          "text": ""
+        },
+        "speed": {
+          "x": 24,
+          "y": 849,
+          "w": 132,
+          "h": 27,
+          "visible": true,
+          "opacity": 1,
+          "display": "block",
+          "text": "Speed 1.2 m/s"
+        },
+        "prompt": {
+          "x": 782,
+          "y": 788,
+          "w": 36,
+          "h": 20,
+          "visible": false,
+          "opacity": 0,
+          "display": "block",
+          "text": ""
+        },
+        "hint": {
+          "x": 1509,
+          "y": 864,
+          "w": 69,
+          "h": 14,
+          "visible": true,
+          "opacity": 1,
+          "display": "block",
+          "text": "Esc pause"
+        },
+        "hud": true,
+        "screens": 0,
+        "pointerLock": "game-canvas",
+        "paused": false
+      },
+      {
+        "ms": 1203,
+        "toast": {
+          "x": 765,
+          "y": 17,
+          "w": 69,
+          "h": 37,
+          "visible": true,
+          "opacity": 0.22,
+          "display": "block",
+          "text": "Move"
+        },
+        "toastCount": 1,
+        "tutorial": {
+          "x": 0,
+          "y": 0,
+          "w": 0,
+          "h": 0,
+          "visible": false,
+          "opacity": 1,
+          "display": "none",
+          "text": ""
+        },
+        "timer": {
+          "x": 0,
+          "y": 0,
+          "w": 0,
+          "h": 0,
+          "visible": false,
+          "opacity": 1,
+          "display": "none",
+          "text": ""
+        },
+        "speed": {
+          "x": 24,
+          "y": 849,
+          "w": 132,
+          "h": 27,
+          "visible": true,
+          "opacity": 1,
+          "display": "block",
+          "text": "Speed 1.2 m/s"
+        },
+        "prompt": {
+          "x": 782,
+          "y": 788,
+          "w": 36,
+          "h": 20,
+          "visible": false,
+          "opacity": 0,
+          "display": "block",
+          "text": ""
+        },
+        "hint": {
+          "x": 1509,
+          "y": 864,
+          "w": 69,
+          "h": 14,
+          "visible": true,
+          "opacity": 1,
+          "display": "block",
+          "text": "Esc pause"
+        },
+        "hud": true,
+        "screens": 0,
+        "pointerLock": "game-canvas",
+        "paused": false
+      },
+      {
+        "ms": 2356,
+        "toast": {
+          "x": 624,
+          "y": 22,
+          "w": 352,
+          "h": 37,
+          "visible": true,
+          "opacity": 1,
+          "display": "block",
+          "text": "Checkpoint reached: Starting Roof Checkpoint"
+        },
+        "toastCount": 1,
+        "tutorial": {
+          "x": 0,
+          "y": 0,
+          "w": 0,
+          "h": 0,
+          "visible": false,
+          "opacity": 1,
+          "display": "none",
+          "text": ""
+        },
+        "timer": {
+          "x": 0,
+          "y": 0,
+          "w": 0,
+          "h": 0,
+          "visible": false,
+          "opacity": 1,
+          "display": "none",
+          "text": ""
+        },
+        "speed": {
+          "x": 24,
+          "y": 849,
+          "w": 132,
+          "h": 27,
+          "visible": true,
+          "opacity": 1,
+          "display": "block",
+          "text": "Speed 5.1 m/s"
+        },
+        "prompt": {
+          "x": 782,
+          "y": 788,
+          "w": 36,
+          "h": 20,
+          "visible": false,
+          "opacity": 0,
+          "display": "block",
+          "text": ""
+        },
+        "hint": {
+          "x": 1509,
+          "y": 864,
+          "w": 69,
+          "h": 14,
+          "visible": true,
+          "opacity": 1,
+          "display": "block",
+          "text": "Esc pause"
+        },
+        "hud": true,
+        "screens": 0,
+        "pointerLock": "game-canvas",
+        "paused": false
+      },
+      {
+        "ms": 4576,
+        "toast": {
+          "x": 765,
+          "y": 22,
+          "w": 69,
+          "h": 37,
+          "visible": true,
+          "opacity": 1,
+          "display": "block",
+          "text": "Move"
+        },
+        "toastCount": 1,
+        "tutorial": {
+          "x": 0,
+          "y": 0,
+          "w": 0,
+          "h": 0,
+          "visible": false,
+          "opacity": 1,
+          "display": "none",
+          "text": ""
+        },
+        "timer": {
+          "x": 0,
+          "y": 0,
+          "w": 0,
+          "h": 0,
+          "visible": false,
+          "opacity": 1,
+          "display": "none",
+          "text": ""
+        },
+        "speed": {
+          "x": 24,
+          "y": 849,
+          "w": 132,
+          "h": 27,
+          "visible": true,
+          "opacity": 1,
+          "display": "block",
+          "text": "Speed 3.9 m/s"
+        },
+        "prompt": {
+          "x": 782,
+          "y": 788,
+          "w": 36,
+          "h": 20,
+          "visible": false,
+          "opacity": 0,
+          "display": "block",
+          "text": ""
+        },
+        "hint": {
+          "x": 1509,
+          "y": 864,
+          "w": 69,
+          "h": 14,
+          "visible": true,
+          "opacity": 1,
+          "display": "block",
+          "text": "Esc pause"
+        },
+        "hud": true,
+        "screens": 0,
+        "pointerLock": "game-canvas",
+        "paused": false
+      },
+      {
+        "ms": 5176,
+        "toast": {
+          "x": 784,
+          "y": 22,
+          "w": 32,
+          "h": 20,
+          "visible": true,
+          "opacity": 1,
+          "display": "block",
+          "text": ""
+        },
+        "toastCount": 1,
+        "tutorial": {
+          "x": 0,
+          "y": 0,
+          "w": 0,
+          "h": 0,
+          "visible": false,
+          "opacity": 1,
+          "display": "none",
+          "text": ""
+        },
+        "timer": {
+          "x": 0,
+          "y": 0,
+          "w": 0,
+          "h": 0,
+          "visible": false,
+          "opacity": 1,
+          "display": "none",
+          "text": ""
+        },
+        "speed": {
+          "x": 24,
+          "y": 849,
+          "w": 132,
+          "h": 27,
+          "visible": true,
+          "opacity": 1,
+          "display": "block",
+          "text": "Speed 3.0 m/s"
+        },
+        "prompt": {
+          "x": 782,
+          "y": 788,
+          "w": 36,
+          "h": 20,
+          "visible": false,
+          "opacity": 0,
+          "display": "block",
+          "text": ""
+        },
+        "hint": {
+          "x": 1509,
+          "y": 864,
+          "w": 69,
+          "h": 14,
+          "visible": true,
+          "opacity": 1,
+          "display": "block",
+          "text": "Esc pause"
+        },
+        "hud": true,
+        "screens": 0,
+        "pointerLock": "game-canvas",
+        "paused": false
+      },
+      {
+        "ms": 5327,
+        "toast": {
+          "x": 784,
+          "y": 16,
+          "w": 32,
+          "h": 20,
+          "visible": false,
+          "opacity": 0,
+          "display": "block",
+          "text": ""
+        },
+        "toastCount": 1,
+        "tutorial": {
+          "x": 0,
+          "y": 0,
+          "w": 0,
+          "h": 0,
+          "visible": false,
+          "opacity": 1,
+          "display": "none",
+          "text": ""
+        },
+        "timer": {
+          "x": 0,
+          "y": 0,
+          "w": 0,
+          "h": 0,
+          "visible": false,
+          "opacity": 1,
+          "display": "none",
+          "text": ""
+        },
+        "speed": {
+          "x": 24,
+          "y": 849,
+          "w": 132,
+          "h": 27,
+          "visible": true,
+          "opacity": 1,
+          "display": "block",
+          "text": "Speed 0.8 m/s"
+        },
+        "prompt": {
+          "x": 782,
+          "y": 788,
+          "w": 36,
+          "h": 20,
+          "visible": false,
+          "opacity": 0,
+          "display": "block",
+          "text": ""
+        },
+        "hint": {
+          "x": 1509,
+          "y": 864,
+          "w": 69,
+          "h": 14,
+          "visible": true,
+          "opacity": 1,
+          "display": "block",
+          "text": "Esc pause"
+        },
+        "hud": true,
+        "screens": 0,
+        "pointerLock": "game-canvas",
+        "paused": false
+      },
+      {
+        "ms": 10077,
+        "toast": {
+          "x": 765,
+          "y": 16,
+          "w": 70,
+          "h": 37,
+          "visible": false,
+          "opacity": 0,
+          "display": "block",
+          "text": "Jump"
+        },
+        "toastCount": 1,
+        "tutorial": {
+          "x": 0,
+          "y": 0,
+          "w": 0,
+          "h": 0,
+          "visible": false,
+          "opacity": 1,
+          "display": "none",
+          "text": ""
+        },
+        "timer": {
+          "x": 0,
+          "y": 0,
+          "w": 0,
+          "h": 0,
+          "visible": false,
+          "opacity": 1,
+          "display": "none",
+          "text": ""
+        },
+        "speed": {
+          "x": 24,
+          "y": 849,
+          "w": 132,
+          "h": 27,
+          "visible": true,
+          "opacity": 1,
+          "display": "block",
+          "text": "Speed 8.5 m/s"
+        },
+        "prompt": {
+          "x": 782,
+          "y": 788,
+          "w": 36,
+          "h": 20,
+          "visible": false,
+          "opacity": 0,
+          "display": "block",
+          "text": ""
+        },
+        "hint": {
+          "x": 1509,
+          "y": 864,
+          "w": 69,
+          "h": 14,
+          "visible": true,
+          "opacity": 1,
+          "display": "block",
+          "text": "Esc pause"
+        },
+        "hud": true,
+        "screens": 0,
+        "pointerLock": "game-canvas",
+        "paused": false
+      },
+      {
+        "ms": 10104,
+        "toast": {
+          "x": 765,
+          "y": 17,
+          "w": 70,
+          "h": 37,
+          "visible": true,
+          "opacity": 0.22,
+          "display": "block",
+          "text": "Jump"
+        },
+        "toastCount": 1,
+        "tutorial": {
+          "x": 0,
+          "y": 0,
+          "w": 0,
+          "h": 0,
+          "visible": false,
+          "opacity": 1,
+          "display": "none",
+          "text": ""
+        },
+        "timer": {
+          "x": 0,
+          "y": 0,
+          "w": 0,
+          "h": 0,
+          "visible": false,
+          "opacity": 1,
+          "display": "none",
+          "text": ""
+        },
+        "speed": {
+          "x": 24,
+          "y": 849,
+          "w": 132,
+          "h": 27,
+          "visible": true,
+          "opacity": 1,
+          "display": "block",
+          "text": "Speed 8.5 m/s"
+        },
+        "prompt": {
+          "x": 782,
+          "y": 788,
+          "w": 36,
+          "h": 20,
+          "visible": false,
+          "opacity": 0,
+          "display": "block",
+          "text": ""
+        },
+        "hint": {
+          "x": 1509,
+          "y": 864,
+          "w": 69,
+          "h": 14,
+          "visible": true,
+          "opacity": 1,
+          "display": "block",
+          "text": "Esc pause"
+        },
+        "hud": true,
+        "screens": 0,
+        "pointerLock": "game-canvas",
+        "paused": false
+      },
+      {
+        "ms": 11877,
+        "toast": {
+          "x": 784,
+          "y": 22,
+          "w": 32,
+          "h": 20,
+          "visible": true,
+          "opacity": 1,
+          "display": "block",
+          "text": ""
+        },
+        "toastCount": 1,
+        "tutorial": {
+          "x": 0,
+          "y": 0,
+          "w": 0,
+          "h": 0,
+          "visible": false,
+          "opacity": 1,
+          "display": "none",
+          "text": ""
+        },
+        "timer": {
+          "x": 0,
+          "y": 0,
+          "w": 0,
+          "h": 0,
+          "visible": false,
+          "opacity": 1,
+          "display": "none",
+          "text": ""
+        },
+        "speed": {
+          "x": 24,
+          "y": 849,
+          "w": 132,
+          "h": 27,
+          "visible": true,
+          "opacity": 1,
+          "display": "block",
+          "text": "Speed 1.3 m/s"
+        },
+        "prompt": {
+          "x": 782,
+          "y": 788,
+          "w": 36,
+          "h": 20,
+          "visible": false,
+          "opacity": 0,
+          "display": "block",
+          "text": ""
+        },
+        "hint": {
+          "x": 1509,
+          "y": 864,
+          "w": 69,
+          "h": 14,
+          "visible": true,
+          "opacity": 1,
+          "display": "block",
+          "text": "Esc pause"
+        },
+        "hud": true,
+        "screens": 0,
+        "pointerLock": "game-canvas",
+        "paused": false
+      },
+      {
+        "ms": 12026,
+        "toast": {
+          "x": 784,
+          "y": 16,
+          "w": 32,
+          "h": 20,
+          "visible": false,
+          "opacity": 0,
+          "display": "block",
+          "text": ""
+        },
+        "toastCount": 1,
+        "tutorial": {
+          "x": 0,
+          "y": 0,
+          "w": 0,
+          "h": 0,
+          "visible": false,
+          "opacity": 1,
+          "display": "none",
+          "text": ""
+        },
+        "timer": {
+          "x": 0,
+          "y": 0,
+          "w": 0,
+          "h": 0,
+          "visible": false,
+          "opacity": 1,
+          "display": "none",
+          "text": ""
+        },
+        "speed": {
+          "x": 24,
+          "y": 849,
+          "w": 132,
+          "h": 27,
+          "visible": true,
+          "opacity": 1,
+          "display": "block",
+          "text": "Speed 1.4 m/s"
+        },
+        "prompt": {
+          "x": 782,
+          "y": 788,
+          "w": 36,
+          "h": 20,
+          "visible": false,
+          "opacity": 0,
+          "display": "block",
+          "text": ""
+        },
+        "hint": {
+          "x": 1509,
+          "y": 864,
+          "w": 69,
+          "h": 14,
+          "visible": true,
+          "opacity": 1,
+          "display": "block",
+          "text": "Esc pause"
+        },
+        "hud": true,
+        "screens": 0,
+        "pointerLock": "game-canvas",
+        "paused": false
+      },
+      {
+        "ms": 16879,
+        "toast": {
+          "x": 620,
+          "y": 16,
+          "w": 359,
+          "h": 37,
+          "visible": false,
+          "opacity": 0,
+          "display": "block",
+          "text": "Checkpoint reached: Building Jump Checkpoint"
+        },
+        "toastCount": 1,
+        "tutorial": {
+          "x": 0,
+          "y": 0,
+          "w": 0,
+          "h": 0,
+          "visible": false,
+          "opacity": 1,
+          "display": "none",
+          "text": ""
+        },
+        "timer": {
+          "x": 0,
+          "y": 0,
+          "w": 0,
+          "h": 0,
+          "visible": false,
+          "opacity": 1,
+          "display": "none",
+          "text": ""
+        },
+        "speed": {
+          "x": 24,
+          "y": 849,
+          "w": 132,
+          "h": 27,
+          "visible": true,
+          "opacity": 1,
+          "display": "block",
+          "text": "Speed 7.3 m/s"
+        },
+        "prompt": {
+          "x": 782,
+          "y": 788,
+          "w": 36,
+          "h": 20,
+          "visible": false,
+          "opacity": 0,
+          "display": "block",
+          "text": ""
+        },
+        "hint": {
+          "x": 1509,
+          "y": 864,
+          "w": 69,
+          "h": 14,
+          "visible": true,
+          "opacity": 1,
+          "display": "block",
+          "text": "Esc pause"
+        },
+        "hud": true,
+        "screens": 0,
+        "pointerLock": "game-canvas",
+        "paused": false
+      },
+      {
+        "ms": 16902,
+        "toast": {
+          "x": 620,
+          "y": 17,
+          "w": 359,
+          "h": 37,
+          "visible": true,
+          "opacity": 0.11,
+          "display": "block",
+          "text": "Checkpoint reached: Building Jump Checkpoint"
+        },
+        "toastCount": 1,
+        "tutorial": {
+          "x": 0,
+          "y": 0,
+          "w": 0,
+          "h": 0,
+          "visible": false,
+          "opacity": 1,
+          "display": "none",
+          "text": ""
+        },
+        "timer": {
+          "x": 0,
+          "y": 0,
+          "w": 0,
+          "h": 0,
+          "visible": false,
+          "opacity": 1,
+          "display": "none",
+          "text": ""
+        },
+        "speed": {
+          "x": 24,
+          "y": 849,
+          "w": 132,
+          "h": 27,
+          "visible": true,
+          "opacity": 1,
+          "display": "block",
+          "text": "Speed 7.3 m/s"
+        },
+        "prompt": {
+          "x": 782,
+          "y": 788,
+          "w": 36,
+          "h": 20,
+          "visible": false,
+          "opacity": 0,
+          "display": "block",
+          "text": ""
+        },
+        "hint": {
+          "x": 1509,
+          "y": 864,
+          "w": 69,
+          "h": 14,
+          "visible": true,
+          "opacity": 1,
+          "display": "block",
+          "text": "Esc pause"
+        },
+        "hud": true,
+        "screens": 0,
+        "pointerLock": "game-canvas",
+        "paused": false
+      },
+      {
+        "ms": 17207,
+        "toast": {
+          "x": 620,
+          "y": 22,
+          "w": 359,
+          "h": 37,
+          "visible": true,
+          "opacity": 1,
+          "display": "block",
+          "text": "Checkpoint reached: Building Jump Checkpoint"
+        },
+        "toastCount": 1,
+        "tutorial": {
+          "x": 0,
+          "y": 0,
+          "w": 0,
+          "h": 0,
+          "visible": false,
+          "opacity": 1,
+          "display": "none",
+          "text": ""
+        },
+        "timer": {
+          "x": 0,
+          "y": 0,
+          "w": 0,
+          "h": 0,
+          "visible": false,
+          "opacity": 1,
+          "display": "none",
+          "text": ""
+        },
+        "speed": {
+          "x": 24,
+          "y": 849,
+          "w": 132,
+          "h": 27,
+          "visible": true,
+          "opacity": 1,
+          "display": "block",
+          "text": "Speed 2.9 m/s"
+        },
+        "prompt": {
+          "x": 748,
+          "y": 771,
+          "w": 104,
+          "h": 38,
+          "visible": true,
+          "opacity": 1,
+          "display": "block",
+          "text": "E · VAULT"
+        },
+        "hint": {
+          "x": 1509,
+          "y": 864,
+          "w": 69,
+          "h": 14,
+          "visible": true,
+          "opacity": 1,
+          "display": "block",
+          "text": "Esc pause"
+        },
+        "hud": true,
+        "screens": 0,
+        "pointerLock": "game-canvas",
+        "paused": false
+      },
+      {
+        "ms": 19077,
+        "toast": {
+          "x": 784,
+          "y": 22,
+          "w": 32,
+          "h": 20,
+          "visible": true,
+          "opacity": 1,
+          "display": "block",
+          "text": ""
+        },
+        "toastCount": 1,
+        "tutorial": {
+          "x": 0,
+          "y": 0,
+          "w": 0,
+          "h": 0,
+          "visible": false,
+          "opacity": 1,
+          "display": "none",
+          "text": ""
+        },
+        "timer": {
+          "x": 0,
+          "y": 0,
+          "w": 0,
+          "h": 0,
+          "visible": false,
+          "opacity": 1,
+          "display": "none",
+          "text": ""
+        },
+        "speed": {
+          "x": 24,
+          "y": 849,
+          "w": 132,
+          "h": 27,
+          "visible": true,
+          "opacity": 1,
+          "display": "block",
+          "text": "Speed 0.0 m/s"
+        },
+        "prompt": {
+          "x": 748,
+          "y": 771,
+          "w": 104,
+          "h": 38,
+          "visible": true,
+          "opacity": 1,
+          "display": "block",
+          "text": "E · VAULT"
+        },
+        "hint": {
+          "x": 1509,
+          "y": 864,
+          "w": 69,
+          "h": 14,
+          "visible": true,
+          "opacity": 1,
+          "display": "block",
+          "text": "Esc pause"
+        },
+        "hud": true,
+        "screens": 0,
+        "pointerLock": "game-canvas",
+        "paused": false
+      },
+      {
+        "ms": 19227,
+        "toast": {
+          "x": 784,
+          "y": 16,
+          "w": 32,
+          "h": 20,
+          "visible": false,
+          "opacity": 0,
+          "display": "block",
+          "text": ""
+        },
+        "toastCount": 1,
+        "tutorial": {
+          "x": 0,
+          "y": 0,
+          "w": 0,
+          "h": 0,
+          "visible": false,
+          "opacity": 1,
+          "display": "none",
+          "text": ""
+        },
+        "timer": {
+          "x": 0,
+          "y": 0,
+          "w": 0,
+          "h": 0,
+          "visible": false,
+          "opacity": 1,
+          "display": "none",
+          "text": ""
+        },
+        "speed": {
+          "x": 24,
+          "y": 849,
+          "w": 132,
+          "h": 27,
+          "visible": true,
+          "opacity": 1,
+          "display": "block",
+          "text": "Speed 0.0 m/s"
+        },
+        "prompt": {
+          "x": 748,
+          "y": 771,
+          "w": 104,
+          "h": 38,
+          "visible": true,
+          "opacity": 1,
+          "display": "block",
+          "text": "E · VAULT"
+        },
+        "hint": {
+          "x": 1509,
+          "y": 864,
+          "w": 69,
+          "h": 14,
+          "visible": true,
+          "opacity": 1,
+          "display": "block",
+          "text": "Esc pause"
+        },
+        "hud": true,
+        "screens": 0,
+        "pointerLock": "game-canvas",
+        "paused": false
+      },
+      {
+        "ms": 19603,
+        "toast": {
+          "x": 784,
+          "y": 16,
+          "w": 32,
+          "h": 20,
+          "visible": false,
+          "opacity": 0,
+          "display": "block",
+          "text": ""
+        },
+        "toastCount": 1,
+        "tutorial": {
+          "x": 0,
+          "y": 0,
+          "w": 0,
+          "h": 0,
+          "visible": false,
+          "opacity": 1,
+          "display": "none",
+          "text": ""
+        },
+        "timer": {
+          "x": 0,
+          "y": 0,
+          "w": 0,
+          "h": 0,
+          "visible": false,
+          "opacity": 1,
+          "display": "none",
+          "text": ""
+        },
+        "speed": {
+          "x": 24,
+          "y": 849,
+          "w": 132,
+          "h": 27,
+          "visible": true,
+          "opacity": 1,
+          "display": "block",
+          "text": "Speed 0.6 m/s"
+        },
+        "prompt": {
+          "x": 782,
+          "y": 788,
+          "w": 36,
+          "h": 20,
+          "visible": false,
+          "opacity": 0,
+          "display": "block",
+          "text": ""
+        },
+        "hint": {
+          "x": 1509,
+          "y": 864,
+          "w": 69,
+          "h": 14,
+          "visible": true,
+          "opacity": 1,
+          "display": "block",
+          "text": "Esc pause"
+        },
+        "hud": true,
+        "screens": 0,
+        "pointerLock": "game-canvas",
+        "paused": false
+      },
+      {
+        "ms": 21204,
+        "toast": {
+          "x": 784,
+          "y": 16,
+          "w": 32,
+          "h": 20,
+          "visible": false,
+          "opacity": 0,
+          "display": "block",
+          "text": ""
+        },
+        "toastCount": 1,
+        "tutorial": {
+          "x": 0,
+          "y": 0,
+          "w": 0,
+          "h": 0,
+          "visible": false,
+          "opacity": 1,
+          "display": "none",
+          "text": ""
+        },
+        "timer": {
+          "x": 0,
+          "y": 0,
+          "w": 0,
+          "h": 0,
+          "visible": false,
+          "opacity": 1,
+          "display": "none",
+          "text": ""
+        },
+        "speed": {
+          "x": 24,
+          "y": 849,
+          "w": 132,
+          "h": 27,
+          "visible": true,
+          "opacity": 1,
+          "display": "block",
+          "text": "Speed 8.5 m/s"
+        },
+        "prompt": {
+          "x": 748,
+          "y": 771,
+          "w": 104,
+          "h": 38,
+          "visible": true,
+          "opacity": 1,
+          "display": "block",
+          "text": "E · VAULT"
+        },
+        "hint": {
+          "x": 1509,
+          "y": 864,
+          "w": 69,
+          "h": 14,
+          "visible": true,
+          "opacity": 1,
+          "display": "block",
+          "text": "Esc pause"
+        },
+        "hud": true,
+        "screens": 0,
+        "pointerLock": "game-canvas",
+        "paused": false
+      }
+    ],
+    "segments": [
+      {
+        "message": "Move",
+        "startMs": 1203,
+        "endMs": 2356
+      },
+      {
+        "message": "Checkpoint reached: Starting Roof Checkpoint",
+        "startMs": 2356,
+        "endMs": 4576
+      },
+      {
+        "message": "Move",
+        "startMs": 4576,
+        "endMs": 5176
+      },
+      {
+        "message": "Jump",
+        "startMs": 10104,
+        "endMs": 11877
+      },
+      {
+        "message": "Checkpoint reached: Building Jump Checkpoint",
+        "startMs": 16902,
+        "endMs": 19077
+      }
+    ],
+    "emptyVisibleSamples": 18,
+    "duplicateToastNodes": 0
+  },
+  "overlaps": [],
+  "hitches": [
+    {
+      "ms": 228,
+      "gap": 225
+    },
+    {
+      "ms": 728,
+      "gap": 200
+    },
+    {
+      "ms": 928,
+      "gap": 200
+    },
+    {
+      "ms": 1403,
+      "gap": 200
+    },
+    {
+      "ms": 5528,
+      "gap": 184
+    }
+  ],
+  "console": {
+    "errors": [],
+    "warnings": []
+  },
+  "pageErrors": [],
+  "failedRequests": [],
+  "video": null,
+  "raw": {
+    "routeStart": {
+      "locked": true,
+      "status": {
+        "flow": "gameplay",
+        "sessionStatus": "running",
+        "section": "sec_start",
+        "player": {
+          "position": {
+            "x": 0,
+            "y": 0.894704282283783,
+            "z": 14
+          },
+          "speed": 0,
+          "state": "IDLE",
+          "grounded": true,
+          "stance": "standing",
+          "postureHeight": 1.75
+        },
+        "camera": {
+          "yaw": 0,
+          "pitch": 0,
+          "position": {
+            "x": 0,
+            "y": 1.619704282300566,
+            "z": 14
+          }
+        },
+        "activeCheckpointId": null,
+        "activatedCheckpointIds": [],
+        "respawnCount": 0,
+        "screen": null,
+        "pointerLocked": true
+      }
+    },
+    "gapALookDownPitch": -0.6204000000000001,
+    "gapA": {
+      "landing": {
+        "flow": "gameplay",
+        "sessionStatus": "running",
+        "section": "sec_building_jump",
+        "player": {
+          "position": {
+            "x": -0.0007328129722736776,
+            "y": 0.895105816423893,
+            "z": -7.59803107380867
+          },
+          "speed": 8.499957919120789,
+          "state": "LANDING",
+          "grounded": true,
+          "stance": "standing",
+          "postureHeight": 1.75
+        },
+        "camera": {
+          "yaw": 0,
+          "pitch": 6.938893903907228e-18,
+          "position": {
+            "x": -0.0007328129722736776,
+            "y": 1.9480686241951426,
+            "z": -7.58981444782019
+          }
+        },
+        "activeCheckpointId": "cp_start",
+        "activatedCheckpointIds": [
+          "cp_start"
+        ],
+        "respawnCount": 0,
+        "screen": null,
+        "pointerLocked": true
+      },
+      "before": {
+        "flow": "gameplay",
+        "sessionStatus": "running",
+        "section": "sec_building_jump",
+        "player": {
+          "position": {
+            "x": -0.0006043703178875148,
+            "y": 0.8946922421455383,
+            "z": 5.340113162994385
+          },
+          "speed": 0,
+          "state": "IDLE",
+          "grounded": true,
+          "stance": "standing",
+          "postureHeight": 1.75
+        },
+        "camera": {
+          "yaw": 0,
+          "pitch": 6.938893903907228e-18,
+          "position": {
+            "x": -0.0006043703178875148,
+            "y": 1.619694215710891,
+            "z": 5.340113162994385
+          }
+        },
+        "activeCheckpointId": "cp_start",
+        "activatedCheckpointIds": [
+          "cp_start"
+        ],
+        "respawnCount": 0,
+        "screen": null,
+        "pointerLocked": true
+      },
+      "takeoff": {
+        "flow": "gameplay",
+        "sessionStatus": "running",
+        "section": "sec_building_jump",
+        "player": {
+          "position": {
+            "x": -0.0007328129722736776,
+            "y": 0.8949442428929615,
+            "z": -1.223026767373085
+          },
+          "speed": 8.499999940395355,
+          "state": "SPRINTING",
+          "grounded": true,
+          "stance": "standing",
+          "postureHeight": 1.75
+        },
+        "camera": {
+          "yaw": 0,
+          "pitch": 6.938893903907228e-18,
+          "position": {
+            "x": -0.0007328129722736776,
+            "y": 1.6142513650669106,
+            "z": -1.2139601007700123
+          }
+        },
+        "activeCheckpointId": "cp_start",
+        "activatedCheckpointIds": [
+          "cp_start"
+        ],
+        "respawnCount": 0,
+        "screen": null,
+        "pointerLocked": true
+      },
+      "crossing": {
+        "flow": "gameplay",
+        "sessionStatus": "running",
+        "section": "sec_building_jump",
+        "player": {
+          "position": {
+            "x": -0.0007300734869204462,
+            "y": 0.8942659497261047,
+            "z": -10.249689102172852
+          },
+          "speed": 0,
+          "state": "IDLE",
+          "grounded": true,
+          "stance": "standing",
+          "postureHeight": 1.75
+        },
+        "camera": {
+          "yaw": 0,
+          "pitch": 6.938893903907228e-18,
+          "position": {
+            "x": -0.0007300734869204462,
+            "y": 1.6192633350851666,
+            "z": -10.249689102172852
+          }
+        },
+        "activeCheckpointId": "cp_start",
+        "activatedCheckpointIds": [
+          "cp_start"
+        ],
+        "respawnCount": 0,
+        "screen": null,
+        "pointerLocked": true
+      },
+      "crossed": true
+    },
+    "gapB": {
+      "landing": {
+        "flow": "gameplay",
+        "sessionStatus": "running",
+        "section": "sec_building_jump",
+        "player": {
+          "position": {
+            "x": -0.0006827557226642966,
+            "y": 0.8952007666230202,
+            "z": -18.82022000849247
+          },
+          "speed": 8.499699532985687,
+          "state": "LANDING",
+          "grounded": true,
+          "stance": "standing",
+          "postureHeight": 1.75
+        },
+        "camera": {
+          "yaw": 0,
+          "pitch": 6.938893903907228e-18,
+          "position": {
+            "x": -0.0006827557226642966,
+            "y": 1.933641112852171,
+            "z": -18.812003632277253
+          }
+        },
+        "activeCheckpointId": "cp_start",
+        "activatedCheckpointIds": [
+          "cp_start"
+        ],
+        "respawnCount": 0,
+        "screen": null,
+        "pointerLocked": true
+      },
+      "before": {
+        "flow": "gameplay",
+        "sessionStatus": "running",
+        "section": "sec_building_jump",
+        "player": {
+          "position": {
+            "x": -0.0006892299861647189,
+            "y": 0.8942692279815674,
+            "z": -6.7319207191467285
+          },
+          "speed": 0,
+          "state": "IDLE",
+          "grounded": true,
+          "stance": "standing",
+          "postureHeight": 1.75
+        },
+        "camera": {
+          "yaw": 0,
+          "pitch": 6.938893903907228e-18,
+          "position": {
+            "x": -0.0006892299861647189,
+            "y": 1.6192730925038554,
+            "z": -6.7319207191467285
+          }
+        },
+        "activeCheckpointId": "cp_start",
+        "activatedCheckpointIds": [
+          "cp_start"
+        ],
+        "respawnCount": 0,
+        "screen": null,
+        "pointerLocked": true
+      },
+      "takeoff": {
+        "flow": "gameplay",
+        "sessionStatus": "running",
+        "section": "sec_building_jump",
+        "player": {
+          "position": {
+            "x": -0.0006827557226642966,
+            "y": 0.8948987424373627,
+            "z": -12.445236459374428
+          },
+          "speed": 8.499999940395355,
+          "state": "SPRINTING",
+          "grounded": true,
+          "stance": "standing",
+          "postureHeight": 1.75
+        },
+        "camera": {
+          "yaw": 0,
+          "pitch": 6.938893903907228e-18,
+          "position": {
+            "x": -0.0006827557226642966,
+            "y": 1.6128615850927233,
+            "z": -12.430219792813073
+          }
+        },
+        "activeCheckpointId": "cp_start",
+        "activatedCheckpointIds": [
+          "cp_start"
+        ],
+        "respawnCount": 0,
+        "screen": null,
+        "pointerLocked": true
+      },
+      "crossing": {
+        "flow": "gameplay",
+        "sessionStatus": "running",
+        "section": "sec_building_jump",
+        "player": {
+          "position": {
+            "x": -0.000677094329148531,
+            "y": 0.8948548436164856,
+            "z": -21.329395294189453
+          },
+          "speed": 0,
+          "state": "IDLE",
+          "grounded": true,
+          "stance": "standing",
+          "postureHeight": 1.75
+        },
+        "camera": {
+          "yaw": 0,
+          "pitch": 6.938893903907228e-18,
+          "position": {
+            "x": -0.000677094329148531,
+            "y": 1.6198881840304504,
+            "z": -21.329395294189453
+          }
+        },
+        "activeCheckpointId": "cp_building_jump",
+        "activatedCheckpointIds": [
+          "cp_start",
+          "cp_building_jump"
+        ],
+        "respawnCount": 0,
+        "screen": null,
+        "pointerLocked": true
+      },
+      "crossed": true
+    },
+    "cp2Sequence": {
+      "cp2At": 26537,
+      "activatedCheckpointIds": [
+        "cp_start",
+        "cp_building_jump"
+      ]
+    },
+    "sampler": {
+      "sampleCount": 886,
+      "t0": 9077.100000023842
+    },
+    "finalDom": {
+      "hud": true,
+      "toast": {
+        "text": "",
+        "visible": false,
+        "display": "block",
+        "opacity": 0,
+        "rect": {
+          "x": 784,
+          "y": 16,
+          "w": 32,
+          "h": 20
+        }
+      },
+      "toastCount": 1,
+      "tutorial": {
+        "text": "",
+        "visible": false,
+        "display": "none",
+        "opacity": 1,
+        "rect": {
+          "x": 0,
+          "y": 0,
+          "w": 0,
+          "h": 0
+        }
+      },
+      "timer": {
+        "text": "",
+        "visible": false,
+        "display": "none",
+        "opacity": 1,
+        "rect": {
+          "x": 0,
+          "y": 0,
+          "w": 0,
+          "h": 0
+        }
+      },
+      "speed": {
+        "text": "Speed 0.0 m/s",
+        "visible": true,
+        "display": "block",
+        "opacity": 1,
+        "rect": {
+          "x": 24,
+          "y": 849,
+          "w": 132,
+          "h": 27
+        }
+      },
+      "prompt": {
+        "text": "E · VAULT",
+        "visible": true,
+        "display": "block",
+        "opacity": 1,
+        "rect": {
+          "x": 748,
+          "y": 771,
+          "w": 104,
+          "h": 38
+        }
+      },
+      "hint": {
+        "text": "Esc pause",
+        "visible": true,
+        "display": "block",
+        "opacity": 1,
+        "rect": {
+          "x": 1509,
+          "y": 864,
+          "w": 69,
+          "h": 14
+        }
+      },
+      "screenCount": 0,
+      "screenTitle": "",
+      "buttons": [],
+      "pointerLock": "game-canvas",
+      "loading": false,
+      "bootLoader": false
+    },
+    "finalStatus": {
+      "flow": "gameplay",
+      "sessionStatus": "running",
+      "section": "sec_building_jump",
+      "player": {
+        "position": {
+          "x": -0.0003674134786706418,
+          "y": 0.8948609828948975,
+          "z": -24.679899215698242
+        },
+        "speed": 0,
+        "state": "IDLE",
+        "grounded": true,
+        "stance": "standing",
+        "postureHeight": 1.75
+      },
+      "camera": {
+        "yaw": 0,
+        "pitch": 6.938893903907228e-18,
+        "position": {
+          "x": -0.0003674134786706418,
+          "y": 1.619861497280299,
+          "z": -24.679899215698242
+        }
+      },
+      "activeCheckpointId": "cp_building_jump",
+      "activatedCheckpointIds": [
+        "cp_start",
+        "cp_building_jump"
+      ],
+      "respawnCount": 0,
+      "screen": null,
+      "pointerLocked": true
+    }
+  }
+}

@@ -1,0 +1,34 @@
+Step 3.9 — First Section UX acceptance session
+Generated: 2026-11-23T06:23:06.852Z
+Browser: Microsoft Edge 157.0.4341.46 (headed-edge)
+Frames: 22, video frames: 4137
+
+Phases:
+  COMPLETED A-boot (12188 ms)
+  COMPLETED B-pause-resume (2398 ms)
+  COMPLETED B-move-toast (6480 ms)
+  COMPLETED D-recross-cp1 (4234 ms)
+  COMPLETED C-gap-a (10138 ms)
+  FAILED    C-gap-b (13213 ms)
+            Error: Timed out waiting for gap B landing; last={"flow":"gameplay","sessionStatus":"running","section":"sec_building_jump","player":{"position":{"x":0,"y":0.8949949145317078,"z":10},"speed":0,"state":"IDLE","grounded":true,"stance":"standing","postureHeight":1.75},"camera":{"yaw":0,"pitch":0,"position":{"x":0,"y":1.619994914531708,"z":10}},"activeCheckpointId":"cp_start","activatedCheckpointIds":["cp_start"],"respawnCount":1,"screen":null,"pointerLocked":false}
+  FAILED    C-rest-of-route (12762 ms)
+            Error: Timed out waiting for plant step take-off; last={"flow":"gameplay","sessionStatus":"running","section":"sec_building_jump","player":{"position":{"x":0,"y":0.8949949145317078,"z":10},"speed":0,"state":"IDLE","grounded":true,"stance":"standing","postureHeight":1.75},"camera":{"yaw":0,"pitch":0,"position":{"x":0,"y":1.619994914531708,"z":10}},"activeCheckpointId":"cp_start","activatedCheckpointIds":["cp_start"],"respawnCount":2,"screen":null,"pointerLocked":false}
+  COMPLETED E-returning-player (4686 ms)
+
+Toast segments (visible message windows):
+     3759 →    4254 ms    495 ms  "Move"
+     4254 →    6451 ms   2197 ms  "Checkpoint reached: Starting Roof Checkpoint"
+     6451 →    7725 ms   1274 ms  "Move"
+    21677 →   23452 ms   1775 ms  "Jump"
+
+Empty visible toast samples: 12
+Duplicate toast DOM nodes: 0
+Overlaps: 0
+
+Console errors: 0
+Page errors: 0
+Failed requests: 0
+
+Checks:
+  PASS D — re-entering an activated checkpoint does not repeat the confirmation — {"activatedCheckpointIds":["cp_start"],"toast":"","toastVisible":false}
+  PASS E — returning profile: the tutorial 'Move' toast does not reappear — {"text":"","visible":false}
