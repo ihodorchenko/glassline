@@ -1,0 +1,152 @@
+{
+  "kind": "gameplay-feel-perf-attribution",
+  "step": "3.11",
+  "generatedAt": "2026-11-23T07:59:35.291Z",
+  "baseHead": "4255bdd71c2476e6ca49af82f3511e1115dea50b",
+  "command": "node tools/capture/feel-audit.mjs --only perf --out-dir /tmp/gfa/perf-attrib --no-video --no-audio",
+  "note": "Medium quality (the default) at 1600x900 dpr 1 in Microsoft Edge on ANGLE Metal (Apple M1 Pro). Static poses hold 58.6-60 fps; translating the player drops to 24-37 fps at every quality tier. The attribution measurement wraps RenderScene.probeSkyVisibility (read-only) and then stubs it at runtime inside the probe only; no file was modified. The probe is triggered by 0.08 m of camera movement, so it runs every frame while the player moves.",
+  "environment": {
+    "browser": {
+      "name": "Microsoft Edge",
+      "channel": "msedge",
+      "version": "157.0.4341.46"
+    },
+    "viewport": "1600x900 dpr 1",
+    "headless": true,
+    "platform": "darwin",
+    "release": "27.2.0",
+    "cpus": 8,
+    "loadAverage": [
+      4.62,
+      5.24,
+      5.34
+    ]
+  },
+  "gpu": {
+    "renderer": "ANGLE (Apple, ANGLE Metal Renderer: Apple M1 Pro, Unspecified Version)",
+    "quality": "medium"
+  },
+  "viewport": "1600x900 dpr 1",
+  "staticPoses": {
+    "start-roof": {
+      "frames": 127,
+      "fps": 58.6,
+      "avgMs": 17.07,
+      "medianFps": 59.5,
+      "p95Ms": 19.2,
+      "p99Ms": 20,
+      "maxMs": 21.4,
+      "drawCalls": 261,
+      "triangles": 4363995
+    },
+    "corridor": {
+      "frames": 130,
+      "fps": 59.9,
+      "avgMs": 16.69,
+      "medianFps": 60.2,
+      "p95Ms": 18,
+      "p99Ms": 20.5,
+      "maxMs": 20.6,
+      "drawCalls": null,
+      "triangles": null
+    },
+    "catwalk": {
+      "frames": 131,
+      "fps": 60,
+      "avgMs": 16.67,
+      "medianFps": 59.9,
+      "p95Ms": 17.6,
+      "p99Ms": 17.8,
+      "maxMs": 17.9,
+      "drawCalls": null,
+      "triangles": null
+    },
+    "final-deck": {
+      "frames": 130,
+      "fps": 60,
+      "avgMs": 16.67,
+      "medianFps": 60.2,
+      "p95Ms": 17.2,
+      "p99Ms": 17.4,
+      "maxMs": 17.4,
+      "drawCalls": null,
+      "triangles": null
+    }
+  },
+  "moving": {
+    "roof-west-lane": {
+      "frames": 80,
+      "fps": 25.1,
+      "avgMs": 39.77,
+      "medianFps": 26,
+      "p95Ms": 40.2,
+      "p99Ms": 153.8,
+      "maxMs": 153.8,
+      "drawCalls": 1,
+      "triangles": 1
+    },
+    "corridor": {
+      "frames": 55,
+      "fps": 24.3,
+      "avgMs": 41.19,
+      "medianFps": 24.4,
+      "p95Ms": 43.3,
+      "p99Ms": 43.9,
+      "maxMs": 43.9,
+      "drawCalls": 1,
+      "triangles": 1
+    },
+    "catwalk": {
+      "frames": 126,
+      "fps": 37.3,
+      "avgMs": 26.84,
+      "medianFps": 29.5,
+      "p95Ms": 34.7,
+      "p99Ms": 35.1,
+      "maxMs": 35.2,
+      "drawCalls": 1,
+      "triangles": 1
+    }
+  },
+  "tiers": {
+    "low": {
+      "frames": 64,
+      "fps": 27,
+      "avgMs": 37.05,
+      "medianFps": 26.8,
+      "p95Ms": 38.5,
+      "p99Ms": 38.6,
+      "maxMs": 38.6,
+      "drawCalls": 1,
+      "triangles": 1
+    },
+    "high": {
+      "frames": 63,
+      "fps": 26.7,
+      "avgMs": 37.52,
+      "medianFps": 26.6,
+      "p95Ms": 39.3,
+      "p99Ms": 39.9,
+      "maxMs": 39.9,
+      "drawCalls": 1,
+      "triangles": 1
+    }
+  },
+  "attribution": {
+    "ambientProbe": {
+      "note": "probeSkyVisibility raycasts 9 directions against the collected scene meshes; it runs whenever the camera moves more than 0.08 m",
+      "probeCallsPerSecond": 27.3,
+      "probeAvgMs": 35.05,
+      "probeOn": {
+        "fps": 26.6,
+        "p95Ms": 39.1
+      },
+      "probeStubbed": {
+        "fps": 57.8,
+        "p95Ms": 21.1
+      },
+      "frameRateRecoveredFps": 31.2,
+      "diagnosticOnly": "the stub exists only inside this probe; no file was modified"
+    }
+  }
+}
